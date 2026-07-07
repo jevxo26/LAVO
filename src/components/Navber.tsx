@@ -1,12 +1,13 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
-import { Menu } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { navItems } from "@/data/navdata";
 
 
 export function Navber() {
+    const [isOpen, setIsOpen] = useState(false);
     return (
         <nav className="fixed top-0 left-0 w-full z-50 bg-white/40 backdrop-blur-md border-b border-white/20 shadow-[0_4px_30px_rgba(0,0,0,0.02)] transition-all duration-300">
             <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
@@ -39,10 +40,27 @@ export function Navber() {
                 </div>
 
                 {/* Mobile menu button */}
-                <div className="md:hidden flex items-center">
-                    <button className="text-slate-600 hover:text-indigo-600 focus:outline-none p-2 rounded-md hover:bg-white/50 transition-colors">
-                        <Menu size={24} />
+                <div className="md:hidden relative items-center">
+                    <button 
+                        onClick={()=> setIsOpen(!isOpen)}
+                        className="text-slate-600 hover:text-indigo-600 focus:outline-none p-2 rounded-md hover:bg-white/50 transition-colors">
+                        {isOpen ? <X size={24}/> : <Menu size={24} />}
                     </button>
+                    {isOpen && (
+                        <div 
+                            className="md:hidden absolute top-8 -left-15 bg-white flex flex-col border-t py-4 px-6 rounded-md space-y-2"
+                        >
+                            {navItems.map((item) => (
+                                <Link
+                                    key={item.name}
+                                    href={item.href}
+                                    onClick={() => setIsOpen(false)}
+                                >
+                                    {item.name}
+                                </Link>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
         </nav>
