@@ -4,6 +4,8 @@
 import { motion } from "framer-motion";
 
 import { SignInForm } from "@/components/auth/signin";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { UserKey } from "lucide-react";
 
 export default function LoginPage() {
 
@@ -16,7 +18,24 @@ export default function LoginPage() {
                 transition={{ duration: 0.5, ease: "easeOut" }}
                 className="w-full max-w-md"
             >
-                <SignInForm />
+                <div className="w-full max-w-md">
+                    <Card className="border-0 shadow-2xl bg-white/70 backdrop-blur-xl animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <CardHeader className="space-y-1 pb-4 text-center">
+                            <div className="w-16 h-16 bg-gradient-to-tr from-indigo-600 to-cyan-500 rounded-2xl mx-auto flex items-center justify-center shadow-lg mb-4">
+                                <UserKey className="w-8 h-8 text-white" />
+                            </div>
+                            <CardTitle className="text-3xl font-bold tracking-tight text-slate-900">
+                                Welcome back
+                            </CardTitle>
+                            <CardDescription className="text-slate-500 text-base">
+                                Sign in to your account to continue
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <SignInForm />
+                        </CardContent>
+                    </Card>
+                </div>
             </motion.div>
         </div>
     );

@@ -13,7 +13,7 @@ export function Navber() {
             <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
                 <div className="flex items-center">
                     <Link href="/" className="text-xl font-bold bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent">
-                        Platform
+                        LAUNDRIX 
                     </Link>
                 </div>
 
@@ -59,6 +59,12 @@ export function Navber() {
                                     {item.name}
                                 </Link>
                             ))}
+                            <Link href="/login" className="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors">
+                                Sign In
+                            </Link>
+                            <Link href="/register" className="px-3 py-1 rounded-full bg-indigo-500 text-white text-sm font-medium hover:bg-indigo-600 transition-colors shadow-sm">
+                                Get Started
+                            </Link>
                         </div>
                     )}
                 </div>
