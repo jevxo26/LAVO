@@ -1,0 +1,550 @@
+// Customer Models
+
+model Customer {
+  id                 String   @id @default(uuid())
+  userId             String   @unique
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  customerCode       String   @unique
+  status             String   @default("ACTIVE")
+  registrationSource String?
+  totalOrders        Int      @default(0)
+  completedOrders    Int      @default(0)
+  cancelledOrders    Int      @default(0)
+  totalSpent         Float    @default(0.0)
+  walletBalance      Float    @default(0.0)
+  loyaltyPoints      Int      @default(0)
+  membershipId       String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  customerProfile        CustomerProfile?
+  addresses              CustomerAddress[]
+  wallets                CustomerWallet[]
+  loyaltyPointRecord     CustomerLoyaltyPoint?
+  referrals              Referral[]
+  favoriteServices       FavoriteService[]
+  savedPickupSchedules   SavedPickupSchedule[]
+  subscriptions          CustomerSubscription[]
+  memberships            CustomerMembership[]
+  coupons                CustomerCoupon[]
+  notifications          CustomerNotification[]
+  activities             CustomerActivity[]
+  customerSupportTickets CustomerSupportTicket[]
+  orders                 Order[]
+  pickupRequests         PickupRequest[]
+  deliveries             Delivery[]
+  payments               Payment[]
+  cashbacks              Cashback[]
+  couponUsages           CouponUsage[]
+  reviews                Review[]
+  supportTickets         SupportTicket[]
+}
+
+model CustomerProfile {
+  id                String    @id @default(uuid())
+  customerId        String    @unique
+  customer          Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  fullName          String
+  email             String    @unique
+  phone             String    @unique
+  gender            String?
+  dateOfBirth       DateTime?
+  profileImage      String?
+  preferredLanguage String?
+  preferredBranch   String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+model CustomerAddress {
+  id            String   @id @default(uuid())
+  customerId    String
+  customer      Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  label         String?
+  receiverName  String
+  receiverPhone String
+  division      String?
+  district      String?
+  city          String
+  area          String?
+  zone          String?
+  postalCode    String?
+  fullAddress   String
+  latitude      Float?
+  longitude     Float?
+  isDefault     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model CustomerWallet {
+  id                String    @id @default(uuid())
+  customerId        String
+  customer          Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  balance           Float     @default(0.0)
+  currency          String    @default("BDT")
+  status            String    @default("ACTIVE")
+  lastTransactionAt DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  transactions CustomerTransaction[]
+}
+
+model CustomerTransaction {
+  id              String         @id @default(uuid())
+  walletId        String
+  wallet          CustomerWallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  transactionType String // Deposit, Refund, Cashback, Adjustment
+  amount          Float
+  referenceType   String?
+  referenceId     String?
+  paymentMethod   String?
+  status          String         @default("COMPLETED")
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model CustomerLoyaltyPoint {
+  id              String   @id @default(uuid())
+  customerId      String   @unique
+  customer        Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  earnedPoints    Int      @default(0)
+  redeemedPoints  Int      @default(0)
+  availablePoints Int      @default(0)
+  expiredPoints   Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Referral {
+  id                  String   @id @default(uuid())
+  customerId          String
+  customer            Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  referralCode        String   @unique
+  totalReferrals      Int      @default(0)
+  successfulReferrals Int      @default(0)
+  status              String   @default("ACTIVE")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  rewards ReferralReward[]
+}
+
+model ReferralReward {
+  id           String    @id @default(uuid())
+  referralId   String
+  referral     Referral  @relation(fields: [referralId], references: [id], onDelete: Cascade)
+  rewardType   String
+  rewardValue  Float
+  rewardStatus String    @default("PENDING")
+  rewardDate   DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model FavoriteService {
+  id                String   @id @default(uuid())
+  customerId        String
+  customer          Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  serviceId         String // Maps to Service later
+  serviceCategoryId String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model SavedPickupSchedule {
+  id         String   @id @default(uuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  title      String
+  pickupDay  String
+  pickupTime String
+  repeatType String // e.g., Every Monday, Monthly
+  status     String   @default("ACTIVE")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model CustomerSubscription {
+  id           String   @id @default(uuid())
+  customerId   String
+  customer     Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  planName     String
+  billingCycle String
+  price        Float
+  startDate    DateTime
+  endDate      DateTime
+  status       String   @default("ACTIVE")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model CustomerMembership {
+  id                 String   @id @default(uuid())
+  customerId         String
+  customer           Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  membershipType     String
+  discountPercentage Float
+  benefits           String?
+  startDate          DateTime
+  expiryDate         DateTime
+  status             String   @default("ACTIVE")
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model CustomerCoupon {
+  id            String   @id @default(uuid())
+  customerId    String
+  customer      Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  couponCode    String
+  discountType  String
+  discountValue Float
+  expiryDate    DateTime
+  usageStatus   String   @default("UNUSED")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model CustomerNotification {
+  id               String   @id @default(uuid())
+  customerId       String
+  customer         Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  title            String
+  message          String
+  notificationType String
+  isRead           Boolean  @default(false)
+  sentAt           DateTime @default(now())
+  createdAt        DateTime @default(now())
+}
+
+model CustomerActivity {
+  id           String   @id @default(uuid())
+  customerId   String
+  customer     Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  activityType String
+  description  String?
+  ipAddress    String?
+  device       String?
+  createdAt    DateTime @default(now())
+}
+
+model CustomerSupportTicket {
+  id           String    @id @default(uuid())
+  customerId   String
+  customer     Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  ticketNumber String    @unique
+  subject      String
+  category     String
+  priority     String    @default("NORMAL")
+  status       String    @default("OPEN")
+  assignedTo   String?
+  resolvedAt   DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+// Branch Management Models
+
+model Branch {
+  id         String    @id @default(uuid())
+  branchCode String    @unique
+  branchName String
+  branchType String // Head Office, Regional Branch, etc.
+  email      String?
+  phone      String?
+  country    String
+  division   String?
+  district   String?
+  city       String
+  area       String?
+  zone       String?
+  postalCode String?
+  address    String
+  latitude   Float?
+  longitude  Float?
+  managerId  String? // Reference to User
+  status     String    @default("ACTIVE")
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  deletedAt  DateTime?
+
+  managers           BranchManager[]
+  employees          BranchEmployee[]
+  departments        BranchDepartment[]
+  machines           BranchMachine[]
+  inventories        BranchInventory[]
+  capacity           BranchCapacity?
+  workingHours       BranchWorkingHour[]
+  holidays           BranchHoliday[]
+  services           BranchService[]
+  coverageZones      BranchCoverageZone[]
+  pickupSchedules    BranchPickupSchedule[]
+  deliverySchedules  BranchDeliverySchedule[]
+  expenses           BranchExpense[]
+  revenues           BranchRevenue[]
+  performance        BranchPerformance?
+  analytics          BranchAnalytics[]
+  notifications      BranchNotification[]
+  settings           BranchSetting?
+  orders             Order[]
+  pickupRequests     PickupRequest[]
+  laundryProcessings LaundryProcessing[]
+  processingBatches  ProcessingBatch[]
+  deliveries         Delivery[]
+}
+
+model BranchEmployee {
+  id             String    @id @default(uuid())
+  branchId       String
+  branch         Branch    @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  employeeId     String // Maps to User
+  designation    String?
+  departmentId   String?
+  joiningDate    DateTime?
+  salary         Float?
+  employmentType String?
+  status         String    @default("ACTIVE")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+model BranchManager {
+  id           String   @id @default(uuid())
+  branchId     String
+  branch       Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  userId       String // Maps to User
+  assignedDate DateTime @default(now())
+  status       String   @default("ACTIVE")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model BranchDepartment {
+  id             String   @id @default(uuid())
+  branchId       String
+  branch         Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  departmentName String
+  description    String?
+  status         String   @default("ACTIVE")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model BranchMachine {
+  id           String    @id @default(uuid())
+  branchId     String
+  branch       Branch    @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  machineCode  String    @unique
+  machineName  String
+  machineType  String
+  brand        String?
+  capacity     String?
+  purchaseDate DateTime?
+  status       String    @default("ACTIVE")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  maintenances BranchMachineMaintenance[]
+}
+
+model BranchMachineMaintenance {
+  id                  String        @id @default(uuid())
+  machineId           String
+  machine             BranchMachine @relation(fields: [machineId], references: [id], onDelete: Cascade)
+  maintenanceType     String
+  description         String?
+  maintenanceDate     DateTime
+  nextMaintenanceDate DateTime?
+  cost                Float         @default(0.0)
+  status              String        @default("COMPLETED")
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+}
+
+model BranchInventory {
+  id           String   @id @default(uuid())
+  branchId     String
+  branch       Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  itemName     String
+  category     String
+  quantity     Float
+  unit         String
+  minimumStock Float    @default(0)
+  currentStock Float    @default(0)
+  status       String   @default("ACTIVE")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  transactions BranchInventoryTransaction[]
+}
+
+model BranchInventoryTransaction {
+  id              String          @id @default(uuid())
+  inventoryId     String
+  inventory       BranchInventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+  transactionType String // Stock In, Stock Out, Damage
+  quantity        Float
+  reference       String?
+  performedBy     String? // Maps to User
+  createdAt       DateTime        @default(now())
+}
+
+model BranchCapacity {
+  id                String   @id @default(uuid())
+  branchId          String   @unique
+  branch            Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  dailyCapacity     Int
+  currentOrders     Int      @default(0)
+  availableCapacity Int      @default(0)
+  maximumCapacity   Int
+  updatedAt         DateTime @updatedAt
+}
+
+model BranchWorkingHour {
+  id          String   @id @default(uuid())
+  branchId    String
+  branch      Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  day         String
+  openingTime String
+  closingTime String
+  isOpen      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model BranchHoliday {
+  id          String   @id @default(uuid())
+  branchId    String
+  branch      Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  holidayName String
+  holidayDate DateTime
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model BranchService {
+  id            String   @id @default(uuid())
+  branchId      String
+  branch        Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  serviceId     String // Maps to Service
+  price         Float
+  estimatedTime String?
+  status        String   @default("ACTIVE")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model BranchCoverageZone {
+  id                String   @id @default(uuid())
+  branchId          String
+  branch            Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  zoneId            String // Maps to a Zone model later
+  pickupAvailable   Boolean  @default(true)
+  deliveryAvailable Boolean  @default(true)
+  status            String   @default("ACTIVE")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model BranchPickupSchedule {
+  id            String   @id @default(uuid())
+  branchId      String
+  branch        Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  pickupAgentId String // Maps to PickupAgent later
+  pickupDate    DateTime
+  pickupTime    String
+  maximumOrders Int      @default(0)
+  status        String   @default("ACTIVE")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model BranchDeliverySchedule {
+  id              String   @id @default(uuid())
+  branchId        String
+  branch          Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  deliveryAgentId String // Maps to DeliveryAgent later
+  deliveryDate    DateTime
+  deliveryTime    String
+  maximumOrders   Int      @default(0)
+  status          String   @default("ACTIVE")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model BranchExpense {
+  id          String   @id @default(uuid())
+  branchId    String
+  branch      Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  expenseType String
+  amount      Float
+  description String?
+  expenseDate DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model BranchRevenue {
+  id                String   @id @default(uuid())
+  branchId          String
+  branch            Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  totalRevenue      Float
+  completedOrders   Int
+  averageOrderValue Float
+  revenueDate       DateTime
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model BranchPerformance {
+  id                    String   @id @default(uuid())
+  branchId              String   @unique
+  branch                Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  completedOrders       Int      @default(0)
+  pendingOrders         Int      @default(0)
+  cancelledOrders       Int      @default(0)
+  averageProcessingTime Float    @default(0)
+  customerRating        Float    @default(0)
+  updatedAt             DateTime @updatedAt
+}
+
+model BranchAnalytics {
+  id            String   @id @default(uuid())
+  branchId      String
+  branch        Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  dailyOrders   Int
+  weeklyOrders  Int
+  monthlyOrders Int
+  revenue       Float
+  expenses      Float
+  profit        Float
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model BranchNotification {
+  id               String   @id @default(uuid())
+  branchId         String
+  branch           Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  title            String
+  message          String
+  notificationType String
+  isRead           Boolean  @default(false)
+  createdAt        DateTime @default(now())
+}
+
+model BranchSetting {
+  id                    String   @id @default(uuid())
+  branchId              String   @unique
+  branch                Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  autoAssignOrders      Boolean  @default(true)
+  acceptVendorOverflow  Boolean  @default(false)
+  maximumDailyOrders    Int      @default(100)
+  defaultProcessingTime String?
+  status                String   @default("ACTIVE")
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}

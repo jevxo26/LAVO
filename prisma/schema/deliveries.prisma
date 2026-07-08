@@ -1,0 +1,393 @@
+// Delivery & Route Management Models
+
+model Delivery {
+  id                 String    @id @default(uuid())
+  orderId            String
+  order              Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  customerId         String
+  customer           Customer  @relation(fields: [customerId], references: [id])
+  branchId           String?
+  branch             Branch?   @relation(fields: [branchId], references: [id])
+  vendorId           String?
+  vendor             Vendor?   @relation(fields: [vendorId], references: [id])
+  deliveryNumber     String    @unique
+  deliveryType       String
+  deliveryStatus     String    @default("PENDING")
+  assignedAgentId    String?
+  deliveryAddressId  String
+  scheduledDate      DateTime?
+  scheduledTime      String?
+  estimatedArrival   DateTime?
+  actualDeliveryTime DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  completedAt        DateTime?
+
+  requests      DeliveryRequest[]
+  assignments   DeliveryAssignment[]
+  stops         DeliveryStop[]
+  trackings     LiveTracking[]
+  statuses      DeliveryStatus[]
+  timelines     DeliveryTimeline[]
+  verifications DeliveryVerification[]
+  proofs        DeliveryProof[]
+  reschedules   DeliveryReschedule[]
+  failures      DeliveryFailure[]
+  charges       DeliveryCharge[]
+  analytics     DeliveryAnalytics?
+  logs          DeliveryLog[]
+}
+
+model DeliveryRequest {
+  id                  String   @id @default(uuid())
+  deliveryId          String
+  delivery            Delivery @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+  orderId             String
+  requestedBy         String?
+  priority            String   @default("NORMAL")
+  deliveryInstruction String?
+  status              String   @default("PENDING")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model DeliveryAssignment {
+  id          String    @id @default(uuid())
+  deliveryId  String
+  delivery    Delivery  @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+  agentId     String
+  assignedBy  String?
+  status      String    @default("ASSIGNED")
+  assignedAt  DateTime  @default(now())
+  acceptedAt  DateTime?
+  completedAt DateTime?
+}
+
+model DeliveryAgent {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id])
+  employeeCode    String   @unique
+  vehicleId       String?
+  phone           String
+  currentLocation String?
+  availability    Boolean  @default(true)
+  status          String   @default("ACTIVE")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  vehicles DeliveryVehicle[]
+  routes   DeliveryRoute[]
+}
+
+model DeliveryVehicle {
+  id            String        @id @default(uuid())
+  agentId       String
+  agent         DeliveryAgent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  vehicleType   String
+  vehicleNumber String        @unique
+  capacity      Float?
+  status        String        @default("ACTIVE")
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model DeliveryRoute {
+  id                String        @id @default(uuid())
+  agentId           String
+  agent             DeliveryAgent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  routeName         String
+  totalStops        Int           @default(0)
+  totalDistance     Float         @default(0.0)
+  estimatedDuration String?
+  routeStatus       String        @default("PENDING")
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  optimizations RouteOptimization[]
+  stops         DeliveryStop[]
+}
+
+model RouteOptimization {
+  id             String        @id @default(uuid())
+  routeId        String
+  route          DeliveryRoute @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  optimizedOrder String
+  estimatedTime  String?
+  distanceSaved  Float?
+  createdAt      DateTime      @default(now())
+}
+
+model DeliveryStop {
+  id               String        @id @default(uuid())
+  routeId          String
+  route            DeliveryRoute @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  deliveryId       String
+  delivery         Delivery      @relation(fields: [deliveryId], references: [id])
+  stopNumber       Int
+  address          String
+  estimatedArrival DateTime?
+  actualArrival    DateTime?
+  status           String        @default("PENDING")
+  createdAt        DateTime      @default(now())
+}
+
+model LiveTracking {
+  id           String   @id @default(uuid())
+  deliveryId   String
+  delivery     Delivery @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+  agentId      String
+  latitude     Float
+  longitude    Float
+  speed        Float?
+  batteryLevel Float?
+  lastUpdateAt DateTime @default(now())
+}
+
+model DeliveryLocationHistory {
+  id         String   @id @default(uuid())
+  agentId    String
+  latitude   Float
+  longitude  Float
+  recordedAt DateTime @default(now())
+}
+
+model DeliveryStatus {
+  id            String   @id @default(uuid())
+  deliveryId    String
+  delivery      Delivery @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+  currentStatus String
+  statusReason  String?
+  updatedBy     String?
+  createdAt     DateTime @default(now())
+}
+
+model DeliveryTimeline {
+  id          String   @id @default(uuid())
+  deliveryId  String
+  delivery    Delivery @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+  status      String
+  description String?
+  performedBy String?
+  createdAt   DateTime @default(now())
+}
+
+model DeliveryVerification {
+  id                 String    @id @default(uuid())
+  deliveryId         String
+  delivery           Delivery  @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+  verificationMethod String
+  verificationCode   String?
+  customerSignature  String?
+  verifiedBy         String?
+  verifiedAt         DateTime?
+  createdAt          DateTime  @default(now())
+}
+
+model DeliveryOTP {
+  id         String   @id @default(uuid())
+  deliveryId String
+  otpCode    String
+  expiresAt  DateTime
+  isUsed     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+}
+
+model DeliveryProof {
+  id         String   @id @default(uuid())
+  deliveryId String
+  delivery   Delivery @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+  proofType  String
+  fileUrl    String
+  uploadedBy String?
+  createdAt  DateTime @default(now())
+}
+
+model DeliveryReschedule {
+  id            String    @id @default(uuid())
+  deliveryId    String
+  delivery      Delivery  @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+  oldDate       DateTime?
+  oldTime       String?
+  newDate       DateTime
+  newTime       String
+  rescheduledBy String?
+  reason        String
+  status        String    @default("APPROVED")
+  createdAt     DateTime  @default(now())
+}
+
+model DeliveryFailure {
+  id            String   @id @default(uuid())
+  deliveryId    String
+  delivery      Delivery @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+  failureReason String
+  reportedBy    String?
+  isResolved    Boolean  @default(false)
+  createdAt     DateTime @default(now())
+}
+
+model DeliveryCharge {
+  id             String   @id @default(uuid())
+  deliveryId     String
+  delivery       Delivery @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+  baseCharge     Float
+  distanceCharge Float    @default(0.0)
+  weightCharge   Float    @default(0.0)
+  totalCharge    Float
+  createdAt      DateTime @default(now())
+}
+
+model DeliveryAnalytics {
+  id                String   @id @default(uuid())
+  deliveryId        String   @unique
+  delivery          Delivery @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+  distanceTravelled Float?
+  deliveryDuration  Float?
+  customerRating    Float?
+  updatedAt         DateTime @updatedAt
+}
+
+model DeliveryNotification {
+  id               String   @id @default(uuid())
+  deliveryId       String
+  title            String
+  message          String
+  notificationType String
+  isRead           Boolean  @default(false)
+  createdAt        DateTime @default(now())
+}
+
+model DeliveryLog {
+  id          String   @id @default(uuid())
+  deliveryId  String
+  delivery    Delivery @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+  module      String
+  action      String
+  performedBy String?
+  createdAt   DateTime @default(now())
+}
+
+// Payment Models
+
+model Payment {
+  id              String    @id @default(uuid())
+  orderId         String
+  order           Order     @relation(fields: [orderId], references: [id])
+  customerId      String
+  customer        Customer  @relation(fields: [customerId], references: [id])
+  paymentNumber   String    @unique
+  paymentMethodId String
+  gatewayId       String?
+  transactionId   String?
+  amount          Float
+  currency        String    @default("BDT")
+  paymentStatus   String    @default("PENDING")
+  paymentType     String
+  paidAt          DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model PaymentMethod {
+  id         String   @id @default(uuid())
+  name       String
+  provider   String
+  methodType String
+  isOnline   Boolean  @default(true)
+  status     String   @default("ACTIVE")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model PaymentGateway {
+  id          String   @id @default(uuid())
+  gatewayName String
+  merchantId  String?
+  apiKey      String?
+  secretKey   String?
+  environment String   @default("SANDBOX")
+  status      String   @default("ACTIVE")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model PaymentIntent {
+  id           String   @id @default(uuid())
+  orderId      String
+  amount       Float
+  currency     String   @default("BDT")
+  clientSecret String
+  status       String   @default("REQUIRES_PAYMENT")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model PaymentWebhook {
+  id        String   @id @default(uuid())
+  gateway   String
+  event     String
+  payload   String
+  status    String   @default("RECEIVED")
+  createdAt DateTime @default(now())
+}
+
+model RefundRequest {
+  id          String   @id @default(uuid())
+  orderId     String
+  customerId  String
+  amount      Float
+  reason      String
+  status      String   @default("PENDING")
+  processedBy String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Settlement {
+  id             String   @id @default(uuid())
+  vendorId       String?
+  branchId       String?
+  amount         Float
+  settlementDate DateTime
+  status         String   @default("PENDING")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Cashback {
+  id         String   @id @default(uuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
+  orderId    String?
+  amount     Float
+  status     String   @default("CREDITED")
+  createdAt  DateTime @default(now())
+}
+
+model CouponUsage {
+  id         String   @id @default(uuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
+  couponId   String
+  orderId    String
+  discount   Float
+  createdAt  DateTime @default(now())
+}
+
+model PaymentAnalytics {
+  id           String   @id @default(uuid())
+  totalRevenue Float
+  totalRefunds Float
+  netRevenue   Float
+  date         DateTime
+  createdAt    DateTime @default(now())
+}
+
+model PaymentLog {
+  id          String   @id @default(uuid())
+  paymentId   String
+  action      String
+  performedBy String?
+  createdAt   DateTime @default(now())
+}

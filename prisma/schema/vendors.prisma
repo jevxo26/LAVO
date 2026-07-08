@@ -1,0 +1,586 @@
+// Vendor Management Models
+
+model Vendor {
+  id             String    @id @default(uuid())
+  vendorCode     String    @unique
+  businessName   String
+  ownerName      String
+  email          String    @unique
+  phone          String    @unique
+  tradeLicenseNo String?
+  taxId          String?
+  businessType   String?
+  status         String    @default("ACTIVE")
+  isVerified     Boolean   @default(false)
+  joinedAt       DateTime  @default(now())
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime?
+
+  profile            VendorProfile?
+  branches           VendorBranch[]
+  services           VendorService[]
+  coverageZones      VendorCoverageZone[]
+  documents          VendorDocument[]
+  verifications      VendorVerification[]
+  employees          VendorEmployee[]
+  machines           VendorMachine[]
+  capacity           VendorCapacity?
+  availabilities     VendorAvailability[]
+  wallet             VendorWallet?
+  transactions       VendorTransaction[]
+  payouts            VendorPayout[]
+  commissions        VendorCommission[]
+  assignments        VendorAssignment[]
+  performance        VendorPerformance?
+  rating             VendorRating?
+  analytics          VendorAnalytics[]
+  notifications      VendorNotification[]
+  settings           VendorSetting?
+  orders             Order[]
+  laundryProcessings LaundryProcessing[]
+  processingBatches  ProcessingBatch[]
+  deliveries         Delivery[]
+}
+
+model VendorProfile {
+  id          String   @id @default(uuid())
+  vendorId    String   @unique
+  vendor      Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  logo        String?
+  coverImage  String?
+  description String?
+  website     String?
+  facebook    String?
+  instagram   String?
+  openingYear Int?
+  experience  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model VendorBranch {
+  id          String   @id @default(uuid())
+  vendorId    String
+  vendor      Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  branchName  String
+  branchCode  String   @unique
+  country     String
+  division    String?
+  district    String?
+  city        String
+  area        String?
+  zone        String?
+  address     String
+  latitude    Float?
+  longitude   Float?
+  managerName String?
+  phone       String?
+  status      String   @default("ACTIVE")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model VendorService {
+  id             String   @id @default(uuid())
+  vendorId       String
+  vendor         Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  serviceId      String // Maps to Service later
+  processingTime String?
+  price          Float
+  minimumOrder   Int      @default(1)
+  maximumOrder   Int?
+  status         String   @default("ACTIVE")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model VendorCoverageZone {
+  id                String   @id @default(uuid())
+  vendorId          String
+  vendor            Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  zoneId            String // Maps to Zone later
+  pickupAvailable   Boolean  @default(true)
+  deliveryAvailable Boolean  @default(true)
+  status            String   @default("ACTIVE")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model VendorDocument {
+  id                 String    @id @default(uuid())
+  vendorId           String
+  vendor             Vendor    @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  documentType       String // Trade License, NID, etc.
+  documentNumber     String?
+  documentFile       String
+  expiryDate         DateTime?
+  verificationStatus String    @default("PENDING")
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+}
+
+model VendorVerification {
+  id                 String    @id @default(uuid())
+  vendorId           String
+  vendor             Vendor    @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  verifiedBy         String // Maps to Admin User
+  verificationDate   DateTime?
+  verificationStatus String    @default("PENDING")
+  remarks            String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+}
+
+model VendorEmployee {
+  id          String    @id @default(uuid())
+  vendorId    String
+  vendor      Vendor    @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  employeeId  String // Maps to User
+  designation String?
+  department  String?
+  joiningDate DateTime?
+  status      String    @default("ACTIVE")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model VendorMachine {
+  id          String   @id @default(uuid())
+  vendorId    String
+  vendor      Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  machineName String
+  machineType String
+  capacity    String?
+  brand       String?
+  status      String   @default("ACTIVE")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model VendorCapacity {
+  id                String   @id @default(uuid())
+  vendorId          String   @unique
+  vendor            Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  dailyCapacity     Int
+  currentOrders     Int      @default(0)
+  availableCapacity Int      @default(0)
+  maximumCapacity   Int
+  updatedAt         DateTime @updatedAt
+}
+
+model VendorAvailability {
+  id          String   @id @default(uuid())
+  vendorId    String
+  vendor      Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  workingDay  String
+  openingTime String
+  closingTime String
+  isAvailable Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model VendorWallet {
+  id             String   @id @default(uuid())
+  vendorId       String   @unique
+  vendor         Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  currentBalance Float    @default(0.0)
+  pendingBalance Float    @default(0.0)
+  totalEarnings  Float    @default(0.0)
+  status         String   @default("ACTIVE")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model VendorTransaction {
+  id              String   @id @default(uuid())
+  vendorId        String
+  vendor          Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  walletId        String
+  transactionType String // Order Payment, Commission, etc.
+  amount          Float
+  referenceId     String?
+  status          String   @default("COMPLETED")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model VendorPayout {
+  id            String    @id @default(uuid())
+  vendorId      String
+  vendor        Vendor    @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  amount        Float
+  paymentMethod String
+  paymentStatus String    @default("PENDING")
+  requestedAt   DateTime  @default(now())
+  paidAt        DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model VendorCommission {
+  id               String   @id @default(uuid())
+  vendorId         String
+  vendor           Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  orderId          String // Maps to Order later
+  commissionType   String
+  commissionRate   Float
+  commissionAmount Float
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  order            Order    @relation(fields: [orderId], references: [id])
+}
+
+model VendorAssignment {
+  id          String    @id @default(uuid())
+  vendorId    String
+  vendor      Vendor    @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  branchId    String? // Maps to Branch
+  orderId     String // Maps to Order
+  assignedBy  String? // Maps to Admin User
+  assignedAt  DateTime  @default(now())
+  acceptedAt  DateTime?
+  completedAt DateTime?
+  status      String    @default("PENDING")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  order       Order     @relation(fields: [orderId], references: [id])
+}
+
+model VendorPerformance {
+  id                    String   @id @default(uuid())
+  vendorId              String   @unique
+  vendor                Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  completedOrders       Int      @default(0)
+  cancelledOrders       Int      @default(0)
+  averageProcessingTime Float    @default(0)
+  acceptanceRate        Float    @default(0)
+  completionRate        Float    @default(0)
+  updatedAt             DateTime @updatedAt
+}
+
+model VendorRating {
+  id            String   @id @default(uuid())
+  vendorId      String   @unique
+  vendor        Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  averageRating Float    @default(0)
+  totalReviews  Int      @default(0)
+  qualityScore  Float    @default(0)
+  deliveryScore Float    @default(0)
+  serviceScore  Float    @default(0)
+  updatedAt     DateTime @updatedAt
+}
+
+model VendorAnalytics {
+  id              String   @id @default(uuid())
+  vendorId        String
+  vendor          Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  dailyOrders     Int
+  monthlyOrders   Int
+  totalRevenue    Float
+  totalCommission Float
+  netEarnings     Float
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model VendorNotification {
+  id               String   @id @default(uuid())
+  vendorId         String
+  vendor           Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  title            String
+  message          String
+  notificationType String
+  isRead           Boolean  @default(false)
+  createdAt        DateTime @default(now())
+}
+
+model VendorSetting {
+  id                    String   @id @default(uuid())
+  vendorId              String   @unique
+  vendor                Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  autoAcceptOrder       Boolean  @default(false)
+  maximumDailyOrders    Int      @default(100)
+  acceptOverflowOrders  Boolean  @default(false)
+  preferredPaymentCycle String   @default("WEEKLY")
+  status                String   @default("ACTIVE")
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+// Laundry Service & Pricing Models
+
+model LaundryService {
+  id           String   @id @default(uuid())
+  serviceCode  String   @unique
+  serviceName  String
+  description  String?
+  icon         String?
+  status       String   @default("ACTIVE")
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model ServiceCategory {
+  id           String   @id @default(uuid())
+  name         String   @unique
+  icon         String?
+  description  String?
+  status       String   @default("ACTIVE")
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model GarmentCategory {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  icon        String?
+  description String?
+  status      String   @default("ACTIVE")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  garmentTypes GarmentType[]
+}
+
+model GarmentType {
+  id         String          @id @default(uuid())
+  categoryId String
+  category   GarmentCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  name       String
+  icon       String?
+  unitType   String
+  baseWeight Float?
+  status     String          @default("ACTIVE")
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+
+  services   Service[]
+  careLabels CareLabel[]
+  orderItems OrderItem[]
+}
+
+model Service {
+  id                String      @id @default(uuid())
+  serviceCategoryId String // Maps to ServiceCategory
+  garmentTypeId     String
+  garmentType       GarmentType @relation(fields: [garmentTypeId], references: [id], onDelete: Cascade)
+  serviceName       String
+  description       String?
+  basePrice         Float       @default(0.0)
+  estimatedTime     String?
+  status            String      @default("ACTIVE")
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  variants       ServiceVariant[]
+  options        ServiceOption[]
+  addons         ServiceAddon[]
+  pricings       ServicePricing[]
+  zonePricings   ZonePricing[]
+  branchPricings BranchPricing[]
+  vendorPricings VendorPricing[]
+  durations      ServiceDuration[]
+  taxes          ServiceTax[]
+  discounts      ServiceDiscount[]
+  availabilities ServiceAvailability[]
+  inventoryReqs  ServiceInventoryRequirement[]
+  instructions   ServiceInstruction[]
+  analytics      ServiceAnalytics[]
+  priceHistories PriceHistory[]
+  orderItems     OrderItem[]
+}
+
+model ServiceVariant {
+  id            String   @id @default(uuid())
+  serviceId     String
+  service       Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  variantName   String
+  description   String?
+  price         Float
+  estimatedTime String?
+  status        String   @default("ACTIVE")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model ServiceOption {
+  id         String   @id @default(uuid())
+  serviceId  String
+  service    Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  optionName String
+  optionType String
+  price      Float
+  status     String   @default("ACTIVE")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model ServiceAddon {
+  id          String   @id @default(uuid())
+  serviceId   String
+  service     Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  addonName   String
+  price       Float
+  description String?
+  status      String   @default("ACTIVE")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ServicePricing {
+  id            String    @id @default(uuid())
+  serviceId     String
+  service       Service   @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  garmentTypeId String // Maps to GarmentType
+  basePrice     Float
+  unit          String
+  currency      String    @default("BDT")
+  effectiveFrom DateTime
+  effectiveTo   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model ZonePricing {
+  id             String   @id @default(uuid())
+  zoneId         String // Maps to Zone
+  serviceId      String
+  service        Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  price          Float
+  pickupCharge   Float    @default(0.0)
+  deliveryCharge Float    @default(0.0)
+  expressCharge  Float    @default(0.0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model BranchPricing {
+  id        String   @id @default(uuid())
+  branchId  String // Maps to Branch
+  serviceId String
+  service   Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  price     Float
+  discount  Float    @default(0.0)
+  status    String   @default("ACTIVE")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model VendorPricing {
+  id             String   @id @default(uuid())
+  vendorId       String // Maps to Vendor
+  serviceId      String
+  service        Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  processingCost Float
+  vendorRate     Float
+  status         String   @default("ACTIVE")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model ServiceDuration {
+  id             String   @id @default(uuid())
+  serviceId      String
+  service        Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  estimatedHours Float
+  estimatedDays  Float
+  expressHours   Float?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model ServiceTax {
+  id            String   @id @default(uuid())
+  serviceId     String
+  service       Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  taxName       String
+  taxPercentage Float
+  status        String   @default("ACTIVE")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model ServiceDiscount {
+  id            String   @id @default(uuid())
+  serviceId     String
+  service       Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  discountType  String
+  discountValue Float
+  startDate     DateTime
+  endDate       DateTime
+  status        String   @default("ACTIVE")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model ServiceAvailability {
+  id          String   @id @default(uuid())
+  serviceId   String
+  service     Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  branchId    String? // Maps to Branch
+  vendorId    String? // Maps to Vendor
+  zoneId      String? // Maps to Zone
+  isAvailable Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ServiceInventoryRequirement {
+  id            String   @id @default(uuid())
+  serviceId     String
+  service       Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  inventoryItem String
+  quantity      Float
+  unit          String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model ServiceInstruction {
+  id               String   @id @default(uuid())
+  serviceId        String
+  service          Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  instructionTitle String
+  instruction      String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model CareLabel {
+  id            String      @id @default(uuid())
+  garmentTypeId String
+  garmentType   GarmentType @relation(fields: [garmentTypeId], references: [id], onDelete: Cascade)
+  labelName     String
+  symbol        String?
+  description   String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model ServiceAnalytics {
+  id                    String   @id @default(uuid())
+  serviceId             String
+  service               Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  totalOrders           Int      @default(0)
+  totalRevenue          Float    @default(0.0)
+  averageCompletionTime Float    @default(0.0)
+  averageRating         Float    @default(0.0)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model PriceHistory {
+  id            String   @id @default(uuid())
+  serviceId     String
+  service       Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  oldPrice      Float
+  newPrice      Float
+  changedBy     String? // Maps to Admin User
+  effectiveDate DateTime
+  reason        String?
+  createdAt     DateTime @default(now())
+}
