@@ -1,0 +1,335 @@
+// Authentication & User Models
+
+model User {
+  id           String    @id @default(uuid())
+  fullName     String
+  email        String    @unique
+  phone        String?   @unique
+  password     String?
+  userType     String // e.g., Customer, Admin, Branch Manager, etc.
+  status       String    @default("ACTIVE")
+  isVerified   Boolean   @default(false)
+  profileImage String?
+  lastLogin    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+
+  // Relations
+  profile              UserProfile?
+  addresses            UserAddress[]
+  devices              UserDevice[]
+  sessions             UserSession[]
+  tokens               UserToken[]
+  otps                 UserOTP[]
+  loginHistory         UserLoginHistory[]
+  notificationSettings UserNotificationSetting?
+  security             UserSecurity?
+  customerPreference   CustomerPreference?
+  roles                UserRole[]
+  customer             Customer?
+  pickupAgent          PickupAgent?
+  deliveryAgent        DeliveryAgent?
+}
+
+model UserProfile {
+  id                String    @id @default(uuid())
+  userId            String    @unique
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  gender            String?
+  dateOfBirth       DateTime?
+  nationality       String?
+  occupation        String?
+  preferredLanguage String?
+  profilePhoto      String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+model UserAddress {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label         String? // e.g., Home, Office
+  receiverName  String
+  receiverPhone String
+  country       String
+  division      String?
+  district      String?
+  city          String
+  area          String?
+  zone          String?
+  postalCode    String?
+  fullAddress   String
+  latitude      Float?
+  longitude     Float?
+  isDefault     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model UserDevice {
+  id              String    @id @default(uuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deviceId        String
+  deviceName      String?
+  platform        String?
+  operatingSystem String?
+  browser         String?
+  appVersion      String?
+  pushToken       String?
+  lastActive      DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model UserSession {
+  id           String    @id @default(uuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken  String    @unique
+  refreshToken String?   @unique
+  loginTime    DateTime  @default(now())
+  logoutTime   DateTime?
+  ipAddress    String?
+  deviceId     String?
+  status       String    @default("ACTIVE")
+  expiresAt    DateTime
+  createdAt    DateTime  @default(now())
+}
+
+model UserToken {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  tokenType String // Email Verification, Password Reset, etc.
+  expiresAt DateTime
+  isUsed    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model UserOTP {
+  id         String    @id @default(uuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  phone      String?
+  email      String?
+  otpCode    String
+  purpose    String // Login, Registration, Password Reset, etc.
+  expiresAt  DateTime
+  verifiedAt DateTime?
+  status     String    @default("PENDING")
+  createdAt  DateTime  @default(now())
+}
+
+model UserLoginHistory {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  device      String?
+  browser     String?
+  platform    String?
+  ipAddress   String?
+  loginMethod String?
+  loginStatus String?
+  loginTime   DateTime  @default(now())
+  logoutTime  DateTime?
+  createdAt   DateTime  @default(now())
+}
+
+model UserNotificationSetting {
+  id                    String   @id @default(uuid())
+  userId                String   @unique
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pushNotification      Boolean  @default(true)
+  emailNotification     Boolean  @default(true)
+  smsNotification       Boolean  @default(true)
+  marketingNotification Boolean  @default(true)
+  orderNotification     Boolean  @default(true)
+  promotionNotification Boolean  @default(true)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model UserSecurity {
+  id                  String    @id @default(uuid())
+  userId              String    @unique
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  twoFactorEnabled    Boolean   @default(false)
+  securityQuestion    String?
+  securityAnswer      String?
+  passwordChangedAt   DateTime?
+  failedLoginAttempts Int       @default(0)
+  accountLocked       Boolean   @default(false)
+  lockUntil           DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+}
+
+model CustomerPreference {
+  id                    String   @id @default(uuid())
+  userId                String   @unique
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  preferredBranch       String?
+  preferredPickupTime   String?
+  preferredDeliveryTime String?
+  favoriteServices      String? // Can be JSON or comma-separated for now
+  favoriteAddress       String?
+  language              String?  @default("en")
+  currency              String?  @default("BDT")
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+// Role & Permission Models
+
+model Role {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  displayName String
+  description String?
+  roleType    String
+  status      String    @default("ACTIVE")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  permissions   RolePermission[]
+  users         UserRole[]
+  employeeRoles EmployeeRole[]
+}
+
+model Permission {
+  id             String   @id @default(uuid())
+  module         String
+  permissionName String
+  action         String
+  description    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  roles               RolePermission[]
+  adminPermissions    AdminPermission[]
+  branchPermissions   BranchPermission[]
+  vendorPermissions   VendorPermission[]
+  employeePermissions EmployeePermission[]
+}
+
+model RolePermission {
+  id           String     @id @default(uuid())
+  roleId       String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permissionId String
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@unique([roleId, permissionId])
+}
+
+model UserRole {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roleId     String
+  role       Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  assignedBy String?
+  assignedAt DateTime @default(now())
+  status     String   @default("ACTIVE")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([userId, roleId])
+}
+
+model AdminPermission {
+  id           String     @id @default(uuid())
+  adminId      String // Refers to User.id where userType = Admin
+  permissionId String
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  canView      Boolean    @default(false)
+  canCreate    Boolean    @default(false)
+  canUpdate    Boolean    @default(false)
+  canDelete    Boolean    @default(false)
+  canApprove   Boolean    @default(false)
+  canAssign    Boolean    @default(false)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+model BranchRole {
+  id          String   @id @default(uuid())
+  branchId    String // Will map to Branch model later
+  roleName    String
+  description String?
+  status      String   @default("ACTIVE")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  permissions BranchPermission[]
+}
+
+model BranchPermission {
+  id           String     @id @default(uuid())
+  branchRoleId String
+  branchRole   BranchRole @relation(fields: [branchRoleId], references: [id], onDelete: Cascade)
+  permissionId String
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@unique([branchRoleId, permissionId])
+}
+
+model VendorRole {
+  id          String   @id @default(uuid())
+  vendorId    String // Will map to Vendor model later
+  roleName    String
+  description String?
+  status      String   @default("ACTIVE")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  permissions VendorPermission[]
+}
+
+model VendorPermission {
+  id           String     @id @default(uuid())
+  vendorRoleId String
+  vendorRole   VendorRole @relation(fields: [vendorRoleId], references: [id], onDelete: Cascade)
+  permissionId String
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@unique([vendorRoleId, permissionId])
+}
+
+model EmployeeRole {
+  id         String   @id @default(uuid())
+  employeeId String // Refers to User.id where userType = Employee
+  roleId     String
+  role       Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  branchId   String? // Will map to Branch later
+  vendorId   String? // Will map to Vendor later
+  status     String   @default("ACTIVE")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model EmployeePermission {
+  id           String     @id @default(uuid())
+  employeeId   String // Refers to User.id
+  permissionId String
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  canView      Boolean    @default(false)
+  canCreate    Boolean    @default(false)
+  canUpdate    Boolean    @default(false)
+  canDelete    Boolean    @default(false)
+  canApprove   Boolean    @default(false)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}

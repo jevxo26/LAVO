@@ -1,0 +1,619 @@
+// Order & Pickup Management Models
+
+model Order {
+  id                    String    @id @default(uuid())
+  orderNumber           String    @unique
+  customerId            String
+  customer              Customer  @relation(fields: [customerId], references: [id])
+  branchId              String?
+  branch                Branch?   @relation(fields: [branchId], references: [id])
+  vendorId              String?
+  vendor                Vendor?   @relation(fields: [vendorId], references: [id])
+  pickupAddressId       String
+  deliveryAddressId     String
+  pickupAgentId         String?
+  deliveryAgentId       String?
+  orderType             String
+  orderSource           String
+  totalGarments         Int       @default(0)
+  subtotal              Float     @default(0.0)
+  discount              Float     @default(0.0)
+  deliveryCharge        Float     @default(0.0)
+  tax                   Float     @default(0.0)
+  grandTotal            Float     @default(0.0)
+  paymentStatus         String    @default("UNPAID")
+  orderStatus           String    @default("PENDING")
+  estimatedPickupTime   DateTime?
+  estimatedDeliveryTime DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  completedAt           DateTime?
+
+  items              OrderItem[]
+  pickupRequests     PickupRequest[]
+  statuses           OrderStatus[]
+  timelines          OrderTimeline[]
+  instructions       OrderInstruction[]
+  invoices           OrderInvoice[]
+  orderPayments      OrderPayment[]
+  cancellations      OrderCancellation[]
+  refunds            OrderRefund[]
+  histories          OrderHistory[]
+  attachments        OrderAttachment[]
+  notes              OrderNote[]
+  analytics          OrderAnalytics?
+  logs               OrderLog[]
+  laundryProcessings LaundryProcessing[]
+  vendorCommissions  VendorCommission[]
+  vendorAssignments  VendorAssignment[]
+  deliveries         Delivery[]
+  payments           Payment[]
+  reviews            Review[]
+}
+
+model OrderItem {
+  id               String      @id @default(uuid())
+  orderId          String
+  order            Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  serviceId        String
+  service          Service     @relation(fields: [serviceId], references: [id])
+  garmentTypeId    String
+  garmentType      GarmentType @relation(fields: [garmentTypeId], references: [id])
+  quantity         Int
+  unitPrice        Float
+  discount         Float       @default(0.0)
+  totalPrice       Float
+  processingStatus String      @default("PENDING")
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  garmentItems GarmentItem[]
+}
+
+model GarmentItem {
+  id                 String    @id @default(uuid())
+  orderItemId        String
+  orderItem          OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  garmentCode        String    @unique
+  garmentName        String
+  color              String?
+  brand              String?
+  size               String?
+  condition          String?
+  specialInstruction String?
+  qrCodeId           String?
+  status             String    @default("RECEIVED")
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  qrCodeRecord    GarmentQRCode?
+  batchItems      BatchItem[]
+  qrCodeTrackings QRCodeTracking[]
+  scanHistories   GarmentScanHistory[]
+  damageReports   DamageReport[]
+  missingGarments MissingGarment[]
+  rewashRequests  RewashRequest[]
+}
+
+model GarmentQRCode {
+  id            String      @id @default(uuid())
+  garmentItemId String      @unique
+  garmentItem   GarmentItem @relation(fields: [garmentItemId], references: [id], onDelete: Cascade)
+  qrCode        String      @unique
+  barcode       String?     @unique
+  labelNumber   String?
+  isPrinted     Boolean     @default(false)
+  printedAt     DateTime?
+  scanCount     Int         @default(0)
+  status        String      @default("ACTIVE")
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model PickupRequest {
+  id              String    @id @default(uuid())
+  orderId         String
+  order           Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  customerId      String
+  customer        Customer  @relation(fields: [customerId], references: [id])
+  branchId        String?
+  branch          Branch?   @relation(fields: [branchId], references: [id])
+  pickupAddressId String
+  preferredDate   DateTime?
+  preferredTime   String?
+  assignedAgentId String?
+  status          String    @default("PENDING")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  schedules     PickupSchedule[]
+  verifications PickupVerification[]
+}
+
+model PickupSchedule {
+  id               String        @id @default(uuid())
+  pickupRequestId  String
+  pickupRequest    PickupRequest @relation(fields: [pickupRequestId], references: [id], onDelete: Cascade)
+  routeId          String? // Maps to PickupRoute
+  pickupDate       DateTime
+  pickupTime       String
+  estimatedArrival DateTime?
+  actualArrival    DateTime?
+  status           String        @default("SCHEDULED")
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+}
+
+model PickupAgent {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id])
+  employeeCode    String   @unique
+  vehicleId       String?
+  phone           String
+  currentLocation String?
+  availability    Boolean  @default(true)
+  status          String   @default("ACTIVE")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  routes PickupRoute[]
+}
+
+model PickupRoute {
+  id                String      @id @default(uuid())
+  agentId           String
+  agent             PickupAgent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  routeName         String
+  totalStops        Int         @default(0)
+  totalDistance     Float       @default(0.0)
+  estimatedDuration String?
+  routeStatus       String      @default("PENDING")
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+}
+
+model PickupVerification {
+  id                 String        @id @default(uuid())
+  pickupRequestId    String
+  pickupRequest      PickupRequest @relation(fields: [pickupRequestId], references: [id], onDelete: Cascade)
+  verificationMethod String // OTP, QR Scan, Customer Signature
+  verificationCode   String?
+  customerSignature  String?
+  pickupPhoto        String?
+  verifiedBy         String? // Maps to Admin/Agent User
+  verifiedAt         DateTime?
+  createdAt          DateTime      @default(now())
+}
+
+model OrderStatus {
+  id            String   @id @default(uuid())
+  orderId       String
+  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  currentStatus String
+  statusReason  String?
+  updatedBy     String? // Maps to User
+  createdAt     DateTime @default(now())
+}
+
+model OrderTimeline {
+  id            String   @id @default(uuid())
+  orderId       String
+  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  status        String
+  description   String?
+  performedBy   String? // Maps to User
+  performedRole String?
+  createdAt     DateTime @default(now())
+}
+
+model OrderInstruction {
+  id              String   @id @default(uuid())
+  orderId         String
+  order           Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  instructionType String
+  instruction     String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model OrderInvoice {
+  id             String   @id @default(uuid())
+  orderId        String
+  order          Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  invoiceNumber  String   @unique
+  subtotal       Float
+  discount       Float    @default(0.0)
+  tax            Float    @default(0.0)
+  deliveryCharge Float    @default(0.0)
+  totalAmount    Float
+  invoiceUrl     String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model OrderPayment {
+  id            String    @id @default(uuid())
+  orderId       String
+  order         Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  paymentId     String
+  paymentMethod String
+  paymentStatus String    @default("PENDING")
+  paidAmount    Float
+  paidAt        DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model OrderCancellation {
+  id           String   @id @default(uuid())
+  orderId      String
+  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  cancelledBy  String? // Maps to User
+  reason       String
+  refundAmount Float    @default(0.0)
+  status       String   @default("CANCELLED")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model OrderRefund {
+  id           String    @id @default(uuid())
+  orderId      String
+  order        Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  paymentId    String
+  refundAmount Float
+  refundMethod String
+  refundStatus String    @default("PENDING")
+  processedAt  DateTime?
+  createdAt    DateTime  @default(now())
+}
+
+model OrderHistory {
+  id          String   @id @default(uuid())
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  action      String
+  performedBy String? // Maps to User
+  description String?
+  createdAt   DateTime @default(now())
+}
+
+model OrderAttachment {
+  id         String   @id @default(uuid())
+  orderId    String
+  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  fileType   String
+  fileUrl    String
+  uploadedBy String? // Maps to User
+  createdAt  DateTime @default(now())
+}
+
+model OrderNote {
+  id        String   @id @default(uuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  note      String
+  noteType  String
+  createdBy String? // Maps to User
+  createdAt DateTime @default(now())
+}
+
+model OrderAnalytics {
+  id               String    @id @default(uuid())
+  orderId          String    @unique
+  order            Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  processingTime   Float?
+  pickupDuration   Float?
+  deliveryDuration Float?
+  customerRating   Float?
+  completionTime   DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+model OrderLog {
+  id          String   @id @default(uuid())
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  module      String
+  action      String
+  oldValue    String?
+  newValue    String?
+  performedBy String? // Maps to User
+  createdAt   DateTime @default(now())
+}
+
+// Laundry Processing & QR Tracking Models
+
+model LaundryProcessing {
+  id               String    @id @default(uuid())
+  orderId          String
+  order            Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  branchId         String?
+  branch           Branch?   @relation(fields: [branchId], references: [id])
+  vendorId         String?
+  vendor           Vendor?   @relation(fields: [vendorId], references: [id])
+  batchId          String?
+  processingStatus String    @default("PENDING")
+  currentStage     String    @default("RECEIVED")
+  startedAt        DateTime?
+  completedAt      DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  stages      ProcessingStage[]
+  washing     WashingProcess[]
+  dryCleaning DryCleaningProcess[]
+  drying      DryingProcess[]
+  ironing     IroningProcess[]
+  folding     FoldingProcess[]
+  packaging   PackagingProcess[]
+  inspections QualityInspection[]
+  timelines   ProcessingTimeline[]
+  employees   ProcessingEmployee[]
+  machines    ProcessingMachine[]
+  analytics   ProcessingAnalytics?
+  logs        ProcessingLog[]
+}
+
+model ProcessingBatch {
+  id               String    @id @default(uuid())
+  batchNumber      String    @unique
+  branchId         String?
+  branch           Branch?   @relation(fields: [branchId], references: [id])
+  vendorId         String?
+  vendor           Vendor?   @relation(fields: [vendorId], references: [id])
+  batchType        String
+  totalGarments    Int       @default(0)
+  machineId        String?
+  assignedEmployee String?
+  status           String    @default("IN_PROGRESS")
+  startedAt        DateTime?
+  completedAt      DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  items BatchItem[]
+}
+
+model BatchItem {
+  id            String          @id @default(uuid())
+  batchId       String
+  batch         ProcessingBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  garmentItemId String
+  garmentItem   GarmentItem     @relation(fields: [garmentItemId], references: [id], onDelete: Cascade)
+  orderId       String
+  qrCodeId      String?
+  status        String          @default("IN_BATCH")
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
+
+model QRCodeTracking {
+  id              String      @id @default(uuid())
+  garmentItemId   String
+  garmentItem     GarmentItem @relation(fields: [garmentItemId], references: [id], onDelete: Cascade)
+  qrCode          String      @unique
+  barcode         String?     @unique
+  currentLocation String?
+  currentStage    String?
+  lastScannedBy   String?
+  lastScannedAt   DateTime?
+  status          String      @default("ACTIVE")
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+model GarmentScanHistory {
+  id            String      @id @default(uuid())
+  garmentItemId String
+  garmentItem   GarmentItem @relation(fields: [garmentItemId], references: [id], onDelete: Cascade)
+  qrCode        String
+  scanLocation  String?
+  scanType      String // Pickup, Washing, Ironing, Delivery, etc.
+  employeeId    String?
+  branchId      String?
+  machineId     String?
+  remarks       String?
+  createdAt     DateTime    @default(now())
+}
+
+model ProcessingStage {
+  id           String            @id @default(uuid())
+  processingId String
+  processing   LaundryProcessing @relation(fields: [processingId], references: [id], onDelete: Cascade)
+  stageName    String
+  status       String            @default("IN_PROGRESS")
+  startedAt    DateTime?
+  completedAt  DateTime?
+  employeeId   String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+}
+
+model WashingProcess {
+  id               String            @id @default(uuid())
+  processingId     String
+  processing       LaundryProcessing @relation(fields: [processingId], references: [id], onDelete: Cascade)
+  machineId        String?
+  detergentType    String?
+  waterTemperature String?
+  washMode         String?
+  duration         Float?
+  employeeId       String?
+  status           String            @default("IN_PROGRESS")
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+}
+
+model DryCleaningProcess {
+  id           String            @id @default(uuid())
+  processingId String
+  processing   LaundryProcessing @relation(fields: [processingId], references: [id], onDelete: Cascade)
+  machineId    String?
+  chemicalUsed String?
+  duration     Float?
+  employeeId   String?
+  status       String            @default("IN_PROGRESS")
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+}
+
+model DryingProcess {
+  id           String            @id @default(uuid())
+  processingId String
+  processing   LaundryProcessing @relation(fields: [processingId], references: [id], onDelete: Cascade)
+  machineId    String?
+  temperature  String?
+  duration     Float?
+  employeeId   String?
+  status       String            @default("IN_PROGRESS")
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+}
+
+model IroningProcess {
+  id           String            @id @default(uuid())
+  processingId String
+  processing   LaundryProcessing @relation(fields: [processingId], references: [id], onDelete: Cascade)
+  employeeId   String?
+  ironType     String?
+  temperature  String?
+  duration     Float?
+  status       String            @default("IN_PROGRESS")
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+}
+
+model FoldingProcess {
+  id           String            @id @default(uuid())
+  processingId String
+  processing   LaundryProcessing @relation(fields: [processingId], references: [id], onDelete: Cascade)
+  employeeId   String?
+  foldType     String?
+  status       String            @default("IN_PROGRESS")
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+}
+
+model PackagingProcess {
+  id            String            @id @default(uuid())
+  processingId  String
+  processing    LaundryProcessing @relation(fields: [processingId], references: [id], onDelete: Cascade)
+  employeeId    String?
+  packageType   String?
+  packageNumber String?
+  qrVerified    Boolean           @default(false)
+  status        String            @default("IN_PROGRESS")
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+}
+
+model QualityInspection {
+  id               String            @id @default(uuid())
+  processingId     String
+  processing       LaundryProcessing @relation(fields: [processingId], references: [id], onDelete: Cascade)
+  employeeId       String?
+  inspectionResult String?
+  qualityScore     Float?
+  remarks          String?
+  approved         Boolean           @default(false)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+}
+
+model DamageReport {
+  id            String      @id @default(uuid())
+  garmentItemId String
+  garmentItem   GarmentItem @relation(fields: [garmentItemId], references: [id], onDelete: Cascade)
+  reportedBy    String?
+  damageType    String
+  damageLevel   String
+  description   String?
+  image         String?
+  reportedAt    DateTime    @default(now())
+  status        String      @default("PENDING")
+}
+
+model MissingGarment {
+  id                String      @id @default(uuid())
+  garmentItemId     String
+  garmentItem       GarmentItem @relation(fields: [garmentItemId], references: [id], onDelete: Cascade)
+  lastKnownLocation String?
+  lastScannedBy     String?
+  status            String      @default("MISSING")
+  remarks           String?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+}
+
+model RewashRequest {
+  id            String      @id @default(uuid())
+  garmentItemId String
+  garmentItem   GarmentItem @relation(fields: [garmentItemId], references: [id], onDelete: Cascade)
+  reason        String
+  requestedBy   String?
+  approvedBy    String?
+  status        String      @default("PENDING")
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model ProcessingTimeline {
+  id            String            @id @default(uuid())
+  processingId  String
+  processing    LaundryProcessing @relation(fields: [processingId], references: [id], onDelete: Cascade)
+  stage         String
+  description   String?
+  performedBy   String?
+  performedRole String?
+  createdAt     DateTime          @default(now())
+}
+
+model ProcessingEmployee {
+  id           String            @id @default(uuid())
+  processingId String
+  processing   LaundryProcessing @relation(fields: [processingId], references: [id], onDelete: Cascade)
+  employeeId   String
+  role         String
+  assignedAt   DateTime          @default(now())
+  completedAt  DateTime?
+  status       String            @default("ACTIVE")
+}
+
+model ProcessingMachine {
+  id           String            @id @default(uuid())
+  processingId String
+  processing   LaundryProcessing @relation(fields: [processingId], references: [id], onDelete: Cascade)
+  machineId    String
+  machineType  String
+  startedAt    DateTime          @default(now())
+  completedAt  DateTime?
+  status       String            @default("ACTIVE")
+}
+
+model ProcessingAnalytics {
+  id                 String            @id @default(uuid())
+  processingId       String            @unique
+  processing         LaundryProcessing @relation(fields: [processingId], references: [id], onDelete: Cascade)
+  processingTime     Float?
+  machineUtilization Float?
+  employeeEfficiency Float?
+  qualityScore       Float?
+  completedItems     Int               @default(0)
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+}
+
+model ProcessingLog {
+  id           String            @id @default(uuid())
+  processingId String
+  processing   LaundryProcessing @relation(fields: [processingId], references: [id], onDelete: Cascade)
+  module       String
+  action       String
+  oldValue     String?
+  newValue     String?
+  performedBy  String?
+  createdAt    DateTime          @default(now())
+}
