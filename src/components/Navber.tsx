@@ -34,14 +34,12 @@ export function Navber() {
           ))}
 
           <div className="flex items-center space-x-4 ml-4 pl-4 border-l border-white/30">
-            {isAuthenticated && (
-              <Link
-                href="/dashboard"
-                className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors"
-              >
-                Dashboard
-              </Link>
-            )}
+            <Link
+              href="/dashboard"
+              className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors"
+            >
+              Dashboard
+            </Link>
             <Link
               href="/login"
               className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors"
@@ -79,15 +77,13 @@ export function Navber() {
                 </Link>
               ))}
               <div className="border-t pt-2 mt-2 flex flex-col space-y-2">
-                {isAuthenticated && (
-                  <Link
-                    href="/dashboard"
-                    className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    Dashboard
-                  </Link>
-                )}
+                <Link
+                  href="/dashboard"
+                  className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Dashboard
+                </Link>
                 <Link href="/login" className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors" onClick={() => setIsOpen(false)}>
                   Sign In
                 </Link>
