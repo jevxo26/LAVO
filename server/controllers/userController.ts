@@ -5,33 +5,48 @@ import { sendResponse } from '../utils/sendResponse';
 
 export class UserController {
   static getAllUsers = catchAsync(async (req: Request, res: Response) => {
-    const users = await UserService.getAllUsers();
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const search = (req.query.search as string) || '';
+
+    const result = await UserService.getAllUsers(page, limit, search);
+
     sendResponse(res, {
       statusCode: 200,
-      data: users,
+      success: true,
+      message: 'Users retrieved successfully',
+      data: result.data,
+      meta: result.meta,
     });
   });
 
   static getUserById = catchAsync(async (req: Request, res: Response) => {
     const id = req.params.id as string;
     const user = await UserService.getUserById(id);
-    if (user) {
-      sendResponse(res, {
-        statusCode: 200,
-        data: user,
-      });
-    } else {
-      sendResponse(res, {
+    
+    if (!user) {
+      return sendResponse(res, {
         statusCode: 404,
+        success: false,
         message: 'User not found',
+        data: null
       });
     }
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'User retrieved successfully',
+      data: user,
+    });
   });
 
   static createUser = catchAsync(async (req: Request, res: Response) => {
     const user = await UserService.createUser(req.body);
+    
     sendResponse(res, {
       statusCode: 201,
+      success: true,
       message: 'User created successfully',
       data: user,
     });
@@ -40,8 +55,10 @@ export class UserController {
   static updateUser = catchAsync(async (req: Request, res: Response) => {
     const id = req.params.id as string;
     const user = await UserService.updateUser(id, req.body);
+    
     sendResponse(res, {
       statusCode: 200,
+      success: true,
       message: 'User updated successfully',
       data: user,
     });
@@ -50,9 +67,12 @@ export class UserController {
   static deleteUser = catchAsync(async (req: Request, res: Response) => {
     const id = req.params.id as string;
     await UserService.deleteUser(id);
+    
     sendResponse(res, {
       statusCode: 200,
+      success: true,
       message: 'User deleted successfully',
+      data: null
     });
   });
 }

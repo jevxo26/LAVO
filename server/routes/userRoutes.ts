@@ -1,12 +1,25 @@
 import { Router } from 'express';
 import { UserController } from '../controllers/userController';
+import { verifyToken } from '../middlewares/authMiddleware';
+import { restrictTo } from '../middlewares/roleMiddleware';
 
 const router = Router();
 
-router.get('/', UserController.getAllUsers);
-router.get('/:id', UserController.getUserById);
-router.post('/', UserController.createUser);
-router.put('/:id', UserController.updateUser);
-router.delete('/:id', UserController.deleteUser);
+// Protect all user routes - must be logged in
+router.use(verifyToken);
+
+// Only admins can manage users directly
+router.use(restrictTo('ADMIN', 'SUPER_ADMIN'));
+
+router
+  .route('/')
+  .get(UserController.getAllUsers)
+  .post(UserController.createUser);
+
+router
+  .route('/:id')
+  .get(UserController.getUserById)
+  .patch(UserController.updateUser)
+  .delete(UserController.deleteUser);
 
 export default router;
