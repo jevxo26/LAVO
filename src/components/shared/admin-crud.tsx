@@ -20,6 +20,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Plus } from "lucide-react"
 import { type ZodObject, type ZodRawShape } from "zod"
 import { toast } from "sonner"
+import axios from "axios"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -76,7 +77,8 @@ export type CrudModuleConfig<TRecord extends AdminRecord> = {
   searchPlaceholder: string
   emptyTitle: string
   emptyDescription: string
-  data: TRecord[]
+  endpoint?: string
+  data?: TRecord[]
   columns: CrudColumn<TRecord>[]
   schema: ZodObject<ZodRawShape>
   fields: FormField<TRecord>[]
@@ -90,17 +92,39 @@ type AdminCrudPageProps<TRecord extends AdminRecord> = {
 export function AdminCrudPage<TRecord extends AdminRecord>({
   config,
 }: AdminCrudPageProps<TRecord>) {
-  const [records, setRecords] = React.useState<TRecord[]>(config.data)
+  const [records, setRecords] = React.useState<TRecord[]>(config.data || [])
   const [search, setSearch] = React.useState("")
   const [isLoading, setIsLoading] = React.useState(true)
   const [createOpen, setCreateOpen] = React.useState(false)
   const [editingRecord, setEditingRecord] = React.useState<TRecord | null>(null)
   const [deletingRecord, setDeletingRecord] = React.useState<TRecord | null>(null)
 
+  const fetchData = React.useCallback(async () => {
+    if (!config.endpoint) {
+      setIsLoading(false)
+      return
+    }
+    try {
+      setIsLoading(true)
+      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null
+      const res = await axios.get(config.endpoint, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        params: { search }
+      })
+      if (res.data?.success) {
+        setRecords(res.data.data)
+      }
+    } catch (err) {
+      console.error("Failed to fetch data", err)
+      toast.error("Failed to load records from server.")
+    } finally {
+      setIsLoading(false)
+    }
+  }, [config.endpoint, search])
+
   React.useEffect(() => {
-    const timeout = window.setTimeout(() => setIsLoading(false), 250)
-    return () => window.clearTimeout(timeout)
-  }, [])
+    fetchData()
+  }, [fetchData])
 
   const columns = React.useMemo<ColumnDef<TRecord>[]>(
     () => [
@@ -146,34 +170,71 @@ export function AdminCrudPage<TRecord extends AdminRecord>({
     getPaginationRowModel: getPaginationRowModel(),
   })
 
-  const handleCreate = (values: TRecord) => {
-    const created = {
-      ...values,
-      id: values.id || `${Date.now()}`,
+  const handleCreate = async (values: TRecord) => {
+    if (!config.endpoint) {
+      // Mock mode fallback
+      const created = { ...values, id: values.id || `${Date.now()}` }
+      setRecords((current) => [created, ...current])
+      setCreateOpen(false)
+      toast.success("Record created (Mock Mode)")
+      return
     }
-    setRecords((current) => [created, ...current])
-    setCreateOpen(false)
-    console.log("create", config.title, created)
-    toast.success("Record created")
+    
+    try {
+      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null
+      await axios.post(config.endpoint, values, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      })
+      toast.success("Record created successfully")
+      setCreateOpen(false)
+      fetchData()
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to create record")
+    }
   }
 
-  const handleUpdate = (values: TRecord) => {
-    setRecords((current) =>
-      current.map((record) => (record.id === values.id ? values : record))
-    )
-    setEditingRecord(null)
-    console.log("update", config.title, values)
-    toast.success("Record updated")
+  const handleUpdate = async (values: TRecord) => {
+    if (!config.endpoint) {
+      setRecords((current) => current.map((r) => (r.id === values.id ? values : r)))
+      setEditingRecord(null)
+      toast.success("Record updated (Mock Mode)")
+      return
+    }
+
+    try {
+      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null
+      await axios.patch(`${config.endpoint}/${values.id}`, values, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      })
+      toast.success("Record updated successfully")
+      setEditingRecord(null)
+      fetchData()
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to update record")
+    }
   }
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!deletingRecord) return
-    setRecords((current) =>
-      current.filter((record) => record.id !== deletingRecord.id)
-    )
-    console.log("delete", config.title, deletingRecord)
-    setDeletingRecord(null)
-    toast.success("Record deleted")
+    
+    if (!config.endpoint) {
+      setRecords((current) => current.filter((r) => r.id !== deletingRecord.id))
+      setDeletingRecord(null)
+      toast.success("Record deleted (Mock Mode)")
+      return
+    }
+
+    try {
+      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null
+      await axios.delete(`${config.endpoint}/${deletingRecord.id}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      })
+      toast.success("Record deleted successfully")
+      setDeletingRecord(null)
+      fetchData()
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to delete record")
+    }
   }
 
   return (

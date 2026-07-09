@@ -28,11 +28,7 @@ export const userConfig: CrudModuleConfig<UserRecord> = {
   emptyTitle: "No users found",
   emptyDescription: "Create a user or adjust the search query.",
   schema: userSchema,
-  data: [
-    { id: "USR-1001", name: "Nadia Rahman", email: "nadia@laundrix.test", phone: "+8801711001001", role: "Admin", status: "Active" },
-    { id: "USR-1002", name: "Arif Hasan", email: "arif@laundrix.test", phone: "+8801711001002", role: "Branch Manager", status: "Active" },
-    { id: "USR-1003", name: "Mim Akter", email: "mim@laundrix.test", phone: "+8801711001003", role: "Support", status: "Inactive" },
-  ],
+  endpoint: "/api/users",
   columns: [
     { accessorKey: "id", header: "ID" },
     { accessorKey: "name", header: "Name" },

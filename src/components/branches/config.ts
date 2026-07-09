@@ -26,11 +26,7 @@ export const branchConfig: CrudModuleConfig<BranchRecord> = {
   emptyTitle: "No branches found",
   emptyDescription: "Create a branch or adjust the search query.",
   schema: branchSchema,
-  data: [
-    { id: "BR-DHK-01", branchName: "Dhanmondi Hub", manager: "Arif Hasan", contact: "+8801811002001", status: "Active" },
-    { id: "BR-CTG-02", branchName: "Chattogram Central", manager: "Rafi Karim", contact: "+8801811002002", status: "Active" },
-    { id: "BR-SYL-03", branchName: "Sylhet North", manager: "Farhana Zaman", contact: "+8801811002003", status: "Inactive" },
-  ],
+  endpoint: "/api/branches",
   columns: [
     { accessorKey: "id", header: "Branch Code" },
     { accessorKey: "branchName", header: "Branch Name" },
