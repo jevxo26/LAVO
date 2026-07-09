@@ -1,11 +1,5 @@
-import React from 'react'
+import { ServiceTable } from "@/components/services/Table"
 
-const ServicesPage = () => {
-  return (
-    <div>
-      services page
-    </div>
-  )
+export default function ServicesPage() {
+  return <ServiceTable />
 }
-
-export default ServicesPage

@@ -1,11 +1,5 @@
-import React from 'react'
+import { BranchTable } from "@/components/branches/Table"
 
-const BranchesPage = () => {
-  return (
-    <div>
-      branch page
-    </div>
-  )
+export default function BranchesPage() {
+  return <BranchTable />
 }
-
-export default BranchesPage

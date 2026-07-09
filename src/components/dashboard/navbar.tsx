@@ -19,7 +19,7 @@ export function Navbar() {
           />
         </div>
       </div>
-      
+
       <div className="flex items-center space-x-4">
         <button className="relative p-2 rounded-full hover:bg-white/50 transition-colors text-slate-600 hover:text-indigo-600">
           <Bell size={20} />

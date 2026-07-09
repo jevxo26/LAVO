@@ -1,11 +1,5 @@
-import React from 'react'
+import { SupportTables } from "@/components/support/Table"
 
-const SupportPage = () => {
-  return (
-    <div>
-      support page
-    </div>
-  )
+export default function SupportPage() {
+  return <SupportTables />
 }
-
-export default SupportPage

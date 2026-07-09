@@ -1,11 +1,5 @@
-import React from 'react'
+import { VendorTable } from "@/components/vendors/Table"
 
-const VendorsPage = () => {
-  return (
-    <div>
-      vendor page
-    </div>
-  )
+export default function VendorsPage() {
+  return <VendorTable />
 }
-
-export default VendorsPage
