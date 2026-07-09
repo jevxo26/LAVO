@@ -65,24 +65,13 @@ export class SocialAuthService {
       where: { email },
     });
 
-    if (user) {
-      // Update provider if they are logging in via social for the first time
-      // with an existing email, or just return the user.
-      if (user.provider !== provider) {
-        user = await prisma.user.update({
-          where: { email },
-          data: { provider, providerId },
-        });
-      }
-    } else {
+    if (!user) {
       // Create new user
       user = await prisma.user.create({
         data: {
           email,
-          name,
-          provider,
-          providerId,
-          role: 'employee',
+          fullName: name,
+          userType: 'CUSTOMER',
         },
       });
     }
@@ -92,7 +81,7 @@ export class SocialAuthService {
     const expiresIn = process.env.JWT_EXPIRES_IN || '1d';
 
     const token = jwt.sign(
-      { id: user.id, email: user.email, role: user.role },
+      { id: user.id, email: user.email, role: user.userType },
       secret,
       { expiresIn: expiresIn as any }
     );
