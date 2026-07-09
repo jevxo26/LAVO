@@ -3,10 +3,12 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
-import { navItems } from "@/data/navdata";
+import { publicNavItems } from "@/data/publicNav";
 
 export function Navber() {
   const [isOpen, setIsOpen] = useState(false);
+  const isAuthenticated = false;
+
   return (
     <nav className="fixed top-0 left-0 w-full z-50 bg-white/40 backdrop-blur-md border-b border-white/20 shadow-[0_4px_30px_rgba(0,0,0,0.02)] transition-all duration-300">
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
@@ -21,7 +23,7 @@ export function Navber() {
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center space-x-8">
-          {navItems.map((item) => (
+          {publicNavItems.map((item) => (
             <Link
               key={item.name}
               href={item.href}
@@ -32,6 +34,14 @@ export function Navber() {
           ))}
 
           <div className="flex items-center space-x-4 ml-4 pl-4 border-l border-white/30">
+            {isAuthenticated && (
+              <Link
+                href="/dashboard"
+                className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors"
+              >
+                Dashboard
+              </Link>
+            )}
             <Link
               href="/login"
               className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors"
@@ -58,7 +68,7 @@ export function Navber() {
             <div 
               className="md:hidden absolute top-8 right-0 bg-white flex flex-col border py-4 px-6 rounded-md shadow-lg space-y-3"
             >
-              {navItems.map((item) => (
+              {publicNavItems.map((item) => (
                 <Link
                   key={item.name}
                   href={item.href}
@@ -69,6 +79,15 @@ export function Navber() {
                 </Link>
               ))}
               <div className="border-t pt-2 mt-2 flex flex-col space-y-2">
+                {isAuthenticated && (
+                  <Link
+                    href="/dashboard"
+                    className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Dashboard
+                  </Link>
+                )}
                 <Link href="/login" className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors" onClick={() => setIsOpen(false)}>
                   Sign In
                 </Link>
