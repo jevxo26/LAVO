@@ -11,6 +11,11 @@ import userRoutes from './routes/userRoutes';
 import uploadRoutes from './routes/uploadRoutes';
 import branchRoutes from './routes/branchRoutes';
 import settingRoutes from './routes/settingRoutes';
+import vendorRoutes from './routes/vendorRoutes';
+import serviceRoutes from './routes/serviceRoutes';
+import logisticsRoutes from './routes/logisticsRoutes';
+import supportRoutes from './routes/supportRoutes';
+import financeRoutes from './routes/financeRoutes';
 const prisma = new PrismaClient();
 
 const dev = process.env.NODE_ENV !== 'production';
@@ -49,6 +54,11 @@ app.prepare().then(async () => {
   server.use('/api/upload', uploadRoutes);
   server.use('/api/branches', branchRoutes);
   server.use('/api/settings', settingRoutes);
+  server.use('/api/vendors', vendorRoutes);
+  server.use('/api/services', serviceRoutes);
+  server.use('/api/logistics', logisticsRoutes);
+  server.use('/api/support', supportRoutes);
+  server.use('/api/finance', financeRoutes);
 
   // Serve uploaded files statically
   server.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));

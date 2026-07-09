@@ -42,11 +42,7 @@ export const deliveryAgentConfig: CrudModuleConfig<DeliveryAgentRecord> = {
   emptyTitle: "No delivery agents found",
   emptyDescription: "Create an agent or adjust the search query.",
   schema: deliveryAgentSchema,
-  data: [
-    { id: "AG-401", name: "Imran Hossain", phone: "+8801911004001", zone: "Dhanmondi", status: "Active" },
-    { id: "AG-402", name: "Sadia Islam", phone: "+8801911004002", zone: "Gulshan", status: "Active" },
-    { id: "AG-403", name: "Rakib Miah", phone: "+8801911004003", zone: "Uttara", status: "Inactive" },
-  ],
+  endpoint: "/api/logistics/agents",
   columns: [
     { accessorKey: "id", header: "Agent ID" },
     { accessorKey: "name", header: "Name" },
@@ -72,11 +68,7 @@ export const vehicleConfig: CrudModuleConfig<VehicleRecord> = {
   emptyTitle: "No vehicles found",
   emptyDescription: "Create a vehicle or adjust the search query.",
   schema: vehicleSchema,
-  data: [
-    { id: "VH-501", vehicleNumber: "DHA-11-1234", type: "Bike", assignedAgent: "Imran Hossain", status: "Active" },
-    { id: "VH-502", vehicleNumber: "DHA-12-8754", type: "Van", assignedAgent: "Sadia Islam", status: "Active" },
-    { id: "VH-503", vehicleNumber: "DHA-14-4412", type: "Bike", assignedAgent: "Rakib Miah", status: "Inactive" },
-  ],
+  endpoint: "/api/logistics/vehicles",
   columns: [
     { accessorKey: "id", header: "Vehicle ID" },
     { accessorKey: "vehicleNumber", header: "Vehicle Number" },

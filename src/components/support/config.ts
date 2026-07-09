@@ -42,11 +42,7 @@ export const supportTicketConfig: CrudModuleConfig<SupportTicketRecord> = {
   emptyTitle: "No tickets found",
   emptyDescription: "Create a ticket reply or adjust the search query.",
   schema: supportTicketSchema,
-  data: [
-    { id: "TCK-801", customer: "Nusrat Jahan", subject: "Pickup delay", priority: "High", status: "Open" },
-    { id: "TCK-802", customer: "Mehedi Hasan", subject: "Invoice correction", priority: "Medium", status: "Pending" },
-    { id: "TCK-803", customer: "Sara Khan", subject: "Missing item", priority: "High", status: "Resolved" },
-  ],
+  endpoint: "/api/support/tickets",
   columns: [
     { accessorKey: "id", header: "Ticket ID" },
     { accessorKey: "customer", header: "Customer" },
@@ -72,11 +68,7 @@ export const reviewConfig: CrudModuleConfig<ReviewRecord> = {
   emptyTitle: "No reviews found",
   emptyDescription: "Create a review or adjust the search query.",
   schema: reviewSchema,
-  data: [
-    { id: "REV-901", customer: "Nusrat Jahan", rating: 5, comment: "Fast service", status: "Published" },
-    { id: "REV-902", customer: "Mehedi Hasan", rating: 4, comment: "Good packaging", status: "Pending" },
-    { id: "REV-903", customer: "Sara Khan", rating: 2, comment: "Late delivery", status: "Hidden" },
-  ],
+  endpoint: "/api/support/reviews",
   columns: [
     { accessorKey: "id", header: "Review ID" },
     { accessorKey: "customer", header: "Customer" },

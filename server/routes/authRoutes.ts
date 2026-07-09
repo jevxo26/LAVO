@@ -1,17 +1,20 @@
 import { Router } from 'express';
-import { AuthController } from '../controllers/authController';
+import { LoginController } from '../controllers/auth/loginController';
+import { RegisterController } from '../controllers/auth/registerController';
 import { SocialAuthController } from '../controllers/socialAuthController';
 import { verifyToken } from '../middlewares/authMiddleware';
 
 const router = Router();
 
-router.post('/register', AuthController.register);
-router.post('/login', AuthController.login);
-router.post('/forgot-password', AuthController.forgotPassword);
-router.post('/reset-password', AuthController.resetPassword);
-router.post('/refresh-token', AuthController.refreshToken);
-router.post('/logout', verifyToken, AuthController.logout); // Optional: verifyToken ensures only logged in users can logout
-router.get('/me', verifyToken, AuthController.me);
+router.post('/register', RegisterController.register);
+router.post('/login', LoginController.login);
+router.post('/logout', verifyToken, LoginController.logout);
+router.post('/refresh-token', LoginController.refreshToken);
+router.post('/forgot-password', LoginController.forgotPassword);
+router.post('/reset-password', LoginController.resetPassword);
+
+// Get current user (protected route)
+router.get('/me', verifyToken, RegisterController.me);
 
 router.post('/social-login/google', SocialAuthController.loginWithGoogle);
 router.post('/social-login/facebook', SocialAuthController.loginWithFacebook);

@@ -28,11 +28,7 @@ export const vendorConfig: CrudModuleConfig<VendorRecord> = {
   emptyTitle: "No vendors found",
   emptyDescription: "Create a vendor or adjust the search query.",
   schema: vendorSchema,
-  data: [
-    { id: "VEN-201", vendorName: "FreshFold Partners", owner: "Samiul Islam", commission: 12, rating: 4.8, status: "Active" },
-    { id: "VEN-202", vendorName: "CleanCraft Ltd", owner: "Rumana Haque", commission: 15, rating: 4.5, status: "Active" },
-    { id: "VEN-203", vendorName: "Urban Wash Co", owner: "Tanvir Ahmed", commission: 10, rating: 4.1, status: "Pending" },
-  ],
+  endpoint: "/api/vendors",
   columns: [
     { accessorKey: "vendorName", header: "Vendor Name" },
     { accessorKey: "owner", header: "Owner" },

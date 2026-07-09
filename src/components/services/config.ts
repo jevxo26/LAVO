@@ -28,11 +28,7 @@ export const serviceConfig: CrudModuleConfig<ServiceRecord> = {
   emptyTitle: "No services found",
   emptyDescription: "Create a service or adjust the search query.",
   schema: serviceSchema,
-  data: [
-    { id: "SVC-301", itemName: "Shirt", category: "Men", washPrice: 80, dryCleanPrice: 160, status: "Active" },
-    { id: "SVC-302", itemName: "Saree", category: "Women", washPrice: 180, dryCleanPrice: 350, status: "Active" },
-    { id: "SVC-303", itemName: "Blanket", category: "Household", washPrice: 300, dryCleanPrice: 500, status: "Inactive" },
-  ],
+  endpoint: "/api/services",
   columns: [
     { accessorKey: "itemName", header: "Item Name" },
     { accessorKey: "category", header: "Category" },

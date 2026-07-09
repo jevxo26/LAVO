@@ -42,10 +42,7 @@ export const taxRuleConfig: CrudModuleConfig<TaxRuleRecord> = {
   emptyTitle: "No tax rules found",
   emptyDescription: "Create a tax rule or adjust the search query.",
   schema: taxRuleSchema,
-  data: [
-    { id: "TAX-601", ruleName: "Dhaka VAT", region: "Dhaka", rate: 5, status: "Active" },
-    { id: "TAX-602", ruleName: "Metro Service Tax", region: "Metro", rate: 3, status: "Active" },
-  ],
+  endpoint: "/api/finance/taxes",
   columns: [
     { accessorKey: "id", header: "Rule ID" },
     { accessorKey: "ruleName", header: "Rule Name" },
@@ -71,10 +68,7 @@ export const deliveryChargeConfig: CrudModuleConfig<DeliveryChargeRecord> = {
   emptyTitle: "No charge rules found",
   emptyDescription: "Create a charge rule or adjust the search query.",
   schema: deliveryChargeSchema,
-  data: [
-    { id: "DCR-701", ruleName: "Inside Dhaka", zone: "Dhaka", charge: 60, status: "Active" },
-    { id: "DCR-702", ruleName: "Outer City", zone: "Suburban", charge: 120, status: "Active" },
-  ],
+  endpoint: "/api/finance/delivery-charges",
   columns: [
     { accessorKey: "id", header: "Rule ID" },
     { accessorKey: "ruleName", header: "Rule Name" },
