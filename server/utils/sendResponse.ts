@@ -4,6 +4,8 @@ type ApiResponse<T> = {
   statusCode: number;
   message?: string;
   data?: T;
+  meta?: any;
+  success?: boolean;
 };
 
 const defaultMessages: Record<number, string> = {
@@ -21,8 +23,9 @@ export const sendResponse = <T>(res: Response, data: ApiResponse<T>) => {
   const message = data.message || defaultMessages[statusCode] || 'Success';
 
   res.status(statusCode).json({
-    success: statusCode >= 200 && statusCode < 300,
+    success: data.success !== undefined ? data.success : (statusCode >= 200 && statusCode < 300),
     message,
     data: data.data || null,
+    meta: data.meta,
   });
 };

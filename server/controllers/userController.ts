@@ -13,7 +13,7 @@ export class UserController {
   });
 
   static getUserById = catchAsync(async (req: Request, res: Response) => {
-    const id = parseInt(req.params.id as string, 10);
+    const id = req.params.id as string;
     const user = await UserService.getUserById(id);
     if (user) {
       sendResponse(res, {
@@ -38,7 +38,7 @@ export class UserController {
   });
 
   static updateUser = catchAsync(async (req: Request, res: Response) => {
-    const id = parseInt(req.params.id as string, 10);
+    const id = req.params.id as string;
     const user = await UserService.updateUser(id, req.body);
     sendResponse(res, {
       statusCode: 200,
@@ -48,7 +48,7 @@ export class UserController {
   });
 
   static deleteUser = catchAsync(async (req: Request, res: Response) => {
-    const id = parseInt(req.params.id as string, 10);
+    const id = req.params.id as string;
     await UserService.deleteUser(id);
     sendResponse(res, {
       statusCode: 200,

@@ -8,7 +8,7 @@ export class UserService {
     return prisma.user.findMany();
   });
 
-  static getUserById = catchServiceAsync(async (id: number) => {
+  static getUserById = catchServiceAsync(async (id: string) => {
     return prisma.user.findUnique({ where: { id } });
   });
 
@@ -16,11 +16,11 @@ export class UserService {
     return prisma.user.create({ data });
   });
 
-  static updateUser = catchServiceAsync(async (id: number, data: Prisma.UserUpdateInput) => {
+  static updateUser = catchServiceAsync(async (id: string, data: Prisma.UserUpdateInput) => {
     return prisma.user.update({ where: { id }, data });
   });
 
-  static deleteUser = catchServiceAsync(async (id: number) => {
+  static deleteUser = catchServiceAsync(async (id: string) => {
     return prisma.user.delete({ where: { id } });
   });
 }

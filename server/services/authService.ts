@@ -31,16 +31,17 @@ export class AuthService {
     return userWithoutPassword;
   });
 
-  static getMe = catchServiceAsync(async (userId: number) => {
+  static getMe = catchServiceAsync(async (userId: string) => {
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: {
         id: true,
-        name: true,
+        fullName: true,
         email: true,
         phone: true,
-        role: true,
-        issueDate: true,
+        userType: true,
+        status: true,
+        isVerified: true,
         createdAt: true,
         updatedAt: true
       }
@@ -67,7 +68,7 @@ export class AuthService {
     }
 
     const token = jwt.sign(
-      { userId: user.id, email: user.email },
+      { userId: user.id, email: user.email, role: user.userType },
       process.env.JWT_SECRET || 'fallback_secret',
       { expiresIn: (process.env.JWT_EXPIRES_IN || '30d') as any }
     );
@@ -78,28 +79,33 @@ export class AuthService {
       { expiresIn: (process.env.JWT_REFRESH_EXPIRES_IN || '7d') as any }
     );
 
-    // Update login log (store current timestamp)
-    let loginLog: string[] = [];
-    if (user.loginLog) {
-      if (Array.isArray(user.loginLog)) {
-        loginLog = user.loginLog as string[];
-      } else if (typeof user.loginLog === 'string') {
-        try {
-          loginLog = JSON.parse(user.loginLog);
-        } catch (e) {
-          // Ignore parse errors
-        }
+    // Save refresh token in UserToken table
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+    await prisma.userToken.create({
+      data: {
+        userId: user.id,
+        token: refreshToken,
+        tokenType: 'REFRESH',
+        expiresAt,
       }
-    }
-
-    loginLog.push(new Date().toISOString());
-
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { loginLog, refreshToken },
     });
 
-    const { password, resetPasswordToken, resetPasswordExpires, ...userWithoutPassword } = user;
+    // Create a login history record
+    await prisma.userLoginHistory.create({
+      data: {
+        userId: user.id,
+        loginMethod: 'EMAIL',
+        loginStatus: 'SUCCESS',
+      }
+    });
+
+    // Update lastLogin timestamp
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { lastLogin: new Date() }
+    });
+
+    const { password, ...userWithoutPassword } = user;
     return {
       user: userWithoutPassword,
       token,
@@ -115,11 +121,15 @@ export class AuthService {
 
     const resetToken = crypto.randomBytes(32).toString('hex');
     const resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
-    const resetPasswordExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { resetPasswordToken, resetPasswordExpires },
+    await prisma.userToken.create({
+      data: {
+        userId: user.id,
+        token: resetPasswordToken,
+        tokenType: 'PASSWORD_RESET',
+        expiresAt,
+      }
     });
 
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
@@ -129,7 +139,7 @@ export class AuthService {
       user.email,
       'Password Reset Request',
       'passwordReset',
-      { name: user.name, appName: 'My App', resetLink: resetUrl, year: new Date().getFullYear() }
+      { name: user.fullName, appName: 'My App', resetLink: resetUrl, year: new Date().getFullYear() }
     );
 
     return { message: 'Password reset link sent to email' };
@@ -138,14 +148,17 @@ export class AuthService {
   static resetPassword = catchServiceAsync(async (token: string, newPassword: string) => {
     const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
 
-    const user = await prisma.user.findFirst({
+    const userToken = await prisma.userToken.findFirst({
       where: {
-        resetPasswordToken: hashedToken,
-        resetPasswordExpires: { gt: new Date() },
+        token: hashedToken,
+        tokenType: 'PASSWORD_RESET',
+        isUsed: false,
+        expiresAt: { gt: new Date() },
       },
+      include: { user: true }
     });
 
-    if (!user) {
+    if (!userToken || !userToken.user) {
       throw new Error('Token is invalid or has expired');
     }
 
@@ -153,12 +166,16 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
 
     await prisma.user.update({
-      where: { id: user.id },
+      where: { id: userToken.userId },
       data: {
         password: hashedPassword,
-        resetPasswordToken: null,
-        resetPasswordExpires: null,
       },
+    });
+
+    // Mark token as used
+    await prisma.userToken.update({
+      where: { id: userToken.id },
+      data: { isUsed: true }
     });
 
     return { message: 'Password has been reset successfully' };
@@ -172,16 +189,21 @@ export class AuthService {
     try {
       const decoded: any = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || 'refresh_secret');
       
-      const user = await prisma.user.findFirst({
-        where: { id: decoded.userId, refreshToken },
+      const userToken = await prisma.userToken.findFirst({
+        where: { 
+          token: refreshToken,
+          userId: decoded.userId,
+          tokenType: 'REFRESH'
+        },
+        include: { user: true }
       });
 
-      if (!user) {
+      if (!userToken || !userToken.user) {
         throw new Error('Invalid refresh token');
       }
 
       const newAccessToken = jwt.sign(
-        { userId: user.id, email: user.email },
+        { userId: userToken.user.id, email: userToken.user.email, role: userToken.user.userType },
         process.env.JWT_SECRET || 'fallback_secret',
         { expiresIn: (process.env.JWT_EXPIRES_IN || '30d') as any }
       );
@@ -192,11 +214,23 @@ export class AuthService {
     }
   });
 
-  static logoutUser = catchServiceAsync(async (userId: number) => {
-    await prisma.user.update({
-      where: { id: userId },
-      data: { refreshToken: null },
+  static logoutUser = catchServiceAsync(async (userId: string, refreshToken?: string) => {
+    if (refreshToken) {
+      await prisma.userToken.deleteMany({
+        where: { 
+          userId,
+          token: refreshToken,
+          tokenType: 'REFRESH'
+        },
+      });
+    }
+    
+    // Also log out the history
+    await prisma.userLoginHistory.updateMany({
+      where: { userId, logoutTime: null },
+      data: { logoutTime: new Date() }
     });
+
     return { message: 'Logged out successfully' };
   });
 }
