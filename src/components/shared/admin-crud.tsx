@@ -67,7 +67,7 @@ export type FormField<TRecord extends AdminRecord> = {
 export type CrudColumn<TRecord extends AdminRecord> = {
   accessorKey: keyof TRecord & string
   header: string
-  kind?: "status" | "currency" | "percent" | "rating"
+  kind?: "status" | "currency" | "percent" | "rating" | "id"
 }
 
 export type CrudModuleConfig<TRecord extends AdminRecord> = {
@@ -481,6 +481,13 @@ function FormattedCell({
 }) {
   if (kind === "status" && typeof value === "string") {
     return <StatusBadge status={value} />
+  }
+
+  if (kind === "id" && typeof value === "string") {
+    // If it's a UUID, take the first segment and uppercase it. 
+    // Example: e5966081-489d -> E5966081
+    const shortId = value.includes('-') ? value.split('-')[0].toUpperCase() : value;
+    return <span className="font-mono text-slate-600">{shortId}</span>
   }
 
   if (kind === "currency" && typeof value === "number") {

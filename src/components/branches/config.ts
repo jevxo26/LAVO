@@ -28,7 +28,7 @@ export const branchConfig: CrudModuleConfig<BranchRecord> = {
   schema: branchSchema,
   endpoint: "/api/branches",
   columns: [
-    { accessorKey: "id", header: "Branch Code" },
+    { accessorKey: "id", header: "Branch Code", kind: "id" },
     { accessorKey: "branchName", header: "Branch Name" },
     { accessorKey: "manager", header: "Manager" },
     { accessorKey: "contact", header: "Contact" },

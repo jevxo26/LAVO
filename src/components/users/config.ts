@@ -30,7 +30,7 @@ export const userConfig: CrudModuleConfig<UserRecord> = {
   schema: userSchema,
   endpoint: "/api/users",
   columns: [
-    { accessorKey: "id", header: "ID" },
+    { accessorKey: "id", header: "ID", kind: "id" },
     { accessorKey: "name", header: "Name" },
     { accessorKey: "email", header: "Email" },
     { accessorKey: "phone", header: "Phone" },
