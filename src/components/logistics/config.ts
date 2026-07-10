@@ -19,7 +19,7 @@ export type VehicleRecord = {
 }
 
 export const deliveryAgentSchema = z.object({
-  id: z.string().min(1, "Agent ID is required"),
+  id: z.string().optional(),
   name: z.string().min(2, "Name is required"),
   phone: z.string().min(6, "Phone is required"),
   zone: z.string().min(1, "Zone is required"),
@@ -27,7 +27,7 @@ export const deliveryAgentSchema = z.object({
 })
 
 export const vehicleSchema = z.object({
-  id: z.string().min(1, "Vehicle ID is required"),
+  id: z.string().optional(),
   vehicleNumber: z.string().min(2, "Vehicle number is required"),
   type: z.string().min(1, "Type is required"),
   assignedAgent: z.string().min(2, "Assigned agent is required"),
@@ -51,7 +51,6 @@ export const deliveryAgentConfig: CrudModuleConfig<DeliveryAgentRecord> = {
     { accessorKey: "status", header: "Status", kind: "status" },
   ],
   fields: [
-    { name: "id", label: "Agent ID", placeholder: "AG-404" },
     { name: "name", label: "Name", placeholder: "Agent name" },
     { name: "phone", label: "Phone", type: "tel", placeholder: "+880..." },
     { name: "zone", label: "Zone", placeholder: "Coverage zone" },
@@ -77,7 +76,6 @@ export const vehicleConfig: CrudModuleConfig<VehicleRecord> = {
     { accessorKey: "status", header: "Status", kind: "status" },
   ],
   fields: [
-    { name: "id", label: "Vehicle ID", placeholder: "VH-504" },
     { name: "vehicleNumber", label: "Vehicle Number", placeholder: "DHA-00-0000" },
     { name: "type", label: "Type", options: ["Bike", "Van", "Truck"] },
     { name: "assignedAgent", label: "Assigned Agent", placeholder: "Agent name" },

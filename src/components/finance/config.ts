@@ -19,7 +19,7 @@ export type DeliveryChargeRecord = {
 }
 
 export const taxRuleSchema = z.object({
-  id: z.string().min(1, "Rule ID is required"),
+  id: z.string().optional(),
   ruleName: z.string().min(2, "Rule name is required"),
   region: z.string().min(1, "Region is required"),
   rate: z.coerce.number().min(0).max(100),
@@ -27,7 +27,7 @@ export const taxRuleSchema = z.object({
 })
 
 export const deliveryChargeSchema = z.object({
-  id: z.string().min(1, "Rule ID is required"),
+  id: z.string().optional(),
   ruleName: z.string().min(2, "Rule name is required"),
   zone: z.string().min(1, "Zone is required"),
   charge: z.coerce.number().min(0),
@@ -51,7 +51,6 @@ export const taxRuleConfig: CrudModuleConfig<TaxRuleRecord> = {
     { accessorKey: "status", header: "Status", kind: "status" },
   ],
   fields: [
-    { name: "id", label: "Rule ID", placeholder: "TAX-603" },
     { name: "ruleName", label: "Rule Name", placeholder: "Tax rule name" },
     { name: "region", label: "Region", placeholder: "Region" },
     { name: "rate", label: "Rate", type: "number", placeholder: "5" },
@@ -77,7 +76,6 @@ export const deliveryChargeConfig: CrudModuleConfig<DeliveryChargeRecord> = {
     { accessorKey: "status", header: "Status", kind: "status" },
   ],
   fields: [
-    { name: "id", label: "Rule ID", placeholder: "DCR-703" },
     { name: "ruleName", label: "Rule Name", placeholder: "Charge rule name" },
     { name: "zone", label: "Zone", placeholder: "Zone" },
     { name: "charge", label: "Charge", type: "number", placeholder: "60" },
