@@ -15,11 +15,18 @@ export class UserService {
       prisma.user.findMany({ where, skip, take: limit, orderBy: { createdAt: 'desc' }, select: selectUser }),
       prisma.user.count({ where }),
     ]);
-    return { data: users, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+    const mappedUsers = users.map(user => ({
+      ...user,
+      name: user.fullName,
+      role: user.userType,
+    }));
+    return { data: mappedUsers, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } };
   }
 
   static async getUserById(id: string) {
-    return prisma.user.findUnique({ where: { id, deletedAt: null }, select: selectUser });
+    const user = await prisma.user.findUnique({ where: { id, deletedAt: null }, select: selectUser });
+    if (!user) return null;
+    return { ...user, name: user.fullName, role: user.userType };
   }
 
   static async createUser(data: any) {
