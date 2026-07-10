@@ -28,13 +28,23 @@ export const getAllBranches = async (page: number = 1, limit: number = 10, searc
 
   const totalPages = Math.ceil(totalRecords / limit);
 
+  // Resolve managerId -> fullName via a single User lookup
+  const managerIds = [...new Set(data.map((b) => b.managerId).filter(Boolean))] as string[];
+  const managers = managerIds.length
+    ? await prisma.user.findMany({
+        where: { id: { in: managerIds } },
+        select: { id: true, fullName: true },
+      })
+    : [];
+  const managerMap = Object.fromEntries(managers.map((m) => [m.id, m.fullName]));
+
   // Map Prisma schema fields -> frontend-expected field names
   const mapped = data.map((b) => ({
     id: b.id,
     branchCode: b.branchCode,
     branchName: b.branchName,
     location: [b.address, b.city, b.country].filter(Boolean).join(', ') || null,
-    manager: b.managerId || null,
+    manager: b.managerId ? (managerMap[b.managerId] ?? b.managerId) : null,
     contact: b.phone || null,
     status: b.status,
   }));
