@@ -25,6 +25,9 @@ export class UserService {
   static async createUser(data: any) {
     const email = data.email;
     if (await prisma.user.findUnique({ where: { email } })) throw new Error('User already exists with this email');
+    if (data.phone) {
+      if (await prisma.user.findUnique({ where: { phone: data.phone } })) throw new Error('User already exists with this phone number');
+    }
     
     const dataToSave: any = {
       fullName: data.name || data.fullName,

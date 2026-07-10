@@ -74,6 +74,7 @@ app.prepare().then(async () => {
     
     let statusCode = err.statusCode || 500;
     if (err.message === 'User already exists with this email') statusCode = 409;
+    if (err.message === 'User already exists with this phone number') statusCode = 409;
     if (err.message === 'Invalid email or password') statusCode = 401;
     if (err.message === 'Unauthorized') statusCode = 401;
     
