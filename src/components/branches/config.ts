@@ -40,6 +40,7 @@ export const branchConfig: CrudModuleConfig<BranchRecord> = {
   fields: [
     { name: "branchName", label: "Branch Name", placeholder: "Branch name" },
     { name: "location", label: "Location", placeholder: "Full address" },
+    { name: "manager", label: "Manager", placeholder: "Manager ID or Name" },
     { name: "contact", label: "Contact", type: "tel", placeholder: "+880..." },
     { name: "status", label: "Status", options: ["Active", "Inactive"] },
   ],
