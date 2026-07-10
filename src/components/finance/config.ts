@@ -44,7 +44,7 @@ export const taxRuleConfig: CrudModuleConfig<TaxRuleRecord> = {
   schema: taxRuleSchema,
   endpoint: "/api/finance/taxes",
   columns: [
-    { accessorKey: "id", header: "Rule ID" },
+    { accessorKey: "id", header: "Rule ID", kind: "id" },
     { accessorKey: "ruleName", header: "Rule Name" },
     { accessorKey: "region", header: "Region" },
     { accessorKey: "rate", header: "Rate", kind: "percent" },
@@ -70,7 +70,7 @@ export const deliveryChargeConfig: CrudModuleConfig<DeliveryChargeRecord> = {
   schema: deliveryChargeSchema,
   endpoint: "/api/finance/delivery-charges",
   columns: [
-    { accessorKey: "id", header: "Rule ID" },
+    { accessorKey: "id", header: "Rule ID", kind: "id" },
     { accessorKey: "ruleName", header: "Rule Name" },
     { accessorKey: "zone", header: "Zone" },
     { accessorKey: "charge", header: "Charge", kind: "currency" },

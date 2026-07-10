@@ -44,7 +44,7 @@ export const supportTicketConfig: CrudModuleConfig<SupportTicketRecord> = {
   schema: supportTicketSchema,
   endpoint: "/api/support/tickets",
   columns: [
-    { accessorKey: "id", header: "Ticket ID" },
+    { accessorKey: "id", header: "Ticket ID", kind: "id" },
     { accessorKey: "customer", header: "Customer" },
     { accessorKey: "subject", header: "Subject" },
     { accessorKey: "priority", header: "Priority" },
@@ -70,7 +70,7 @@ export const reviewConfig: CrudModuleConfig<ReviewRecord> = {
   schema: reviewSchema,
   endpoint: "/api/support/reviews",
   columns: [
-    { accessorKey: "id", header: "Review ID" },
+    { accessorKey: "id", header: "Review ID", kind: "id" },
     { accessorKey: "customer", header: "Customer" },
     { accessorKey: "rating", header: "Rating", kind: "rating" },
     { accessorKey: "comment", header: "Comment" },

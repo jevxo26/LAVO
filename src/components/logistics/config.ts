@@ -44,7 +44,7 @@ export const deliveryAgentConfig: CrudModuleConfig<DeliveryAgentRecord> = {
   schema: deliveryAgentSchema,
   endpoint: "/api/logistics/agents",
   columns: [
-    { accessorKey: "id", header: "Agent ID" },
+    { accessorKey: "id", header: "Agent ID", kind: "id" },
     { accessorKey: "name", header: "Name" },
     { accessorKey: "phone", header: "Phone" },
     { accessorKey: "zone", header: "Zone" },
@@ -70,7 +70,7 @@ export const vehicleConfig: CrudModuleConfig<VehicleRecord> = {
   schema: vehicleSchema,
   endpoint: "/api/logistics/vehicles",
   columns: [
-    { accessorKey: "id", header: "Vehicle ID" },
+    { accessorKey: "id", header: "Vehicle ID", kind: "id" },
     { accessorKey: "vehicleNumber", header: "Vehicle Number" },
     { accessorKey: "type", header: "Type" },
     { accessorKey: "assignedAgent", header: "Assigned Agent" },

@@ -44,12 +44,40 @@ export const getAllReviews = async (page: number = 1, limit: number = 10, search
 
 export const createReview = async (data: any) => {
   let customer = await prisma.customer.findFirst();
-  let order = await prisma.order.findFirst();
+  if (!customer) {
+    const newUser = await prisma.user.create({
+      data: {
+        fullName: data.customer || 'Guest',
+        email: `${Date.now()}@customer.com`,
+        phone: `017${Math.floor(Math.random() * 100000000)}`,
+        password: 'dummy',
+        userType: 'CUSTOMER'
+      }
+    });
+    customer = await prisma.customer.create({
+      data: { userId: newUser.id, customerCode: `CUS-${Date.now()}` }
+    }) as any;
+  }
 
+  let order = await prisma.order.findFirst();
   if (!order) {
-     if(!customer) {
-        throw new Error("No customer/order available in DB to attach review to.");
-     }
+    let service = await prisma.service.findFirst();
+    if (!service) {
+        let cat = await prisma.serviceCategory.create({ data: { name: 'Standard Cleaning' }});
+        let gcat = await prisma.garmentCategory.create({ data: { name: 'General' }});
+        let gt = await prisma.garmentType.create({ data: { categoryId: gcat.id, name: 'Standard', unitType: 'PIECE' }});
+        service = await prisma.service.create({ data: { serviceName: 'Test Service', serviceCategoryId: cat.id, garmentTypeId: gt.id, basePrice: 50, status: 'ACTIVE' }});
+    }
+    
+    order = await prisma.order.create({
+      data: {
+        orderNumber: `ORD-${Date.now()}`,
+        customerId: customer!.id,
+        orderStatus: 'DELIVERED',
+        paymentStatus: 'PAID',
+        totalAmount: 100,
+      }
+    }) as any;
   }
 
   const newReview = await prisma.review.create({

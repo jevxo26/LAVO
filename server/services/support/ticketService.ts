@@ -67,7 +67,7 @@ export const createTicket = async (data: any) => {
 
   const newTicket = await prisma.supportTicket.create({
     data: {
-      ticketNumber: data.id || `TCK-${Date.now()}`,
+      ticketNumber: `TCK-${Date.now()}`,
       customerId: customer!.id,
       categoryId: category.id,
       subject: data.subject,
