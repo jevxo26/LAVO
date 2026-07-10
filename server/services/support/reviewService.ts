@@ -75,7 +75,11 @@ export const createReview = async (data: any) => {
         customerId: customer!.id,
         orderStatus: 'DELIVERED',
         paymentStatus: 'PAID',
-        totalAmount: 100,
+        grandTotal: 100,
+        pickupAddressId: 'dummy_pickup',
+        deliveryAddressId: 'dummy_delivery',
+        orderType: 'STANDARD',
+        orderSource: 'WEB',
       }
     }) as any;
   }
