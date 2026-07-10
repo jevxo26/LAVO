@@ -37,17 +37,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const branchController = __importStar(require("../controllers/branchController"));
+const vendorController = __importStar(require("../controllers/vendorController"));
 const router = express_1.default.Router();
-// Apply authentication middleware to all routes
-// TEMPORARY BYPASS FOR UI TESTING
+// Temporarily bypass security for testing
 // router.use(verifyToken);
-// Standard CRUD API for branches
+// router.use(restrictTo('ADMIN', 'SUPER_ADMIN'));
 router.route('/')
-    .get(branchController.getAllBranches)
-    .post(branchController.createBranch);
+    .get(vendorController.getAllVendors)
+    .post(vendorController.createVendor);
 router.route('/:id')
-    .get(branchController.getBranchById)
-    .patch(branchController.updateBranch)
-    .delete(branchController.deleteBranch);
+    .patch(vendorController.updateVendor)
+    .delete(vendorController.deleteVendor);
 exports.default = router;

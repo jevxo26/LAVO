@@ -16,6 +16,11 @@ const userRoutes_1 = __importDefault(require("./routes/userRoutes"));
 const uploadRoutes_1 = __importDefault(require("./routes/uploadRoutes"));
 const branchRoutes_1 = __importDefault(require("./routes/branchRoutes"));
 const settingRoutes_1 = __importDefault(require("./routes/settingRoutes"));
+const vendorRoutes_1 = __importDefault(require("./routes/vendorRoutes"));
+const serviceRoutes_1 = __importDefault(require("./routes/serviceRoutes"));
+const logisticsRoutes_1 = __importDefault(require("./routes/logisticsRoutes"));
+const supportRoutes_1 = __importDefault(require("./routes/supportRoutes"));
+const financeRoutes_1 = __importDefault(require("./routes/financeRoutes"));
 const prisma = new client_1.PrismaClient();
 const dev = process.env.NODE_ENV !== 'production';
 const app = (0, next_1.default)({ dev });
@@ -48,6 +53,11 @@ app.prepare().then(async () => {
     server.use('/api/upload', uploadRoutes_1.default);
     server.use('/api/branches', branchRoutes_1.default);
     server.use('/api/settings', settingRoutes_1.default);
+    server.use('/api/vendors', vendorRoutes_1.default);
+    server.use('/api/services', serviceRoutes_1.default);
+    server.use('/api/logistics', logisticsRoutes_1.default);
+    server.use('/api/support', supportRoutes_1.default);
+    server.use('/api/finance', financeRoutes_1.default);
     // Serve uploaded files statically
     server.use('/uploads', express_1.default.static(path_1.default.join(process.cwd(), 'public', 'uploads')));
     // Let Next.js handle all other routes
@@ -59,6 +69,12 @@ app.prepare().then(async () => {
         console.error(err);
         let statusCode = err.statusCode || 500;
         if (err.message === 'User already exists with this email')
+            statusCode = 409;
+        if (err.message === 'User already exists with this phone number')
+            statusCode = 409;
+        if (err.message === 'Agent already exists with this phone number')
+            statusCode = 409;
+        if (err.message === 'Vehicle already exists with this number')
             statusCode = 409;
         if (err.message === 'Invalid email or password')
             statusCode = 401;

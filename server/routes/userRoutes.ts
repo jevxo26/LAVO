@@ -7,10 +7,10 @@ const router = Router();
 
 // Protect all user routes - must be logged in
 // TEMPORARY BYPASS FOR UI TESTING
-// router.use(verifyToken);
+router.use(verifyToken);
 
 // Only admins can manage users directly
-// router.use(restrictTo('ADMIN', 'SUPER_ADMIN'));
+router.use(restrictTo('ADMIN', 'SUPER_ADMIN'));
 
 router
   .route('/')

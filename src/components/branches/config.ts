@@ -5,6 +5,7 @@ import { type CrudModuleConfig } from "@/components/shared/admin-crud"
 export type BranchRecord = {
   id: string
   branchName: string
+  location: string
   manager: string
   contact: string
   status: string
@@ -13,6 +14,7 @@ export type BranchRecord = {
 export const branchSchema = z.object({
   id: z.string().optional(),
   branchName: z.string().min(2, "Branch name is required"),
+  location: z.string().min(5, "Location is required"),
   manager: z.string().min(2, "Manager is required"),
   contact: z.string().min(6, "Contact is required"),
   status: z.string().min(1, "Status is required"),

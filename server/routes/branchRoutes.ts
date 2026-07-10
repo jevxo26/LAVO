@@ -7,7 +7,7 @@ const router = express.Router();
 
 // Apply authentication middleware to all routes
 // TEMPORARY BYPASS FOR UI TESTING
-// router.use(verifyToken);
+router.use(verifyToken);
 
 // Standard CRUD API for branches
 router.route('/')
