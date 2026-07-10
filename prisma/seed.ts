@@ -10,11 +10,11 @@ async function main() {
   const password = await bcrypt.hash('password123', 10);
   
   const admin = await prisma.user.upsert({
-    where: { email: 'admin@lavo.com' },
+    where: { email: 'admin@laundrix.com' },
     update: {},
     create: {
       fullName: 'Super Admin',
-      email: 'admin@lavo.com',
+      email: 'admin@laundrix.com',
       phone: '01700000000',
       password,
       userType: 'SUPER_ADMIN',
@@ -24,11 +24,11 @@ async function main() {
   console.log('✅ Admin user created.');
 
   const customer = await prisma.user.upsert({
-    where: { email: 'customer@lavo.com' },
+    where: { email: 'customer@laundrix.com' },
     update: {},
     create: {
       fullName: 'Jane Customer',
-      email: 'customer@lavo.com',
+      email: 'customer@laundrix.com',
       phone: '01711111111',
       password,
       userType: 'CUSTOMER',
@@ -37,11 +37,11 @@ async function main() {
   });
 
   const branchManagerUser = await prisma.user.upsert({
-    where: { email: 'manager@lavo.com' },
+    where: { email: 'manager@laundrix.com' },
     update: {},
     create: {
       fullName: 'John Manager',
-      email: 'manager@lavo.com',
+      email: 'manager@laundrix.com',
       phone: '01722222222',
       password,
       userType: 'BRANCH_MANAGER',
@@ -119,11 +119,11 @@ async function main() {
 
   // 5. Create Logistics (Agent & Vehicle)
   const agentUser = await prisma.user.upsert({
-    where: { email: 'agent@lavo.com' },
+    where: { email: 'agent@laundrix.com' },
     update: {},
     create: {
       fullName: 'Speedy Delivery',
-      email: 'agent@lavo.com',
+      email: 'agent@laundrix.com',
       phone: '01744444444',
       password,
       userType: 'DELIVERY_AGENT',

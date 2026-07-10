@@ -44,7 +44,7 @@ export class UserService {
       status: data.status ? data.status.toUpperCase() : 'ACTIVE',
     };
     
-    const plainPassword = data.password || 'Lavo@1234';
+    const plainPassword = data.password || 'Laundrix@1234';
     dataToSave.password = await bcrypt.hash(plainPassword, 10);
     
     const { password, ...userWithoutPassword } = await prisma.user.create({ data: dataToSave });
