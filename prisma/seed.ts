@@ -69,20 +69,28 @@ async function main() {
   console.log('✅ Dummy branch created.');
 
   // 3. Create Service Category & Service
-  const category = await prisma.serviceCategory.create({
-    data: { name: 'Premium Cleaning' }
+  const category = await prisma.serviceCategory.upsert({
+    where: { name: 'Premium Cleaning' },
+    update: {},
+    create: { name: 'Premium Cleaning' }
   });
   
-  const gCategory = await prisma.garmentCategory.create({
-    data: { name: 'Formal Wear' }
+  const gCategory = await prisma.garmentCategory.upsert({
+    where: { name: 'Formal Wear' },
+    update: {},
+    create: { name: 'Formal Wear' }
   });
 
-  const gType = await prisma.garmentType.create({
-    data: { name: 'Suit', categoryId: gCategory.id, unitType: 'PIECE' }
+  const gType = await prisma.garmentType.upsert({
+    where: { name: 'Suit' },
+    update: {},
+    create: { name: 'Suit', categoryId: gCategory.id, unitType: 'PIECE' }
   });
 
-  const service = await prisma.service.create({
-    data: {
+  const service = await prisma.service.upsert({
+    where: { serviceName: '2-Piece Suit Dry Clean' },
+    update: {},
+    create: {
       serviceName: '2-Piece Suit Dry Clean',
       serviceCategoryId: category.id,
       garmentTypeId: gType.id,
@@ -93,8 +101,10 @@ async function main() {
   console.log('✅ Dummy laundry service created.');
 
   // 4. Create Vendor
-  const vendor = await prisma.vendor.create({
-    data: {
+  const vendor = await prisma.vendor.upsert({
+    where: { vendorCode: 'VEN-01' },
+    update: {},
+    create: {
       vendorCode: 'VEN-01',
       businessName: 'Quality Cleaners',
       ownerName: 'Bob Vendor',
@@ -141,6 +151,95 @@ async function main() {
     }
   });
   console.log('✅ Dummy logistics created.');
+
+  // 6. Create Finance (Tax & Delivery Charge Rules)
+  let taxRule = await prisma.taxRule.findFirst({ where: { taxName: 'Standard VAT' }});
+  if (!taxRule) {
+    await prisma.taxRule.create({
+      data: {
+        taxName: 'Standard VAT',
+        country: 'Bangladesh',
+        taxPercentage: 15,
+        status: 'ACTIVE'
+      }
+    });
+  }
+
+  let chargeRule = await prisma.deliveryChargeRule.findFirst({ where: { ruleName: 'Inside Dhaka Standard' }});
+  if (!chargeRule) {
+    await prisma.deliveryChargeRule.create({
+      data: {
+        ruleName: 'Inside Dhaka Standard',
+        baseCharge: 60,
+        distanceCharge: 10,
+        weightCharge: 5,
+        status: 'ACTIVE'
+      }
+    });
+  }
+  console.log('✅ Dummy finance rules created.');
+
+  // 7. Create Support (Ticket & Review)
+  const dummyCustomer = await prisma.customer.upsert({
+    where: { customerCode: 'CUS-01' },
+    update: {},
+    create: {
+      userId: customer.id,
+      customerCode: 'CUS-01'
+    }
+  });
+
+  const categoryTicket = await prisma.ticketCategory.upsert({
+    where: { name: 'General Inquiry' },
+    update: {},
+    create: { name: 'General Inquiry' }
+  });
+
+  await prisma.supportTicket.upsert({
+    where: { ticketNumber: 'TCK-001' },
+    update: {},
+    create: {
+      ticketNumber: 'TCK-001',
+      customerId: dummyCustomer.id,
+      categoryId: categoryTicket.id,
+      subject: 'Where is my order?',
+      priority: 'HIGH',
+      status: 'OPEN'
+    }
+  });
+
+  const dummyOrder = await prisma.order.upsert({
+    where: { orderNumber: 'ORD-001' },
+    update: {},
+    create: {
+      orderNumber: 'ORD-001',
+      customerId: dummyCustomer.id,
+      pickupAddressId: 'pickup-01',
+      deliveryAddressId: 'delivery-01',
+      orderType: 'STANDARD',
+      orderSource: 'APP',
+      grandTotal: 500,
+      paymentStatus: 'PAID',
+      orderStatus: 'DELIVERED'
+    }
+  });
+
+  const reviewCount = await prisma.review.count({
+    where: { orderId: dummyOrder.id }
+  });
+  
+  if (reviewCount === 0) {
+    await prisma.review.create({
+      data: {
+        customerId: dummyCustomer.id,
+        orderId: dummyOrder.id,
+        rating: 5,
+        review: 'Great service, highly recommended!',
+        status: 'PUBLISHED'
+      }
+    });
+  }
+  console.log('✅ Dummy support data created.');
 
   console.log('🎉 Seeding finished successfully!');
 }
