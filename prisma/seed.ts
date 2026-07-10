@@ -81,23 +81,25 @@ async function main() {
     create: { name: 'Formal Wear' }
   });
 
-  const gType = await prisma.garmentType.upsert({
-    where: { name: 'Suit' },
-    update: {},
-    create: { name: 'Suit', categoryId: gCategory.id, unitType: 'PIECE' }
-  });
+  let gType = await prisma.garmentType.findFirst({ where: { name: 'Suit' }});
+  if (!gType) {
+    gType = await prisma.garmentType.create({
+      data: { name: 'Suit', categoryId: gCategory.id, unitType: 'PIECE' }
+    });
+  }
 
-  const service = await prisma.service.upsert({
-    where: { serviceName: '2-Piece Suit Dry Clean' },
-    update: {},
-    create: {
-      serviceName: '2-Piece Suit Dry Clean',
-      serviceCategoryId: category.id,
-      garmentTypeId: gType.id,
-      basePrice: 250,
-      status: 'ACTIVE'
-    }
-  });
+  let service = await prisma.service.findFirst({ where: { serviceName: '2-Piece Suit Dry Clean' }});
+  if (!service) {
+    service = await prisma.service.create({
+      data: {
+        serviceName: '2-Piece Suit Dry Clean',
+        serviceCategoryId: category.id,
+        garmentTypeId: gType.id,
+        basePrice: 250,
+        status: 'ACTIVE'
+      }
+    });
+  }
   console.log('✅ Dummy laundry service created.');
 
   // 4. Create Vendor
