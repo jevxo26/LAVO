@@ -44,8 +44,8 @@ export function SignInForm() {
 
       if (response.ok) {
         toast.success("Signed in successfully!");
-        // Store token or handle session
-        // localStorage.setItem("token", result.data.token);
+        // Store token for authenticated API requests
+        localStorage.setItem("token", result.data.token);
         router.push("/dashboard");
       } else {
         toast.error(result.message || "Failed to sign in");

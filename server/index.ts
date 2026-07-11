@@ -28,7 +28,24 @@ app.prepare().then(async () => {
   const server = express();
 
   // Middleware
-  server.use(cors());
+  // Restrict CORS to known frontend origins only
+  const allowedOrigins = [
+    'http://localhost:3000',
+    'https://lavo-psi.vercel.app',
+    process.env.FRONTEND_URL,
+  ].filter(Boolean) as string[];
+
+  server.use(cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (mobile apps, curl, server-to-server)
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS: Origin '${origin}' not allowed`));
+      }
+    },
+    credentials: true,
+  }));
   server.use(helmet({ contentSecurityPolicy: false })); // Disable CSP in dev if needed, or configure properly
   server.use(morgan('[:date[iso]] :method :url :status :response-time ms - :res[content-length]', {
     skip: (req) => req.url.startsWith('/_next/') || req.url.includes('favicon.ico')
