@@ -7,7 +7,7 @@ const PROTECTED = ['/dashboard'];
 // Routes only for guests (redirect to dashboard if already logged in)
 const GUEST_ONLY = ['/login', '/register'];
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Read token — Next.js middleware runs on Edge, so we check cookies only.
