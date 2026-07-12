@@ -25,19 +25,32 @@ class RegisterService {
 exports.RegisterService = RegisterService;
 _a = RegisterService;
 RegisterService.registerUser = (0, catchServiceAsync_1.catchServiceAsync)(async (data) => {
+    var _b;
     const existingUser = await prisma.user.findUnique({
         where: { email: data.email },
     });
     if (existingUser) {
         throw new Error('User already exists with this email');
     }
-    const dataToSave = Object.assign({}, data);
-    if (data.password) {
-        const saltRounds = 10;
-        dataToSave.password = await bcrypt_1.default.hash(data.password, saltRounds);
+    if (!data.email || !data.password) {
+        throw new Error('Email and password are required');
     }
+    const hashedPassword = await bcrypt_1.default.hash(data.password, 10);
+    // Accept either "name" (from signup form) or "fullName" (direct API calls)
+    const fullName = data.fullName || data.name;
+    if (!fullName)
+        throw new Error('Full name is required');
     const user = await prisma.user.create({
-        data: dataToSave,
+        data: {
+            fullName,
+            email: data.email,
+            phone: (_b = data.phone) !== null && _b !== void 0 ? _b : null,
+            password: hashedPassword,
+            // Public registration is always CUSTOMER.
+            // Admins, Branch Managers, and Delivery Agents
+            // are created by an Admin via the /api/users endpoint.
+            userType: 'CUSTOMER',
+        },
     });
     const { password } = user, userWithoutPassword = __rest(user, ["password"]);
     return userWithoutPassword;

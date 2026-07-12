@@ -38,10 +38,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const logisticsController = __importStar(require("../controllers/logisticsController"));
+const authMiddleware_1 = require("../middlewares/authMiddleware");
+const roleMiddleware_1 = require("../middlewares/roleMiddleware");
 const router = express_1.default.Router();
-// Temporarily bypass security for testing
-// router.use(verifyToken);
-// router.use(restrictTo('ADMIN', 'SUPER_ADMIN'));
+// Protect all logistics routes
+router.use(authMiddleware_1.verifyToken);
+router.use((0, roleMiddleware_1.restrictTo)('ADMIN', 'SUPER_ADMIN'));
 router.route('/agents')
     .get(logisticsController.getAllAgents)
     .post(logisticsController.createAgent);

@@ -32,8 +32,14 @@ LoginService.loginUser = (0, catchServiceAsync_1.catchServiceAsync)(async (email
     const isPasswordValid = await bcrypt_1.default.compare(passwordInput, user.password);
     if (!isPasswordValid)
         throw new Error('Invalid email or password');
-    const token = jsonwebtoken_1.default.sign({ userId: user.id, email: user.email, role: user.userType }, process.env.JWT_SECRET || 'fallback_secret', { expiresIn: (process.env.JWT_EXPIRES_IN || '30d') });
-    const refreshToken = jsonwebtoken_1.default.sign({ userId: user.id }, process.env.JWT_REFRESH_SECRET || 'refresh_secret', { expiresIn: (process.env.JWT_REFRESH_EXPIRES_IN || '7d') });
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret)
+        throw new Error('JWT_SECRET is not set.');
+    const token = jsonwebtoken_1.default.sign({ userId: user.id, email: user.email, role: user.userType }, jwtSecret, { expiresIn: (process.env.JWT_EXPIRES_IN || '7d') });
+    const refreshSecret = process.env.JWT_REFRESH_SECRET;
+    if (!refreshSecret)
+        throw new Error('JWT_REFRESH_SECRET is not set.');
+    const refreshToken = jsonwebtoken_1.default.sign({ userId: user.id }, refreshSecret, { expiresIn: (process.env.JWT_REFRESH_EXPIRES_IN || '7d') });
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
     await prisma.userToken.create({
         data: { userId: user.id, token: refreshToken, tokenType: 'REFRESH', expiresAt }

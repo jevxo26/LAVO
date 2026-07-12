@@ -54,7 +54,7 @@ class UserService {
             userType: data.role ? data.role.toUpperCase().replace(' ', '_') : (data.userType || 'CUSTOMER'),
             status: data.status ? data.status.toUpperCase() : 'ACTIVE',
         };
-        const plainPassword = data.password || 'Lavo@1234';
+        const plainPassword = data.password || 'Laundrix@1234';
         dataToSave.password = await bcrypt_1.default.hash(plainPassword, 10);
         const _a = await prisma.user.create({ data: dataToSave }), { password } = _a, userWithoutPassword = __rest(_a, ["password"]);
         return userWithoutPassword;

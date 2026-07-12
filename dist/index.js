@@ -3,6 +3,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config();
 const express_1 = __importDefault(require("express"));
 const next_1 = __importDefault(require("next"));
 const cors_1 = __importDefault(require("cors"));
@@ -29,7 +31,24 @@ const port = process.env.PORT || 3000;
 app.prepare().then(async () => {
     const server = (0, express_1.default)();
     // Middleware
-    server.use((0, cors_1.default)());
+    // Restrict CORS to known frontend origins only
+    const allowedOrigins = [
+        'http://localhost:3000',
+        'https://lavo-psi.vercel.app',
+        process.env.FRONTEND_URL,
+    ].filter(Boolean);
+    server.use((0, cors_1.default)({
+        origin: (origin, callback) => {
+            // Allow requests with no origin (mobile apps, curl, server-to-server)
+            if (!origin || allowedOrigins.includes(origin)) {
+                callback(null, true);
+            }
+            else {
+                callback(new Error(`CORS: Origin '${origin}' not allowed`));
+            }
+        },
+        credentials: true,
+    }));
     server.use((0, helmet_1.default)({ contentSecurityPolicy: false })); // Disable CSP in dev if needed, or configure properly
     server.use((0, morgan_1.default)('[:date[iso]] :method :url :status :response-time ms - :res[content-length]', {
         skip: (req) => req.url.startsWith('/_next/') || req.url.includes('favicon.ico')

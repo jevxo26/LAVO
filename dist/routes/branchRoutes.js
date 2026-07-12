@@ -38,10 +38,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const branchController = __importStar(require("../controllers/branchController"));
+const authMiddleware_1 = require("../middlewares/authMiddleware");
+const roleMiddleware_1 = require("../middlewares/roleMiddleware");
 const router = express_1.default.Router();
 // Apply authentication middleware to all routes
-// TEMPORARY BYPASS FOR UI TESTING
-// router.use(verifyToken);
+router.use(authMiddleware_1.verifyToken);
+router.use((0, roleMiddleware_1.restrictTo)('ADMIN', 'SUPER_ADMIN'));
 // Standard CRUD API for branches
 router.route('/')
     .get(branchController.getAllBranches)

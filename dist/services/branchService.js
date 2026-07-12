@@ -20,40 +20,63 @@ const getAllBranches = async (page = 1, limit = 10, search = '') => {
             where,
             skip,
             take: limit,
-            orderBy: { createdAt: 'desc' }
+            orderBy: { createdAt: 'desc' },
         }),
-        prisma.branch.count({ where })
+        prisma.branch.count({ where }),
     ]);
     const totalPages = Math.ceil(totalRecords / limit);
+    // Resolve managerId -> fullName via a single User lookup
+    const managerIds = [...new Set(data.map((b) => b.managerId).filter(Boolean))];
+    const managers = managerIds.length
+        ? await prisma.user.findMany({
+            where: { id: { in: managerIds } },
+            select: { id: true, fullName: true },
+        })
+        : [];
+    const managerMap = Object.fromEntries(managers.map((m) => [m.id, m.fullName]));
+    // Map Prisma schema fields -> frontend-expected field names
+    const mapped = data.map((b) => {
+        var _a;
+        return ({
+            id: b.id,
+            branchCode: b.branchCode,
+            branchName: b.branchName,
+            location: [b.address, b.city, b.country].filter(Boolean).join(', ') || null,
+            manager: b.managerId ? ((_a = managerMap[b.managerId]) !== null && _a !== void 0 ? _a : b.managerId) : null,
+            contact: b.phone || null,
+            status: b.status,
+        });
+    });
     return {
-        data,
+        data: mapped,
         meta: {
             totalRecords,
             totalPages,
             currentPage: page,
-            limit
-        }
+            limit,
+        },
     };
 };
 exports.getAllBranches = getAllBranches;
 const getBranchById = async (id) => {
     return await prisma.branch.findUnique({
-        where: { id }
+        where: { id },
     });
 };
 exports.getBranchById = getBranchById;
 const createBranch = async (data) => {
     return await prisma.branch.create({
         data: {
-            branchCode: data.id || `BR-${Date.now()}`,
+            branchCode: data.branchCode || `BR-${Date.now()}`,
             branchName: data.branchName,
             branchType: 'Standard',
             country: 'Bangladesh',
-            city: 'Dhaka',
-            address: 'Dummy Address',
-            phone: data.contact,
+            city: data.location || 'Dhaka',
+            address: data.location || '',
+            phone: data.contact || '',
+            managerId: data.manager || null,
             status: data.status ? data.status.toUpperCase() : 'ACTIVE',
-        }
+        },
     });
 };
 exports.createBranch = createBranch;
@@ -61,20 +84,23 @@ const updateBranch = async (id, data) => {
     const updateData = {};
     if (data.branchName)
         updateData.branchName = data.branchName;
+    if (data.location)
+        updateData.address = data.location;
+    if (data.manager)
+        updateData.managerId = data.manager;
     if (data.contact)
         updateData.phone = data.contact;
     if (data.status)
         updateData.status = data.status.toUpperCase();
     return await prisma.branch.update({
         where: { id },
-        data: updateData
+        data: updateData,
     });
 };
 exports.updateBranch = updateBranch;
 const deleteBranch = async (id) => {
-    // Typically you'd do a soft delete, but for this basic CRUD we'll physically delete
     return await prisma.branch.delete({
-        where: { id }
+        where: { id },
     });
 };
 exports.deleteBranch = deleteBranch;

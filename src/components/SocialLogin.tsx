@@ -76,7 +76,7 @@ export default function SocialLogin() {
           fields="name,email,picture"
           onSuccess={handleFacebook}
           onFail={() => toast.error("Facebook login failed")}
-          render={(renderProps: { onClick: () => void; isDisabled?: boolean }) => (
+          render={(renderProps: { onClick?: () => void; isDisabled?: boolean }) => (
             <button
               type="button"
               onClick={renderProps.onClick}

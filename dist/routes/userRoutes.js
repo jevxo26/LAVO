@@ -2,12 +2,13 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const userController_1 = require("../controllers/userController");
+const authMiddleware_1 = require("../middlewares/authMiddleware");
+const roleMiddleware_1 = require("../middlewares/roleMiddleware");
 const router = (0, express_1.Router)();
 // Protect all user routes - must be logged in
-// TEMPORARY BYPASS FOR UI TESTING
-// router.use(verifyToken);
+router.use(authMiddleware_1.verifyToken);
 // Only admins can manage users directly
-// router.use(restrictTo('ADMIN', 'SUPER_ADMIN'));
+router.use((0, roleMiddleware_1.restrictTo)('ADMIN', 'SUPER_ADMIN'));
 router
     .route('/')
     .get(userController_1.UserController.getAllUsers)

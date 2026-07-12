@@ -17,7 +17,9 @@ const verifyToken = (req, res, next) => {
         return;
     }
     try {
-        const secret = process.env.JWT_SECRET || 'fallback_secret';
+        const secret = process.env.JWT_SECRET;
+        if (!secret)
+            throw new Error('JWT_SECRET environment variable is not set.');
         const decoded = jsonwebtoken_1.default.verify(token, secret);
         req.user = decoded;
         next();
