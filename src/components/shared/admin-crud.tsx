@@ -106,7 +106,7 @@ export function AdminCrudPage<TRecord extends AdminRecord>({
     }
     try {
       setIsLoading(true)
-      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null
+      const token = typeof window !== "undefined" ? localStorage.getItem("laundrix_token") : null
       const res = await axios.get(config.endpoint, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
         params: { search }
@@ -181,7 +181,7 @@ export function AdminCrudPage<TRecord extends AdminRecord>({
     }
     
     try {
-      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null
+      const token = typeof window !== "undefined" ? localStorage.getItem("laundrix_token") : null
       await axios.post(config.endpoint, values, {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       })
@@ -202,7 +202,7 @@ export function AdminCrudPage<TRecord extends AdminRecord>({
     }
 
     try {
-      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null
+      const token = typeof window !== "undefined" ? localStorage.getItem("laundrix_token") : null
       await axios.patch(`${config.endpoint}/${values.id}`, values, {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       })
@@ -225,7 +225,7 @@ export function AdminCrudPage<TRecord extends AdminRecord>({
     }
 
     try {
-      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null
+      const token = typeof window !== "undefined" ? localStorage.getItem("laundrix_token") : null
       await axios.delete(`${config.endpoint}/${deletingRecord.id}`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       })
