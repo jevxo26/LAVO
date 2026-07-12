@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt';
 const prisma = new PrismaClient();
 
 async function main() {
-  const email = 'admin@laundrix.com';
+  const email = 'admin@lavo.com';
 
   // Upsert — safe to run multiple times
   const existing = await prisma.user.findUnique({ where: { email } });
@@ -14,11 +14,11 @@ async function main() {
     return;
   }
 
-  const hashedPassword = await bcrypt.hash('Laundrix@Admin26', 10);
+  const hashedPassword = await bcrypt.hash('Lavo@Admin26', 10);
 
   const admin = await prisma.user.create({
     data: {
-      fullName: 'Super Admin',
+      fullName: 'Admin',
       email,
       password: hashedPassword,
       userType: 'SUPER_ADMIN',
@@ -29,7 +29,7 @@ async function main() {
 
   console.log(`✅ Super Admin seeded:`);
   console.log(`   Email    : ${admin.email}`);
-  console.log(`   Password : Laundrix@Admin26`);
+  console.log(`   Password : Lavo@Admin26`);
   console.log(`   Role     : ${admin.userType}`);
 }
 
