@@ -153,13 +153,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## 🔐 Default Admin Credentials
 
-> ⚠️ Change these immediately after first login in a production environment.
-
-| Field | Value |
-|---|---|
-| Email | `admin@lavo.com` |
-| Password | `Lavo@Admin26` |
-| Role | `SUPER_ADMIN` |
+> ⚠️ The default admin credentials are confidential. Contact the project owner or check your internal documentation.
 
 ---
 
