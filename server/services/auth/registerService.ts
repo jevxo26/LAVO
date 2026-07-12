@@ -30,7 +30,10 @@ export class RegisterService {
         email: data.email,
         phone: data.phone ?? null,
         password: hashedPassword,
-        userType: data.userType ?? 'CUSTOMER',
+        // Public registration is always CUSTOMER.
+        // Admins, Branch Managers, and Delivery Agents
+        // are created by an Admin via the /api/users endpoint.
+        userType: 'CUSTOMER',
       },
     });
 

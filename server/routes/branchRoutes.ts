@@ -7,6 +7,7 @@ const router = express.Router();
 
 // Apply authentication middleware to all routes
 router.use(verifyToken);
+router.use(restrictTo('ADMIN', 'SUPER_ADMIN'));
 
 // Standard CRUD API for branches
 router.route('/')
