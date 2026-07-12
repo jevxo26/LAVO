@@ -18,7 +18,7 @@ export class LoginService {
     const token = jwt.sign(
       { userId: user.id, email: user.email, role: user.userType },
       jwtSecret,
-      { expiresIn: (process.env.JWT_EXPIRES_IN || '30d') as any }
+      { expiresIn: (process.env.JWT_EXPIRES_IN || '7d') as any }
     );
 
     const refreshSecret = process.env.JWT_REFRESH_SECRET;

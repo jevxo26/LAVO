@@ -68,7 +68,9 @@ export class TokenService {
     if (!refreshToken) throw new Error('Refresh token is required');
 
     try {
-      const decoded: any = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || 'refresh_secret');
+    const refreshSecret = process.env.JWT_REFRESH_SECRET;
+    if (!refreshSecret) throw new Error('JWT_REFRESH_SECRET is not set.');
+    const decoded: any = jwt.verify(refreshToken, refreshSecret);
       
       const userToken = await prisma.userToken.findFirst({
         where: { token: refreshToken, userId: decoded.userId, tokenType: 'REFRESH' },
@@ -77,10 +79,12 @@ export class TokenService {
 
       if (!userToken || !userToken.user) throw new Error('Invalid refresh token');
 
+      const jwtSecret = process.env.JWT_SECRET;
+      if (!jwtSecret) throw new Error('JWT_SECRET is not set.');
       const newAccessToken = jwt.sign(
         { userId: userToken.user.id, email: userToken.user.email, role: userToken.user.userType },
-        process.env.JWT_SECRET || 'fallback_secret',
-        { expiresIn: (process.env.JWT_EXPIRES_IN || '30d') as any }
+        jwtSecret,
+        { expiresIn: (process.env.JWT_EXPIRES_IN || '7d') as any }
       );
 
       return { token: newAccessToken };
