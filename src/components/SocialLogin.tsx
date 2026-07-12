@@ -1,109 +1,99 @@
 "use client";
 
-import React from 'react';
-import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
-import FacebookLogin from '@greatsumini/react-facebook-login';
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
+import FacebookLogin from "@greatsumini/react-facebook-login";
+import { useAppDispatch } from "@/store/store";
+import { socialLoginThunk } from "@/store/slices/authSlice";
 
 export default function SocialLogin() {
-  const handleGoogleSuccess = async (credentialResponse: any) => {
-    try {
-      const res = await fetch('/api/auth/social-login/google', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ credential: credentialResponse.credential }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        console.log('Google login success:', data);
-        // Handle successful login (e.g., store token, redirect)
-        // localStorage.setItem('token', data.data.token);
-      } else {
-        console.error('Google login failed:', data.error);
-      }
-    } catch (err) {
-      console.error('Error during Google login', err);
-    }
-  };
+  const dispatch = useAppDispatch();
+  const router = useRouter();
 
-  const handleFacebookResponse = async (response: any) => {
-    if (response.accessToken) {
-      try {
-        const res = await fetch('/api/auth/social-login/facebook', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ accessToken: response.accessToken }),
-        });
-        const data = await res.json();
-        if (data.success) {
-          console.log('Facebook login success:', data);
-          // Handle successful login (e.g., store token, redirect)
-          // localStorage.setItem('token', data.data.token);
-        } else {
-          console.error('Facebook login failed:', data.error);
-        }
-      } catch (err) {
-        console.error('Error during Facebook login', err);
-      }
+  const handleSocialResult = async (
+    thunkResult: Awaited<ReturnType<typeof dispatch>>
+  ) => {
+    if (socialLoginThunk.fulfilled.match(thunkResult)) {
+      toast.success("Signed in successfully!");
+      router.push("/dashboard");
     } else {
-      console.error('Facebook login failed: No access token');
+      const msg = (thunkResult.payload as string) ?? "Social login failed";
+      toast.error(msg);
     }
   };
 
-  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
-  const facebookAppId = process.env.NEXT_PUBLIC_FACEBOOK_APP_ID || '';
+  const handleGoogle = async (credentialResponse: { credential?: string }) => {
+    if (!credentialResponse.credential) {
+      toast.error("Google login failed — no credential received");
+      return;
+    }
+    const result = await dispatch(
+      socialLoginThunk({ provider: "google", credential: credentialResponse.credential })
+    );
+    handleSocialResult(result);
+  };
+
+  const handleFacebook = async (response: { accessToken?: string }) => {
+    if (!response.accessToken) {
+      toast.error("Facebook login failed — no access token received");
+      return;
+    }
+    const result = await dispatch(
+      socialLoginThunk({ provider: "facebook", accessToken: response.accessToken })
+    );
+    handleSocialResult(result);
+  };
+
+  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? "";
+  const facebookAppId = process.env.NEXT_PUBLIC_FACEBOOK_APP_ID ?? "";
 
   return (
-    <div className="flex flex-col gap-4 w-full max-w-sm mt-6">
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t border-gray-300" />
-        </div>
-        <div className="relative flex justify-center text-sm">
-          <span className="bg-white px-2 text-gray-500">Or continue with</span>
-        </div>
-      </div>
-
+    <div className="flex flex-col gap-3 w-full">
+      {/* ── Google ─────────────────────────────────────────────────────────── */}
       {googleClientId ? (
         <GoogleOAuthProvider clientId={googleClientId}>
           <div className="flex justify-center w-full">
             <GoogleLogin
-              onSuccess={handleGoogleSuccess}
-              onError={() => {
-                console.error('Google Login Failed');
-              }}
-              useOneTap
+              onSuccess={handleGoogle}
+              onError={() => toast.error("Google login failed")}
+              useOneTap={false}
+              width="100%"
             />
           </div>
         </GoogleOAuthProvider>
       ) : (
-        <div className="p-3 bg-red-50 text-red-600 text-sm rounded-md text-center">
-          Configure NEXT_PUBLIC_GOOGLE_CLIENT_ID to enable Google Login
-        </div>
+        <p className="text-xs text-center text-amber-600 bg-amber-50 rounded-md p-2">
+          Add <code>NEXT_PUBLIC_GOOGLE_CLIENT_ID</code> to enable Google login
+        </p>
       )}
 
+      {/* ── Facebook ───────────────────────────────────────────────────────── */}
       {facebookAppId ? (
         <FacebookLogin
           appId={facebookAppId}
           autoLoad={false}
           fields="name,email,picture"
-          onSuccess={handleFacebookResponse}
-          onFail={(err: any) => console.error('Facebook login failed:', err)}
-          render={(renderProps: any) => (
+          onSuccess={handleFacebook}
+          onFail={() => toast.error("Facebook login failed")}
+          render={(renderProps: { onClick: () => void; isDisabled?: boolean }) => (
             <button
+              type="button"
               onClick={renderProps.onClick}
-              className="w-full flex items-center justify-center gap-2 bg-[#1877F2] text-white p-2 rounded-md hover:bg-[#166FE5] transition-colors shadow-sm font-medium h-10"
+              disabled={renderProps.isDisabled}
+              className="w-full flex items-center justify-center gap-2 bg-[#1877F2] text-white rounded-md hover:bg-[#166FE5] transition-colors shadow-sm font-medium h-10 px-4 disabled:opacity-60"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"/>
+              <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
+                <path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z" />
               </svg>
-              Log in with Facebook
+              Continue with Facebook
             </button>
           )}
         />
       ) : (
-        <div className="p-3 bg-red-50 text-red-600 text-sm rounded-md text-center">
-          Configure NEXT_PUBLIC_FACEBOOK_APP_ID to enable Facebook Login
-        </div>
+        <p className="text-xs text-center text-amber-600 bg-amber-50 rounded-md p-2">
+          Add <code>NEXT_PUBLIC_FACEBOOK_APP_ID</code> to enable Facebook login
+        </p>
       )}
     </div>
   );
