@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { ChevronLeft, ChevronRight, Menu } from "lucide-react";
+import { ChevronLeft, ChevronRight, Menu, ChevronDown  } from "lucide-react";
 import { dashboardNavItems } from "@/data/dashboardNav";
 
 interface SidebarProps {
@@ -14,8 +14,22 @@ interface SidebarProps {
 
 export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
   const pathname = usePathname();
+  const [openMenu,setOpenMenu]=React.useState<string | null>(null);
 
-  return (
+  React.useEffect(() => {
+    dashboardNavItems.forEach((item) => {
+      if (
+        item.children?.some(
+          (child) =>
+            pathname === child.href ||
+            pathname.startsWith(`${child.href}/`)
+        )
+      ) {
+        setOpenMenu(item.name);
+      }
+    });
+  }, [pathname]);
+    return (
     <aside
       className={cn(
         "relative flex flex-col h-screen bg-white/10 backdrop-blur-xl border-r border-white/20 shadow-[4px_0_24px_rgba(0,0,0,0.02)] transition-all duration-300 ease-in-out z-20",
@@ -43,37 +57,102 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
       </button>
 
       <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-2">
-        {dashboardNavItems.map((item) => {
-          const isActive =
-            pathname === item.href || pathname.startsWith(`${item.href}/`);
-          return (
-            <Link
-              key={item.name}
-              href={item.href}
-              className={cn(
-                "flex items-center rounded-xl px-3 py-2.5 transition-all duration-200 group relative",
-                isActive
-                  ? "bg-indigo-500/10 text-indigo-600 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5)] border border-white/40"
-                  : "text-slate-600 hover:bg-white/40 hover:text-indigo-600 border border-transparent",
-              )}
-            >
-              <item.icon
-                className={cn(
-                  "shrink-0",
-                  isCollapsed ? "mx-auto" : "mr-3",
-                  isActive
-                    ? "text-indigo-600"
-                    : "text-slate-500 group-hover:text-indigo-600",
-                )}
-                size={20}
-              />
-              {!isCollapsed && (
-                <span className="font-medium whitespace-nowrap">
-                  {item.name}
-                </span>
-              )}
-            </Link>
-          );
+        {
+          dashboardNavItems.map((item)=>{
+            const hasChildren = item.children;
+            const isParentActive =
+              hasChildren &&
+              item.children.some(
+                (child) =>
+                  pathname === child.href || pathname.startsWith(`${child.href}/`)
+              );
+
+              const isActive =
+                item.href === "/dashboard"
+                  ? pathname === "/dashboard"
+                  : pathname === item.href ||
+                    pathname.startsWith(`${item.href}/`);
+
+            
+            return (
+
+              <div key={item.name}>
+                {
+                  hasChildren ? (
+                    <button
+                      onClick={() =>
+                        setOpenMenu(openMenu === item.name ? null : item.name)
+                      }
+                      className={cn(
+                        "flex items-center w-full px-3 py-3 rounded-xl transition-all",
+                        isParentActive || openMenu === item.name
+                          ? "bg-indigo-500/10 text-indigo-600"
+                          : "text-slate-600 hover:bg-white/40"
+                      )}
+                    >
+                      <item.icon size={20} />
+
+                      {!isCollapsed && (
+                        <>
+                          <span className="ml-3 flex-1 text-left">
+                            {item.name}
+                          </span>
+
+                          <ChevronDown
+                            size={18}
+                            className={cn(
+                              "transition-transform duration-300",
+                              openMenu === item.name && "rotate-180"
+                            )}
+                          />
+                        </>
+                      )}
+                    </button>
+                  ) : (
+                    <Link
+                      href={item.href}
+                      className={cn(
+                        "flex items-center px-3 py-3 rounded-xl transition-all",
+                        isActive
+                          ? "bg-indigo-500/10 text-indigo-600"
+                          : "text-slate-600 hover:bg-white/40"
+                      )}
+                    >
+                      <item.icon size={20} />
+
+                      {!isCollapsed && (
+                        <span className="ml-3">
+                          {item.name}
+                        </span>
+                      )}
+                    </Link>
+                  )
+                }
+                {
+                  openMenu===item.name && !isCollapsed && (
+                    <div className="ml-8 mt-2 space-y-2">
+                    {
+                      item.children?.map(child=>(
+                      <Link
+                        key={child.name}
+                        href={child.href}
+                        className={cn(
+                          "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all",
+                          pathname === child.href || pathname.startsWith(`${child.href}/`)
+                            ? "bg-indigo-500/10 text-indigo-600"
+                          : "text-slate-600 hover:bg-white/40"
+                        )}
+                      >
+                      <child.icon size={16}/>
+                      {child.name}
+                      </Link>
+                      ))
+                      }
+                      </div>
+                  )
+                }
+              </div>
+            )
         })}
       </nav>
 
