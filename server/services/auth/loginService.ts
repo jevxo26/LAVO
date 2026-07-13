@@ -13,15 +13,19 @@ export class LoginService {
     const isPasswordValid = await bcrypt.compare(passwordInput, user.password);
     if (!isPasswordValid) throw new Error('Invalid email or password');
 
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) throw new Error('JWT_SECRET is not set.');
     const token = jwt.sign(
       { userId: user.id, email: user.email, role: user.userType },
-      process.env.JWT_SECRET || 'fallback_secret',
-      { expiresIn: (process.env.JWT_EXPIRES_IN || '30d') as any }
+      jwtSecret,
+      { expiresIn: (process.env.JWT_EXPIRES_IN || '7d') as any }
     );
 
+    const refreshSecret = process.env.JWT_REFRESH_SECRET;
+    if (!refreshSecret) throw new Error('JWT_REFRESH_SECRET is not set.');
     const refreshToken = jwt.sign(
       { userId: user.id },
-      process.env.JWT_REFRESH_SECRET || 'refresh_secret',
+      refreshSecret,
       { expiresIn: (process.env.JWT_REFRESH_EXPIRES_IN || '7d') as any }
     );
 

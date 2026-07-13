@@ -5,10 +5,9 @@ import { restrictTo } from '../middlewares/roleMiddleware';
 
 const router = express.Router();
 
-// Temporarily bypass security for testing
-// Temporarily bypass security for testing
-// router.use(verifyToken);
-// router.use(restrictTo('ADMIN', 'SUPER_ADMIN'));
+// Protect all logistics routes
+router.use(verifyToken);
+router.use(restrictTo('ADMIN', 'SUPER_ADMIN'));
 
 router.route('/agents')
   .get(logisticsController.getAllAgents)

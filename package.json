@@ -6,7 +6,8 @@
     "dev": "nodemon --watch server --watch tsconfig.server.json --ext ts --exec ts-node --project tsconfig.server.json server/index.ts",
     "build": "next build && tsc --project tsconfig.server.json",
     "start": "NODE_ENV=production node dist/server/index.js",
-    "lint": "eslint"
+    "lint": "eslint",
+    "seed": "ts-node --project tsconfig.server.json prisma/seed.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
@@ -68,7 +69,6 @@
     "@types/nodemailer": "^8.0.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@types/react-facebook-login": "^4.1.11",
     "@types/twilio": "^3.19.2",
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
@@ -79,6 +79,7 @@
     "typescript": "^5"
   },
   "prisma": {
-    "schema": "prisma/schema"
+    "schema": "prisma/schema",
+    "seed": "ts-node --project tsconfig.server.json prisma/seed.ts"
   }
 }

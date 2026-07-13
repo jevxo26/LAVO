@@ -1,11 +1,11 @@
-import { PrismaClient, Prisma } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import { catchServiceAsync } from '../../utils/catchServiceAsync';
 
 const prisma = new PrismaClient();
 
 export class RegisterService {
-  static registerUser = catchServiceAsync(async (data: Prisma.UserCreateInput) => {
+  static registerUser = catchServiceAsync(async (data: any) => {
     const existingUser = await prisma.user.findUnique({
       where: { email: data.email },
     });
@@ -14,14 +14,27 @@ export class RegisterService {
       throw new Error('User already exists with this email');
     }
 
-    const dataToSave = { ...data };
-    if (data.password) {
-      const saltRounds = 10;
-      dataToSave.password = await bcrypt.hash(data.password, saltRounds);
+    if (!data.email || !data.password) {
+      throw new Error('Email and password are required');
     }
 
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+
+    // Accept either "name" (from signup form) or "fullName" (direct API calls)
+    const fullName: string = data.fullName || data.name;
+    if (!fullName) throw new Error('Full name is required');
+
     const user = await prisma.user.create({
-      data: dataToSave,
+      data: {
+        fullName,
+        email: data.email,
+        phone: data.phone ?? null,
+        password: hashedPassword,
+        // Public registration is always CUSTOMER.
+        // Admins, Branch Managers, and Delivery Agents
+        // are created by an Admin via the /api/users endpoint.
+        userType: 'CUSTOMER',
+      },
     });
 
     const { password, ...userWithoutPassword } = user;
