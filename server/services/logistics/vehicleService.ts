@@ -47,7 +47,12 @@ export const createVehicle = async (data: any) => {
   // Find or create dummy agent
   let agent = await prisma.deliveryAgent.findFirst();
   if (!agent) {
-    agent = await createAgent({ name: data.assignedAgent || 'Default Agent', phone: '000000' });
+    agent = await createAgent({ name: data.assignedAgent || 'Default Agent', phone: `017${Math.floor(Math.random() * 100000000)}` });
+  }
+
+  if (data.vehicleNumber) {
+    const existing = await prisma.deliveryVehicle.findUnique({ where: { vehicleNumber: data.vehicleNumber } });
+    if (existing) throw new Error('Vehicle already exists with this number');
   }
 
   const newVehicle = await prisma.deliveryVehicle.create({

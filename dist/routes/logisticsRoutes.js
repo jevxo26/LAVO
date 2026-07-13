@@ -37,17 +37,21 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const branchController = __importStar(require("../controllers/branchController"));
+const logisticsController = __importStar(require("../controllers/logisticsController"));
 const router = express_1.default.Router();
-// Apply authentication middleware to all routes
-// TEMPORARY BYPASS FOR UI TESTING
+// Temporarily bypass security for testing
 // router.use(verifyToken);
-// Standard CRUD API for branches
-router.route('/')
-    .get(branchController.getAllBranches)
-    .post(branchController.createBranch);
-router.route('/:id')
-    .get(branchController.getBranchById)
-    .patch(branchController.updateBranch)
-    .delete(branchController.deleteBranch);
+// router.use(restrictTo('ADMIN', 'SUPER_ADMIN'));
+router.route('/agents')
+    .get(logisticsController.getAllAgents)
+    .post(logisticsController.createAgent);
+router.route('/agents/:id')
+    .patch(logisticsController.updateAgent)
+    .delete(logisticsController.deleteAgent);
+router.route('/vehicles')
+    .get(logisticsController.getAllVehicles)
+    .post(logisticsController.createVehicle);
+router.route('/vehicles/:id')
+    .patch(logisticsController.updateVehicle)
+    .delete(logisticsController.deleteVehicle);
 exports.default = router;

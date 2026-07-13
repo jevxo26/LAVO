@@ -12,7 +12,7 @@ export type ServiceRecord = {
 }
 
 export const serviceSchema = z.object({
-  id: z.string().min(1, "Service ID is required"),
+  id: z.string().optional(),
   itemName: z.string().min(2, "Item name is required"),
   category: z.string().min(1, "Category is required"),
   washPrice: z.coerce.number().min(0),
@@ -37,7 +37,6 @@ export const serviceConfig: CrudModuleConfig<ServiceRecord> = {
     { accessorKey: "status", header: "Status", kind: "status" },
   ],
   fields: [
-    { name: "id", label: "Service ID", placeholder: "SVC-304" },
     { name: "itemName", label: "Item Name", placeholder: "Item name" },
     { name: "category", label: "Category", options: ["Men", "Women", "Household", "Premium", "Kids"] },
     { name: "washPrice", label: "Wash Price", type: "number", placeholder: "80" },

@@ -12,7 +12,7 @@ export type UserRecord = {
 }
 
 export const userSchema = z.object({
-  id: z.string().min(1, "ID is required"),
+  id: z.string().optional(),
   name: z.string().min(2, "Name is required"),
   email: z.email("Valid email is required"),
   phone: z.string().min(6, "Phone is required"),
@@ -30,7 +30,7 @@ export const userConfig: CrudModuleConfig<UserRecord> = {
   schema: userSchema,
   endpoint: "/api/users",
   columns: [
-    { accessorKey: "id", header: "ID" },
+    { accessorKey: "id", header: "ID", kind: "id" },
     { accessorKey: "name", header: "Name" },
     { accessorKey: "email", header: "Email" },
     { accessorKey: "phone", header: "Phone" },
@@ -38,9 +38,8 @@ export const userConfig: CrudModuleConfig<UserRecord> = {
     { accessorKey: "status", header: "Status", kind: "status" },
   ],
   fields: [
-    { name: "id", label: "ID", placeholder: "USR-1004" },
     { name: "name", label: "Name", placeholder: "Full name" },
-    { name: "email", label: "Email", type: "email", placeholder: "name@company.com" },
+    { name: "email", label: "Email", type: "email", placeholder: "Email address" },
     { name: "phone", label: "Phone", type: "tel", placeholder: "+880..." },
     { name: "role", label: "Role", options: ["Admin", "Branch Manager", "Support", "Delivery Agent", "Customer"] },
     { name: "status", label: "Status", options: ["Active", "Inactive", "Suspended"] },

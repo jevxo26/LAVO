@@ -37,17 +37,21 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const branchController = __importStar(require("../controllers/branchController"));
+const supportController = __importStar(require("../controllers/supportController"));
 const router = express_1.default.Router();
-// Apply authentication middleware to all routes
-// TEMPORARY BYPASS FOR UI TESTING
+// Temporarily bypass security for testing
 // router.use(verifyToken);
-// Standard CRUD API for branches
-router.route('/')
-    .get(branchController.getAllBranches)
-    .post(branchController.createBranch);
-router.route('/:id')
-    .get(branchController.getBranchById)
-    .patch(branchController.updateBranch)
-    .delete(branchController.deleteBranch);
+// router.use(restrictTo('ADMIN', 'SUPER_ADMIN'));
+router.route('/tickets')
+    .get(supportController.getAllTickets)
+    .post(supportController.createTicket);
+router.route('/tickets/:id')
+    .patch(supportController.updateTicket)
+    .delete(supportController.deleteTicket);
+router.route('/reviews')
+    .get(supportController.getAllReviews)
+    .post(supportController.createReview);
+router.route('/reviews/:id')
+    .patch(supportController.updateReview)
+    .delete(supportController.deleteReview);
 exports.default = router;

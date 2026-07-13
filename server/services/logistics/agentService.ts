@@ -43,11 +43,14 @@ export const getAllAgents = async (page: number = 1, limit: number = 10, search:
 };
 
 export const createAgent = async (data: any) => {
+  const phone = data.phone || `017${Math.floor(Math.random() * 100000000)}`;
+  if (await prisma.user.findUnique({ where: { phone } })) throw new Error('Agent already exists with this phone number');
+  
   const newUser = await prisma.user.create({
     data: {
       fullName: data.name,
       email: `${Date.now()}@agent.com`,
-      phone: data.phone,
+      phone: phone,
       password: 'dummy_password',
       userType: 'DELIVERY_AGENT'
     }
@@ -56,7 +59,7 @@ export const createAgent = async (data: any) => {
   const newAgent = await prisma.deliveryAgent.create({
     data: {
       userId: newUser.id,
-      employeeCode: data.id || `AG-${Date.now()}`,
+      employeeCode: `AG-${Date.now()}`,
       phone: data.phone,
       status: data.status ? data.status.toUpperCase() : 'ACTIVE',
     },

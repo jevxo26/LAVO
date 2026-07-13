@@ -44,14 +44,30 @@ const getBranchById = async (id) => {
 exports.getBranchById = getBranchById;
 const createBranch = async (data) => {
     return await prisma.branch.create({
-        data
+        data: {
+            branchCode: data.id || `BR-${Date.now()}`,
+            branchName: data.branchName,
+            branchType: 'Standard',
+            country: 'Bangladesh',
+            city: 'Dhaka',
+            address: 'Dummy Address',
+            phone: data.contact,
+            status: data.status ? data.status.toUpperCase() : 'ACTIVE',
+        }
     });
 };
 exports.createBranch = createBranch;
 const updateBranch = async (id, data) => {
+    const updateData = {};
+    if (data.branchName)
+        updateData.branchName = data.branchName;
+    if (data.contact)
+        updateData.phone = data.contact;
+    if (data.status)
+        updateData.status = data.status.toUpperCase();
     return await prisma.branch.update({
         where: { id },
-        data
+        data: updateData
     });
 };
 exports.updateBranch = updateBranch;

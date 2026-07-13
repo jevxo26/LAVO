@@ -7,6 +7,7 @@ const router = Router();
 
 // Protect all user routes - must be logged in
 // TEMPORARY BYPASS FOR UI TESTING
+// Temporarily bypass security for testing
 // router.use(verifyToken);
 
 // Only admins can manage users directly

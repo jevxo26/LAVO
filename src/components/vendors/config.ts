@@ -12,7 +12,7 @@ export type VendorRecord = {
 }
 
 export const vendorSchema = z.object({
-  id: z.string().min(1, "Vendor ID is required"),
+  id: z.string().optional(),
   vendorName: z.string().min(2, "Vendor name is required"),
   owner: z.string().min(2, "Owner is required"),
   commission: z.coerce.number().min(0).max(100),
@@ -37,7 +37,6 @@ export const vendorConfig: CrudModuleConfig<VendorRecord> = {
     { accessorKey: "status", header: "Status", kind: "status" },
   ],
   fields: [
-    { name: "id", label: "Vendor ID", placeholder: "VEN-204" },
     { name: "vendorName", label: "Vendor Name", placeholder: "Vendor name" },
     { name: "owner", label: "Owner", placeholder: "Owner name" },
     { name: "commission", label: "Commission", type: "number", placeholder: "12" },

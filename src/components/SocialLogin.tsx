@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
-import FacebookLogin from 'react-facebook-login/dist/facebook-login-render-props';
+import FacebookLogin from '@greatsumini/react-facebook-login';
 
 export default function SocialLogin() {
   const handleGoogleSuccess = async (credentialResponse: any) => {
@@ -86,7 +86,8 @@ export default function SocialLogin() {
           appId={facebookAppId}
           autoLoad={false}
           fields="name,email,picture"
-          callback={handleFacebookResponse}
+          onSuccess={handleFacebookResponse}
+          onFail={(err: any) => console.error('Facebook login failed:', err)}
           render={(renderProps: any) => (
             <button
               onClick={renderProps.onClick}

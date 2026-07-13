@@ -15,24 +15,54 @@ export class UserService {
       prisma.user.findMany({ where, skip, take: limit, orderBy: { createdAt: 'desc' }, select: selectUser }),
       prisma.user.count({ where }),
     ]);
-    return { data: users, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+    const mappedUsers = users.map(user => ({
+      ...user,
+      name: user.fullName,
+      role: user.userType,
+    }));
+    return { data: mappedUsers, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } };
   }
 
   static async getUserById(id: string) {
-    return prisma.user.findUnique({ where: { id, deletedAt: null }, select: selectUser });
+    const user = await prisma.user.findUnique({ where: { id, deletedAt: null }, select: selectUser });
+    if (!user) return null;
+    return { ...user, name: user.fullName, role: user.userType };
   }
 
-  static async createUser(data: Prisma.UserCreateInput) {
-    if (await prisma.user.findUnique({ where: { email: data.email } })) throw new Error('User already exists with this email');
-    const dataToSave = { ...data };
-    if (data.password) dataToSave.password = await bcrypt.hash(data.password, 10);
+  static async createUser(data: any) {
+    const email = data.email;
+    if (await prisma.user.findUnique({ where: { email } })) throw new Error('User already exists with this email');
+    if (data.phone) {
+      if (await prisma.user.findUnique({ where: { phone: data.phone } })) throw new Error('User already exists with this phone number');
+    }
+    
+    const dataToSave: any = {
+      fullName: data.name || data.fullName,
+      email: data.email,
+      phone: data.phone,
+      userType: data.role ? data.role.toUpperCase().replace(' ', '_') : (data.userType || 'CUSTOMER'),
+      status: data.status ? data.status.toUpperCase() : 'ACTIVE',
+    };
+    
+    const plainPassword = data.password || 'Laundrix@1234';
+    dataToSave.password = await bcrypt.hash(plainPassword, 10);
+    
     const { password, ...userWithoutPassword } = await prisma.user.create({ data: dataToSave });
     return userWithoutPassword;
   }
 
-  static async updateUser(id: string, data: Prisma.UserUpdateInput) {
-    const dataToUpdate = { ...data };
-    if (data.password && typeof data.password === 'string') dataToUpdate.password = await bcrypt.hash(data.password, 10);
+  static async updateUser(id: string, data: any) {
+    const dataToUpdate: any = {};
+    if (data.name) dataToUpdate.fullName = data.name;
+    if (data.email) dataToUpdate.email = data.email;
+    if (data.phone) dataToUpdate.phone = data.phone;
+    if (data.role) dataToUpdate.userType = data.role.toUpperCase().replace(' ', '_');
+    if (data.status) dataToUpdate.status = data.status.toUpperCase();
+    
+    if (data.password && typeof data.password === 'string') {
+      dataToUpdate.password = await bcrypt.hash(data.password, 10);
+    }
+    
     const { password, ...userWithoutPassword } = await prisma.user.update({ where: { id }, data: dataToUpdate });
     return userWithoutPassword;
   }
