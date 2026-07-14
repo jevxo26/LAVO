@@ -19,6 +19,10 @@ import serviceRoutes from './routes/serviceRoutes';
 import logisticsRoutes from './routes/logisticsRoutes';
 import supportRoutes from './routes/supportRoutes';
 import financeRoutes from './routes/financeRoutes';
+import branchDashboardRoutes from './routes/branchDashboardRoutes';
+
+import { initSocket } from './socket';
+
 const prisma = new PrismaClient();
 
 const dev = process.env.NODE_ENV !== 'production';
@@ -79,6 +83,8 @@ app.prepare().then(async () => {
   server.use('/api/logistics', logisticsRoutes);
   server.use('/api/support', supportRoutes);
   server.use('/api/finance', financeRoutes);
+  server.use('/api/branch-dashboard', branchDashboardRoutes);
+
 
   // Serve uploaded files statically
   server.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));
@@ -108,9 +114,13 @@ app.prepare().then(async () => {
     });
   });
 
-  server.listen(port, () => {
+  const httpServer = server.listen(port, () => {
     console.log(`> Ready on http://localhost:${port}`);
   });
+
+  // Initialize Socket.io
+  initSocket(httpServer);
+
 }).catch((err) => {
   console.error('Error starting server', err);
   process.exit(1);
