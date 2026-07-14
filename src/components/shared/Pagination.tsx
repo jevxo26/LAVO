@@ -11,11 +11,7 @@ type PaginationProps<TData> = {
 
 export function Pagination<TData>({ table }: PaginationProps<TData>) {
   return (
-    <div className="flex flex-col gap-3 border-t border-slate-200 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-      <p className="text-sm text-slate-500">
-        Page {table.getState().pagination.pageIndex + 1} of{" "}
-        {Math.max(table.getPageCount(), 1)}
-      </p>
+    <div className="flex justify-end">
       <div className="flex items-center gap-2">
         <Button
           variant="outline"
