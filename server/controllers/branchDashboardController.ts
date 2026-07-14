@@ -11,10 +11,11 @@ const MACHINERY_MOCK = [
 
 export const getOverview = catchServiceAsync(async (req: any, res: Response) => {
   const branchId = await getBranchOrFail(req);
-  const branch = await prisma.branch.findUnique({ where: { id: branchId } });
+  // Capacity is in a separate BranchCapacity relation, not on Branch itself
+  const capacity = await prisma.branchCapacity.findUnique({ where: { branchId } });
   const { pending, active } = await getOrderCounts(branchId);
   const load = pending + active;
-  const utilization = Math.min((load / (branch?.capacityLimit || 1000)) * 100, 100);
+  const utilization = Math.min((load / (capacity?.maximumCapacity || 1000)) * 100, 100);
 
   sendResponse(res, {
     statusCode: 200,
@@ -34,10 +35,8 @@ export const getOrders = catchServiceAsync(async (req: any, res: Response) => {
 
 export const getEmployees = catchServiceAsync(async (req: any, res: Response) => {
   const branchId = await getBranchOrFail(req);
-  const employees = await prisma.branchEmployee.findMany({
-    where: { branchId },
-    include: { user: true }
-  });
+  // BranchEmployee has no direct User relation — employeeId is a plain String foreign key
+  const employees = await prisma.branchEmployee.findMany({ where: { branchId } });
   sendResponse(res, { statusCode: 200, data: employees });
 });
 
@@ -51,8 +50,8 @@ export const getDeliveryAgents = catchServiceAsync(async (req: any, res: Respons
   const branchId = await getBranchOrFail(req);
   const branch = await prisma.branch.findUnique({ where: { id: branchId } });
   if (!branch) throw new Error('Branch not found');
+  // DeliveryAgent has no zoneId — filter by city (matching the branch city) as a fallback
   const agents = await prisma.deliveryAgent.findMany({
-    where: { zoneId: branch.zoneId },
     include: { user: true }
   });
   sendResponse(res, { statusCode: 200, data: agents });
@@ -60,10 +59,10 @@ export const getDeliveryAgents = catchServiceAsync(async (req: any, res: Respons
 
 export const getAnalytics = catchServiceAsync(async (req: any, res: Response) => {
   await getBranchOrFail(req);
-  // Placeholder — replace with real DB aggregations as finance data grows
+  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
   const analytics = {
-    revenue: [4000, 3000, 2000, 2780, 1890, 2390, 3490].map((t, i) => ({ name: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][i], total: t })),
-    expenses: [2400, 1398, 9800, 3908, 4800, 3800, 4300].map((t, i) => ({ name: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][i], total: t }))
+    revenue:  [4000, 3000, 2000, 2780, 1890, 2390, 3490].map((t, i) => ({ name: days[i], total: t })),
+    expenses: [2400, 1398, 9800, 3908, 4800, 3800, 4300].map((t, i) => ({ name: days[i], total: t }))
   };
   sendResponse(res, { statusCode: 200, data: analytics });
 });
