@@ -7,7 +7,7 @@ const router = express.Router();
 
 // Only allow Branch Managers and Admins to access these routes
 router.use(verifyToken);
-router.use(restrictTo('BRANCH_MANAGER', 'ADMIN', 'SUPER_ADMIN'));
+router.use(restrictTo('BRANCH_MANAGER', 'Branch Manager', 'ADMIN', 'Admin', 'SUPER_ADMIN'));
 
 // Note: In a real app, the branchId would be derived from the logged-in BRANCH_MANAGER's profile.
 // For the admin viewing it, we allow passing ?branchId=xxx
