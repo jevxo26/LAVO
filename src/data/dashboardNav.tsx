@@ -8,6 +8,10 @@ import {
  CircleDollarSign,
  Headphones,
  Building2,
+ Store,
+ ClipboardList,
+ UsersRound,
+ Boxes
 } from "lucide-react";
 
 export interface NavItem {
@@ -55,6 +59,19 @@ export const dashboardNavItems: NavItem[] = [
     href: "/dashboard/services",
     icon: Shirt,
     roles: ["SUPER_ADMIN", "Admin", "Branch Manager"],
+  },
+  {
+    name: "Branch Operations",
+    icon: Store,
+    roles: ["SUPER_ADMIN", "Admin", "Branch Manager"],
+    children: [
+      { name: "Overview", href: "/dashboard/branch/overview", icon: LayoutDashboard, roles: ["SUPER_ADMIN", "Admin", "Branch Manager"] },
+      { name: "Orders", href: "/dashboard/branch/orders", icon: ClipboardList, roles: ["SUPER_ADMIN", "Admin", "Branch Manager"] },
+      { name: "Employees", href: "/dashboard/branch/employees", icon: UsersRound, roles: ["SUPER_ADMIN", "Admin", "Branch Manager"] },
+      { name: "Inventory", href: "/dashboard/branch/inventory", icon: Boxes, roles: ["SUPER_ADMIN", "Admin", "Branch Manager"] },
+      { name: "Delivery Agents", href: "/dashboard/branch/delivery", icon: Truck, roles: ["SUPER_ADMIN", "Admin", "Branch Manager"] },
+      { name: "Analytics", href: "/dashboard/branch/analytics", icon: CircleDollarSign, roles: ["SUPER_ADMIN", "Admin", "Branch Manager"] },
+    ]
   },
   {
     name: "Delivery Logistics",
