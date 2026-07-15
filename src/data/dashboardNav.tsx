@@ -46,7 +46,7 @@ export const dashboardNavItems: NavItem[] = [
     name: "Branches",
     href: "/dashboard/branches",
     icon: Building2,
-    roles: ["SUPER_ADMIN", "Admin", "Branch Manager"],
+    roles: ["SUPER_ADMIN", "Admin"],
   },
   {
     name: "Vendors",
@@ -58,7 +58,7 @@ export const dashboardNavItems: NavItem[] = [
     name: "Laundry Services",
     href: "/dashboard/services",
     icon: Shirt,
-    roles: ["SUPER_ADMIN", "Admin", "Branch Manager"],
+    roles: ["SUPER_ADMIN", "Admin"],
   },
   {
     name: "Branch Operations",
@@ -77,7 +77,7 @@ export const dashboardNavItems: NavItem[] = [
     name: "Delivery Logistics",
     href: "/dashboard/logistics",
     icon: Truck,
-    roles: ["SUPER_ADMIN", "Admin", "Branch Manager", "Delivery Agent", "Pickup Agent"],
+    roles: ["SUPER_ADMIN", "Admin", "Delivery Agent", "Pickup Agent"],
   },
   {
     name: "Financial Configuration",
@@ -89,7 +89,7 @@ export const dashboardNavItems: NavItem[] = [
     name: "Customer Support",
     href: "/dashboard/support",
     icon: Headphones,
-    roles: ["SUPER_ADMIN", "Admin", "Employee", "Branch Manager"],
+    roles: ["SUPER_ADMIN", "Admin", "Employee"],
   },
   {
     name: "Settings",
