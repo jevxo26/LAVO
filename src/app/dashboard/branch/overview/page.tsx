@@ -15,7 +15,7 @@ export default function BranchOverview() {
     })
     .then(res => res.json())
     .then(res => {
-      setData(res.data)
+      setData(res.data || { capacityUtilization: '0', activeOrders: 0, pendingOrders: 0, activeMachinery: [] })
       setLoading(false)
     })
     .catch(() => setLoading(false))

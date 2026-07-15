@@ -16,7 +16,7 @@ export default function BranchOrders() {
     })
     .then(res => res.json())
     .then(res => {
-      setOrders(res.data)
+      setOrders(res.data || [])
       setLoading(false)
     })
     .catch(() => setLoading(false))
@@ -70,7 +70,7 @@ export default function BranchOrders() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {orders.length === 0 ? (
+              {(!orders || orders.length === 0) ? (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center">No orders found.</TableCell>
                 </TableRow>
