@@ -72,4 +72,18 @@ export const optimizedRoutes: OptimizedRoute[] = [
     deliveries: 3,
     status: "In Progress",
   },
+  {
+    id: "RT006",
+    agentId: "13553abc-d645-4eb9-8634-efc3e9c41b71",
+    agentName: "Delivery Agent",
+    routeName: "Dhanmondi Express Route",
+    startLocation: "Dhanmondi Branch",
+    endLocation: "Jigatola",
+    totalStops: 5,
+    totalDistance: "8.4 km",
+    estimatedTime: "32 mins",
+    pickups: 2,
+    deliveries: 3,
+    status: "Assigned",
+  },
 ];

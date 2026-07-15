@@ -1,6 +1,8 @@
 export interface AvailablePickup {
   id: string;
   orderId: string;
+  agentId?: string;
+  agentName?: string;
   customerName: string;
   customerPhone: string;
   pickupAddress: string;

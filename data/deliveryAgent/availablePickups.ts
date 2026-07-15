@@ -82,4 +82,22 @@ export const availablePickups: AvailablePickup[] = [
     status: "Completed",
     requestedAt: "2026-07-15 12:10 PM",
   },
+  {
+    id: "PU006",
+    orderId: "ORD1006",
+    agentId: "13553abc-d645-4eb9-8634-efc3e9c41b71",
+    agentName: "Delivery Agent",
+    customerName: "Sakib Ahmed",
+    customerPhone: "01799887766",
+    pickupAddress: "House 15, Road 7, Dhanmondi, Dhaka",
+    branch: "Dhanmondi Branch",
+    parcelType: "Laundry Clothes",
+    weight: "2.2 kg",
+    paymentType: "Prepaid",
+    pickupFee: 150,
+    distance: "2.1 km",
+    priority: "High",
+    status: "Assigned",
+    requestedAt: "2026-07-15 01:20 PM",
+  }
 ];

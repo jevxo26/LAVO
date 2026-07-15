@@ -76,4 +76,19 @@ export const overview: Overview[] = [
     rating: 4.7,
     status: "Available",
   },
+  {
+    id: "OV006",
+    agentId: "13553abc-d645-4eb9-8634-efc3e9c41b71", // login user id
+    agentName: "Delivery Agent",
+    branch: "Dhanmondi Branch",
+    date: "2026-07-15",
+    pendingPickups: 4,
+    pendingDeliveries: 6,
+    completedPickups: 12,
+    completedDeliveries: 10,
+    totalOrders: 22,
+    earnings: 1250,
+    rating: 4.9,
+    status: "Active",
+  }
 ];

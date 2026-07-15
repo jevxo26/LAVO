@@ -1,17 +1,17 @@
 import {
- LayoutDashboard,
- Users,
- Settings,
- Truck,
- PackageCheck,
- Shirt,
- CircleDollarSign,
- Headphones,
- Building2,
- Store,
- ClipboardList,
- UsersRound,
- Boxes
+  LayoutDashboard,
+  Users,
+  Settings,
+  Truck,
+  PackageCheck,
+  Shirt,
+  CircleDollarSign,
+  Headphones,
+  Building2,
+  Store,
+  ClipboardList,
+  UsersRound,
+  Boxes
 } from "lucide-react";
 
 export interface NavItem {
@@ -24,20 +24,20 @@ export interface NavItem {
 
 export const dashboardNavItems: NavItem[] = [
   {
-    name:"Dashboard",
-    href:"/dashboard",
+    name: "Dashboard",
+    href: "/dashboard",
     icon: LayoutDashboard,
-    roles: ["SUPER_ADMIN", "Admin", "Branch Manager", "Vendor", "Customer", "Employee", "Pickup Agent", "Delivery Agent"],
+    roles: ["SUPER_ADMIN", "Admin", "Branch Manager", "Vendor", "Customer", "Employee", "Pickup Agent", "Delivery_Agent"],
   },
   {
-    name:"User Management",
-    icon:Users,
+    name: "User Management",
+    icon: Users,
     roles: ["SUPER_ADMIN", "Admin"],
-    children:[
+    children: [
       {
-        name:"Users",
-        href:"/dashboard/users",
-        icon:Users,
+        name: "Users",
+        href: "/dashboard/users",
+        icon: Users,
         roles: ["SUPER_ADMIN", "Admin"],
       },
     ]
@@ -97,4 +97,43 @@ export const dashboardNavItems: NavItem[] = [
     icon: Settings,
     roles: ["SUPER_ADMIN", "Admin"],
   },
-];
+
+  // agent menu
+  {
+    name: "Overview",
+    href: "/dashboard/delivery-agent/overview",
+    icon: LayoutDashboard,
+    roles: ["DELIVERY_AGENT"],
+  },
+  {
+    name: "Available Pickups",
+    href: "/dashboard/delivery-agent/pickups",
+    icon: PackageCheck,
+    roles: ["DELIVERY_AGENT"],
+  },
+  {
+    name: "Available Deliveries",
+    href: "/dashboard/delivery-agent/deliveries",
+    icon: Truck,
+    roles: ["DELIVERY_AGENT"],
+  },
+  {
+    name: "Optimized Routes",
+    href: "/dashboard/delivery-agent/routes",
+    icon: ClipboardList,
+    roles: ["DELIVERY_AGENT"],
+  },
+  {
+    name: "Verification",
+    href: "/dashboard/delivery-agent/verification",
+    icon: Users,
+    roles: ["DELIVERY_AGENT"],
+  },
+  {
+    name: "History",
+    href: "/dashboard/delivery-agent/history",
+    icon: Boxes,
+    roles: ["DELIVERY_AGENT"],
+  },
+];
+

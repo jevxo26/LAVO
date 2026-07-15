@@ -1,6 +1,8 @@
 export interface AvailableDelivery {
   id: string;
   orderId: string;
+  agentId?: string;
+  agentName?: string;
   customerName: string;
   customerPhone: string;
   deliveryAddress: string;
