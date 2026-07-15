@@ -1,7 +1,12 @@
 import express from 'express';
-import * as branchDashboardController from '../controllers/branchDashboardController';
+
 import { verifyToken } from '../middlewares/authMiddleware';
 import { restrictTo } from '../middlewares/roleMiddleware';
+import * as overviewController from '../controllers/branch/overviewController';
+import * as orderController from '../controllers/branch/orderController';
+import * as employeeController from '../controllers/branch/employeeController';
+import * as inventoryController from '../controllers/branch/inventoryController';
+import * as agentController from '../controllers/branch/agentController';
 
 const router = express.Router();
 
@@ -11,22 +16,22 @@ router.use(restrictTo('BRANCH_MANAGER', 'Branch Manager', 'ADMIN', 'Admin', 'SUP
 
 // Note: In a real app, the branchId would be derived from the logged-in BRANCH_MANAGER's profile.
 // For the admin viewing it, we allow passing ?branchId=xxx
-router.get('/overview', branchDashboardController.getOverview);
-router.get('/orders', branchDashboardController.getOrders);
-router.get('/employees', branchDashboardController.getEmployees);
-router.post('/employees', branchDashboardController.createEmployee);
-router.patch('/employees/:id', branchDashboardController.updateEmployee);
-router.delete('/employees/:id', branchDashboardController.deleteEmployee);
+router.get('/overview', overviewController.getOverview);
+router.get('/orders', orderController.getOrders);
+router.get('/employees', employeeController.getEmployees);
+router.post('/employees', employeeController.createEmployee);
+router.patch('/employees/:id', employeeController.updateEmployee);
+router.delete('/employees/:id', employeeController.deleteEmployee);
 
-router.get('/inventory', branchDashboardController.getInventory);
-router.post('/inventory', branchDashboardController.createInventory);
-router.patch('/inventory/:id', branchDashboardController.updateInventory);
-router.delete('/inventory/:id', branchDashboardController.deleteInventory);
+router.get('/inventory', inventoryController.getInventory);
+router.post('/inventory', inventoryController.createInventory);
+router.patch('/inventory/:id', inventoryController.updateInventory);
+router.delete('/inventory/:id', inventoryController.deleteInventory);
 
-router.get('/delivery-agents', branchDashboardController.getDeliveryAgents);
-router.post('/delivery-agents', branchDashboardController.createDeliveryAgent);
-router.patch('/delivery-agents/:id', branchDashboardController.updateDeliveryAgent);
-router.delete('/delivery-agents/:id', branchDashboardController.deleteDeliveryAgent);
-router.get('/analytics', branchDashboardController.getAnalytics);
+router.get('/delivery-agents', agentController.getDeliveryAgents);
+router.post('/delivery-agents', agentController.createDeliveryAgent);
+router.patch('/delivery-agents/:id', agentController.updateDeliveryAgent);
+router.delete('/delivery-agents/:id', agentController.deleteDeliveryAgent);
+router.get('/analytics', overviewController.getAnalytics);
 
 export default router;
