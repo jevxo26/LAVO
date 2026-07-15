@@ -6,7 +6,7 @@ export const getBranchId = async (req: any): Promise<string | null> => {
   const branchId = req.query.branchId as string;
   if (branchId) return branchId;
 
-  if (req.user?.role === 'BRANCH_MANAGER' || req.user?.userType === 'Branch Manager') {
+  if (req.user?.role === 'BRANCH_MANAGER' || req.user?.role === 'Branch Manager') {
     const branch = await prisma.branch.findFirst({
       where: { managerId: req.user.userId || req.user.id }
     });
