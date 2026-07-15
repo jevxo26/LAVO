@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight, Menu, ChevronDown  } from "lucide-react";
 import { dashboardNavItems } from "@/data/dashboardNav";
+import { useAuth } from "@/hooks/useAuth";
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -15,6 +16,7 @@ interface SidebarProps {
 export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
   const pathname = usePathname();
   const [openMenu,setOpenMenu]=React.useState<string | null>(null);
+  const { user } = useAuth();
 
   React.useEffect(() => {
     dashboardNavItems.forEach((item) => {
@@ -58,7 +60,9 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
 
       <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-2">
         {
-          dashboardNavItems.map((item)=>{
+          dashboardNavItems
+            .filter(item => !item.roles || (user && item.roles.includes(user.userType)))
+            .map((item)=>{
             const hasChildren = item.children;
             const isParentActive =
               hasChildren &&
@@ -132,10 +136,10 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
                   openMenu===item.name && !isCollapsed && (
                     <div className="ml-8 mt-2 space-y-2">
                     {
-                      item.children?.map(child=>(
+                      item.children?.filter(child => !child.roles || (user && child.roles.includes(user.userType))).map(child=>(
                       <Link
                         key={child.name}
-                        href={child.href}
+                        href={child.href!}
                         className={cn(
                           "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all",
                           pathname === child.href || pathname.startsWith(`${child.href}/`)
@@ -163,16 +167,16 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
             isCollapsed ? "justify-center" : "",
           )}
         >
-          <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-indigo-400 to-purple-400 shrink-0 border-2 border-white shadow-sm flex items-center justify-center text-white font-bold text-xs">
-            JD
+          <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-indigo-400 to-purple-400 shrink-0 border-2 border-white shadow-sm flex items-center justify-center text-white font-bold text-xs uppercase">
+            {user?.fullName?.charAt(0) || "U"}
           </div>
           {!isCollapsed && (
             <div className="ml-3 truncate">
               <p className="text-sm font-medium text-slate-700 truncate">
-                John Doe
+                {user?.fullName || "User"}
               </p>
               <p className="text-xs text-slate-500 truncate">
-                admin@example.com
+                {user?.email || user?.userType || "No role"}
               </p>
             </div>
           )}
