@@ -51,10 +51,59 @@ export const getEmployees = catchServiceAsync(async (req: any, res: Response) =>
   sendResponse(res, { statusCode: 200, data: formatted });
 });
 
+export const createEmployee = catchServiceAsync(async (req: any, res: Response) => {
+  const branchId = await getBranchOrFail(req);
+  const { fullName, email, designation, status } = req.body;
+  // For demo/simplicity, we create a dummy user
+  const user = await prisma.user.create({
+    data: { fullName, email, password: 'dummyPassword123', userType: 'Employee' }
+  });
+  const emp = await prisma.branchEmployee.create({
+    data: { branchId, employeeId: user.id, designation, status }
+  });
+  sendResponse(res, { statusCode: 201, data: emp });
+});
+
+export const updateEmployee = catchServiceAsync(async (req: any, res: Response) => {
+  await getBranchOrFail(req);
+  const { id } = req.params;
+  const { fullName, email, designation, status } = req.body;
+  const emp = await prisma.branchEmployee.findUnique({ where: { id } });
+  if (emp) {
+    await prisma.user.update({ where: { id: emp.employeeId }, data: { fullName, email } });
+    await prisma.branchEmployee.update({ where: { id }, data: { designation, status } });
+  }
+  sendResponse(res, { statusCode: 200, data: { success: true } });
+});
+
+export const deleteEmployee = catchServiceAsync(async (req: any, res: Response) => {
+  await getBranchOrFail(req);
+  await prisma.branchEmployee.delete({ where: { id: req.params.id } });
+  sendResponse(res, { statusCode: 200, data: { success: true } });
+});
+
 export const getInventory = catchServiceAsync(async (req: any, res: Response) => {
   const branchId = await getBranchOrFail(req);
   const inventory = await prisma.branchInventory.findMany({ where: { branchId } });
   sendResponse(res, { statusCode: 200, data: inventory });
+});
+
+export const createInventory = catchServiceAsync(async (req: any, res: Response) => {
+  const branchId = await getBranchOrFail(req);
+  const item = await prisma.branchInventory.create({ data: { branchId, ...req.body } });
+  sendResponse(res, { statusCode: 201, data: item });
+});
+
+export const updateInventory = catchServiceAsync(async (req: any, res: Response) => {
+  await getBranchOrFail(req);
+  const item = await prisma.branchInventory.update({ where: { id: req.params.id }, data: req.body });
+  sendResponse(res, { statusCode: 200, data: item });
+});
+
+export const deleteInventory = catchServiceAsync(async (req: any, res: Response) => {
+  await getBranchOrFail(req);
+  await prisma.branchInventory.delete({ where: { id: req.params.id } });
+  sendResponse(res, { statusCode: 200, data: { success: true } });
 });
 
 export const getDeliveryAgents = catchServiceAsync(async (req: any, res: Response) => {
@@ -62,17 +111,41 @@ export const getDeliveryAgents = catchServiceAsync(async (req: any, res: Respons
   const branch = await prisma.branch.findUnique({ where: { id: branchId } });
   if (!branch) throw new Error('Branch not found');
   
-  const agents = await prisma.deliveryAgent.findMany({
-    include: { user: true }
-  });
-  
+  const agents = await prisma.deliveryAgent.findMany({ include: { user: true } });
   const formatted = agents.map((a: any) => ({
-    ...a,
-    fullName: a.user?.fullName || '-',
-    email: a.user?.email || '-'
+    ...a, fullName: a.user?.fullName || '-', email: a.user?.email || '-'
   }));
-
   sendResponse(res, { statusCode: 200, data: formatted });
+});
+
+export const createDeliveryAgent = catchServiceAsync(async (req: any, res: Response) => {
+  await getBranchOrFail(req);
+  const { fullName, email, employeeCode, phone, availability, status } = req.body;
+  const user = await prisma.user.create({
+    data: { fullName, email, password: 'dummyPassword123', userType: 'Delivery Agent' }
+  });
+  const agent = await prisma.deliveryAgent.create({
+    data: { userId: user.id, employeeCode, phone, availability, status }
+  });
+  sendResponse(res, { statusCode: 201, data: agent });
+});
+
+export const updateDeliveryAgent = catchServiceAsync(async (req: any, res: Response) => {
+  await getBranchOrFail(req);
+  const { id } = req.params;
+  const { fullName, email, employeeCode, phone, availability, status } = req.body;
+  const agent = await prisma.deliveryAgent.findUnique({ where: { id } });
+  if (agent) {
+    await prisma.user.update({ where: { id: agent.userId }, data: { fullName, email } });
+    await prisma.deliveryAgent.update({ where: { id }, data: { employeeCode, phone, availability, status } });
+  }
+  sendResponse(res, { statusCode: 200, data: { success: true } });
+});
+
+export const deleteDeliveryAgent = catchServiceAsync(async (req: any, res: Response) => {
+  await getBranchOrFail(req);
+  await prisma.deliveryAgent.delete({ where: { id: req.params.id } });
+  sendResponse(res, { statusCode: 200, data: { success: true } });
 });
 
 export const getAnalytics = catchServiceAsync(async (req: any, res: Response) => {

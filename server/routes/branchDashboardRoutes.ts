@@ -14,8 +14,19 @@ router.use(restrictTo('BRANCH_MANAGER', 'Branch Manager', 'ADMIN', 'Admin', 'SUP
 router.get('/overview', branchDashboardController.getOverview);
 router.get('/orders', branchDashboardController.getOrders);
 router.get('/employees', branchDashboardController.getEmployees);
+router.post('/employees', branchDashboardController.createEmployee);
+router.patch('/employees/:id', branchDashboardController.updateEmployee);
+router.delete('/employees/:id', branchDashboardController.deleteEmployee);
+
 router.get('/inventory', branchDashboardController.getInventory);
+router.post('/inventory', branchDashboardController.createInventory);
+router.patch('/inventory/:id', branchDashboardController.updateInventory);
+router.delete('/inventory/:id', branchDashboardController.deleteInventory);
+
 router.get('/delivery-agents', branchDashboardController.getDeliveryAgents);
+router.post('/delivery-agents', branchDashboardController.createDeliveryAgent);
+router.patch('/delivery-agents/:id', branchDashboardController.updateDeliveryAgent);
+router.delete('/delivery-agents/:id', branchDashboardController.deleteDeliveryAgent);
 router.get('/analytics', branchDashboardController.getAnalytics);
 
 export default router;
