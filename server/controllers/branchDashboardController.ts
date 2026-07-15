@@ -35,9 +35,20 @@ export const getOrders = catchServiceAsync(async (req: any, res: Response) => {
 
 export const getEmployees = catchServiceAsync(async (req: any, res: Response) => {
   const branchId = await getBranchOrFail(req);
-  // BranchEmployee has no direct User relation — employeeId is a plain String foreign key
   const employees = await prisma.branchEmployee.findMany({ where: { branchId } });
-  sendResponse(res, { statusCode: 200, data: employees });
+  
+  const userIds = employees.map((e: any) => e.employeeId);
+  const users = await prisma.user.findMany({ 
+    where: { id: { in: userIds } }, 
+    select: { id: true, fullName: true, email: true } 
+  });
+  
+  const formatted = employees.map((e: any) => {
+    const u = users.find((u: any) => u.id === e.employeeId);
+    return { ...e, fullName: u?.fullName || '-', email: u?.email || '-' };
+  });
+
+  sendResponse(res, { statusCode: 200, data: formatted });
 });
 
 export const getInventory = catchServiceAsync(async (req: any, res: Response) => {
@@ -50,11 +61,18 @@ export const getDeliveryAgents = catchServiceAsync(async (req: any, res: Respons
   const branchId = await getBranchOrFail(req);
   const branch = await prisma.branch.findUnique({ where: { id: branchId } });
   if (!branch) throw new Error('Branch not found');
-  // DeliveryAgent has no zoneId — filter by city (matching the branch city) as a fallback
+  
   const agents = await prisma.deliveryAgent.findMany({
     include: { user: true }
   });
-  sendResponse(res, { statusCode: 200, data: agents });
+  
+  const formatted = agents.map((a: any) => ({
+    ...a,
+    fullName: a.user?.fullName || '-',
+    email: a.user?.email || '-'
+  }));
+
+  sendResponse(res, { statusCode: 200, data: formatted });
 });
 
 export const getAnalytics = catchServiceAsync(async (req: any, res: Response) => {
