@@ -8,10 +8,11 @@ import {
   type CellContext,
   type ColumnDef,
 } from "@tanstack/react-table"
-import { Plus } from "lucide-react"
+import { ListFilter, Plus } from "lucide-react"
 import { toast } from "sonner"
 import axios from "axios"
 
+import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import {
   Table,
@@ -194,79 +195,96 @@ export function AdminCrudPage<TRecord extends AdminRecord>({
         onAction={() => setCreateOpen(true)}
       />
 
-      <Card className="rounded-lg border border-slate-200 bg-white shadow-sm ring-0">
-        <CardContent className="space-y-4 p-4">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <SearchInput
-              value={search}
-              onChange={setSearch}
-              placeholder={config.searchPlaceholder}
-            />
-            <p className="text-sm text-slate-500">
-              {table.getFilteredRowModel().rows.length} records
-            </p>
-          </div>
+      <div className="space-y-4">
+        <Card className="rounded-lg border border-slate-200 bg-white shadow-sm ring-0">
+          <CardContent>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <SearchInput
+                value={search}
+                onChange={setSearch}
+                placeholder={config.searchPlaceholder}
+              />
+              <Button type="button" variant="outline">
+                <ListFilter className="size-4" />
+                Filter
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
-          <div className="overflow-hidden rounded-lg border border-slate-200">
-            {isLoading ? (
-              <LoadingSkeleton />
-            ) : (
-              <Table>
-                <TableHeader className="bg-slate-50">
-                  {table.getHeaderGroups().map((headerGroup) => (
-                    <TableRow key={headerGroup.id}>
-                      {headerGroup.headers.map((header) => (
-                        <TableHead key={header.id}>
-                          {header.isPlaceholder
-                            ? null
-                            : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext()
-                              )}
-                        </TableHead>
-                      ))}
-                    </TableRow>
-                  ))}
-                </TableHeader>
-                <TableBody>
-                  {table.getRowModel().rows.length ? (
-                    table.getRowModel().rows.map((row) => (
-                      <TableRow key={row.id}>
-                        {row.getVisibleCells().map((cell) => (
-                          <TableCell key={cell.id}>
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext()
-                            )}
-                          </TableCell>
+        <Card className="rounded-lg border border-slate-200 bg-white shadow-sm ring-0">
+          <CardContent className="p-4">
+            <div className="overflow-hidden rounded-lg border border-slate-200">
+              {isLoading ? (
+                <LoadingSkeleton />
+              ) : (
+                <Table>
+                  <TableHeader className="bg-slate-50">
+                    {table.getHeaderGroups().map((headerGroup) => (
+                      <TableRow key={headerGroup.id}>
+                        {headerGroup.headers.map((header) => (
+                          <TableHead key={header.id}>
+                            {header.isPlaceholder
+                              ? null
+                              : flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext()
+                                )}
+                          </TableHead>
                         ))}
                       </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell
-                        colSpan={columns.length}
-                        className="h-44 text-center"
-                      >
-                        <div className="mx-auto max-w-sm">
-                          <p className="font-medium text-slate-900">
-                            {config.emptyTitle}
-                          </p>
-                          <p className="mt-1 text-sm text-slate-500">
-                            {config.emptyDescription}
-                          </p>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            )}
-            <Pagination table={table} />
-          </div>
-        </CardContent>
-      </Card>
+                    ))}
+                  </TableHeader>
+                  <TableBody>
+                    {table.getRowModel().rows.length ? (
+                      table.getRowModel().rows.map((row) => (
+                        <TableRow key={row.id}>
+                          {row.getVisibleCells().map((cell) => (
+                            <TableCell key={cell.id}>
+                              {flexRender(
+                                cell.column.columnDef.cell,
+                                cell.getContext()
+                              )}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell
+                          colSpan={columns.length}
+                          className="h-44 text-center"
+                        >
+                          <div className="mx-auto max-w-sm">
+                            <p className="font-medium text-slate-900">
+                              {config.emptyTitle}
+                            </p>
+                            <p className="mt-1 text-sm text-slate-500">
+                              {config.emptyDescription}
+                            </p>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
+        <Card className="rounded-lg border border-slate-200 bg-white shadow-sm ring-0">
+          <CardContent className="">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm text-slate-500">
+                Page {table.getState().pagination.pageIndex + 1} of{" "}
+                {Math.max(table.getPageCount(), 1)}
+              </p>
+              <Pagination table={table} />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
       <RecordDialog
         mode="create"
         open={createOpen}
