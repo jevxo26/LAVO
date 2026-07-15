@@ -12,7 +12,7 @@ export default function BranchOrders() {
 
   useEffect(() => {
     fetch('/api/branch-dashboard/orders', {
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('laundrix_token')}` }
     })
     .then(res => res.json())
     .then(res => {

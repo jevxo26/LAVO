@@ -10,7 +10,7 @@ export default function BranchAnalytics() {
 
   useEffect(() => {
     fetch('/api/branch-dashboard/analytics', {
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('laundrix_token')}` }
     })
     .then(res => res.json())
     .then(res => {

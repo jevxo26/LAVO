@@ -11,7 +11,7 @@ export default function BranchOverview() {
 
   useEffect(() => {
     fetch('/api/branch-dashboard/overview', {
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('laundrix_token')}` }
     })
     .then(res => res.json())
     .then(res => {
