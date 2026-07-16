@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect } from "react";
 import { Html5QrcodeScanner, Html5QrcodeScanType } from "html5-qrcode";
 
 interface QrScannerProps {
@@ -12,6 +12,8 @@ interface QrScannerProps {
   disableFlip?: boolean;
 }
 
+const qrcodeRegionId = "html5qr-code-full-region";
+
 export function QrScanner({
   onScanSuccess,
   onScanFailure,
@@ -20,12 +22,21 @@ export function QrScanner({
   aspectRatio = 1.0,
   disableFlip = false,
 }: QrScannerProps) {
-  const scannerRef = useRef<Html5QrcodeScanner | null>(null);
-  const [regionId] = useState(() => `qr-region-${Math.random().toString(36).substring(2, 9)}`);
-
   useEffect(() => {
-    // Prevent multiple instances in React Strict Mode by ensuring we only initialize once per regionId
-    if (!scannerRef.current) {
+    let isMounted = true;
+    let scanner: Html5QrcodeScanner | null = null;
+
+    // Clean up the DOM element just in case there's any residual HTML
+    const el = document.getElementById(qrcodeRegionId);
+    if (el) el.innerHTML = "";
+
+    // Debounce the initialization by 50ms.
+    // In React 18 Strict Mode, components mount, unmount, and remount instantly.
+    // This timeout ensures the first "ghost" mount is cancelled before it creates a camera instance,
+    // leaving only the final, real mount to initialize the scanner.
+    const initTimer = setTimeout(() => {
+      if (!isMounted) return;
+
       const config = {
         fps,
         qrbox,
@@ -34,31 +45,26 @@ export function QrScanner({
         supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
       };
 
-      scannerRef.current = new Html5QrcodeScanner(regionId, config, false);
-      scannerRef.current.render(onScanSuccess, onScanFailure);
-    }
+      scanner = new Html5QrcodeScanner(qrcodeRegionId, config, false);
+      scanner.render(onScanSuccess, onScanFailure);
+    }, 50);
 
     return () => {
-      if (scannerRef.current) {
-        scannerRef.current.clear().catch(error => {
+      isMounted = false;
+      clearTimeout(initTimer);
+      if (scanner) {
+        scanner.clear().catch((error) => {
           console.error("Failed to clear html5QrcodeScanner. ", error);
         });
-        scannerRef.current = null;
-      }
-      
-      // Force cleanup of the DOM node in case html5-qrcode clear() is too slow
-      const el = document.getElementById(regionId);
-      if (el) {
-        el.innerHTML = '';
       }
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [regionId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
-    <div 
-      id={regionId} 
-      className="w-full max-w-md mx-auto rounded-xl overflow-hidden border-2 border-slate-200 bg-white shadow-sm" 
+    <div
+      id={qrcodeRegionId}
+      className="w-full max-w-md mx-auto rounded-xl overflow-hidden border-2 border-slate-200 bg-white shadow-sm"
     />
   );
 }
