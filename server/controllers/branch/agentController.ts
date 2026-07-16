@@ -19,7 +19,7 @@ export const createDeliveryAgent = catchServiceAsync(async (req: any, res: Respo
   await getBranchOrFail(req);
   const { fullName, email, employeeCode, phone, availability, status } = req.body;
   const user = await prisma.user.create({
-    data: { fullName, email, password: 'dummyPassword123', userType: 'Delivery Agent' }
+    data: { fullName, email, password: 'dummyPassword123', userType: 'DELIVERY_AGENT' }
   });
   const agent = await prisma.deliveryAgent.create({
     data: { userId: user.id, employeeCode, phone, availability, status }
