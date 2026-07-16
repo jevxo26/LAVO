@@ -1,22 +1,24 @@
 "use client";
 
 import { DataTable } from "@/components/shared/DataTable";
-import { Verification as VerificationType } from "../../../../types/deliveryAgent/verification";
 import { getVerificationColumns } from "./VerificationColumns";
 import VerificationToolbar from "./VerificationToolbar";
 import { useState } from "react";
 import OtpDialog from "./OtpDialog";
+import { VerificationType } from "../types";
 
 type VerificationTableProps = {
     data: VerificationType[];
     search: string;
     setSearch: (value: string) => void;
+    fetchVerification: () => Promise<void>;
 };
 
 const VerificationTable = ({
     data,
     search,
     setSearch,
+    fetchVerification,
 }: VerificationTableProps) => {
     const [open, setOpen] = useState(false);
     const [selectedVerification, setSelectedVerification] =
@@ -30,6 +32,8 @@ const VerificationTable = ({
     const columns = getVerificationColumns({
         onVerify: handleVerify,
     });
+
+    
 
     return (
         <div className="space-y-5">
@@ -47,6 +51,7 @@ const VerificationTable = ({
             <OtpDialog
                 open={open}
                 verification={selectedVerification}
+                fetchVerification={fetchVerification}
                 onClose={()=>{
                 setOpen(false);
                 setSelectedVerification(null);

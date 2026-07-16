@@ -1,13 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import axios from "axios";
+import { useEffect, useMemo, useState } from "react";
 import { DataTable } from "@/components/shared/DataTable";
 import { useAuth } from "@/hooks/useAuth";
-import { availableDeliveries } from "../../../../data/deliveryAgent/availableDeliveries";
-import { AvailableDelivery } from "../../../../types/deliveryAgent/availableDelivery";
 import { ViewDialog } from "@/components/shared/ViewDialog";
 import { AcceptDialog } from "@/components/shared/AcceptDialog";
 import { getDeliveryColumns } from "./DeliveryColumns";
+import { AvailableDelivery } from "../types";
 
 type DeliveryTableProps = {
   search: string;
@@ -15,28 +15,48 @@ type DeliveryTableProps = {
 
 const DeliveryTable = ({ search }: DeliveryTableProps) => {
   const { user } = useAuth();
+  const [data, setData] = useState<AvailableDelivery[]>([]);
   const [viewOpen, setViewOpen] = useState(false);
   const [startOpen, setStartOpen] = useState(false);
   const [selectedDelivery, setSelectedDelivery] =
     useState<AvailableDelivery | null>(null);
 
-  const data = useMemo(() => {
-    return availableDeliveries.filter((item) => {
-      const matchAgent =
-        item.agentId === user?.id ||
-        item.agentId === undefined;
+  const fetchDeliveries = async () => {
+    try {
+      const token = localStorage.getItem("laundrix_token");
+
+      const res = await axios.get(
+        "/api/delivery-agent/available-deliveries",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log("Available Deliveries:", res.data);
+
+      setData(res.data.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  const filteredData = useMemo(() => {
+    return data.filter((item) => {
       const matchSearch =
         item.orderId
-          .toLowerCase()
-          .includes(search.toLowerCase()) ||
-
+          .toString()
+          .includes(search) ||
         item.customerName
-          .toLowerCase()
+          ?.toLowerCase()
           .includes(search.toLowerCase());
 
-      return matchAgent && matchSearch;
+      return matchSearch;
     });
-  }, [user, search]);
+  }, [data, search]);
+  useEffect(() => {
+    fetchDeliveries();
+  }, []);
 
   const handleView = (delivery: AvailableDelivery) => {
     setSelectedDelivery(delivery);
@@ -59,7 +79,7 @@ const DeliveryTable = ({ search }: DeliveryTableProps) => {
     <div className="rounded-xl border bg-white p-5 space-y-5">
       <DataTable
         columns={columns}
-        data={data}
+        data={filteredData}
         emptyMessage="No delivery available."
       />
       {/* View Dialog */}
@@ -155,10 +175,27 @@ const DeliveryTable = ({ search }: DeliveryTableProps) => {
           setStartOpen(false);
           setSelectedDelivery(null);
         }}
-        onConfirm={() => {
-          console.log("Started Delivery:", selectedDelivery);
-          setStartOpen(false);
-          setSelectedDelivery(null);
+        onConfirm={async () => {
+          try {
+            const token = localStorage.getItem("laundrix_token");
+
+            await axios.patch(
+              `/api/delivery-agent/accept-delivery/${selectedDelivery?.id}`,
+              {},
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            );
+
+            setStartOpen(false);
+            setSelectedDelivery(null);
+
+            fetchDeliveries();
+          } catch (error) {
+            console.error(error);
+          }
         }}
       />
     </div>

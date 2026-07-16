@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import axios from "axios";
 import { DataTable } from "@/components/shared/DataTable";
 import { useAuth } from "@/hooks/useAuth";
-import { history } from "../../../../data/deliveryAgent/history";
 import { historyColumns } from "./HistoryColumns";
+import { History } from "../types";
 
 type HistoryTableProps = {
     search: string;
@@ -14,25 +15,46 @@ const HistoryTable = ({
     search
 }: HistoryTableProps) => {
     const { user } = useAuth();
+    const [historyData, setHistoryData] = useState<History[]>([]);
+
+    useEffect(() => {
+        const fetchHistory = async () => {
+            try {
+                const token = localStorage.getItem("laundrix_token");
+                const res = await axios.get(
+                    "/api/delivery-agent/history",
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                );
+                setHistoryData(res.data.data);
+            } catch (error) {
+                console.error(error);
+            }
+        };
+        fetchHistory();
+    }, []);
+
     const data = useMemo(() => {
-
-        return history.filter((item) => {
-            const matchAgent =
-                item.agentId === user?.id ||
-                item.agentId === undefined;
-
-            const matchSearch =
+        return historyData.filter((item) => {
+            return (
                 item.orderId
+                    .toString()
                     .toLowerCase()
                     .includes(search.toLowerCase())
                 ||
                 item.customerName
                     .toLowerCase()
-                    .includes(search.toLowerCase());
+                    .includes(search.toLowerCase())
+            );
 
-            return matchAgent && matchSearch;
         });
-    }, [user, search]);
+
+    }, [historyData, search]);
+
+
 
     return (
         <div className="rounded-xl border bg-white p-5">

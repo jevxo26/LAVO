@@ -1,8 +1,18 @@
 import { Star } from "lucide-react";
-import { Overview } from "../../../../types/deliveryAgent/overview";
 
 type Props = {
-  agent: Overview;
+  agent: {
+    agentId: string;
+    employeeCode: string;
+    phone: string;
+    status: string;
+
+    totalPickups: number;
+    pendingPickups: number;
+
+    totalDeliveries: number;
+    pendingDeliveries: number;
+  };
 };
 
 export default function PerformanceCard({ agent }: Props) {
@@ -11,23 +21,40 @@ export default function PerformanceCard({ agent }: Props) {
       <h2 className="mb-4 text-lg font-semibold">
         Performance
       </h2>
+
       <div className="space-y-4">
+
         <div className="flex justify-between">
           <span>Total Orders</span>
-          <strong>{agent.totalOrders}</strong>
-        </div>
-        <div className="flex justify-between">
-          <span>Earnings</span>
-          <strong>৳ {agent.earnings}</strong>
-        </div>
-        <div className="flex justify-between">
-          <span>Rating</span>
-          <strong className="flex items-center gap-1">
-            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-
-            {agent.rating}
+          <strong>
+            {agent.totalPickups + agent.totalDeliveries}
           </strong>
         </div>
+
+
+        <div className="flex justify-between">
+          <span>Pickups</span>
+          <strong>
+            {agent.totalPickups}
+          </strong>
+        </div>
+
+
+        <div className="flex justify-between">
+          <span>Deliveries</span>
+          <strong>
+            {agent.totalDeliveries}
+          </strong>
+        </div>
+
+
+        <div className="flex justify-between">
+          <span>Status</span>
+          <strong>
+            {agent.status}
+          </strong>
+        </div>
+
       </div>
     </div>
   );

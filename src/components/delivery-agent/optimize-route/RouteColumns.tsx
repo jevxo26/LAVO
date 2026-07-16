@@ -1,7 +1,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 
 import { StatusBadge } from "@/components/shared/StatusBadge";
-import { OptimizedRoute } from "../../../../types/deliveryAgent/optimizedRoute";
+import { OptimizedRoute } from "../types";
 
 
 export const getRouteColumns = (): ColumnDef<OptimizedRoute>[] => [

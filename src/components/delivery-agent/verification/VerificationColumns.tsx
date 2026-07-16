@@ -1,15 +1,15 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Button } from "@/components/ui/button";
-import { Verification } from "../../../../types/deliveryAgent/verification";
+import { VerificationType } from "../types";
 
 type VerificationColumnsProps = {
-  onVerify:(item:Verification)=>void;
+  onVerify:(item:VerificationType)=>void;
 }
 
 export const getVerificationColumns = ({
  onVerify
-}:VerificationColumnsProps):ColumnDef<Verification>[] => [
+}:VerificationColumnsProps):ColumnDef<VerificationType>[] => [
     {
         accessorKey: "orderId",
         header: "Order ID",

@@ -35,7 +35,7 @@ export class UserService {
     if (data.phone) {
       if (await prisma.user.findUnique({ where: { phone: data.phone } })) throw new Error('User already exists with this phone number');
     }
-    
+
     const dataToSave: any = {
       fullName: data.name || data.fullName,
       email: data.email,
@@ -43,27 +43,70 @@ export class UserService {
       userType: data.role ? data.role.toUpperCase().replace(' ', '_') : (data.userType || 'CUSTOMER'),
       status: data.status ? data.status.toUpperCase() : 'ACTIVE',
     };
-    
+
     const plainPassword = data.password || 'Laundrix@1234';
     dataToSave.password = await bcrypt.hash(plainPassword, 10);
-    
+
     const { password, ...userWithoutPassword } = await prisma.user.create({ data: dataToSave });
     return userWithoutPassword;
   }
 
+  // static async updateUser(id: string, data: any) {
+  //   const dataToUpdate: any = {};
+  //   if (data.name) dataToUpdate.fullName = data.name;
+  //   if (data.email) dataToUpdate.email = data.email;
+  //   if (data.phone) dataToUpdate.phone = data.phone;
+  //   if (data.role) dataToUpdate.userType = data.role.toUpperCase().replace(' ', '_');
+  //   if (data.status) dataToUpdate.status = data.status.toUpperCase();
+
+  //   if (data.password && typeof data.password === 'string') {
+  //     dataToUpdate.password = await bcrypt.hash(data.password, 10);
+  //   }
+
+  //   const { password, ...userWithoutPassword } = await prisma.user.update({ where: { id }, data: dataToUpdate });
+  //   return userWithoutPassword;
+  // }
   static async updateUser(id: string, data: any) {
     const dataToUpdate: any = {};
+
     if (data.name) dataToUpdate.fullName = data.name;
     if (data.email) dataToUpdate.email = data.email;
     if (data.phone) dataToUpdate.phone = data.phone;
     if (data.role) dataToUpdate.userType = data.role.toUpperCase().replace(' ', '_');
     if (data.status) dataToUpdate.status = data.status.toUpperCase();
-    
+
     if (data.password && typeof data.password === 'string') {
       dataToUpdate.password = await bcrypt.hash(data.password, 10);
     }
-    
-    const { password, ...userWithoutPassword } = await prisma.user.update({ where: { id }, data: dataToUpdate });
+
+    const updatedUser = await prisma.user.update({
+      where: { id },
+      data: dataToUpdate,
+    });
+
+    if (updatedUser.userType === "DELIVERY_AGENT") {
+
+      const existingAgent = await prisma.deliveryAgent.findUnique({
+        where: {
+          userId: updatedUser.id,
+        },
+      });
+
+
+      if (!existingAgent) {
+        await prisma.deliveryAgent.create({
+          data: {
+            userId: updatedUser.id,
+            phone: updatedUser.phone!,
+            employeeCode: `AG-${Date.now()}`,
+            status: "ACTIVE",
+            availability: true,
+          },
+        });
+      }
+    }
+    const { password, ...userWithoutPassword } = updatedUser;
+
     return userWithoutPassword;
   }
 

@@ -20,6 +20,7 @@ import logisticsRoutes from './routes/logisticsRoutes';
 import supportRoutes from './routes/supportRoutes';
 import financeRoutes from './routes/financeRoutes';
 import branchDashboardRoutes from './routes/branchDashboardRoutes';
+import deliveryAgentRoutes from './routes/deliveryAgentRoutes'
 
 import { initSocket } from './socket';
 
@@ -84,7 +85,7 @@ app.prepare().then(async () => {
   server.use('/api/support', supportRoutes);
   server.use('/api/finance', financeRoutes);
   server.use('/api/branch-dashboard', branchDashboardRoutes);
-
+  server.use('/api/delivery-agent', deliveryAgentRoutes);
 
   // Serve uploaded files statically
   server.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));

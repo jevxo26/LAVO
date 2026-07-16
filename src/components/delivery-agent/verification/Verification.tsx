@@ -1,34 +1,50 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-import { verification } from "../../../../data/deliveryAgent/verification";
 import { useAuth } from "@/hooks/useAuth";
 import VerificationTable from "./VerificationTable";
+import axios from "axios";
+import { VerificationType } from "../types";
 
 
 const Verification = () => {
     const { user } = useAuth();
     const [search, setSearch] = useState("");
-    const data = useMemo(() => {
+    const [data, setData] = useState<VerificationType[]>([]);
 
-        return verification.filter((item) => {
-            const matchAgent =
-                item.agentId === user?.id ||
-                item.agentId === undefined;
+    const fetchVerification = async () => {
+        try {
+            const token = localStorage.getItem("laundrix_token");
 
-            const matchSearch =
-                item.orderId
-                    .toLowerCase()
-                    .includes(search.toLowerCase())
-                ||
+            const res = await axios.get(
+                "/api/delivery-agent/verifications",
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            setData(res.data.data);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+    useEffect(() => {
+        fetchVerification();
+    }, []);
+
+    const filteredData = useMemo(() => {
+        return data.filter((item) => {
+            return (
+                item.orderId.toString().includes(search) ||
                 item.customerName
                     .toLowerCase()
-                    .includes(search.toLowerCase());
-
-            return matchAgent && matchSearch;
+                    .includes(search.toLowerCase())
+            );
         });
-    }, [user, search]);
+    }, [data, search]);
 
     return (
         <div className="space-y-6">
@@ -36,9 +52,10 @@ const Verification = () => {
                 Delivery Verification
             </h1>
             <VerificationTable
-                data={data}
+                data={filteredData}
                 search={search}
                 setSearch={setSearch}
+                fetchVerification={fetchVerification}
             />
         </div>
 

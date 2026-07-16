@@ -6,15 +6,48 @@ import { useAuth } from "@/hooks/useAuth";
 import SummaryCards from "./SummaryCards";
 import AgentInfoCard from "./AgentInfoCard";
 import PerformanceCard from "./PerformanceCard";
-import { overview } from "../../../../data/deliveryAgent/overview";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { LoadingSkeleton } from "@/components/shared/LoadingSkeleton";
 
 export default function Overview() {
   const { user } = useAuth();
-console.log(user)
+  console.log(user)
 
-const agent =
-  overview.find((item) => item.agentId === user?.id) 
+  const [agent, setAgent] = useState(null);
+  const [loading, setLoading] = useState(true);
 
+  const fetchOverview = async () => {
+    try {
+      const token = localStorage.getItem("laundrix_token");
+
+      console.log("Token:", token);
+
+      const res = await axios.get("/api/delivery-agent/overview", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      // console.log("API Success:", res.data);
+
+      setAgent(res.data.data);
+    } catch (err: any) {
+      // console.log("API Error:", err);
+      // console.log("Response:", err.response);
+      // console.log("Data:", err.response?.data);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOverview();
+  }, []);
+
+  if (loading) {
+    return <LoadingSkeleton />;
+  }
   return (
     <div className="space-y-6">
       <PageHeader
@@ -39,7 +72,7 @@ const agent =
           <SummaryCards agent={agent} />
 
           <div className="grid gap-6 lg:grid-cols-2">
-            <AgentInfoCard agent={agent} />
+            <AgentInfoCard agent={agent}/>
             <PerformanceCard agent={agent} />
           </div>
         </>

@@ -2,8 +2,8 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Eye, Check } from "lucide-react";
 
 import { StatusBadge } from "@/components/shared/StatusBadge";
-import { AvailablePickup } from "../../../../types/deliveryAgent/availablePickup";
 import { Button } from "@/components/ui/button";
+import { AvailablePickup } from "../types";
 
 type PickupColumnsProps = {
   onView: (pickup: AvailablePickup) => void;

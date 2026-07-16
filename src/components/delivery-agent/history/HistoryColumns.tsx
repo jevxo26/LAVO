@@ -1,6 +1,6 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { StatusBadge } from "@/components/shared/StatusBadge";
-import { History } from "../../../../types/deliveryAgent/history";
+import { History } from "../types";
 
 
 export const historyColumns: ColumnDef<History>[] = [
@@ -35,12 +35,12 @@ export const historyColumns: ColumnDef<History>[] = [
         accessorKey: "branch",
         header: "Branch",
     },
+    // {
+    //     accessorKey: "parcelType",
+    //     header: "Parcel",
+    // },
     {
-        accessorKey: "parcelType",
-        header: "Parcel",
-    },
-    {
-        accessorKey: "paymentType",
+        accessorKey: "paymentStatus",
         header: "Payment",
     },
     {
@@ -62,5 +62,13 @@ export const historyColumns: ColumnDef<History>[] = [
     {
         accessorKey: "completedAt",
         header: "Completed At",
+        cell: ({ row }) => (
+            <span>
+                {row.original.completedAt
+                    ? new Date(row.original.completedAt).toLocaleDateString()
+                    : "N/A"
+                }
+            </span>
+        )
     }
 ];

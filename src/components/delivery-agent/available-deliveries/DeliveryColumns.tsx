@@ -1,8 +1,8 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Eye, Truck } from "lucide-react";
 import { StatusBadge } from "@/components/shared/StatusBadge";
-import { AvailableDelivery } from "../../../../types/deliveryAgent/availableDelivery";
 import { Button } from "@/components/ui/button";
+import { AvailableDelivery } from "../types";
 
 
 type DeliveryColumnsProps = {
