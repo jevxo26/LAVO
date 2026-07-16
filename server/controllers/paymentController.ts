@@ -72,6 +72,7 @@ export class PaymentController {
     });
 
     // Check if we have credentials for real SSLCommerz Sandbox
+    console.log('💳 [Order] SSLCommerz credentials loaded:', { hasStoreId: !!STORE_ID, hasStorePassword: !!STORE_PASSWORD });
     if (STORE_ID && STORE_PASSWORD) {
       try {
         const initUrl = 'https://sandbox.sslcommerz.com/gwprocess/v4/api.php';
@@ -102,6 +103,7 @@ export class PaymentController {
           body: params.toString(),
         });
         const responseData: any = await response.json();
+        console.log('💳 [Order] SSLCommerz API response:', JSON.stringify(responseData, null, 2));
 
         if (responseData?.status === 'SUCCESS' && responseData?.GatewayPageURL) {
           sendResponse(res, {
@@ -111,12 +113,14 @@ export class PaymentController {
           });
           return;
         }
+        console.warn('💳 [Order] SSLCommerz returned non-SUCCESS status, falling through to simulated gateway');
       } catch (err) {
-        console.error('SSLCommerz Real API Error, falling back to simulation:', err);
+        console.error('💳 [Order] SSLCommerz API Error, falling back to simulation:', err);
       }
     }
 
     // Offline / Simulated Fallback URL
+    console.log('💳 [Order] Using SIMULATED payment gateway fallback');
     const gatewayUrl = `${baseUrl}/payment/simulated?session_id=${tran_id}&amount=${order.grandTotal}&type=order&ref=${order.id}`;
     sendResponse(res, {
       statusCode: 200,
@@ -155,6 +159,7 @@ export class PaymentController {
     });
 
     // Check if we have credentials for real SSLCommerz Sandbox
+    console.log('💳 [Wallet] SSLCommerz credentials loaded:', { hasStoreId: !!STORE_ID, hasStorePassword: !!STORE_PASSWORD });
     if (STORE_ID && STORE_PASSWORD) {
       try {
         const initUrl = 'https://sandbox.sslcommerz.com/gwprocess/v4/api.php';
@@ -185,6 +190,7 @@ export class PaymentController {
           body: params.toString(),
         });
         const responseData: any = await response.json();
+        console.log('💳 [Wallet] SSLCommerz API response:', JSON.stringify(responseData, null, 2));
 
         if (responseData?.status === 'SUCCESS' && responseData?.GatewayPageURL) {
           sendResponse(res, {
@@ -194,12 +200,14 @@ export class PaymentController {
           });
           return;
         }
+        console.warn('💳 [Wallet] SSLCommerz returned non-SUCCESS status, falling through to simulated gateway');
       } catch (err) {
-        console.error('SSLCommerz Wallet Real API Error, falling back to simulation:', err);
+        console.error('💳 [Wallet] SSLCommerz API Error, falling back to simulation:', err);
       }
     }
 
     // Offline / Simulated Fallback URL
+    console.log('💳 [Wallet] Using SIMULATED payment gateway fallback');
     const gatewayUrl = `${baseUrl}/payment/simulated?session_id=${tran_id}&amount=${amount}&type=wallet&ref=${wallet.id}`;
     sendResponse(res, {
       statusCode: 200,
