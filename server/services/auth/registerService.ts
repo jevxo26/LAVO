@@ -18,7 +18,14 @@ export class RegisterService {
       throw new Error('Email and password are required');
     }
 
+    console.log('📝 Registration - password type:', typeof data.password, '| length:', data.password?.length, '| value repr:', JSON.stringify(data.password));
+
     const hashedPassword = await bcrypt.hash(data.password, 10);
+    console.log('📝 Registration - hashed password (first 20 chars):', hashedPassword.substring(0, 20), '| hash length:', hashedPassword.length);
+
+    // Verify immediately: can we compare back?
+    const verifyCheck = await bcrypt.compare(data.password, hashedPassword);
+    console.log('📝 Registration - immediate verify check:', verifyCheck);
 
     // Accept either "name" (from signup form) or "fullName" (direct API calls)
     const fullName: string = data.fullName || data.name;
@@ -36,6 +43,11 @@ export class RegisterService {
         userType: 'CUSTOMER',
       },
     });
+
+    // After creation, read it back and verify
+    const readBack = await prisma.user.findUnique({ where: { id: user.id } });
+    console.log('📝 Registration - readback password matches stored?', readBack?.password === hashedPassword);
+    console.log('📝 Registration - readback password (first 20 chars):', readBack?.password?.substring(0, 20));
 
     const { password, ...userWithoutPassword } = user;
     return userWithoutPassword;

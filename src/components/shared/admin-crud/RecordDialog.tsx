@@ -1,5 +1,11 @@
 import * as React from "react"
-import { Dialog } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog"
 import { RecordForm } from "./RecordForm"
 import { type AdminRecord, type CrudModuleConfig } from "./types"
 
@@ -24,16 +30,21 @@ export function RecordDialog<TRecord extends AdminRecord>({
     <Dialog
       open={open}
       onOpenChange={onOpenChange}
-      title={`${mode === "create" ? "Create" : "Update"} ${config.title}`}
-      description="Mock form data is kept in local component state."
     >
-      <RecordForm
-        config={config}
-        defaultValues={record}
-        submitLabel={mode === "create" ? "Create" : "Save changes"}
-        onCancel={() => onOpenChange(false)}
-        onSubmit={onSubmit}
-      />
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{`${mode === "create" ? "Create" : "Update"} ${config.title}`}</DialogTitle>
+          <DialogDescription>Mock form data is kept in local component state.</DialogDescription>
+        </DialogHeader>
+        <RecordForm
+          config={config}
+          defaultValues={record}
+          submitLabel={mode === "create" ? "Create" : "Save changes"}
+          onCancel={() => onOpenChange(false)}
+          onSubmit={onSubmit}
+        />
+      </DialogContent>
     </Dialog>
   )
 }
+

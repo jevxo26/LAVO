@@ -11,7 +11,9 @@ import {
  Store,
  ClipboardList,
  UsersRound,
- Boxes
+ Boxes,
+ Heart,
+ Wallet
 } from "lucide-react";
 
 export interface NavItem {
@@ -27,7 +29,43 @@ export const dashboardNavItems: NavItem[] = [
     name:"Dashboard",
     href:"/dashboard",
     icon: LayoutDashboard,
-    roles: ["SUPER_ADMIN", "Admin", "Branch Manager", "Vendor", "Customer", "Employee", "Pickup Agent", "Delivery Agent"],
+    roles: ["SUPER_ADMIN", "Admin", "Branch Manager", "Vendor", "CUSTOMER", "Customer", "Employee", "Pickup Agent", "Delivery Agent"],
+  },
+  {
+    name: "Book Laundry",
+    href: "/dashboard/book",
+    icon: Shirt,
+    roles: ["CUSTOMER", "Customer"],
+  },
+  {
+    name: "My Orders",
+    href: "/dashboard/my-orders",
+    icon: ClipboardList,
+    roles: ["CUSTOMER", "Customer"],
+  },
+  {
+    name: "Track Orders",
+    href: "/dashboard/track-orders",
+    icon: Truck,
+    roles: ["CUSTOMER", "Customer"],
+  },
+  {
+    name: "My Wishlist",
+    href: "/dashboard/wishlist",
+    icon: Heart,
+    roles: ["CUSTOMER", "Customer"],
+  },
+  {
+    name: "My Wallet",
+    href: "/dashboard/wallet",
+    icon: Wallet,
+    roles: ["CUSTOMER", "Customer"],
+  },
+  {
+    name: "Help Desk",
+    href: "/dashboard/help-desk",
+    icon: Headphones,
+    roles: ["CUSTOMER", "Customer"],
   },
   {
     name:"User Management",
