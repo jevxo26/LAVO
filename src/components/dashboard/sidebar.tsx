@@ -41,7 +41,7 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
       <div className="flex items-center justify-between h-16 px-4 border-b border-white/20">
         {!isCollapsed && (
           <span className="text-xl font-bold bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent truncate">
-            AdminPanel
+            LAVO Workspace
           </span>
         )}
         {isCollapsed && (
@@ -66,9 +66,9 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
             const hasChildren = item.children;
             const isParentActive =
               hasChildren &&
-              item.children.some(
+              item.children?.some(
                 (child) =>
-                  pathname === child.href || pathname.startsWith(`${child.href}/`)
+                  pathname === child.href || (child.href && pathname.startsWith(`${child.href}/`))
               );
 
               const isActive =
@@ -114,7 +114,7 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
                     </button>
                   ) : (
                     <Link
-                      href={item.href}
+                      href={item.href || "#"}
                       className={cn(
                         "flex items-center px-3 py-3 rounded-xl transition-all",
                         isActive
@@ -139,10 +139,10 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
                       item.children?.filter(child => !child.roles || (user && child.roles.includes(user.userType))).map(child=>(
                       <Link
                         key={child.name}
-                        href={child.href!}
+                        href={child.href || "#"}
                         className={cn(
                           "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all",
-                          pathname === child.href || pathname.startsWith(`${child.href}/`)
+                          pathname === child.href || (child.href && pathname.startsWith(`${child.href}/`))
                             ? "bg-indigo-500/10 text-indigo-600"
                           : "text-slate-600 hover:bg-white/40"
                         )}

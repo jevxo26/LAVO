@@ -3,7 +3,7 @@
 import { useState, useCallback } from "react";
 import { useSocket } from "@/hooks/useSocket";
 
-type ScanState = "idle" | "loading" | "success";
+type ScanState = "idle" | "select_status" | "loading" | "success";
 
 export interface ScanResult {
   qrCode: string;
@@ -11,40 +11,46 @@ export interface ScanResult {
   timestamp: Date;
 }
 
-export function useScannerLogic() {
+export function useScannerLogic(user: any) {
   const [scanState, setScanState] = useState<ScanState>("idle");
   const [lastResult, setLastResult] = useState<ScanResult | null>(null);
+  const [pendingCode, setPendingCode] = useState<string | null>(null);
   const [key, setKey] = useState(0);
   const { emitScan } = useSocket();
 
-  const handleScanSuccess = useCallback(async (decodedText: string) => {
+  const handleScanSuccess = useCallback((decodedText: string) => {
     if (scanState !== "idle") return;
+    setPendingCode(decodedText);
+    setScanState("select_status");
+  }, [scanState]);
+
+  const handleStatusSelect = useCallback(async (status: string) => {
+    if (!pendingCode) return;
     setScanState("loading");
 
-    const stored = typeof window !== "undefined"
-      ? JSON.parse(localStorage.getItem("laundrix_user") || "{}")
-      : {};
     const payload = {
-      qrCode: decodedText,
-      status: "PROCESSING",
-      employeeId: stored.id || "unknown",
-      branchId: stored.branchId || "unknown",
+      qrCode: pendingCode,
+      status,
+      employeeId: user?.id || "unknown",
+      branchId: user?.branchId || "unknown",
     };
 
     emitScan(payload);
     setLastResult({ ...payload, timestamp: new Date() });
-    await new Promise((r) => setTimeout(r, 1200));
+    await new Promise((r) => setTimeout(r, 800));
     setScanState("success");
-  }, [scanState, emitScan]);
+  }, [pendingCode, user, emitScan]);
 
   const handleScanFailure = useCallback(() => {}, []);
 
   const handleReset = () => {
     setScanState("idle");
     setLastResult(null);
+    setPendingCode(null);
     setKey((k) => k + 1);
   };
 
-  return { scanState, lastResult, key, handleScanSuccess, handleScanFailure, handleReset };
+  return { scanState, lastResult, pendingCode, key, handleScanSuccess, handleScanFailure, handleStatusSelect, handleReset };
 }
+
 

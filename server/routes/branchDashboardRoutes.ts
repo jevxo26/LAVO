@@ -7,6 +7,7 @@ import * as orderController from '../controllers/branch/orderController';
 import * as employeeController from '../controllers/branch/employeeController';
 import * as inventoryController from '../controllers/branch/inventoryController';
 import * as agentController from '../controllers/branch/agentController';
+import * as qrOrderController from '../controllers/branch/qrOrderController';
 
 const router = express.Router();
 
@@ -18,6 +19,9 @@ router.use(restrictTo('BRANCH_MANAGER', 'Branch Manager', 'ADMIN', 'Admin', 'SUP
 // For the admin viewing it, we allow passing ?branchId=xxx
 router.get('/overview', overviewController.getOverview);
 router.get('/orders', orderController.getOrders);
+router.post('/orders/assign-agent', qrOrderController.assignAgentToOrder);
+router.get('/orders/:orderId/qr-codes', qrOrderController.getOrderQrCodes);
+router.post('/garment-items/:garmentItemId/generate-qr', qrOrderController.generateQrCode);
 router.get('/employees', employeeController.getEmployees);
 router.post('/employees', employeeController.createEmployee);
 router.patch('/employees/:id', employeeController.updateEmployee);
