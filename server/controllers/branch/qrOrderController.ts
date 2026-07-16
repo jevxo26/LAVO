@@ -36,7 +36,7 @@ export const getOrderQrCodes = catchServiceAsync(async (req: any, res: Response)
   await getBranchOrFail(req);
   const { orderId } = req.params;
   const items = await prisma.garmentItem.findMany({
-    where: { orderId },
+    where: { orderItem: { orderId } },
     include: { qrCodeRecord: true }
   });
   sendResponse(res, { statusCode: 200, data: items });
