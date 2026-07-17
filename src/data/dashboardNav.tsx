@@ -190,7 +190,7 @@ export const dashboardNavItems: NavItem[] = [
     name: "QR Scanner",
     href: "/scanner",
     icon: QrCode,
-    roles: ["EMPLOYEE"],
+    roles: ["EMPLOYEE", "SUPER_ADMIN", "ADMIN"],
   },
 
   // =========================
