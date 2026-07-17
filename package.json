@@ -32,6 +32,7 @@
     "google-auth-library": "^10.9.0",
     "handlebars": "^4.7.9",
     "helmet": "^8.2.0",
+    "html5-qrcode": "^2.3.8",
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^1.24.0",
     "morgan": "^1.11.0",

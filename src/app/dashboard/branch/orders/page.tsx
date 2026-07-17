@@ -6,11 +6,13 @@ import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import io from 'socket.io-client'
 
+import { OrderActions } from './OrderActions'
+
 export default function BranchOrders() {
   const [orders, setOrders] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
+  const fetchOrders = () => {
     fetch('/api/branch-dashboard/orders', {
       headers: { 'Authorization': `Bearer ${localStorage.getItem('laundrix_token')}` }
     })
@@ -20,15 +22,18 @@ export default function BranchOrders() {
       setLoading(false)
     })
     .catch(() => setLoading(false))
+  }
+
+  useEffect(() => {
+    fetchOrders()
 
     // Listen for WebSocket updates from the QR scanner
     const socket = io(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000')
-    // We would join the specific branch room here.
     socket.emit('joinBranch', 'current_branch_id_mock')
     
     socket.on('garmentStatusUpdated', (data: any) => {
       console.log('Real-time update received:', data)
-      // In a real app, update the specific order/garment status in the state
+      fetchOrders() // Refresh orders on update
     })
 
     return () => {
@@ -67,12 +72,13 @@ export default function BranchOrders() {
                 <TableHead>Status</TableHead>
                 <TableHead>Amount</TableHead>
                 <TableHead>Date</TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {(!orders || orders.length === 0) ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center">No orders found.</TableCell>
+                  <TableCell colSpan={6} className="text-center">No orders found.</TableCell>
                 </TableRow>
               ) : (
                 orders.map((order) => (
@@ -86,6 +92,9 @@ export default function BranchOrders() {
                     </TableCell>
                     <TableCell>${order.grandTotal}</TableCell>
                     <TableCell>{new Date(order.createdAt).toLocaleDateString()}</TableCell>
+                    <TableCell>
+                      <OrderActions order={order} onUpdate={fetchOrders} />
+                    </TableCell>
                   </TableRow>
                 ))
               )}

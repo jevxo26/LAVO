@@ -7,17 +7,17 @@ export type DeliveryAgentRecord = {
   phone: string
   availability: boolean
   status: string
-  user?: {
-    fullName: string
-    email: string
-  }
+  fullName?: string
+  email?: string
 }
 
 export const deliveryAgentSchema = z.object({
   id: z.string().optional(),
+  fullName: z.string().min(2, "Name is required"),
+  email: z.string().email("Valid email is required"),
   employeeCode: z.string().min(2, "Employee code is required"),
   phone: z.string().min(6, "Phone is required"),
-  availability: z.boolean(),
+  availability: z.boolean().default(true),
   status: z.string().min(1, "Status is required"),
 })
 
@@ -32,15 +32,17 @@ export const deliveryAgentConfig: CrudModuleConfig<DeliveryAgentRecord> = {
   endpoint: "/api/branch-dashboard/delivery-agents",
   columns: [
     { accessorKey: "id", header: "Agent ID", kind: "id" },
-    { accessorKey: "user.fullName" as any, header: "Name" },
+    { accessorKey: "fullName", header: "Name" },
     { accessorKey: "phone", header: "Phone" },
     { accessorKey: "availability", header: "Available", kind: "status" },
     { accessorKey: "status", header: "Status", kind: "status" },
   ],
   fields: [
+    { name: "fullName", label: "Full Name", placeholder: "e.g., Rahim Molla" },
+    { name: "email", label: "Email Address", placeholder: "agent@lavo.com" },
     { name: "employeeCode", label: "Employee Code", placeholder: "e.g., AGT-101" },
     { name: "phone", label: "Phone", placeholder: "+880..." },
     { name: "status", label: "Status", options: ["ACTIVE", "INACTIVE"] },
   ],
-  getRowLabel: (row) => row.user?.fullName || row.employeeCode,
+  getRowLabel: (row) => row.fullName || row.employeeCode,
 }
