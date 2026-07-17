@@ -3,7 +3,7 @@
 import { CheckCircle2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Dialog } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 type AcceptDialogProps = {
   open: boolean;
@@ -24,8 +24,11 @@ export function AcceptDialog({
     <Dialog
       open={open}
       onOpenChange={(nextOpen) => !nextOpen && onCancel()}
-      title={title}
     >
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+        </DialogHeader>
       <div className="flex gap-3">
         <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-full bg-green-50 text-green-600">
           <CheckCircle2 className="size-4" />
@@ -45,6 +48,7 @@ export function AcceptDialog({
           Accept
         </Button>
       </div>
+      </DialogContent>
     </Dialog>
   );
 }
