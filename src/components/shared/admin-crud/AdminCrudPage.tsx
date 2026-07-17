@@ -1,3 +1,5 @@
+"use client"
+
 import * as React from "react"
 import {
   flexRender,
@@ -10,7 +12,7 @@ import {
 } from "@tanstack/react-table"
 import { ListFilter, Plus } from "lucide-react"
 import { toast } from "sonner"
-import axios from "axios"
+import axios, { AxiosError } from "axios"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -35,6 +37,14 @@ import { RecordDialog } from "./RecordDialog"
 
 type AdminCrudPageProps<TRecord extends AdminRecord> = {
   config: CrudModuleConfig<TRecord>
+}
+
+function getErrorMessage(error: unknown, fallback: string) {
+  if (error instanceof AxiosError) {
+    return (error.response?.data as { message?: string } | undefined)?.message || fallback
+  }
+
+  return fallback
 }
 
 export function AdminCrudPage<TRecord extends AdminRecord>({
@@ -136,8 +146,8 @@ export function AdminCrudPage<TRecord extends AdminRecord>({
       toast.success("Record created successfully")
       setCreateOpen(false)
       fetchData()
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to create record")
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, "Failed to create record"))
     }
   }
 
@@ -157,8 +167,8 @@ export function AdminCrudPage<TRecord extends AdminRecord>({
       toast.success("Record updated successfully")
       setEditingRecord(null)
       fetchData()
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to update record")
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, "Failed to update record"))
     }
   }
 
@@ -180,8 +190,8 @@ export function AdminCrudPage<TRecord extends AdminRecord>({
       toast.success("Record deleted successfully")
       setDeletingRecord(null)
       fetchData()
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to delete record")
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, "Failed to delete record"))
     }
   }
 
