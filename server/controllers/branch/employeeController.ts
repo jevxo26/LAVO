@@ -25,7 +25,7 @@ export const createEmployee = catchServiceAsync(async (req: any, res: Response) 
   const branchId = await getBranchOrFail(req);
   const { fullName, email, designation, status } = req.body;
   const user = await prisma.user.create({
-    data: { fullName, email, password: 'dummyPassword123', userType: 'Employee' }
+    data: { fullName, email, password: 'dummyPassword123', userType: 'EMPLOYEE' }
   });
   const emp = await prisma.branchEmployee.create({
     data: { branchId, employeeId: user.id, designation, status }
