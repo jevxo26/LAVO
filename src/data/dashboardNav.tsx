@@ -14,6 +14,7 @@ import {
   Boxes,
   Heart,
   Wallet,
+  QrCode,
 } from "lucide-react";
 
 export interface NavItem {
@@ -180,6 +181,16 @@ export const dashboardNavItems: NavItem[] = [
     href: "/dashboard/settings",
     icon: Settings,
     roles: ["SUPER_ADMIN", "ADMIN"],
+  },
+
+  // =========================
+  // Operations & Scanner Menu
+  // =========================
+  {
+    name: "QR Scanner",
+    href: "/scanner",
+    icon: QrCode,
+    roles: ["EMPLOYEE", "BRANCH_MANAGER", "SUPER_ADMIN", "ADMIN"],
   },
 
   // =========================
