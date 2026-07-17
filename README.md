@@ -229,3 +229,6 @@ LAVO/
 Built with ❤️ by the **Jevxo** team
 
 </div>
+
+
+We are Lavo team, developing this project - Laundrix
