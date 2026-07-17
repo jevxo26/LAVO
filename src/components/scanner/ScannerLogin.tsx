@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { ScanLine, Loader2 } from "lucide-react";
+import { ScanLine, Loader2, ArrowLeft } from "lucide-react";
+import Link from "next/link";
 
 interface Props {
   onLogin: (token: string, user: any) => void;
@@ -36,7 +37,13 @@ export function ScannerLogin({ onLogin }: Props) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 flex flex-col items-center justify-center px-6 gap-8">
+    <div className="min-h-screen relative bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 flex flex-col items-center justify-center px-6 gap-8">
+      
+      {/* Back Button */}
+      <Link href="/dashboard" className="absolute top-6 left-6 text-indigo-300 hover:text-white transition-colors flex items-center gap-2 text-sm font-medium">
+        <ArrowLeft size={18} /> Back
+      </Link>
+      
       <div className="text-center">
         <div className="inline-flex items-center gap-2 mb-2 text-indigo-300 text-sm font-medium tracking-widest uppercase">
           <ScanLine size={16} /> LAVO Employee Scanner

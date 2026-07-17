@@ -1,8 +1,9 @@
 "use client";
 
-import { CheckCircle2, ScanLine, Loader2, RefreshCw } from "lucide-react";
+import { CheckCircle2, ScanLine, Loader2, RefreshCw, ArrowLeft } from "lucide-react";
 import { QrScanner } from "@/components/scanner/QrScanner";
 import { useScannerLogic } from "@/components/scanner/ScannerUI";
+import Link from "next/link";
 
 const STATUSES = ["WASHING", "DRYING", "IRONING", "FOLDING", "READY_FOR_DELIVERY"];
 
@@ -15,7 +16,12 @@ export function ScannerView({ user }: Props) {
   } = useScannerLogic(user);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 flex flex-col items-center justify-start px-4 py-10 gap-6">
+    <div className="min-h-screen relative bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 flex flex-col items-center justify-start px-4 py-10 gap-6">
+      
+      {/* Back Button */}
+      <Link href="/dashboard" className="absolute top-6 left-6 text-indigo-300 hover:text-white transition-colors flex items-center gap-2 text-sm font-medium">
+        <ArrowLeft size={18} /> Back
+      </Link>
       <div className="text-center">
         <div className="inline-flex items-center gap-2 mb-2 text-indigo-300 text-sm font-medium tracking-widest uppercase">
           <ScanLine size={16} /> LAVO Employee Scanner
