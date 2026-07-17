@@ -66,7 +66,7 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
             const hasChildren = item.children;
             const isParentActive =
               hasChildren &&
-              item.children.some(
+              item.children?.some(
                 (child) =>
                   pathname === child.href || pathname.startsWith(`${child.href}/`)
               );
@@ -114,7 +114,7 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
                     </button>
                   ) : (
                     <Link
-                      href={item.href}
+                      href={item.href || "#"}
                       className={cn(
                         "flex items-center px-3 py-3 rounded-xl transition-all",
                         isActive

@@ -1,9 +1,15 @@
 "use client";
 
 import { useAuth } from "@/hooks/useAuth";
+import { CustomerOverview } from "@/components/dashboard/CustomerOverview";
 
 export default function DashboardPage() {
     const { user } = useAuth();
+
+    // Check if the user is a CUSTOMER
+    if (user?.userType === "CUSTOMER" || user?.userType === "Customer") {
+        return <CustomerOverview />;
+    }
 
     return (
         <div className="p-8">
