@@ -173,7 +173,7 @@ export const dashboardNavItems: NavItem[] = [
     name: "Customer Support",
     href: "/dashboard/support",
     icon: Headphones,
-    roles: ["SUPER_ADMIN", "ADMIN", "EMPLOYEE"],
+    roles: ["SUPER_ADMIN", "ADMIN"],
   },
   {
     name: "Settings",
