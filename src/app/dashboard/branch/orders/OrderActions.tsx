@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Truck, QrCode, Loader2, UserPlus, FileImage } from 'lucide-react'
-import { Dialog } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
 
@@ -96,8 +96,12 @@ export function OrderActions({ order, onUpdate }: { order: any, onUpdate?: () =>
         <QrCode className="h-4 w-4" />
       </Button>
 
-      <Dialog open={assignOpen} onOpenChange={setAssignOpen} title="Assign Delivery Agent">
-        <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+      <Dialog open={assignOpen} onOpenChange={setAssignOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Assign Delivery Agent</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 max-h-[60vh] overflow-y-auto">
           {loading ? (
             <div className="flex justify-center p-4"><Loader2 className="animate-spin h-6 w-6" /></div>
           ) : agents.length === 0 ? (
@@ -115,11 +119,16 @@ export function OrderActions({ order, onUpdate }: { order: any, onUpdate?: () =>
               </div>
             ))
           )}
-        </div>
+          </div>
+        </DialogContent>
       </Dialog>
 
-      <Dialog open={qrOpen} onOpenChange={setQrOpen} title="Garment QR Codes">
-        <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+      <Dialog open={qrOpen} onOpenChange={setQrOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Garment QR Codes</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 max-h-[60vh] overflow-y-auto">
           {loading ? (
             <div className="flex justify-center p-4"><Loader2 className="animate-spin h-6 w-6" /></div>
           ) : items.length === 0 ? (
@@ -147,7 +156,8 @@ export function OrderActions({ order, onUpdate }: { order: any, onUpdate?: () =>
               </div>
             ))
           )}
-        </div>
+          </div>
+        </DialogContent>
       </Dialog>
     </div>
   )

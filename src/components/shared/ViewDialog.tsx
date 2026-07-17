@@ -1,6 +1,6 @@
 "use client";
 
-import { Dialog } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
 type ViewDialogProps = {
@@ -19,9 +19,12 @@ export function ViewDialog({
   return (
     <Dialog
       open={open}
-      title={title}
       onOpenChange={(nextOpen) => !nextOpen && onClose()}
     >
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+        </DialogHeader>
       <div className="space-y-5">
         {children}
 
@@ -31,6 +34,7 @@ export function ViewDialog({
           </Button>
         </div>
       </div>
+      </DialogContent>
     </Dialog>
   );
 }

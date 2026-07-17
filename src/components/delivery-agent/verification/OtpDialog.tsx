@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { VerificationType } from "../types";
 import axios from "axios";
 
@@ -60,8 +60,11 @@ const OtpDialog = ({
                     onClose();
                 }
             }}
-            title="Verify Delivery OTP"
         >
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Verify Delivery OTP</DialogTitle>
+                </DialogHeader>
             <div className="space-y-4">
                 <div>
                     <p className="text-sm text-slate-500">
@@ -95,6 +98,7 @@ const OtpDialog = ({
                     </Button>
                 </div>
             </div>
+            </DialogContent>
         </Dialog>
     )
 }
