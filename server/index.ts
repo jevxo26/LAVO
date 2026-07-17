@@ -20,6 +20,7 @@ import logisticsRoutes from './routes/logisticsRoutes';
 import supportRoutes from './routes/supportRoutes';
 import financeRoutes from './routes/financeRoutes';
 import branchDashboardRoutes from './routes/branchDashboardRoutes';
+import deliveryAgentRoutes from './routes/deliveryAgentRoutes'
 import customerRoutes from './routes/customerRoutes';
 import paymentRoutes from './routes/paymentRoutes';
 
@@ -86,6 +87,7 @@ app.prepare().then(async () => {
   server.use('/api/support', supportRoutes);
   server.use('/api/finance', financeRoutes);
   server.use('/api/branch-dashboard', branchDashboardRoutes);
+  server.use('/api/delivery-agent', deliveryAgentRoutes);
   server.use('/api/customer', customerRoutes);
   server.use('/api/payments', paymentRoutes);
 
