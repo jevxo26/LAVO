@@ -2,152 +2,141 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Menu, X, LogOut, LayoutDashboard } from "lucide-react";
-import { publicNavItems } from "@/data/publicNav";
+import { usePathname } from "next/navigation";
+import { Menu, X, QrCode, LogIn, ArrowRight, ShoppingBag } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+
+const navLinks = [
+  { name: "Home", href: "/" },
+  { name: "Services", href: "/services" },
+  { name: "Pricing", href: "/pricing" },
+  { name: "Coverage", href: "/coverage" },
+  { name: "Corporate", href: "/corporate" },
+  { name: "Partner", href: "/partner" },
+];
 
 export function Navber() {
   const [isOpen, setIsOpen] = useState(false);
-  const { isAuthenticated, user, logout } = useAuth();
+  const pathname = usePathname();
+  const { isAuthenticated, logout } = useAuth();
 
-  const handleLogout = () => {
-    setIsOpen(false);
-    logout();
-  };
+  const links = isAuthenticated 
+    ? [...navLinks, { name: "Dashboard", href: "/dashboard" }]
+    : navLinks;
 
   return (
-    <nav className="fixed top-0 left-0 w-full z-50 bg-white/40 backdrop-blur-md border-b border-white/20 shadow-[0_4px_30px_rgba(0,0,0,0.02)] transition-all duration-300">
-      <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-
+    <nav className="fixed top-0 left-0 w-full z-50 bg-white border-b border-slate-100 shadow-sm transition-all duration-300">
+      <div className="max-w-[1440px] mx-auto px-4 md:px-6 h-20 flex items-center justify-between">
+        
         {/* Logo */}
-        <Link
-          href="/"
-          className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-cyan-500 to-green-500 bg-clip-text text-transparent"
-        >
-          LAUNDRIX
+        <Link href="/" className="flex items-center gap-2">
+          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary text-white">
+            <ShoppingBag size={20} />
+          </div>
+          <span className="text-xl font-bold tracking-tight text-slate-900">
+            LAUNDRIX
+          </span>
         </Link>
 
         {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center space-x-8">
-          {publicNavItems.map((item) => (
-            <Link
-              key={item.name}
-              href={item.href}
-              className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors"
-            >
-              {item.name}
-            </Link>
-          ))}
-
-          <div className="flex items-center space-x-3 ml-4 pl-4 border-l border-white/30">
-            {isAuthenticated ? (
-              <>
-                {/* Logged-in: show greeting + Dashboard + Logout */}
-                {user?.fullName && (
-                  <span className="text-sm text-slate-500">
-                    Hi, <span className="font-medium text-slate-700">{user.fullName.split(" ")[0]}</span>
-                  </span>
+        <div className="hidden lg:flex items-center space-x-8">
+          {links.map((item) => {
+            const isActive = pathname === item.href || (item.name === "Services" && pathname.startsWith("/services"));
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                className={`relative py-2 text-sm font-medium transition-colors ${
+                  isActive ? "text-primary" : "text-slate-500 hover:text-slate-900"
+                }`}
+              >
+                {item.name}
+                {isActive && (
+                  <span className="absolute bottom-0 left-0 w-full h-[3px] bg-primary rounded-t-full" />
                 )}
-                <Link
-                  href="/dashboard"
-                  className="flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors"
-                >
-                  <LayoutDashboard size={15} />
-                  Dashboard
-                </Link>
-                <button
-                  onClick={handleLogout}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-red-500 to-rose-500 text-white text-sm font-medium hover:shadow-lg hover:shadow-red-400/40 transition-all"
-                >
-                  <LogOut size={14} />
-                  Logout
-                </button>
-              </>
-            ) : (
-              <>
-                {/* Guest: show Sign In + Get Started */}
-                <Link
-                  href="/login"
-                  className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors"
-                >
-                  Sign In
-                </Link>
-                <Link
-                  href="/register"
-                  className="px-4 py-2 rounded-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-sm font-medium hover:shadow-lg hover:shadow-blue-400/40 transition-all shadow-sm"
-                >
-                  Get Started
-                </Link>
-              </>
-            )}
-          </div>
+              </Link>
+            );
+          })}
+        </div>
+
+        {/* Action Buttons */}
+        <div className="hidden lg:flex items-center space-x-3">
+          <Link
+            href="/track"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 text-white text-sm font-medium hover:bg-slate-800 transition-colors"
+          >
+            <QrCode size={16} />
+            Track Order
+          </Link>
+          
+          {isAuthenticated ? (
+            <button
+              onClick={logout}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-slate-200 text-slate-700 text-sm font-medium hover:bg-slate-50 transition-colors"
+            >
+              Logout
+            </button>
+          ) : (
+            <Link
+              href="/login"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-slate-200 text-slate-700 text-sm font-medium hover:bg-slate-50 transition-colors"
+            >
+              <LogIn size={16} />
+              Login
+            </Link>
+          )}
+
+          <Link
+            href="/book"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary text-white text-sm font-medium hover:bg-primary/90 transition-colors shadow-sm shadow-primary/25"
+          >
+            Book Pickup
+            <ArrowRight size={16} />
+          </Link>
         </div>
 
         {/* Mobile menu button */}
-        <div className="md:hidden relative">
+        <div className="lg:hidden relative">
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="text-slate-600 hover:text-blue-600 focus:outline-none p-2 rounded-md hover:bg-white/50 transition-colors"
+            className="text-slate-600 hover:text-primary focus:outline-none p-2 rounded-md transition-colors"
           >
             {isOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
-
-          {isOpen && (
-            <div className="absolute top-10 right-0 bg-white flex flex-col border py-4 px-6 rounded-md shadow-lg space-y-3 min-w-[180px]">
-              {publicNavItems.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  onClick={() => setIsOpen(false)}
-                  className="text-sm font-medium text-slate-600 hover:text-blue-600"
-                >
-                  {item.name}
-                </Link>
-              ))}
-
-              <div className="border-t pt-2 mt-2 flex flex-col space-y-2">
-                {isAuthenticated ? (
-                  <>
-                    <Link
-                      href="/dashboard"
-                      onClick={() => setIsOpen(false)}
-                      className="flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-blue-600"
-                    >
-                      <LayoutDashboard size={14} />
-                      Dashboard
-                    </Link>
-                    <button
-                      onClick={handleLogout}
-                      className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-red-500 to-rose-500 text-white text-sm font-medium text-center justify-center"
-                    >
-                      <LogOut size={14} />
-                      Logout
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <Link
-                      href="/login"
-                      onClick={() => setIsOpen(false)}
-                      className="text-sm font-medium text-slate-600 hover:text-blue-600"
-                    >
-                      Sign In
-                    </Link>
-                    <Link
-                      href="/register"
-                      onClick={() => setIsOpen(false)}
-                      className="px-4 py-2 text-center rounded-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-sm font-medium hover:shadow-lg transition-all"
-                    >
-                      Get Started
-                    </Link>
-                  </>
-                )}
-              </div>
-            </div>
-          )}
         </div>
-
       </div>
+
+      {/* Mobile Navigation Dropdown */}
+      {isOpen && (
+        <div className="lg:hidden absolute top-20 left-0 w-full bg-white border-b shadow-lg p-4 flex flex-col space-y-4">
+          <div className="flex flex-col space-y-2">
+            {links.map((item) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                onClick={() => setIsOpen(false)}
+                className={`text-sm font-medium px-4 py-2 rounded-md ${
+                  pathname === item.href ? "bg-primary/5 text-primary" : "text-slate-600 hover:bg-slate-50"
+                }`}
+              >
+                {item.name}
+              </Link>
+            ))}
+          </div>
+          <div className="flex flex-col gap-2 pt-4 border-t">
+            <Link href="/track" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-slate-900 text-white text-sm font-medium">
+              <QrCode size={16} /> Track Order
+            </Link>
+            <Link href="/login" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-full border text-slate-700 text-sm font-medium">
+              <LogIn size={16} /> Login
+            </Link>
+            <Link href="/book" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-primary text-white text-sm font-medium">
+              Book Pickup <ArrowRight size={16} />
+            </Link>
+          </div>
+        </div>
+      )}
     </nav>
   );
 }
+

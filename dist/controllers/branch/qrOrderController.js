@@ -42,11 +42,43 @@ exports.assignAgentToOrder = (0, catchServiceAsync_1.catchServiceAsync)(async (r
     const { orderId, agentId } = req.body;
     if (!orderId || !agentId)
         throw new Error('orderId and agentId are required');
-    const order = await branchDashboardService_1.default.order.update({
+    const order = await branchDashboardService_1.default.order.findUnique({ where: { id: orderId } });
+    if (!order)
+        throw new Error('Order not found');
+    // Update order with the assigned agent
+    const updatedOrder = await branchDashboardService_1.default.order.update({
         where: { id: orderId },
         data: { deliveryAgentId: agentId }
     });
-    (0, sendResponse_1.sendResponse)(res, { statusCode: 200, data: order });
+    // Determine delivery type based on order status
+    const isPickup = order.orderStatus === 'PENDING' || order.orderStatus === 'CONFIRMED';
+    const deliveryType = isPickup ? 'PICKUP' : 'DROP_OFF';
+    // Create or update the delivery record
+    // First see if an active delivery exists for this order & type
+    let delivery = await branchDashboardService_1.default.delivery.findFirst({
+        where: { orderId: orderId, deliveryType: deliveryType }
+    });
+    if (delivery) {
+        delivery = await branchDashboardService_1.default.delivery.update({
+            where: { id: delivery.id },
+            data: { assignedAgentId: agentId }
+        });
+    }
+    else {
+        delivery = await branchDashboardService_1.default.delivery.create({
+            data: {
+                orderId: order.id,
+                customerId: order.customerId,
+                branchId: order.branchId,
+                deliveryNumber: `DEL-${Date.now().toString().slice(-6)}-${order.orderNumber || order.id.substring(0, 4)}`,
+                deliveryType: deliveryType,
+                deliveryStatus: 'PENDING',
+                assignedAgentId: agentId,
+                deliveryAddressId: isPickup ? order.pickupAddressId : order.deliveryAddressId
+            }
+        });
+    }
+    (0, sendResponse_1.sendResponse)(res, { statusCode: 200, data: { order: updatedOrder, delivery } });
 });
 exports.generateQrCode = (0, catchServiceAsync_1.catchServiceAsync)(async (req, res) => {
     await (0, branchDashboardService_1.getBranchOrFail)(req);
