@@ -61,7 +61,7 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
       <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-2">
         {
           dashboardNavItems
-            .filter(item => !item.roles || (user && item.roles.includes(user.userType)))
+            .filter(item => !item.roles || (user && item.roles.includes(user.userType?.toUpperCase().replace(' ', '_'))))
             .map((item)=>{
             const hasChildren = item.children;
             const isParentActive =
