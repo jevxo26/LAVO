@@ -18,6 +18,7 @@ export const getDeliveryAgents = catchServiceAsync(async (req: any, res: Respons
 export const createDeliveryAgent = catchServiceAsync(async (req: any, res: Response) => {
   await getBranchOrFail(req);
   const { fullName, email, employeeCode, phone, availability, status } = req.body;
+  // TODO: Replace dummyPassword123 with a secure email invitation or auto-generation system
   const user = await prisma.user.create({
     data: { fullName, email, password: 'dummyPassword123', userType: 'DELIVERY_AGENT' }
   });

@@ -24,6 +24,7 @@ export const getEmployees = catchServiceAsync(async (req: any, res: Response) =>
 export const createEmployee = catchServiceAsync(async (req: any, res: Response) => {
   const branchId = await getBranchOrFail(req);
   const { fullName, email, designation, status } = req.body;
+  // TODO: Replace dummyPassword123 with a proper email invitation flow
   const user = await prisma.user.create({
     data: { fullName, email, password: 'dummyPassword123', userType: 'EMPLOYEE' }
   });

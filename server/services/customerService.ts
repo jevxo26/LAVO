@@ -485,7 +485,7 @@ export class CustomerService {
         }
       }
 
-      // Create dummy addresses for order relation
+      // TODO: Implement actual address selection instead of generating dummy addresses
       let address = await prisma.customerAddress.findFirst({
         where: { customerId: customer.id },
       });

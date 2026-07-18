@@ -51,6 +51,7 @@ export const createAgent = async (data: any) => {
       fullName: data.name,
       email: `${Date.now()}@agent.com`,
       phone: phone,
+      // TODO: Generate secure password or use invite link
       password: 'dummy_password',
       userType: 'DELIVERY_AGENT'
     }

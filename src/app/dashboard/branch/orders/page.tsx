@@ -29,6 +29,7 @@ export default function BranchOrders() {
 
     // Listen for WebSocket updates from the QR scanner
     const socket = io(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000')
+    // TODO: Connect to the actual branch ID room instead of current_branch_id_mock
     socket.emit('joinBranch', 'current_branch_id_mock')
     
     socket.on('garmentStatusUpdated', (data: any) => {

@@ -130,7 +130,7 @@ export function AdminCrudPage<TRecord extends AdminRecord>({
 
   const handleCreate = async (values: TRecord) => {
     if (!config.endpoint) {
-      // Mock mode fallback
+      // TODO: Remove Mock mode fallback once CRUD API endpoints are fully implemented
       const created = { ...values, id: values.id || `${Date.now()}` }
       setRecords((current) => [created, ...current])
       setCreateOpen(false)

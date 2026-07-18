@@ -3,6 +3,7 @@ import { catchServiceAsync } from '../../utils/catchServiceAsync';
 import { sendResponse } from '../../utils/sendResponse';
 import prisma, { getBranchOrFail, getOrderCounts } from '../../services/branchDashboardService';
 
+// TODO: Replace MACHINERY_MOCK with actual live machinery data from the database
 const MACHINERY_MOCK = [
   { type: 'Washer', count: 5, active: 4 },
   { type: 'Dryer',  count: 5, active: 3 },
