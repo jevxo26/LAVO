@@ -1,18 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
 import { ScannerLogin } from "@/components/scanner/ScannerLogin";
 import { ScannerView } from "@/components/scanner/ScannerPage";
 
 export default function ScannerRoute() {
-  const [user, setUser] = useState<any>(null);
+  const { user, token } = useAuth();
 
-  useEffect(() => {
-    const token = localStorage.getItem("laundrix_token");
-    const stored = localStorage.getItem("laundrix_user");
-    if (token && stored) setUser(JSON.parse(stored));
-  }, []);
+  // If user is already logged in via the main dashboard, go straight to the scanner
+  if (token && user) return <ScannerView user={user} />;
 
-  if (!user) return <ScannerLogin onLogin={(_, u) => setUser(u)} />;
-  return <ScannerView user={user} />;
+  // Otherwise show the scanner-specific login form
+  return <ScannerLogin onLogin={(_, u) => {}} />;
 }
