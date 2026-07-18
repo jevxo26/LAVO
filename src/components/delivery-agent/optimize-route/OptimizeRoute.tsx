@@ -3,8 +3,9 @@
 import { PageHeader } from "@/components/shared/PageHeader";
 import RouteTable from "./RouteTable";
 import RouteToolbar from "./RouteToolbar";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
+import axios from "axios";
 
 const RouteMap = dynamic(
   () => import("./RouteMap"),
@@ -13,6 +14,31 @@ const RouteMap = dynamic(
 
 const OptimizeRoute = () => {
   const [search, setSearch] = useState("");
+  const [routes, setRoutes] = useState([]);
+
+  useEffect(() => {
+    const fetchRoutes = async () => {
+      try {
+        const token = localStorage.getItem("laundrix_token");
+
+        const res = await axios.get(
+          "/api/delivery-agent/optimized-routes",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        setRoutes(res.data.data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchRoutes();
+  }, []);
+
   return (
     <div className="space-y-6">
 
@@ -29,7 +55,7 @@ const OptimizeRoute = () => {
           Map will be integrated here
         </div> */}
         <div className="rounded-lg overflow-hidden">
-          <RouteMap />
+          <RouteMap routes={routes}/>
         </div>
       </div>
       <RouteToolbar
@@ -38,6 +64,7 @@ const OptimizeRoute = () => {
       />
       <RouteTable
         search={search}
+        routes={routes}
       />
 
     </div>

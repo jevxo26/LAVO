@@ -6,6 +6,7 @@ import { DataTable } from "@/components/shared/DataTable";
 import { useAuth } from "@/hooks/useAuth";
 import { historyColumns } from "./HistoryColumns";
 import { History } from "../types";
+import Loading from "../Loading";
 
 type HistoryTableProps = {
     search: string;
@@ -16,10 +17,12 @@ const HistoryTable = ({
 }: HistoryTableProps) => {
     const { user } = useAuth();
     const [historyData, setHistoryData] = useState<History[]>([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchHistory = async () => {
             try {
+                setLoading(true);
                 const token = localStorage.getItem("laundrix_token");
                 const res = await axios.get(
                     "/api/delivery-agent/history",
@@ -32,6 +35,8 @@ const HistoryTable = ({
                 setHistoryData(res.data.data);
             } catch (error) {
                 console.error(error);
+            } finally {
+                setLoading(false);
             }
         };
         fetchHistory();
@@ -58,11 +63,15 @@ const HistoryTable = ({
 
     return (
         <div className="rounded-xl border bg-white p-5">
-            <DataTable
-                columns={historyColumns}
-                data={data}
-                emptyMessage="No history found."
-            />
+            {loading ? (
+                <Loading />
+            ) : (
+                <DataTable
+                    columns={historyColumns}
+                    data={data}
+                    emptyMessage="No history found."
+                />
+            )}
         </div>
     )
 

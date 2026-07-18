@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { VerificationType } from "../types";
 import axios from "axios";
+import { toast } from "@/lib/toast";
 
 type Props = {
     open: boolean;
@@ -41,13 +42,18 @@ const OtpDialog = ({
                     },
                 }
             );
+            toast.success("Delivery verified successfully");
 
             await fetchVerification();
 
             setOtp("");
             onClose();
-        } catch (error) {
-            console.error(error);
+        } catch (error:any) {
+            // console.error(error);
+            toast.error(
+                error.response?.data?.message ||
+                "Invalid OTP. Please try again."
+            );
         }
     };
 
@@ -65,39 +71,39 @@ const OtpDialog = ({
                 <DialogHeader>
                     <DialogTitle>Verify Delivery OTP</DialogTitle>
                 </DialogHeader>
-            <div className="space-y-4">
-                <div>
-                    <p className="text-sm text-slate-500">
-                        Order ID
-                    </p>
+                <div className="space-y-4">
+                    <div>
+                        <p className="text-sm text-slate-500">
+                            Order ID
+                        </p>
 
-                    <p className="font-medium">
-                        #{verification?.orderId}
-                    </p>
+                        <p className="font-medium">
+                            #{verification?.orderId}
+                        </p>
+                    </div>
+                    <input
+                        className="w-full rounded-md border px-3 py-2"
+                        placeholder="Enter OTP"
+                        value={otp}
+                        onChange={(e) => setOtp(e.target.value)}
+                    />
+                    <div className="flex justify-end gap-2">
+                        <Button
+                            variant="outline"
+                            onClick={() => {
+                                setOtp("");
+                                onClose();
+                            }}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={handleSubmit}
+                        >
+                            Verify
+                        </Button>
+                    </div>
                 </div>
-                <input
-                    className="w-full rounded-md border px-3 py-2"
-                    placeholder="Enter OTP"
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
-                />
-                <div className="flex justify-end gap-2">
-                    <Button
-                        variant="outline"
-                        onClick={() => {
-                            setOtp("");
-                            onClose();
-                        }}
-                    >
-                        Cancel
-                    </Button>
-                    <Button
-                        onClick={handleSubmit}
-                    >
-                        Verify
-                    </Button>
-                </div>
-            </div>
             </DialogContent>
         </Dialog>
     )

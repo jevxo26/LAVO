@@ -8,6 +8,9 @@ import { ViewDialog } from "@/components/shared/ViewDialog";
 import { AcceptDialog } from "@/components/shared/AcceptDialog";
 import { getDeliveryColumns } from "./DeliveryColumns";
 import { AvailableDelivery } from "../types";
+import { toast } from "@/lib/toast";
+import { Loader2 } from "lucide-react";
+import Loading from "../Loading";
 
 type DeliveryTableProps = {
   search: string;
@@ -18,11 +21,14 @@ const DeliveryTable = ({ search }: DeliveryTableProps) => {
   const [data, setData] = useState<AvailableDelivery[]>([]);
   const [viewOpen, setViewOpen] = useState(false);
   const [startOpen, setStartOpen] = useState(false);
+  const [isAccepting, setIsAccepting] = useState(false);
+  const [tableLoading, setTableLoading] = useState(false);
   const [selectedDelivery, setSelectedDelivery] =
     useState<AvailableDelivery | null>(null);
 
   const fetchDeliveries = async () => {
     try {
+      setTableLoading(true);
       const token = localStorage.getItem("laundrix_token");
 
       const res = await axios.get(
@@ -34,11 +40,13 @@ const DeliveryTable = ({ search }: DeliveryTableProps) => {
         }
       );
 
-      console.log("Available Deliveries:", res.data);
+      // console.log("Available Deliveries:", res.data);
 
       setData(res.data.data);
     } catch (error) {
       console.error(error);
+    } finally {
+      setTableLoading(false);
     }
   };
   const filteredData = useMemo(() => {
@@ -77,11 +85,14 @@ const DeliveryTable = ({ search }: DeliveryTableProps) => {
 
   return (
     <div className="rounded-xl border bg-white p-5 space-y-5">
-      <DataTable
-        columns={columns}
-        data={filteredData}
-        emptyMessage="No delivery available."
-      />
+      {tableLoading ? (
+        <Loading/>
+      ) : (
+        <DataTable
+          columns={columns}
+          data={filteredData}
+          emptyMessage="No delivery available."
+        />)}
       {/* View Dialog */}
       <ViewDialog
         open={viewOpen}
@@ -171,12 +182,17 @@ const DeliveryTable = ({ search }: DeliveryTableProps) => {
         open={startOpen}
         title="Start Delivery"
         description={`Are you sure you want to start Order #${selectedDelivery?.orderId}?`}
+        loading={isAccepting}
+        isConfirmed={
+          selectedDelivery?.status === "IN_PROGRESS"
+        }
         onCancel={() => {
           setStartOpen(false);
           setSelectedDelivery(null);
         }}
         onConfirm={async () => {
           try {
+            setIsAccepting(true);
             const token = localStorage.getItem("laundrix_token");
 
             await axios.patch(
@@ -188,13 +204,17 @@ const DeliveryTable = ({ search }: DeliveryTableProps) => {
                 },
               }
             );
+            toast.success("Delivery started successfully");
 
             setStartOpen(false);
             setSelectedDelivery(null);
 
-            fetchDeliveries();
+            await fetchDeliveries();
           } catch (error) {
             console.error(error);
+            toast.error("Failed to start delivery");
+          } finally {
+            setIsAccepting(false);
           }
         }}
       />

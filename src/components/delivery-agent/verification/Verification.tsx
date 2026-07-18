@@ -12,9 +12,11 @@ const Verification = () => {
     const { user } = useAuth();
     const [search, setSearch] = useState("");
     const [data, setData] = useState<VerificationType[]>([]);
+    const [loading, setLoading] = useState(true);
 
     const fetchVerification = async () => {
         try {
+            setLoading(true);
             const token = localStorage.getItem("laundrix_token");
 
             const res = await axios.get(
@@ -29,6 +31,8 @@ const Verification = () => {
             setData(res.data.data);
         } catch (err) {
             console.error(err);
+        } finally {
+            setLoading(false);
         }
     };
     useEffect(() => {
@@ -56,6 +60,7 @@ const Verification = () => {
                 search={search}
                 setSearch={setSearch}
                 fetchVerification={fetchVerification}
+                loading={loading}
             />
         </div>
 

@@ -37,90 +37,13 @@ export const getAvailablePickups = async (userId: string) => {
             userId
         }
     });
-
     if (!agent) {
         throw new Error("Delivery agent not found");
     }
-
-    // test
-    const allDeliveries = await prisma.delivery.findMany({
-        select: {
-            id: true,
-            orderId: true,
-            assignedAgentId: true,
-            deliveryType: true,
-            deliveryStatus: true,
-            customerId: true,
-            branchId: true,
-            createdAt: true,
-        },
-    });
-
-    console.log("===== ALL DELIVERIES =====");
-    console.table(allDeliveries);
-    const allOrders = await prisma.order.findMany({
-        select: {
-            id: true,
-            customerId: true,
-            deliveryAgentId: true,
-            pickupAgentId: true,
-            orderStatus: true,
-            paymentStatus: true,
-            createdAt: true,
-        },
-    });
-    console.log("All order")
-
-    console.table(allOrders);
-
-    console.log("===== ALL ORDERS =====");
-    console.table(allOrders);
-
-    const myOrders = await prisma.order.findMany({
-        where: {
-            deliveryAgentId: agent.id,
-        },
-        include: {
-            customer: {
-                include: {
-                    user: true,
-                    addresses: true
-                }
-            }
-        }
-    });
-
-
-    console.log("My Orders");
-    console.table(myOrders);
-
-
-    // const pickups = await prisma.delivery.findMany({
-    //     where: {
-    //         assignedAgentId: agent.id,
-    //         deliveryType: "PICKUP",
-    //         deliveryStatus: "PENDING"
-    //     },
-    //     include: {
-    //         customer: {
-    //             include: {
-    //                 user: true,
-    //                 addresses: true
-    //             }
-    //         },
-    //         branch: true,
-    //         order: true
-    //     },
-    //     orderBy: {
-    //         createdAt: "desc"
-    //     }
-    // });
-
-    const pickups = await prisma.delivery.findMany({
+    const deliveries = await prisma.delivery.findMany({
         where: {
             assignedAgentId: agent.id,
-            deliveryType: "PICKUP",
-            deliveryStatus: "PENDING"
+            deliveryStatus: "PENDING",
         },
         include: {
             order: true,
@@ -136,48 +59,56 @@ export const getAvailablePickups = async (userId: string) => {
             createdAt: "desc"
         }
     });
-    console.log("Agent ID:", agent.id);
-    console.log("Pickups:", pickups);
-
-    return pickups.map((pickup) => {
+    // console.log("Agent ID:", agent.id);
+    // console.log(
+    //     "Assigned Deliveries:",
+    //     deliveries.map(d => ({
+    //         id: d.id,
+    //         type: d.deliveryType,
+    //         status: d.deliveryStatus
+    //     }))
+    // );
+    return deliveries.map((delivery) => {
         const customerAddress =
-            pickup.customer.addresses.find(
-                (addr) => addr.isDefault
-            ) || pickup.customer.addresses[0];
+            delivery.customer?.addresses.find(
+                addr => addr.isDefault
+            ) || delivery.customer?.addresses[0];
         let distance = null;
         if (
-            pickup.branch?.latitude &&
-            pickup.branch?.longitude &&
+            delivery.branch?.latitude &&
+            delivery.branch?.longitude &&
             customerAddress?.latitude &&
             customerAddress?.longitude
         ) {
             distance = calculateDistance(
-                pickup.branch.latitude,
-                pickup.branch.longitude,
+                delivery.branch.latitude,
+                delivery.branch.longitude,
                 customerAddress.latitude,
                 customerAddress.longitude
             );
         }
         return {
-
-            id: pickup.id,
-            orderId: pickup.orderId,
-            customerName: pickup.customer?.user?.fullName,
-            customerPhone: pickup.customer?.user?.phone,
-            branch: pickup.branch?.branchName ?? "N/A",
-
-            pickupAddress: customerAddress?.fullAddress,
-            distance: distance
-                ? `${distance} KM`
-                : "N/A",
-
+            id: delivery.id,
+            orderId: delivery.orderId,
+            deliveryType: delivery.deliveryType,
+            customerName:
+                delivery.customer?.user?.fullName ?? "N/A",
+            customerPhone:
+                delivery.customer?.user?.phone ?? "N/A",
+            branch:
+                delivery.branch?.branchName ?? "N/A",
+            pickupAddress:
+                customerAddress?.fullAddress ?? "N/A",
+            distance:
+                distance ? `${distance} KM` : "N/A",
             priority: "NORMAL",
-            status: pickup.deliveryStatus,
-            createdAt: pickup.createdAt
-        }
+            status:
+                delivery.deliveryStatus,
+            createdAt:
+                delivery.createdAt
+        };
     });
 };
-
 export const acceptPickup = async (
     userId: string,
     deliveryId: string
@@ -218,5 +149,6 @@ export const acceptPickup = async (
                 deliveryStatus: "ACCEPTED"
             }
         });
+        console.log("ACCEPTED DELIVERY:", updatedDelivery);
     return updatedDelivery;
 };
