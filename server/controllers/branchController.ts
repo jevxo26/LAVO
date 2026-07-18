@@ -40,9 +40,20 @@ export const getBranchById = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+import { z } from 'zod';
+
+const createBranchSchema = z.object({
+  branchCode: z.string().optional(),
+  branchName: z.string().min(1, "Branch name cannot be empty"),
+  location: z.string().optional(),
+  contact: z.string().optional(),
+  manager: z.string().optional(),
+  status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
+});
+
 export const createBranch = catchAsync(async (req: Request, res: Response) => {
-  // In a real app, you would validate req.body with Zod or express-validator here
-  const branch = await branchService.createBranch(req.body);
+  const validatedData = createBranchSchema.parse(req.body);
+  const branch = await branchService.createBranch(validatedData);
 
   sendResponse(res, {
     statusCode: 201,

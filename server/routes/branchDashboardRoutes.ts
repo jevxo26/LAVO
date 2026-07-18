@@ -15,8 +15,6 @@ const router = express.Router();
 router.use(verifyToken);
 router.use(restrictTo('BRANCH_MANAGER', 'Branch Manager', 'ADMIN', 'Admin', 'SUPER_ADMIN'));
 
-// Note: In a real app, the branchId would be derived from the logged-in BRANCH_MANAGER's profile.
-// For the admin viewing it, we allow passing ?branchId=xxx
 router.get('/overview', overviewController.getOverview);
 router.get('/orders', orderController.getOrders);
 router.post('/orders/assign-agent', qrOrderController.assignAgentToOrder);
