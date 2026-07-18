@@ -34,6 +34,7 @@ import { SearchInput } from "@/components/shared/SearchInput"
 import { type AdminRecord, type CrudModuleConfig } from "./types"
 import { FormattedCell } from "./FormattedCell"
 import { RecordDialog } from "./RecordDialog"
+import { useAppSelector } from "@/store/store"
 
 type AdminCrudPageProps<TRecord extends AdminRecord> = {
   config: CrudModuleConfig<TRecord>
@@ -57,6 +58,10 @@ export function AdminCrudPage<TRecord extends AdminRecord>({
   const [editingRecord, setEditingRecord] = React.useState<TRecord | null>(null)
   const [deletingRecord, setDeletingRecord] = React.useState<TRecord | null>(null)
 
+  // Read the token from Redux store (stays in sync with auth lifecycle)
+  const token = useAppSelector((s) => s.auth.token)
+  const isAuthLoading = useAppSelector((s) => s.auth.isLoading)
+
   const fetchData = React.useCallback(async () => {
     if (!config.endpoint) {
       setIsLoading(false)
@@ -64,7 +69,6 @@ export function AdminCrudPage<TRecord extends AdminRecord>({
     }
     try {
       setIsLoading(true)
-      const token = typeof window !== "undefined" ? localStorage.getItem("laundrix_token") : null
       const res = await axios.get(config.endpoint, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
         params: { search }
@@ -78,11 +82,14 @@ export function AdminCrudPage<TRecord extends AdminRecord>({
     } finally {
       setIsLoading(false)
     }
-  }, [config.endpoint, search])
+  }, [config.endpoint, search, token])
 
   React.useEffect(() => {
+    // Wait for auth rehydration to complete before fetching — prevents
+    // a race where fetchMeThunk hasn't resolved yet and token is still null
+    if (isAuthLoading) return
     fetchData()
-  }, [fetchData])
+  }, [fetchData, isAuthLoading])
 
   const columns = React.useMemo<ColumnDef<TRecord>[]>(
     () => [
@@ -139,7 +146,6 @@ export function AdminCrudPage<TRecord extends AdminRecord>({
     }
     
     try {
-      const token = typeof window !== "undefined" ? localStorage.getItem("laundrix_token") : null
       await axios.post(config.endpoint, values, {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       })
@@ -160,7 +166,6 @@ export function AdminCrudPage<TRecord extends AdminRecord>({
     }
 
     try {
-      const token = typeof window !== "undefined" ? localStorage.getItem("laundrix_token") : null
       await axios.patch(`${config.endpoint}/${values.id}`, values, {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       })
@@ -183,7 +188,6 @@ export function AdminCrudPage<TRecord extends AdminRecord>({
     }
 
     try {
-      const token = typeof window !== "undefined" ? localStorage.getItem("laundrix_token") : null
       await axios.delete(`${config.endpoint}/${deletingRecord.id}`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       })

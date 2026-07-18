@@ -16,9 +16,9 @@ export default function LoginPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, ease: "easeOut" }}
-                className="w-full max-w-md"
+                className="w-full max-w-[470px] mx-auto"
             >
-                <div className="w-full max-w-md">
+                <div className="w-full max-w-[470px] mx-auto">
                     <Card className="border-0 shadow-2xl bg-white/70 backdrop-blur-xl animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <CardHeader className="space-y-1 pb-4 text-center">
                             <div className="w-16 h-16 bg-gradient-to-tr from-indigo-600 to-cyan-500 rounded-2xl mx-auto flex items-center justify-center shadow-lg mb-4">
