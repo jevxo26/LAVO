@@ -20,7 +20,7 @@ export function ServicePromise() {
   };
 
   return (
-    <section className="w-full py-12 md:py-16 lg:py-20 bg-slate-50 border-t border-slate-100">
+    <section className="w-full py-12 md:py-16 lg:py-20 bg-slate-100 border-t border-slate-100">
       <div className="max-w-[1440px] mx-auto px-4 md:px-6">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
@@ -46,8 +46,8 @@ export function ServicePromise() {
           className="grid grid-cols-1 md:grid-cols-3 gap-12 lg:gap-8"
         >
           {/* Promise 1 */}
-          <motion.div variants={item} className="flex flex-col items-center text-center">
-            <div className="w-16 h-16 rounded-2xl bg-white shadow-sm border border-slate-100 flex items-center justify-center text-blue-600 mb-6">
+          <motion.div variants={item} className="flex flex-col items-center text-center bg-slate-200 py-10 rounded-2xl hover:-translate-y-2 hover:scale-105">
+            <div className="w-16 h-16 rounded-2xl bg-white shadow-sm border border-slate-100 flex items-center justify-center text-blue-600 mb-6 hover:scale-110 transition-transform duration-300">
               <Shield size={28} strokeWidth={1.5} />
             </div>
             <h3 className="text-xl font-bold text-slate-900 mb-3">Garment Insurance</h3>
@@ -57,8 +57,8 @@ export function ServicePromise() {
           </motion.div>
 
           {/* Promise 2 */}
-          <motion.div variants={item} className="flex flex-col items-center text-center">
-            <div className="w-16 h-16 rounded-2xl bg-white shadow-sm border border-slate-100 flex items-center justify-center text-blue-600 mb-6">
+          <motion.div variants={item} className="flex flex-col items-center text-center bg-slate-200 py-10 rounded-2xl hover:-translate-y-2 hover:scale-105">
+            <div className="w-16 h-16 rounded-2xl bg-white shadow-sm border border-slate-100 flex items-center justify-center text-blue-600 mb-6 hover:scale-110 transition-transform duration-300">
               <Award size={28} strokeWidth={1.5} />
             </div>
             <h3 className="text-xl font-bold text-slate-900 mb-3">Certified Process</h3>
@@ -68,8 +68,8 @@ export function ServicePromise() {
           </motion.div>
 
           {/* Promise 3 */}
-          <motion.div variants={item} className="flex flex-col items-center text-center">
-            <div className="w-16 h-16 rounded-2xl bg-white shadow-sm border border-slate-100 flex items-center justify-center text-blue-600 mb-6">
+          <motion.div variants={item} className="flex flex-col items-center text-center bg-slate-200 py-10 rounded-2xl hover:-translate-y-2 hover:scale-105">
+            <div className="w-16 h-16 rounded-2xl bg-white shadow-sm border border-slate-100 flex items-center justify-center text-blue-600 mb-6 hover:scale-110 transition-transform duration-300">
               <RefreshCcw size={28} strokeWidth={1.5} />
             </div>
             <h3 className="text-xl font-bold text-slate-900 mb-3">Satisfaction Promise</h3>

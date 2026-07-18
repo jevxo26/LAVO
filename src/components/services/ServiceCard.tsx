@@ -57,7 +57,7 @@ export function ServiceCard({
         </p>
 
         {/* Action Button */}
-        <div className="flex items-center justify-between w-full px-6 py-3.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full font-semibold text-sm transition-all mt-auto shadow-md shadow-blue-500/20 group-hover:shadow-blue-500/40">
+        <div className="flex items-center justify-between w-full px-6 py-3.5 bg-gradient-to-l from-blue-400 to-blue-500 hover:bg-gradient-to-r hover:from-blue-400 hover:to-blue-500 duration-300 text-white rounded-2xl font-semibold text-sm transition-all mt-auto shadow-md shadow-blue-500/20 group-hover:shadow-blue-500/40">
           <span>View Details</span>
           <div className="w-6 h-6 rounded-full bg-white text-blue-600 flex items-center justify-center shadow-sm">
             <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
