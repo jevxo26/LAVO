@@ -136,7 +136,7 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
                   openMenu===item.name && !isCollapsed && (
                     <div className="ml-8 mt-2 space-y-2">
                     {
-                      item.children?.filter(child => !child.roles || (user && child.roles.includes(user.userType))).map(child=>(
+                      item.children?.filter(child => !child.roles || (user && child.roles.includes(user.userType?.toUpperCase().replace(' ', '_')))).map(child=>(
                       <Link
                         key={child.name}
                         href={child.href || "#"}
