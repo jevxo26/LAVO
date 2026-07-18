@@ -4,10 +4,16 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import RouteTable from "./RouteTable";
 import RouteToolbar from "./RouteToolbar";
 import { useState } from "react";
+import dynamic from "next/dynamic";
+
+const RouteMap = dynamic(
+  () => import("./RouteMap"),
+  { ssr: false }
+);
 
 const OptimizeRoute = () => {
-    const [search, setSearch] = useState("");
-    return (
+  const [search, setSearch] = useState("");
+  return (
     <div className="space-y-6">
 
       <PageHeader
@@ -19,9 +25,11 @@ const OptimizeRoute = () => {
         <h2 className="mb-3 text-lg font-semibold">
           Route Map
         </h2>
-        <div className="flex h-[300px] items-center justify-center rounded-lg bg-slate-100 text-slate-500">
+        {/* <div className="flex h-[300px] items-center justify-center rounded-lg bg-slate-100 text-slate-500">
           Map will be integrated here
-          {/* Google Map / Mapbox later */}
+        </div> */}
+        <div className="rounded-lg overflow-hidden">
+          <RouteMap />
         </div>
       </div>
       <RouteToolbar

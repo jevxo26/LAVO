@@ -8,10 +8,10 @@ import * as availablePickupsService from '../../services/deleveryAgent/available
 
 export const getOverview = catchAsync(
   async (req: AuthRequest, res: Response) => {
-    console.log("req.user =", req.user);
+    // console.log("req.user =", req.user);
     // const agentId = req.user?.id;
     const userId = req.user?.userId;
-    console.log("userID =", userId);
+    // console.log("userID =", userId);
 
     const result = await overviewService.getOverview(userId!);
 
@@ -49,8 +49,8 @@ export const acceptPickup = catchAsync(
    const userId = req.user?.userId;
    const {deliveryId}=req.params;
 
-   console.log("Delivery ID:", deliveryId);
-   console.log("User ID:", userId);
+  //  console.log("Delivery ID:", deliveryId);
+  //  console.log("User ID:", userId);
 
    if(!deliveryId || Array.isArray(deliveryId)){
       throw new Error("Invalid delivery id");

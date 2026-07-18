@@ -16,9 +16,9 @@ const calculateDistance = (
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
+    Math.cos((lat2 * Math.PI) / 180) *
+    Math.sin(dLon / 2) *
+    Math.sin(dLon / 2);
 
   const c =
     2 *
@@ -63,7 +63,8 @@ export const getAvailableDeliveries = async (
       createdAt: "desc",
     },
   });
-
+  console.log("Total deliveries:", deliveries.length);
+  console.log(deliveries);
   return deliveries.map((delivery) => {
     const customerAddress =
       delivery.customer.addresses.find(
@@ -154,7 +155,7 @@ export const acceptDelivery = async (
     },
     data: {
       deliveryStatus: "IN_PROGRESS",
-    //   acceptedAt: new Date(),
+      //   acceptedAt: new Date(),
     },
   });
 };

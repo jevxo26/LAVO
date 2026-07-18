@@ -42,11 +42,43 @@ export const getAvailablePickups = async (userId: string) => {
         throw new Error("Delivery agent not found");
     }
 
-    const pickups = await prisma.delivery.findMany({
+    // test
+    const allDeliveries = await prisma.delivery.findMany({
+        select: {
+            id: true,
+            orderId: true,
+            assignedAgentId: true,
+            deliveryType: true,
+            deliveryStatus: true,
+            customerId: true,
+            branchId: true,
+            createdAt: true,
+        },
+    });
+
+    console.log("===== ALL DELIVERIES =====");
+    console.table(allDeliveries);
+    const allOrders = await prisma.order.findMany({
+        select: {
+            id: true,
+            customerId: true,
+            deliveryAgentId: true,
+            pickupAgentId: true,
+            orderStatus: true,
+            paymentStatus: true,
+            createdAt: true,
+        },
+    });
+    console.log("All order")
+
+    console.table(allOrders);
+
+    console.log("===== ALL ORDERS =====");
+    console.table(allOrders);
+
+    const myOrders = await prisma.order.findMany({
         where: {
-            assignedAgentId: agent.id,
-            deliveryType: "PICKUP",
-            deliveryStatus: "PENDING"
+            deliveryAgentId: agent.id,
         },
         include: {
             customer: {
@@ -54,14 +86,58 @@ export const getAvailablePickups = async (userId: string) => {
                     user: true,
                     addresses: true
                 }
+            }
+        }
+    });
+
+
+    console.log("My Orders");
+    console.table(myOrders);
+
+
+    // const pickups = await prisma.delivery.findMany({
+    //     where: {
+    //         assignedAgentId: agent.id,
+    //         deliveryType: "PICKUP",
+    //         deliveryStatus: "PENDING"
+    //     },
+    //     include: {
+    //         customer: {
+    //             include: {
+    //                 user: true,
+    //                 addresses: true
+    //             }
+    //         },
+    //         branch: true,
+    //         order: true
+    //     },
+    //     orderBy: {
+    //         createdAt: "desc"
+    //     }
+    // });
+
+    const pickups = await prisma.delivery.findMany({
+        where: {
+            assignedAgentId: agent.id,
+            deliveryType: "PICKUP",
+            deliveryStatus: "PENDING"
+        },
+        include: {
+            order: true,
+            customer: {
+                include: {
+                    user: true,
+                    addresses: true
+                }
             },
-            branch: true,
-            order: true
+            branch: true
         },
         orderBy: {
             createdAt: "desc"
         }
     });
+    console.log("Agent ID:", agent.id);
+    console.log("Pickups:", pickups);
 
     return pickups.map((pickup) => {
         const customerAddress =
