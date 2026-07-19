@@ -162,7 +162,7 @@ export const dashboardNavItems: NavItem[] = [
     name: "Delivery Logistics",
     href: "/dashboard/logistics",
     icon: Truck,
-    roles: ["SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER"],
+    roles: ["SUPER_ADMIN", "ADMIN"],
   },
   {
     name: "Financial Configuration",
@@ -174,7 +174,7 @@ export const dashboardNavItems: NavItem[] = [
     name: "Customer Support",
     href: "/dashboard/support",
     icon: Headphones,
-    roles: ["SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER"],
+    roles: ["SUPER_ADMIN", "ADMIN"],
   },
   {
     name: "Settings",
