@@ -24,6 +24,7 @@ import deliveryAgentRoutes from './routes/deliveryAgentRoutes'
 import customerRoutes from './routes/customerRoutes';
 import paymentRoutes from './routes/paymentRoutes';
 import chatRoutes from './routes/chatRoutes';
+import cmsRoutes from './routes/cmsRoutes';
 
 import { initSocket } from './socket';
 
@@ -91,7 +92,9 @@ app.prepare().then(async () => {
   server.use('/api/delivery-agent', deliveryAgentRoutes);
   server.use('/api/customer', customerRoutes);
   server.use('/api/payments', paymentRoutes);
-  server.use('/api/chat', chatRoutes);  // Serve uploaded files statically
+  server.use('/api/chat', chatRoutes);
+  server.use('/api/cms', cmsRoutes);
+  // Serve uploaded files statically
   server.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));
 
   // Let Next.js handle all other routes

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X, QrCode, LogIn, ArrowRight, ShoppingBag } from "lucide-react";
@@ -11,22 +11,28 @@ const navLinks = [
   { name: "Services", href: "/services" },
   { name: "Pricing", href: "/pricing" },
   { name: "Coverage", href: "/coverage" },
+  { name: "Branches", href: "/branches" },
   { name: "Corporate", href: "/corporate" },
   { name: "Partner", href: "/partner" },
 ];
 
 export function Navber() {
   const [isOpen, setIsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
   const { isAuthenticated, logout } = useAuth();
 
-  const links = isAuthenticated 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const links = mounted && isAuthenticated
     ? [...navLinks, { name: "Dashboard", href: "/dashboard" }]
     : navLinks;
 
   return (
     <nav className="fixed top-0 left-0 w-full z-50 bg-white border-b border-slate-100 shadow-sm transition-all duration-300">
-      <div className="max-w-[1440px] mx-auto px-4 md:px-6 h-20 flex items-center justify-between">
+      <div className="max-w-[1440px] mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
         
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
@@ -34,7 +40,7 @@ export function Navber() {
             <ShoppingBag size={20} />
           </div>
           <span className="text-xl font-bold tracking-tight text-slate-900">
-            LAUNDRIX
+            LAUNDR<span className="text-primary">IX</span>
           </span>
         </Link>
 
@@ -69,7 +75,7 @@ export function Navber() {
             Track Order
           </Link>
           
-          {isAuthenticated ? (
+          {mounted && isAuthenticated ? (
             <button
               onClick={logout}
               className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-slate-200 text-slate-700 text-sm font-medium hover:bg-slate-50 transition-colors"

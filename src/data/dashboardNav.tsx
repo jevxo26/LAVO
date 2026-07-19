@@ -177,6 +177,12 @@ export const dashboardNavItems: NavItem[] = [
     roles: ["SUPER_ADMIN", "ADMIN"],
   },
   {
+    name: "Website CMS",
+    href: "/dashboard/cms",
+    icon: LayoutDashboard,
+    roles: ["SUPER_ADMIN", "ADMIN"],
+  },
+  {
     name: "Settings",
     href: "/dashboard/settings",
     icon: Settings,

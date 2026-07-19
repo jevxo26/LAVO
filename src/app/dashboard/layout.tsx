@@ -7,6 +7,19 @@ import { Navbar } from "@/components/dashboard/navbar";
 import { useAppSelector } from "@/store/store";
 import { toast } from "sonner";
 
+function UnauthorizedCheck() {
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    if (searchParams.get("unauthorized") === "1") {
+      toast.error("You don't have permission to access that page.");
+      const url = new URL(window.location.href);
+      url.searchParams.delete("unauthorized");
+      window.history.replaceState({}, "", url.toString());
+    }
+  }, [searchParams]);
+  return null;
+}
+
 export default function DashboardLayout({
   children,
 }: {
@@ -14,20 +27,8 @@ export default function DashboardLayout({
 }) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const router = useRouter();
-  const searchParams = useSearchParams();
   const isAuthenticated = useAppSelector((s) => s.auth.isAuthenticated);
   const isLoading = useAppSelector((s) => s.auth.isLoading);
-
-  // Show a toast when middleware redirected here due to unauthorized role access
-  useEffect(() => {
-    if (searchParams.get("unauthorized") === "1") {
-      toast.error("You don't have permission to access that page.");
-      // Clean up the query param without reloading
-      const url = new URL(window.location.href);
-      url.searchParams.delete("unauthorized");
-      window.history.replaceState({}, "", url.toString());
-    }
-  }, [searchParams]);
 
   // Fallback client-side auth guard (middleware is the primary guard)
   useEffect(() => {
@@ -42,6 +43,9 @@ export default function DashboardLayout({
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-slate-50 font-sans">
+      <React.Suspense fallback={null}>
+        <UnauthorizedCheck />
+      </React.Suspense>
       <Sidebar isCollapsed={isSidebarCollapsed} toggleSidebar={toggleSidebar} />
       
       <div className="flex w-full flex-1 flex-col overflow-hidden">

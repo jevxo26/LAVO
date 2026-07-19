@@ -24,7 +24,10 @@ export function ServiceCard({
   imageUrl,
 }: ServiceCardProps) {
   return (
-    <Link href={`/services/${id}`} className="group flex flex-col bg-card border border-slate-100 rounded-[2rem] overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
+    <Link
+      href={`/services/${id}`}
+      className="group flex flex-col bg-card border border-slate-100 rounded-[2rem] overflow-hidden shadow-sm hover:shadow-md transition-all duration-300"
+    >
       {/* Image Section */}
       <div className="relative w-full h-56 bg-slate-100 p-2">
         <div className="relative w-full h-full rounded-[1.5rem] overflow-hidden">
@@ -41,9 +44,12 @@ export function ServiceCard({
       {/* Content Section */}
       <div className="flex flex-col flex-grow p-6">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-lg font-bold text-slate-900 group-hover:text-blue-600 transition-colors">{title}</h3>
+          <h3 className="text-lg font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+            {title}
+          </h3>
           <span className="text-primary font-bold">
-            {price}<span className="text-sm font-medium">/{unit}</span>
+            {price}
+            <span className="text-sm font-medium">/{unit}</span>
           </span>
         </div>
 
@@ -52,15 +58,16 @@ export function ServiceCard({
           <span className="text-xs font-medium">{time}</span>
         </div>
 
-        <p className="text-sm text-slate-600 mb-6 flex-grow">
-          {description}
-        </p>
+        <p className="text-sm text-slate-600 mb-6 flex-grow">{description}</p>
 
         {/* Action Button */}
-        <div className="flex items-center justify-between w-full px-6 py-3.5 bg-gradient-to-l from-blue-400 to-blue-500 hover:bg-gradient-to-r hover:from-blue-400 hover:to-blue-500 duration-300 text-white rounded-2xl font-semibold text-sm transition-all mt-auto shadow-md shadow-blue-500/20 group-hover:shadow-blue-500/40">
+        <div className="flex items-center justify-between w-full px-6 py-3.5 bg-gradient-to-l from-blue-400 to-blue-500 text-white rounded-2xl font-semibold text-sm mt-auto shadow-md shadow-blue-500/20 transition-all duration-500 ease-out group-hover:shadow-lg group-hover:shadow-blue-500/40 group-hover:bg-gradient-to-r from-blue-400 to-blue-500 group-hover:-translate-y-0.5">
           <span>View Details</span>
-          <div className="w-6 h-6 rounded-full bg-white text-blue-600 flex items-center justify-center shadow-sm">
-            <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
+          <div className="w-6 h-6 rounded-full bg-white text-blue-600 flex items-center justify-center shadow-sm transition-all duration-500 ease-out group-hover:scale-110">
+            <ArrowRight
+              size={14}
+              className="transition-transform duration-500 ease-out group-hover:translate-x-1"
+            />
           </div>
         </div>
       </div>
