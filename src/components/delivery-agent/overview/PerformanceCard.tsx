@@ -1,5 +1,3 @@
-import { Star } from "lucide-react";
-
 type Props = {
   agent: {
     agentId: string;
@@ -7,11 +5,10 @@ type Props = {
     phone: string;
     status: string;
 
-    totalPickups: number;
-    pendingPickups: number;
-
     totalDeliveries: number;
     pendingDeliveries: number;
+    inProgressDeliveries: number;
+    completedDeliveries: number;
   };
 };
 
@@ -23,38 +20,30 @@ export default function PerformanceCard({ agent }: Props) {
       </h2>
 
       <div className="space-y-4">
-
         <div className="flex justify-between">
-          <span>Total Orders</span>
-          <strong>
-            {agent.totalPickups + agent.totalDeliveries}
-          </strong>
+          <span>Total Deliveries</span>
+          <strong>{agent.totalDeliveries}</strong>
         </div>
 
-
         <div className="flex justify-between">
-          <span>Pickups</span>
-          <strong>
-            {agent.totalPickups}
-          </strong>
+          <span>Pending</span>
+          <strong>{agent.pendingDeliveries}</strong>
         </div>
 
-
         <div className="flex justify-between">
-          <span>Deliveries</span>
-          <strong>
-            {agent.totalDeliveries}
-          </strong>
+          <span>In Progress</span>
+          <strong>{agent.inProgressDeliveries}</strong>
         </div>
 
+        <div className="flex justify-between">
+          <span>Completed</span>
+          <strong>{agent.completedDeliveries}</strong>
+        </div>
 
         <div className="flex justify-between">
           <span>Status</span>
-          <strong>
-            {agent.status}
-          </strong>
+          <strong>{agent.status}</strong>
         </div>
-
       </div>
     </div>
   );

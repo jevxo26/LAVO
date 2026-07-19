@@ -12,6 +12,8 @@ import { AcceptDialog } from "@/components/shared/AcceptDialog";
 import { ViewDialog } from "@/components/shared/ViewDialog";
 import { AvailablePickup } from "../types";
 import axios from "axios";
+import { toast } from "@/lib/toast";
+import Loading from "../Loading";
 
 type PickupTableProps = {
     search: string;
@@ -19,6 +21,7 @@ type PickupTableProps = {
 
 const PickupTable = ({ search }: PickupTableProps) => {
     const { user } = useAuth();
+    const [loading, setLoading] = useState(true);
     const [data, setData] = useState<AvailablePickup[]>([]);
     const [open, setOpen] = useState(false);
     const [viewOpen, setViewOpen] = useState(false);
@@ -28,6 +31,7 @@ const PickupTable = ({ search }: PickupTableProps) => {
     // Future backend ready
     const fetchPickups = async () => {
         try {
+            setLoading(true);
             const token = localStorage.getItem(
                 "laundrix_token"
             );
@@ -40,16 +44,18 @@ const PickupTable = ({ search }: PickupTableProps) => {
                 }
             );
 
-            console.log(
-                "Available Pickup:",
-                res.data
-            );
+            // console.log(
+            //     "Available Pickup:",
+            //     res.data
+            // );
             setData(res.data.data);
         } catch (error) {
             console.log(
                 "Pickup fetch error:",
                 error
             );
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -87,11 +93,14 @@ const PickupTable = ({ search }: PickupTableProps) => {
 
     return (
         <div className="rounded-xl border bg-white p-5 space-y-5">
-            <DataTable
-                columns={columns}
-                data={filteredData}
-                emptyMessage="No pickup available."
-            />
+            {loading ? (
+                <Loading/>
+            ) : (
+                <DataTable
+                    columns={columns}
+                    data={filteredData}
+                    emptyMessage="No pickup available."
+                />)}
             {/* View dialog */}
             <ViewDialog
                 open={viewOpen}
@@ -168,9 +177,10 @@ const PickupTable = ({ search }: PickupTableProps) => {
                         setOpen(false);
                         setSelectedPickup(null);
 
-                        console.log("Pickup accepted successfully");
+                        toast.success("Pickup accepted successfully");
                     } catch (error) {
                         console.error(error);
+                        toast.error("Failed to accept pickup");
                     }
                 }}
             />

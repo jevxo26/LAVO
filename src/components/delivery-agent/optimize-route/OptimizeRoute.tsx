@@ -3,11 +3,43 @@
 import { PageHeader } from "@/components/shared/PageHeader";
 import RouteTable from "./RouteTable";
 import RouteToolbar from "./RouteToolbar";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
+import axios from "axios";
+
+const RouteMap = dynamic(
+  () => import("./RouteMap"),
+  { ssr: false }
+);
 
 const OptimizeRoute = () => {
-    const [search, setSearch] = useState("");
-    return (
+  const [search, setSearch] = useState("");
+  const [routes, setRoutes] = useState([]);
+
+  useEffect(() => {
+    const fetchRoutes = async () => {
+      try {
+        const token = localStorage.getItem("laundrix_token");
+
+        const res = await axios.get(
+          "/api/delivery-agent/optimized-routes",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        setRoutes(res.data.data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchRoutes();
+  }, []);
+
+  return (
     <div className="space-y-6">
 
       <PageHeader
@@ -19,9 +51,11 @@ const OptimizeRoute = () => {
         <h2 className="mb-3 text-lg font-semibold">
           Route Map
         </h2>
-        <div className="flex h-[300px] items-center justify-center rounded-lg bg-slate-100 text-slate-500">
+        {/* <div className="flex h-[300px] items-center justify-center rounded-lg bg-slate-100 text-slate-500">
           Map will be integrated here
-          {/* Google Map / Mapbox later */}
+        </div> */}
+        <div className="rounded-lg overflow-hidden">
+          <RouteMap routes={routes}/>
         </div>
       </div>
       <RouteToolbar
@@ -30,6 +64,7 @@ const OptimizeRoute = () => {
       />
       <RouteTable
         search={search}
+        routes={routes}
       />
 
     </div>

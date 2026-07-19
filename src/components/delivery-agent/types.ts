@@ -39,6 +39,9 @@ export interface OptimizedRoute {
   pickups: number;
   deliveries: number;
   status: string;
+
+  latitude: number | null;
+  longitude: number | null;
 }
 
 export interface VerificationType {

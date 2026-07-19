@@ -3,11 +3,13 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 export const getVerificationList = async (userId: string) => {
+  // console.log("USER ID:", userId);
   const agent = await prisma.deliveryAgent.findUnique({
     where: {
       userId,
     },
   });
+  // console.log("AGENT:", agent);
 
   if (!agent) {
     throw new Error("Delivery agent not found");
@@ -25,6 +27,7 @@ export const getVerificationList = async (userId: string) => {
           addresses: true,
         },
       },
+      order: true,
       verifications: true,
     },
   });
@@ -43,7 +46,7 @@ export const getVerificationList = async (userId: string) => {
       deliveryStatus: delivery.deliveryStatus,
       verificationStatus:
         delivery.verifications.length > 0 &&
-        delivery.verifications[0].verifiedAt
+          delivery.verifications[0].verifiedAt
           ? "VERIFIED"
           : "PENDING",
     };
@@ -88,9 +91,16 @@ export const verifyDeliveryOTP = async (
       },
     });
 
+    
+
   if (!deliveryOtp) {
     throw new Error("Invalid OTP");
   }
+
+console.log("OTP FROM DB:", deliveryOtp);
+console.log("EXPIRES AT:", deliveryOtp.expiresAt);
+console.log("NOW:", new Date());
+  
 
   if (deliveryOtp.expiresAt < new Date()) {
     throw new Error("OTP expired");
@@ -110,7 +120,7 @@ export const verifyDeliveryOTP = async (
       id: deliveryId,
     },
     data: {
-      deliveryStatus: "COMPLETED",
+      deliveryStatus: "DELIVERIED",
       completedAt: new Date(),
     },
   });
@@ -124,7 +134,6 @@ export const verifyDeliveryOTP = async (
       verifiedAt: new Date(),
     },
   });
-
   return {
     message: "Delivery verified successfully",
   };

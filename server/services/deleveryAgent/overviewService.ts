@@ -13,6 +13,7 @@ export const getOverview = async (userId: string) => {
     }
   })
 
+
   // console.log(user, "Agent user")
   const agent = await prisma.deliveryAgent.findUnique({
     where: {
@@ -26,18 +27,17 @@ export const getOverview = async (userId: string) => {
   if (!agent) {
     throw new Error("Delivery agent not found");
   }
-
   const totalPickups = await prisma.delivery.count({
     where: {
       assignedAgentId: agent.id,
-      deliveryType: "PICKUP",
+      deliveryType: "DROP_OFF",
     },
   });
 
   const pendingPickups = await prisma.delivery.count({
     where: {
       assignedAgentId: agent.id,
-      deliveryType: "PICKUP",
+      deliveryType: "DROP_OFF",
       deliveryStatus: "PENDING",
     },
   });
@@ -45,15 +45,30 @@ export const getOverview = async (userId: string) => {
   const totalDeliveries = await prisma.delivery.count({
     where: {
       assignedAgentId: agent.id,
-      deliveryType: "DELIVERY",
+      deliveryType: "DROP_OFF",
     },
   });
 
   const pendingDeliveries = await prisma.delivery.count({
     where: {
       assignedAgentId: agent.id,
-      deliveryType: "DELIVERY",
+      deliveryType: "DROP_OFF",
       deliveryStatus: "PENDING",
+    },
+  });
+  const inProgressDeliveries = await prisma.delivery.count({
+    where: {
+      assignedAgentId: agent.id,
+      deliveryType: "DROP_OFF",
+      deliveryStatus: "IN_PROGRESS",
+    },
+  });
+
+  const completedDeliveries = await prisma.delivery.count({
+    where: {
+      assignedAgentId: agent.id,
+      deliveryType: "DROP_OFF",
+      deliveryStatus: "DELIVERIED",
     },
   });
 
@@ -67,6 +82,8 @@ export const getOverview = async (userId: string) => {
     pendingPickups,
     totalDeliveries,
     pendingDeliveries,
+    inProgressDeliveries,
+    completedDeliveries,
   };
 };
 

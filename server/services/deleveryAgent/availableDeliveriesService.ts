@@ -16,9 +16,9 @@ const calculateDistance = (
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
+    Math.cos((lat2 * Math.PI) / 180) *
+    Math.sin(dLon / 2) *
+    Math.sin(dLon / 2);
 
   const c =
     2 *
@@ -46,8 +46,10 @@ export const getAvailableDeliveries = async (
   const deliveries = await prisma.delivery.findMany({
     where: {
       assignedAgentId: agent.id,
-      deliveryType: "DELIVERY",
-      deliveryStatus: "PENDING",
+      deliveryType: "DROP_OFF",
+      deliveryStatus: {
+        in: ["ACCEPTED", "IN_PROGRESS"],
+      },
     },
     include: {
       customer: {
@@ -63,7 +65,8 @@ export const getAvailableDeliveries = async (
       createdAt: "desc",
     },
   });
-
+  // console.log("Total deliveries:", deliveries.length);
+  // console.log(deliveries);
   return deliveries.map((delivery) => {
     const customerAddress =
       delivery.customer.addresses.find(
@@ -116,45 +119,78 @@ export const getAvailableDeliveries = async (
   });
 };
 
+
 export const acceptDelivery = async (
   userId: string,
   deliveryId: string
 ) => {
-  const agent =
-    await prisma.deliveryAgent.findUnique({
-      where: {
-        userId,
-      },
-    });
-
+  const agent = await prisma.deliveryAgent.findUnique({
+    where: {
+      userId,
+    },
+  });
   if (!agent) {
     throw new Error("Delivery agent not found");
   }
-
-  const delivery =
-    await prisma.delivery.findUnique({
-      where: {
-        id: deliveryId,
-      },
-    });
-
+  const delivery = await prisma.delivery.findUnique({
+    where: {
+      id: deliveryId,
+    },
+  });
   if (!delivery) {
     throw new Error("Delivery not found");
   }
-
   if (delivery.assignedAgentId !== agent.id) {
     throw new Error(
       "This delivery is not assigned to you"
     );
   }
-
-  return prisma.delivery.update({
-    where: {
-      id: deliveryId,
-    },
-    data: {
-      deliveryStatus: "IN_PROGRESS",
-    //   acceptedAt: new Date(),
-    },
-  });
+  if (delivery.deliveryStatus === "IN_PROGRESS") {
+    throw new Error(
+      "Delivery already started"
+    );
+  }
+  const updatedDelivery = await prisma.$transaction(
+    async (tx) => {
+      const updated =
+        await tx.delivery.update({
+          where: {
+            id: deliveryId,
+          },
+          data: {
+            deliveryStatus: "IN_PROGRESS",
+          },
+        });
+      const existingOtp =
+        await tx.deliveryOTP.findFirst({
+          where: {
+            deliveryId: delivery.id,
+            isUsed: false,
+            expiresAt: {
+              gt: new Date()
+            }
+          },
+        });
+      if (!existingOtp) {
+        const otp = Math.floor(
+          100000 + Math.random() * 900000
+        );
+        await tx.deliveryOTP.create({
+          data: {
+            deliveryId: delivery.id,
+            otpCode: otp.toString(),
+            expiresAt: new Date(
+              Date.now() + 48 * 60 * 60 * 1000
+            ),
+          },
+        });
+        console.log(
+          "Delivery OTP:",
+          otp
+        );
+      }
+      return updated;
+    }
+  );
+  return updatedDelivery;
 };
