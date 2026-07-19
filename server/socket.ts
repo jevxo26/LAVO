@@ -28,43 +28,99 @@ export const initSocket = (server: HttpServer) => {
 
     socket.on('garmentScan', async (data: { qrCode: string; status: string; employeeId: string; branchId: string }) => {
       try {
-        // 1. Persist scan to GarmentScanHistory
+        // 1. Look up the garment via its QR code record
+        const qrRecord = await prisma.garmentQRCode.findUnique({
+          where: { qrCode: data.qrCode },
+        });
+
+        if (!qrRecord) {
+          socket.emit('scanError', { message: 'QR code not found in system.' });
+          return;
+        }
+
+        // 2. Fetch the full garment item with order context
+        const garmentItem = await prisma.garmentItem.findUnique({
+          where: { id: qrRecord.garmentItemId },
+          include: {
+            orderItem: {
+              include: {
+                order: {
+                  include: {
+                    items: {
+                      include: { garmentItems: true }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }) as any;
+
+        if (!garmentItem) {
+          socket.emit('scanError', { message: 'Garment item not found.' });
+          return;
+        }
+
+        const order = garmentItem.orderItem.order;
+
+        // 3. Update the GarmentItem status
+        await prisma.garmentItem.update({
+          where: { id: garmentItem.id },
+          data: { status: data.status }
+        });
+
+        // 4. Update scan count on QR record
+        await prisma.garmentQRCode.update({
+          where: { qrCode: data.qrCode },
+          data: { scanCount: { increment: 1 } }
+        });
+
+        // 5. Persist scan to GarmentScanHistory
         await prisma.garmentScanHistory.create({
           data: {
-            garmentItemId: data.qrCode, // resolved below
+            garmentItemId: garmentItem.id,
             qrCode: data.qrCode,
             scanType: data.status,
             employeeId: data.employeeId,
             branchId: data.branchId,
           }
-        }).catch(async () => {
-          // If garmentItemId lookup needed, find via GarmentQRCode
-          const qrRecord = await prisma.garmentQRCode.findUnique({ where: { qrCode: data.qrCode } });
-          if (qrRecord) {
-            await prisma.garmentScanHistory.create({
-              data: {
-                garmentItemId: qrRecord.garmentItemId,
-                qrCode: data.qrCode,
-                scanType: data.status,
-                employeeId: data.employeeId,
-                branchId: data.branchId,
-              }
-            });
-            // 2. Update scan count on the QR record
-            await prisma.garmentQRCode.update({
-              where: { qrCode: data.qrCode },
-              data: { scanCount: { increment: 1 } }
-            });
-          }
         });
+
+        // 6. Broadcast live update to Branch Manager Dashboard
+        const payload = { ...data, garmentName: garmentItem.garmentName, orderNumber: order.orderNumber, timestamp: new Date() };
+        io.to(`branch_${data.branchId}`).emit('garmentStatusUpdated', payload);
+        console.log('Scan saved and broadcast:', payload);
+
+        // 7. THE MAGIC TRIGGER: Check if ALL garments in this order are now READY
+        if (data.status === 'READY_FOR_DELIVERY') {
+          const allGarments = order.items.flatMap((item: any) => item.garmentItems);
+          const allReady = allGarments.every((g: any) => g.id === garmentItem.id || g.status === 'READY_FOR_DELIVERY');
+
+          if (allReady && order.orderStatus !== 'READY_FOR_DELIVERY') {
+            // Update order status
+            await prisma.order.update({
+              where: { id: order.id },
+              data: { orderStatus: 'READY_FOR_DELIVERY' }
+            });
+
+            // Auto-assign a DROP_OFF delivery agent
+            try {
+              const { DeliveryAssignmentService } = await import('./services/deleveryAgent/deliveryAssignmentService');
+              await DeliveryAssignmentService.autoAssignDropoffDelivery(order.id);
+            } catch (e) {
+              console.error('Auto-assign dropoff failed:', e);
+            }
+
+            // Notify the branch manager dashboard
+            io.to(`branch_${data.branchId}`).emit('orderReadyForDelivery', { orderId: order.id, orderNumber: order.orderNumber });
+            console.log(`✅ All garments READY — Order ${order.orderNumber} auto-assigned for DROP_OFF delivery!`);
+          }
+        }
+
       } catch (err) {
         console.error('Error saving garment scan:', err);
+        socket.emit('scanError', { message: 'An error occurred while processing the scan.' });
       }
-
-      // 3. Broadcast update to Branch Manager Dashboard room
-      const payload = { ...data, timestamp: new Date() };
-      io.to(`branch_${data.branchId}`).emit('garmentStatusUpdated', payload);
-      console.log('Scan saved and broadcast:', payload);
     });
 
     // Chat Events
