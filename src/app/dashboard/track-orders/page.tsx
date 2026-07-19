@@ -47,6 +47,7 @@ function TrackerContent() {
 
   const [orderNumberInput, setOrderNumberInput] = useState("");
   const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
+  const [deliveryOtp, setDeliveryOtp] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [activeOrders, setActiveOrders] = useState<Array<{ id: string; orderNumber: string }>>([]);
 
@@ -95,9 +96,23 @@ function TrackerContent() {
 
       if (data.success) {
         setOrderDetails(data.data);
+        
+        // Fetch OTP
+        try {
+          const otpRes = await authFetch(`/customer/orders/${data.data.id}/delivery-otp`);
+          const otpData = await otpRes.json();
+          if (otpData.success && otpData.data?.otpCode) {
+            setDeliveryOtp(otpData.data.otpCode);
+          } else {
+            setDeliveryOtp(null);
+          }
+        } catch (e) {
+          setDeliveryOtp(null);
+        }
       } else {
         toast.error("Order details not found. Enter a valid order number.");
         setOrderDetails(null);
+        setDeliveryOtp(null);
       }
     } catch {
       toast.error("Error fetching order tracking details");
@@ -133,6 +148,10 @@ function TrackerContent() {
     // Group sub-statuses for layout simplification
     if (uppercaseStatus === "PROCESSING") return 3;
     if (uppercaseStatus === "WASHING") return 4;
+    
+    // Map the new automated statuses to the timeline
+    if (uppercaseStatus === "READY_FOR_DELIVERY" || uppercaseStatus === "OUT_FOR_DELIVERY") return 5;
+    if (uppercaseStatus === "DELIVERED") return 6;
     
     const index = trackingSteps.findIndex((step) => step.key === uppercaseStatus);
     return index !== -1 ? index : 0;
@@ -259,6 +278,26 @@ function TrackerContent() {
 
           {/* Quick Invoice/Logistics details panel */}
           <div className="lg:col-span-4 space-y-6">
+            
+            {deliveryOtp && (
+              <Card className="border border-indigo-100 shadow-sm bg-indigo-50/50">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base font-bold text-indigo-900 flex items-center gap-2">
+                    <CheckCircle2 size={18} className="text-indigo-600" />
+                    Delivery Verification
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-xs text-indigo-700 mb-3">Provide this PIN to your delivery agent to receive your garments.</p>
+                  <div className="bg-white border border-indigo-200 rounded-lg p-4 text-center">
+                    <span className="text-3xl font-black tracking-widest text-indigo-600 font-mono">
+                      {deliveryOtp}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             <Card className="border border-slate-100 shadow-sm bg-gradient-to-br from-white to-slate-50/50">
               <CardHeader>
                 <CardTitle className="text-base font-bold text-slate-900">Delivery Details</CardTitle>

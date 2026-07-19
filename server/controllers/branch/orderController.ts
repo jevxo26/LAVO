@@ -32,3 +32,23 @@ export const markOrderReadyForDelivery = catchServiceAsync(async (req: any, res:
 
   sendResponse(res, { statusCode: 200, data: { orderId, delivery } });
 });
+
+export const getDevOTP = catchServiceAsync(async (req: any, res: Response) => {
+  const { orderId } = req.params;
+  const delivery = await prisma.delivery.findFirst({
+    where: { orderId, deliveryType: 'DROP_OFF' },
+    orderBy: { createdAt: 'desc' }
+  });
+  
+  if (!delivery) {
+    sendResponse(res, { statusCode: 200, data: { otpCode: null, message: "No drop-off delivery found" } });
+    return;
+  }
+  
+  const otp = await prisma.deliveryOTP.findFirst({
+    where: { deliveryId: delivery.id },
+    orderBy: { createdAt: 'desc' }
+  });
+  
+  sendResponse(res, { statusCode: 200, data: { otpCode: otp?.otpCode || null, message: otp ? "OTP found" : "No OTP found" } });
+});

@@ -33,18 +33,8 @@ export class DeliveryAssignmentService {
       return existingDelivery;
     }
 
-    // 3. Find an available agent in the branch
-    const availableAgent = await prisma.deliveryAgent.findFirst({
-      where: {
-        branchId: order.branchId,
-        status: 'ACTIVE',
-        availability: true,
-      },
-    });
-
-    const agentId = availableAgent ? availableAgent.id : null;
-
-    // 4. Create the Delivery Record
+    // 3. Create the DROP_OFF as PENDING (unassigned) so any branch agent can self-claim it.
+    //    Do NOT pre-assign to a random agent — that would make it invisible to everyone else.
     const delivery = await prisma.delivery.create({
       data: {
         orderId: order.id,
@@ -52,22 +42,13 @@ export class DeliveryAssignmentService {
         branchId: order.branchId,
         deliveryNumber: `DEL-${Date.now().toString().slice(-6)}-${order.orderNumber || order.id.substring(0, 4)}`,
         deliveryType: 'DROP_OFF',
-        deliveryStatus: agentId ? 'ASSIGNED' : 'PENDING',
-        assignedAgentId: agentId,
-        deliveryAddressId: order.deliveryAddressId, // Make sure deliveryAddressId is used for DROP_OFF
+        deliveryStatus: 'PENDING',
+        assignedAgentId: null,
+        deliveryAddressId: order.deliveryAddressId,
       }
     });
 
-    // 5. Update the parent order to link the newly assigned agent
-    if (agentId) {
-      await prisma.order.update({
-        where: { id: order.id },
-        data: { deliveryAgentId: agentId }
-      });
-      console.log(`[AutoAssign] Successfully created DROP_OFF delivery ${delivery.id} and assigned agent ${agentId}.`);
-    } else {
-      console.log(`[AutoAssign] Created DROP_OFF delivery ${delivery.id} but no agent was available for branch ${order.branchId}. Needs manual assignment.`);
-    }
+    console.log(`[AutoAssign] Created DROP_OFF delivery ${delivery.id} for branch ${order.branchId}. Any branch agent can now self-claim it.`);
 
     return delivery;
   }

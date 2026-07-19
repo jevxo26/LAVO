@@ -91,7 +91,54 @@ export const initSocket = (server: HttpServer) => {
         io.to(`branch_${data.branchId}`).emit('garmentStatusUpdated', payload);
         console.log('Scan saved and broadcast:', payload);
 
-        // 7. THE MAGIC TRIGGER: Check if ALL garments in this order are now READY
+        // 7. Update Order status based on intermediate garment scans (Sorting/Washing)
+        const processingEligible = ['PENDING', 'CONFIRMED', 'PICKUP'];
+        const washingEligible = ['PENDING', 'CONFIRMED', 'PICKUP', 'PROCESSING'];
+
+        if (data.status === 'PROCESSING' && processingEligible.includes(order.orderStatus)) {
+          // The first garment entered Processing -> update the Order
+          await prisma.order.update({
+            where: { id: order.id },
+            data: { orderStatus: 'PROCESSING' }
+          });
+          await prisma.orderTimeline.create({
+            data: {
+              orderId: order.id,
+              status: 'PROCESSING',
+              description: 'Laundry items sorting at centralized branch hub.',
+            }
+          });
+          console.log(`Order ${order.orderNumber} advanced to PROCESSING`);
+        } else if (data.status === 'WASHING' && washingEligible.includes(order.orderStatus)) {
+          // The first garment entered Washing -> update the Order
+          // If we skipped PROCESSING, we could insert both timelines, but let's just update status to WASHING
+          await prisma.order.update({
+            where: { id: order.id },
+            data: { orderStatus: 'WASHING' }
+          });
+          
+          // Optionally backfill PROCESSING timeline if missed
+          if (processingEligible.includes(order.orderStatus)) {
+            await prisma.orderTimeline.create({
+              data: {
+                orderId: order.id,
+                status: 'PROCESSING',
+                description: 'Laundry items sorting at centralized branch hub.',
+              }
+            });
+          }
+
+          await prisma.orderTimeline.create({
+            data: {
+              orderId: order.id,
+              status: 'WASHING',
+              description: 'Garments undergoing washing / dry-cleaning cycles.',
+            }
+          });
+          console.log(`Order ${order.orderNumber} advanced to WASHING`);
+        }
+
+        // 8. THE MAGIC TRIGGER: Check if ALL garments in this order are now READY
         if (data.status === 'READY_FOR_DELIVERY') {
           const allGarments = order.items.flatMap((item: any) => item.garmentItems);
           const allReady = allGarments.every((g: any) => g.id === garmentItem.id || g.status === 'READY_FOR_DELIVERY');

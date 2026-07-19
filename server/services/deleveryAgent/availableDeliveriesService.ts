@@ -45,11 +45,26 @@ export const getAvailableDeliveries = async (
 
   const deliveries = await prisma.delivery.findMany({
     where: {
-      assignedAgentId: agent.id,
       deliveryType: "DROP_OFF",
-      deliveryStatus: {
-        in: ["PENDING", "ASSIGNED", "ACCEPTED", "IN_PROGRESS"],
+      // Only show drop-offs whose order is actually ready
+      order: {
+        orderStatus: { in: ["READY_FOR_DELIVERY", "DELIVERY"] }
       },
+      OR: [
+        // Unassigned drop-offs for this branch — any agent can claim these
+        {
+          branchId: agent.branchId,
+          assignedAgentId: null,
+          deliveryStatus: "PENDING",
+        },
+        // Already assigned to this agent and still active
+        {
+          assignedAgentId: agent.id,
+          deliveryStatus: {
+            in: ["PENDING", "ASSIGNED", "ACCEPTED", "IN_PROGRESS"],
+          },
+        }
+      ]
     },
     include: {
       customer: {
@@ -140,27 +155,40 @@ export const acceptDelivery = async (
   if (!delivery) {
     throw new Error("Delivery not found");
   }
-  if (delivery.assignedAgentId !== agent.id) {
-    throw new Error(
-      "This delivery is not assigned to you"
-    );
+  // Allow self-assignment: if unassigned, this agent claims it.
+  // If already assigned to someone else, block it.
+  if (delivery.assignedAgentId && delivery.assignedAgentId !== agent.id) {
+    throw new Error("This delivery has already been claimed by another agent");
   }
   if (delivery.deliveryStatus === "IN_PROGRESS") {
-    throw new Error(
-      "Delivery already started"
-    );
+    throw new Error("Delivery already started");
   }
   const updatedDelivery = await prisma.$transaction(
     async (tx) => {
-      const updated =
-        await tx.delivery.update({
+      const updated = await tx.delivery.update({
           where: {
             id: deliveryId,
           },
           data: {
+            assignedAgentId: agent.id,  // self-assign if not already assigned
             deliveryStatus: "IN_PROGRESS",
           },
         });
+
+      // Advance the order to OUT FOR DELIVERY
+      await tx.order.update({
+        where: { id: delivery.orderId },
+        data: { orderStatus: "DELIVERY" }
+      });
+
+      await tx.orderTimeline.create({
+        data: {
+          orderId: delivery.orderId,
+          status: "DELIVERY",
+          description: "Your clean laundry is out for delivery and on the way to you!",
+        }
+      });
+
       const existingOtp =
         await tx.deliveryOTP.findFirst({
           where: {

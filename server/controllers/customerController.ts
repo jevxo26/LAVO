@@ -2,6 +2,8 @@ import { Request, Response } from 'express';
 import { CustomerService } from '../services/customerService';
 import { catchAsync } from '../utils/catchAsync';
 import { sendResponse } from '../utils/sendResponse';
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
 
 export class CustomerController {
   static getProfileSummary = catchAsync(async (req: any, res: Response) => {
@@ -136,5 +138,44 @@ export class CustomerController {
     }
     const result = await CustomerService.getTransactions(userId);
     sendResponse(res, { statusCode: 200, success: true, data: result });
+  });
+
+  static getDeliveryOTP = catchAsync(async (req: any, res: Response) => {
+    const { id } = req.params;
+    
+    // 1. Check if order belongs to customer
+    const order = await prisma.order.findUnique({
+      where: { id },
+      include: { customer: true }
+    });
+    
+    if (!order || order.customer.userId !== req.user?.userId) {
+      sendResponse(res, { statusCode: 404, success: false, message: 'Order not found', data: null });
+      return;
+    }
+    
+    // 2. Find drop-off delivery
+    const delivery = await prisma.delivery.findFirst({
+      where: { orderId: id, deliveryType: 'DROP_OFF' },
+      orderBy: { createdAt: 'desc' }
+    });
+    
+    if (!delivery) {
+      sendResponse(res, { statusCode: 200, success: true, message: 'No delivery', data: { otpCode: null } });
+      return;
+    }
+    
+    // 3. Find OTP
+    const otp = await prisma.deliveryOTP.findFirst({
+      where: { deliveryId: delivery.id },
+      orderBy: { createdAt: 'desc' }
+    });
+    
+    sendResponse(res, { 
+      statusCode: 200, 
+      success: true, 
+      message: 'OTP fetched', 
+      data: { otpCode: otp?.otpCode || null } 
+    });
   });
 }

@@ -70,9 +70,42 @@ export const generateQrCode = catchServiceAsync(async (req: any, res: Response) 
 export const getOrderQrCodes = catchServiceAsync(async (req: any, res: Response) => {
   await getBranchOrFail(req);
   const { orderId } = req.params;
-  const items = await prisma.garmentItem.findMany({
+  let items = await prisma.garmentItem.findMany({
     where: { orderItem: { orderId } },
     include: { qrCodeRecord: true }
   });
+
+  // Auto-generate items based on order quantities if this is the first time
+  if (items.length === 0) {
+    const orderItems = await prisma.orderItem.findMany({
+      where: { orderId },
+      include: { garmentType: true }
+    });
+
+    const createPromises = [];
+    for (const oi of orderItems) {
+      for (let i = 0; i < oi.quantity; i++) {
+        createPromises.push(
+          prisma.garmentItem.create({
+            data: {
+              orderItemId: oi.id,
+              garmentCode: `G-${Date.now().toString().slice(-4)}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
+              garmentName: oi.garmentType?.name || 'Garment Item',
+            }
+          })
+        );
+      }
+    }
+    
+    if (createPromises.length > 0) {
+      await Promise.all(createPromises);
+      // Refetch
+      items = await prisma.garmentItem.findMany({
+        where: { orderItem: { orderId } },
+        include: { qrCodeRecord: true }
+      });
+    }
+  }
+
   sendResponse(res, { statusCode: 200, data: items });
 });
