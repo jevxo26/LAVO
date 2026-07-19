@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { ChevronLeft, ChevronRight, Menu, ChevronDown  } from "lucide-react";
+import { ChevronLeft, ChevronRight, Menu, ChevronDown, ShoppingBag, LogOut } from "lucide-react";
 import { dashboardNavItems } from "@/data/dashboardNav";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -16,7 +16,7 @@ interface SidebarProps {
 export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
   const pathname = usePathname();
   const [openMenu,setOpenMenu]=React.useState<string | null>(null);
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
   React.useEffect(() => {
     dashboardNavItems.forEach((item) => {
@@ -40,9 +40,14 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
     >
       <div className="flex items-center justify-between h-16 px-4 border-b border-white/20">
         {!isCollapsed && (
-          <span className="text-xl font-bold bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent truncate">
-            LAVO Workspace
-          </span>
+          <Link href="/" className="flex items-center gap-2">
+            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-600 text-white">
+              <ShoppingBag size={16} />
+            </div>
+            <span className="text-xl font-bold tracking-tight text-slate-900">
+              LAUNDRIX
+            </span>
+          </Link>
         )}
         {isCollapsed && (
           <div className="mx-auto text-indigo-500">
@@ -160,7 +165,7 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
         })}
       </nav>
 
-      <div className="p-4 border-t border-white/20">
+      <div className="p-4 border-t border-white/20 flex flex-col gap-4">
         <div
           className={cn(
             "flex items-center",
@@ -181,6 +186,18 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
             </div>
           )}
         </div>
+        
+        <button 
+          onClick={logout}
+          className={cn(
+            "flex items-center gap-3 text-slate-500 hover:text-red-500 hover:bg-red-50 transition-all rounded-xl py-2",
+            isCollapsed ? "justify-center px-0" : "px-3"
+          )}
+          title="Logout"
+        >
+          <LogOut size={20} className="shrink-0" />
+          {!isCollapsed && <span className="text-sm font-medium">Logout</span>}
+        </button>
       </div>
     </aside>
   );
