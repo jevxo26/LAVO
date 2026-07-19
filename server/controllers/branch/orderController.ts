@@ -7,7 +7,7 @@ export const getOrders = catchServiceAsync(async (req: any, res: Response) => {
   const branchId = await getBranchOrFail(req);
   const orders = await prisma.order.findMany({
     where: { branchId },
-    include: { customer: true, items: { include: { service: true } } },
+    include: { customer: { include: { user: true } }, items: { include: { service: true } } },
     orderBy: { createdAt: 'desc' }
   });
   sendResponse(res, { statusCode: 200, data: orders });
