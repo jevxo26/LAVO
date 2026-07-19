@@ -293,6 +293,7 @@ model Branch {
   laundryProcessings LaundryProcessing[]
   processingBatches  ProcessingBatch[]
   deliveries         Delivery[]
+  deliveryAgents     DeliveryAgent[]
 }
 
 model BranchEmployee {

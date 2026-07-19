@@ -422,6 +422,67 @@ export class CustomerService {
   });
 
   // Order Placement logic
+  // Haversine formula: calculates the straight-line distance in km between two GPS coordinates
+  private static haversineDistance(
+    lat1: number, lon1: number,
+    lat2: number, lon2: number
+  ): number {
+    const R = 6371; // Earth radius in km
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLon = ((lon2 - lon1) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+
+  // Finds the nearest active branch and auto-assigns an available local delivery agent
+  private static async routeOrderToBranch(
+    customerLat: number | null,
+    customerLon: number | null
+  ): Promise<{ branchId: string | null; agentId: string | null }> {
+    const branches = await prisma.branch.findMany({
+      where: { status: 'ACTIVE' },
+      select: { id: true, latitude: true, longitude: true },
+    });
+
+    if (!branches.length) return { branchId: null, agentId: null };
+
+    let nearestBranchId: string | null = null;
+
+    if (customerLat !== null && customerLon !== null) {
+      // Pick the branch with the shortest Haversine distance
+      let shortestDistance = Infinity;
+      for (const branch of branches) {
+        if (branch.latitude === null || branch.longitude === null) continue;
+        const dist = this.haversineDistance(
+          customerLat, customerLon,
+          branch.latitude, branch.longitude
+        );
+        if (dist < shortestDistance) {
+          shortestDistance = dist;
+          nearestBranchId = branch.id;
+        }
+      }
+    } else {
+      // No GPS data — fall back to the first active branch
+      nearestBranchId = branches[0].id;
+    }
+
+    if (!nearestBranchId) return { branchId: null, agentId: null };
+
+    // Find the first available delivery agent that belongs to this branch
+    const agent = await prisma.deliveryAgent.findFirst({
+      where: { branchId: nearestBranchId, availability: true, status: 'ACTIVE' },
+      select: { id: true },
+    });
+
+    return { branchId: nearestBranchId, agentId: agent?.id ?? null };
+  }
+
   static placeOrder = catchServiceAsync(
     async (
       userId: string,
@@ -437,6 +498,8 @@ export class CustomerService {
         pickupDate: string;
         pickupTimeSlot: string;
         paymentMethod: 'ONLINE' | 'WALLET';
+        latitude?: number;  // Customer GPS latitude (optional but used for smart routing)
+        longitude?: number; // Customer GPS longitude (optional but used for smart routing)
       }
     ) => {
       const customer = await this.getOrCreateCustomer(userId);
@@ -508,12 +571,20 @@ export class CustomerService {
       // Date parsing
       const estimatedPickupTime = new Date(`${orderData.pickupDate}T${orderData.pickupTimeSlot.split(' - ')[0]}:00`);
 
+      // Route order to the nearest active branch and find a local delivery agent
+      const customerLat = orderData.latitude ?? address.latitude ?? null;
+      const customerLon = orderData.longitude ?? address.longitude ?? null;
+      const { branchId, agentId } = await CustomerService.routeOrderToBranch(customerLat, customerLon);
+
       // 3. Create the Order inside transaction
       const result = await prisma.$transaction(async (tx) => {
         const order = await tx.order.create({
           data: {
             orderNumber,
             customerId: customer.id,
+            branchId: branchId ?? undefined,          // Auto-assigned nearest branch
+            pickupAgentId: agentId ?? undefined,      // Auto-assigned local pickup agent
+            deliveryAgentId: agentId ?? undefined,    // Pre-assign same agent for now
             pickupAddressId: address.id,
             deliveryAddressId: address.id,
             orderType: 'STANDARD',
@@ -537,6 +608,24 @@ export class CustomerService {
             },
           },
         });
+
+        // Auto-create a PICKUP delivery record linked to the nearest branch and agent
+        if (branchId) {
+          const deliveryNumber = `DEL-${Date.now().toString().slice(-6)}-${orderNumber.slice(-4)}`;
+          await tx.delivery.create({
+            data: {
+              orderId: order.id,
+              customerId: customer.id,
+              branchId,
+              deliveryNumber,
+              deliveryType: 'PICKUP',
+              deliveryStatus: 'PENDING',
+              assignedAgentId: agentId ?? undefined,
+              deliveryAddressId: address.id,
+              scheduledDate: estimatedPickupTime,
+            },
+          });
+        }
 
         // Deduct from wallet if method is WALLET
         if (orderData.paymentMethod === 'WALLET') {
