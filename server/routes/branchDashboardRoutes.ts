@@ -17,6 +17,8 @@ router.use(restrictTo('BRANCH_MANAGER', 'Branch Manager', 'ADMIN', 'Admin', 'SUP
 
 router.get('/overview', overviewController.getOverview);
 router.get('/orders', orderController.getOrders);
+router.get('/orders/:orderId/dev-otp', orderController.getDevOTP);
+router.put('/orders/:orderId/ready-for-delivery', orderController.markOrderReadyForDelivery);
 router.post('/orders/assign-agent', qrOrderController.assignAgentToOrder);
 router.get('/orders/:orderId/qr-codes', qrOrderController.getOrderQrCodes);
 router.post('/garment-items/:garmentItemId/generate-qr', qrOrderController.generateQrCode);

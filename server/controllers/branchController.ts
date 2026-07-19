@@ -45,11 +45,24 @@ import { z } from 'zod';
 const createBranchSchema = z.object({
   branchCode: z.string().optional(),
   branchName: z.string().min(1, "Branch name cannot be empty"),
+  branchType: z.string().optional(),
   location: z.string().optional(),
+  city: z.string().optional(),
+  country: z.string().optional(),
+  address: z.string().optional(),
   contact: z.string().optional(),
+  phone: z.string().optional(),
+  email: z.string().email("Invalid email address").optional().or(z.literal('')),
   manager: z.string().optional(),
-  status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
-});
+  managerId: z.string().optional(),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
+  // Accept 'Active', 'Inactive', 'ACTIVE', 'INACTIVE' — normalised to uppercase in the service
+  status: z.string().optional().transform((val) => val?.toUpperCase()),
+}).refine(
+  (data) => !data.status || ['ACTIVE', 'INACTIVE'].includes(data.status),
+  { message: "Status must be 'Active' or 'Inactive'", path: ['status'] }
+);
 
 export const createBranch = catchAsync(async (req: Request, res: Response) => {
   const validatedData = createBranchSchema.parse(req.body);

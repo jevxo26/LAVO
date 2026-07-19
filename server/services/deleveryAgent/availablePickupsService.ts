@@ -42,8 +42,26 @@ export const getAvailablePickups = async (userId: string) => {
     }
     const deliveries = await prisma.delivery.findMany({
         where: {
-            assignedAgentId: agent.id,
-            deliveryStatus: "PENDING",
+            deliveryType: "PICKUP",
+            // Only show pickups whose order is still waiting for pickup
+            order: {
+                orderStatus: { in: ["PENDING", "CONFIRMED"] }
+            },
+            OR: [
+                // Unassigned pickups for this branch — any agent can claim these
+                {
+                    branchId: agent.branchId,
+                    assignedAgentId: null,
+                    deliveryStatus: "PENDING",
+                },
+                // Already assigned to this agent and still active
+                {
+                    assignedAgentId: agent.id,
+                    deliveryStatus: {
+                        in: ["PENDING", "ASSIGNED", "ACCEPTED", "IN_PROGRESS"]
+                    }
+                }
+            ]
         },
         include: {
             order: true,
@@ -139,16 +157,54 @@ export const acceptPickup = async (
         );
     }
 
-    const updatedDelivery =
-        await prisma.delivery.update({
-            where: {
-                id: deliveryId
-            },
+    const updatedDelivery = await prisma.$transaction(async (tx) => {
+        // 1. Mark delivery as ACCEPTED
+        const updated = await tx.delivery.update({
+            where: { id: deliveryId },
             data: {
                 assignedAgentId: agent.id,
-                deliveryStatus: "ACCEPTED"
+                deliveryStatus: "IN_PROGRESS"
             }
         });
-        console.log("ACCEPTED DELIVERY:", updatedDelivery);
+
+        // 2. Advance the order status to CONFIRMED so the customer tracking page moves forward
+        await tx.order.update({
+            where: { id: delivery.orderId },
+            data: { orderStatus: "CONFIRMED" }
+        });
+
+        // 3. Add a timeline entry for the customer
+        await tx.orderTimeline.create({
+            data: {
+                orderId: delivery.orderId,
+                status: "CONFIRMED",
+                description: "A pickup agent is on the way to collect your garments.",
+            }
+        });
+
+        // 4. Generate a pickup verification OTP (agent presents to customer at pickup)
+        const existingOtp = await tx.deliveryOTP.findFirst({
+            where: {
+                deliveryId: delivery.id,
+                isUsed: false,
+                expiresAt: { gt: new Date() }
+            }
+        });
+
+        if (!existingOtp) {
+            const otp = Math.floor(100000 + Math.random() * 900000);
+            await tx.deliveryOTP.create({
+                data: {
+                    deliveryId: delivery.id,
+                    otpCode: otp.toString(),
+                    expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+                }
+            });
+        }
+
+        return updated;
+    });
+
+    console.log("ACCEPTED PICKUP DELIVERY:", updatedDelivery);
     return updatedDelivery;
-};
+};

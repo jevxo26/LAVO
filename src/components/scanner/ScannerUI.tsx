@@ -36,8 +36,10 @@ export function useScannerLogic(user: any) {
     };
 
     emitScan(payload);
+
+    // Wait briefly then show success (socket is fire-and-forget; errors come back via scanError event)
+    await new Promise((r) => setTimeout(r, 1000));
     setLastResult({ ...payload, timestamp: new Date() });
-    await new Promise((r) => setTimeout(r, 800));
     setScanState("success");
   }, [pendingCode, user, emitScan]);
 

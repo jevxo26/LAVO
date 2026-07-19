@@ -18,6 +18,7 @@ interface ChatSession {
 
 interface ChatMessage {
   id: string;
+  sessionId: string;
   senderId: string;
   senderRole: string;
   content: string;

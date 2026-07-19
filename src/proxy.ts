@@ -72,7 +72,8 @@ export function proxy(req: NextRequest) {
       return response;
     }
 
-    const role = payload.role as string;
+    const rawRole = payload.role as string;
+    const role = rawRole.toUpperCase().replace(' ', '_');
 
     if (typeof payload.exp === "number" && payload.exp * 1000 < Date.now()) {
       const loginUrl = req.nextUrl.clone();

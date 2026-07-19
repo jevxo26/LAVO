@@ -19,6 +19,7 @@ router.route('/orders')
   .post(CustomerController.placeOrder);
 
 router.get('/orders/:id', CustomerController.getOrderDetails);
+router.get('/orders/:id/delivery-otp', CustomerController.getDeliveryOTP);
 
 router.route('/wishlist')
   .get(CustomerController.getWishlist)

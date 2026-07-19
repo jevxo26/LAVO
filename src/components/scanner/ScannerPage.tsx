@@ -24,7 +24,7 @@ export function ScannerView({ user }: Props) {
       </Link>
       <div className="text-center">
         <div className="inline-flex items-center gap-2 mb-2 text-indigo-300 text-sm font-medium tracking-widest uppercase">
-          <ScanLine size={16} /> LAVO Employee Scanner
+          <ScanLine size={16} /> LAVO {user?.userType ? user.userType.replace(/_/g, " ") : "EMPLOYEE"} SCANNER
         </div>
         <h1 className="text-3xl font-bold text-white">Scan Garment QR</h1>
         <p className="text-slate-400 mt-1 text-sm">Signed in as <span className="text-indigo-300">{user?.fullName}</span></p>
@@ -64,7 +64,7 @@ export function ScannerView({ user }: Props) {
             <div>
               <p className="text-green-300 text-xl font-bold">Scan Saved!</p>
               <p className="text-slate-400 text-sm mt-1">Stage → <span className="text-white font-medium">{lastResult.status}</span></p>
-              <p className="text-slate-500 text-xs mt-1">Recorded under your employee profile.</p>
+              <p className="text-slate-500 text-xs mt-1">Customer tracker updated successfully.</p>
               <p className="text-slate-600 text-xs mt-2 font-mono break-all">{lastResult.qrCode}</p>
             </div>
             <button onClick={handleReset}

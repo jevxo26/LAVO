@@ -86,11 +86,30 @@ export function OrderActions({ order, onUpdate }: { order: any, onUpdate?: () =>
     }
   }
 
+  const markReadyForDelivery = async () => {
+    try {
+      const res = await fetch(`/api/branch-dashboard/orders/${order.id}/ready-for-delivery`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('laundrix_token')}` }
+      })
+      if (res.ok) {
+        toast.success("Order marked as Ready! Delivery Agent automatically assigned for Drop-off.");
+        if (onUpdate) onUpdate();
+      } else {
+        toast.error("Failed to mark order as ready");
+      }
+    } catch (err) {
+      toast.error("An error occurred");
+    }
+  }
+
   return (
     <div className="flex gap-2">
-      <Button variant="outline" size="sm" title="Assign Delivery Agent" onClick={openAssignModal}>
-        <Truck className="h-4 w-4" />
-      </Button>
+      {order.orderStatus === 'PROCESSING' && (
+        <Button variant="default" size="sm" onClick={markReadyForDelivery} title="Mark Ready for Delivery">
+          Mark Ready
+        </Button>
+      )}
 
       <Button variant="outline" size="sm" title="QR Codes" onClick={openQrModal}>
         <QrCode className="h-4 w-4" />
