@@ -22,6 +22,11 @@ export const getDeliveryAgents = catchServiceAsync(async (req: any, res: Respons
 export const createDeliveryAgent = catchServiceAsync(async (req: any, res: Response) => {
   const branchId = await getBranchOrFail(req);
   const { fullName, email, employeeCode, phone, availability, status } = req.body;
+  const existingUser = await prisma.user.findUnique({ where: { email } });
+  if (existingUser) {
+    return sendResponse(res, { statusCode: 400, data: null, message: "A user with this email already exists" });
+  }
+
   // TODO: Replace dummyPassword123 with a secure email invitation or auto-generation system
   const user = await prisma.user.create({
     data: { fullName, email, password: 'dummyPassword123', userType: 'DELIVERY_AGENT' }
