@@ -1,6 +1,8 @@
 "use client";
 
-import { ServiceCard } from "./ServiceCard";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
+import { ServiceCard } from "@/components/services/ServiceCard";
 import { motion } from "framer-motion";
 
 const services = [
@@ -10,7 +12,7 @@ const services = [
     price: "৳45",
     unit: "kg",
     time: "12-24 hrs",
-    description: "Professional washing with precision folding for everyday garments.",
+    description: "Professional washing and neat folding for everyday garments.",
     imageUrl: "https://images.unsplash.com/photo-1582735689141-c11bb356c6d5?auto=format&fit=crop&q=80&w=800",
   },
   {
@@ -24,11 +26,11 @@ const services = [
   },
   {
     id: "wash-iron",
-    title: "Ironing & Press",
-    price: "৳30",
+    title: "Ironing & Pressing",
+    price: "৳150",
     unit: "pc",
     time: "12-24 hrs",
-    description: "Crisp, wrinkle-free garments finished to a professional standard.",
+    description: "Expert solvent cleaning for delicate, formal, and specialty garments.",
     imageUrl: "https://images.unsplash.com/photo-1517677208171-0bc6725a3e60?auto=format&fit=crop&q=80&w=800",
   },
   {
@@ -60,7 +62,7 @@ const services = [
   },
 ];
 
-export function ServicesGrid({ data }: { data?: any }) {
+export function HomeServices({ data }: { data?: any }) {
   const container = {
     hidden: { opacity: 0 },
     show: {
@@ -71,29 +73,38 @@ export function ServicesGrid({ data }: { data?: any }) {
     }
   };
 
-  const itemAnim = {
+  const item = {
     hidden: { opacity: 0, y: 20 },
     show: { opacity: 1, y: 0, transition: { duration: 0.5 } }
   };
-
-  const displayServices = (data?.items?.length ?? 0) > 0 
-    ? data.items.map((item: any) => {
-        const [price, unit, time] = (item.subtitle || "").split("|").map((s: string) => s.trim());
-        return {
-          id: item.id,
-          title: item.title,
-          price: price || "",
-          unit: unit || "",
-          time: time || "",
-          description: item.content,
-          imageUrl: item.image || "https://images.unsplash.com/photo-1582735689141-c11bb356c6d5?auto=format&fit=crop&q=80&w=800"
-        };
-      })
-    : services;
+  
+  const title = data?.title || "Everything Your Wardrobe Needs";
+  const subtitle = data?.subtitle || "From everyday wash & fold to luxury garment care — handled with professional precision and tracked in real time.";
 
   return (
-    <section className="w-full py-12 md:py-16 lg:py-20 bg-slate-50">
+    <section className="w-full py-16 md:py-24 bg-white">
       <div className="max-w-[1440px] mx-auto px-4 md:px-6">
+        
+        {/* Section Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+          <div className="max-w-2xl text-center md:text-left mx-auto md:mx-0 flex flex-col items-center md:items-start">
+            <span className="text-blue-500 font-bold tracking-widest text-xs uppercase mb-3 flex items-center justify-center md:justify-start">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mr-2"></span>
+              Our Services
+            </span>
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-slate-900 mb-4">{title}</h2>
+            <p className="text-slate-500 text-sm">
+              {subtitle}
+            </p>
+          </div>
+          <div className="flex justify-center md:justify-end">
+            <Link href="/services" className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-slate-200 text-sm font-semibold text-blue-600 hover:bg-slate-50 transition-colors whitespace-nowrap">
+              View All Services <ArrowRight size={16} />
+            </Link>
+          </div>
+        </div>
+
+        {/* Services Grid */}
         <motion.div 
           variants={container}
           initial="hidden"
@@ -101,12 +112,13 @@ export function ServicesGrid({ data }: { data?: any }) {
           viewport={{ once: true, margin: "-100px" }}
           className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8"
         >
-          {displayServices.map((service: any) => (
-            <motion.div key={service.id} variants={itemAnim}>
+          {services.slice(0, 6).map((service) => (
+            <motion.div key={service.id} variants={item}>
               <ServiceCard {...service} />
             </motion.div>
           ))}
         </motion.div>
+
       </div>
     </section>
   );

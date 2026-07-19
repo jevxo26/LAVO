@@ -1,21 +1,40 @@
 import { Navber } from "@/components/Navber";
-import { ServicesHero } from "@/components/services/ServicesHero";
+import { PageHero } from "@/components/shared/PageHero";
 import { ServicesGrid } from "@/components/services/ServicesGrid";
 import { ServicePromise } from "@/components/services/ServicePromise";
 import { Footer } from "@/components/Footer";
+import prisma from "@/lib/prisma";
 
-export default function ServicesPage() {
+export const revalidate = 0;
+
+export default async function ServicesPage() {
+  const page = await prisma.cmsPage.findUnique({
+    where: { slug: "services" },
+    include: {
+      sections: {
+        include: {
+          items: {
+            orderBy: { displayOrder: 'asc' }
+          }
+        }
+      }
+    }
+  });
+
+  const getSection = (key: string) => {
+    return page?.sections.find(s => s.sectionKey === key) || null;
+  };
+
   return (
     <main className="min-h-screen flex flex-col bg-slate-50">
       <Navber />
       
       <div className="flex-1">
-        <ServicesHero />
-        <ServicesGrid />
-        <ServicePromise />
+        <PageHero data={getSection("hero")} />
+        <ServicesGrid data={getSection("services-grid")} />
+        <ServicePromise data={getSection("promise")} />
       </div>
 
-      {/* Assuming there is a Footer component somewhere, otherwise it can be removed */}
       <Footer />
     </main>
   );

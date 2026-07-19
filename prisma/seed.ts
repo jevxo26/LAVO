@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
+import { runCmsSeeder } from "./seeders/cmsSeeder";
 
 const prisma = new PrismaClient();
 
@@ -19,6 +20,7 @@ async function main() {
         password: passwordHash,
         status: "ACTIVE",
         isVerified: true,
+        userType, // Ensure role is updated if it already exists
       },
       create: {
         email,
@@ -312,6 +314,9 @@ async function main() {
   }
 
   console.log("Seed completed successfully!");
+  
+  // Run CMS Seeder
+  await runCmsSeeder();
 }
 
 main()

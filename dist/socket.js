@@ -63,6 +63,42 @@ const initSocket = (server) => {
             io.to(`branch_${data.branchId}`).emit('garmentStatusUpdated', payload);
             console.log('Scan saved and broadcast:', payload);
         });
+        // Chat Events
+        socket.on('joinChat', (sessionId) => {
+            socket.join(`chat_${sessionId}`);
+            console.log(`Socket ${socket.id} joined chat room: chat_${sessionId}`);
+        });
+        socket.on('sendMessage', async (data) => {
+            try {
+                console.log("📨 Received sendMessage:", data);
+                // Save to DB
+                const message = await prisma.chatMessage.create({
+                    data: {
+                        sessionId: data.sessionId,
+                        senderId: data.senderId,
+                        senderRole: data.senderRole || 'CUSTOMER',
+                        content: data.content,
+                    }
+                });
+                console.log("✅ Message saved to DB:", message.id);
+                // Update lastMessage on Session
+                await prisma.chatSession.update({
+                    where: { id: data.sessionId },
+                    data: {
+                        lastMessage: data.content,
+                        lastMessageAt: new Date(),
+                    }
+                });
+                // Broadcast to everyone in the room
+                io.to(`chat_${data.sessionId}`).emit('newMessage', message);
+                console.log(`📢 Broadcasted newMessage to room chat_${data.sessionId}`);
+                // Notify admin/branch manager UI to update session list
+                io.emit('chatSessionUpdated', data.sessionId);
+            }
+            catch (err) {
+                console.error('❌ Error saving chat message:', err);
+            }
+        });
         socket.on('disconnect', () => {
             console.log('A client disconnected:', socket.id);
         });
