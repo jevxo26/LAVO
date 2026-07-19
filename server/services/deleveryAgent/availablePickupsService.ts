@@ -43,7 +43,10 @@ export const getAvailablePickups = async (userId: string) => {
     const deliveries = await prisma.delivery.findMany({
         where: {
             assignedAgentId: agent.id,
-            deliveryStatus: "PENDING",
+            deliveryType: "PICKUP",
+            deliveryStatus: {
+                in: ["PENDING", "ASSIGNED"]
+            }
         },
         include: {
             order: true,

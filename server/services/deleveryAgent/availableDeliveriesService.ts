@@ -48,7 +48,7 @@ export const getAvailableDeliveries = async (
       assignedAgentId: agent.id,
       deliveryType: "DROP_OFF",
       deliveryStatus: {
-        in: ["ACCEPTED", "IN_PROGRESS"],
+        in: ["PENDING", "ASSIGNED", "ACCEPTED", "IN_PROGRESS"],
       },
     },
     include: {
