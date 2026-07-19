@@ -110,9 +110,6 @@ export function OrderActions({ order, onUpdate }: { order: any, onUpdate?: () =>
           Mark Ready
         </Button>
       )}
-      <Button variant="outline" size="sm" title="Assign Delivery Agent" onClick={openAssignModal}>
-        <Truck className="h-4 w-4" />
-      </Button>
 
       <Button variant="outline" size="sm" title="QR Codes" onClick={openQrModal}>
         <QrCode className="h-4 w-4" />
