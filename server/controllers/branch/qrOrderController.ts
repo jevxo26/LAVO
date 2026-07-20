@@ -11,15 +11,18 @@ export const assignAgentToOrder = catchServiceAsync(async (req: any, res: Respon
   const order = await prisma.order.findUnique({ where: { id: orderId } });
   if (!order) throw new Error('Order not found');
 
-  // Update order with the assigned agent
-  const updatedOrder = await prisma.order.update({
-    where: { id: orderId },
-    data: { deliveryAgentId: agentId }
-  });
-
   // Determine delivery type based on order status
   const isPickup = order.orderStatus === 'PENDING' || order.orderStatus === 'CONFIRMED';
   const deliveryType = isPickup ? 'PICKUP' : 'DROP_OFF';
+
+  // Update order with the assigned agent and advance status to CONFIRMED
+  const updatedOrder = await prisma.order.update({
+    where: { id: orderId },
+    data: { 
+      [isPickup ? 'pickupAgentId' : 'deliveryAgentId']: agentId,
+      ...(order.orderStatus === 'PENDING' ? { orderStatus: 'CONFIRMED' } : {})
+    }
+  });
   
   // Create or update the delivery record
   // First see if an active delivery exists for this order & type
@@ -30,7 +33,10 @@ export const assignAgentToOrder = catchServiceAsync(async (req: any, res: Respon
   if (delivery) {
     delivery = await prisma.delivery.update({
       where: { id: delivery.id },
-      data: { assignedAgentId: agentId }
+      data: { 
+        assignedAgentId: agentId,
+        deliveryStatus: 'IN_PROGRESS' 
+      }
     });
   } else {
     delivery = await prisma.delivery.create({

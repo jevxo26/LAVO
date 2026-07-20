@@ -16,7 +16,8 @@ export const getDeliveryHistory = async (userId: string) => {
     const deliveries = await prisma.delivery.findMany({
         where: {
             assignedAgentId: agent.id,
-            deliveryStatus: "DELIVERIED",
+            deliveryType: "DROP_OFF",
+            deliveryStatus: "DELIVERED",
         },
         include: {
             customer: {

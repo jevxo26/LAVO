@@ -70,3 +70,26 @@ export const acceptPickup = catchAsync(
    });
  }
 );
+
+export const getPickupQRCodes = catchAsync(
+  async (req: AuthRequest, res: Response) => {
+    const userId = req.user?.userId;
+    const { deliveryId } = req.params;
+
+    if (!deliveryId || Array.isArray(deliveryId)) {
+      throw new Error("Invalid delivery id");
+    }
+
+    const result = await availablePickupsService.getPickupQRCodes(
+      userId!,
+      deliveryId
+    );
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: "Pickup QR codes fetched successfully",
+      data: result,
+    });
+  }
+);

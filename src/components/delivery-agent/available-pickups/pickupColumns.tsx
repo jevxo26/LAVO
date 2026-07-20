@@ -1,5 +1,5 @@
 import { ColumnDef } from "@tanstack/react-table";
-import { Eye, Check } from "lucide-react";
+import { Eye, Check, Printer } from "lucide-react";
 
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Button } from "@/components/ui/button";
@@ -8,11 +8,13 @@ import { AvailablePickup } from "../types";
 type PickupColumnsProps = {
   onView: (pickup: AvailablePickup) => void;
   onAccept: (pickup: AvailablePickup) => void;
+  onPrintQR: (pickup: AvailablePickup) => void;
 };
 
 export const getPickupColumns = ({
   onView,
   onAccept,
+  onPrintQR,
 }: PickupColumnsProps): ColumnDef<AvailablePickup>[] => [
   {
     accessorKey: "orderId",
@@ -100,23 +102,39 @@ export const getPickupColumns = ({
   {
     id: "actions",
     header: "Actions",
-    cell: ({ row }) => (
-      <div className="flex items-center gap-2">
-        <Button
-          size="icon"
-          variant="outline"
-          onClick={() => onView(row.original)}
-        >
-          <Eye className="h-4 w-4" />
-        </Button>
+    cell: ({ row }) => {
+      const isAccepted = row.original.status === "IN_PROGRESS" || row.original.status === "ACCEPTED";
+      return (
+        <div className="flex items-center gap-2">
+          <Button
+            size="icon"
+            variant="outline"
+            onClick={() => onView(row.original)}
+          >
+            <Eye className="h-4 w-4" />
+          </Button>
 
-        <Button
-          size="icon"
-          onClick={() => onAccept(row.original)}
-        >
-          <Check className="h-4 w-4" />
-        </Button>
-      </div>
-    ),
+          {!isAccepted && (
+            <Button
+              size="icon"
+              onClick={() => onAccept(row.original)}
+            >
+              <Check className="h-4 w-4" />
+            </Button>
+          )}
+
+          {isAccepted && (
+            <Button
+              size="icon"
+              variant="default"
+              onClick={() => onPrintQR(row.original)}
+              title="Print QR Labels"
+            >
+              <Printer className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+      );
+    },
   },
 ];

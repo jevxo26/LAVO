@@ -1,17 +1,20 @@
 "use client";
 
-import { CheckCircle2, ScanLine, Loader2, RefreshCw, ArrowLeft } from "lucide-react";
+import { CheckCircle2, ScanLine, Loader2, RefreshCw, ArrowLeft, XCircle } from "lucide-react";
 import { QrScanner } from "@/components/scanner/QrScanner";
 import { useScannerLogic } from "@/components/scanner/ScannerUI";
 import Link from "next/link";
 
-const STATUSES = ["WASHING", "DRYING", "IRONING", "FOLDING", "READY_FOR_DELIVERY"];
-
 interface Props { user: any }
 
 export function ScannerView({ user }: Props) {
+  const isAgent = user?.userType === "DELIVERY_AGENT";
+  const STATUSES = isAgent 
+    ? ["COLLECTED"] 
+    : ["PROCESSING", "WASHING", "DRYING", "IRONING", "FOLDING", "READY_FOR_DELIVERY"];
+
   const {
-    scanState, lastResult, key, pendingCode,
+    scanState, lastResult, key, pendingCode, errorMessage,
     handleScanSuccess, handleScanFailure, handleStatusSelect, handleReset,
   } = useScannerLogic(user);
 
@@ -70,6 +73,22 @@ export function ScannerView({ user }: Props) {
             <button onClick={handleReset}
               className="mt-4 flex items-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 transition-colors px-6 py-3 text-white font-semibold text-sm">
               <RefreshCw size={16} /> Scan Another
+            </button>
+          </div>
+        )}
+
+        {scanState === "error" && (
+          <div className="flex flex-col items-center gap-5 py-10 text-center">
+            <div className="rounded-full bg-red-500/20 p-5 ring-4 ring-red-500/30">
+              <XCircle size={64} className="text-red-400" />
+            </div>
+            <div>
+              <p className="text-red-300 text-xl font-bold">Scan Failed</p>
+              <p className="text-slate-400 text-sm mt-2">{errorMessage || "QR code not recognised. Please try again."}</p>
+            </div>
+            <button onClick={handleReset}
+              className="mt-4 flex items-center gap-2 rounded-xl bg-slate-700 hover:bg-slate-600 transition-colors px-6 py-3 text-white font-semibold text-sm">
+              <RefreshCw size={16} /> Try Again
             </button>
           </div>
         )}

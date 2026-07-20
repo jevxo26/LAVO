@@ -42,11 +42,13 @@ export interface OptimizedRoute {
 
   latitude: number | null;
   longitude: number | null;
+  type?: string;
 }
 
 export interface VerificationType {
   deliveryId: string;
   orderId: string;
+  deliveryType: string;
   customerName: string;
   customerPhone: string;
   deliveryAddress: string;

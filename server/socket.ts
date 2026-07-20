@@ -91,11 +91,29 @@ export const initSocket = (server: HttpServer) => {
         io.to(`branch_${data.branchId}`).emit('garmentStatusUpdated', payload);
         console.log('Scan saved and broadcast:', payload);
 
-        // 7. Update Order status based on intermediate garment scans (Sorting/Washing)
+        // 7. Update Order status based on intermediate garment scans
         const processingEligible = ['PENDING', 'CONFIRMED', 'PICKUP'];
         const washingEligible = ['PENDING', 'CONFIRMED', 'PICKUP', 'PROCESSING'];
 
-        if (data.status === 'PROCESSING' && processingEligible.includes(order.orderStatus)) {
+        if (data.status === 'COLLECTED' && (order.orderStatus === 'PENDING' || order.orderStatus === 'CONFIRMED')) {
+          const allGarments = order.items.flatMap((item: any) => item.garmentItems);
+          const allCollected = allGarments.every((g: any) => g.id === garmentItem.id || g.status === 'COLLECTED' || g.status === 'PROCESSING' || g.status === 'WASHING' || g.status === 'READY_FOR_DELIVERY');
+
+          if (allCollected) {
+            await prisma.order.update({
+              where: { id: order.id },
+              data: { orderStatus: 'PICKUP' }
+            });
+            await prisma.orderTimeline.create({
+              data: {
+                orderId: order.id,
+                status: 'PICKUP',
+                description: 'All garments collected by delivery agent.',
+              }
+            });
+            console.log(`Order ${order.orderNumber} advanced to PICKUP (Collected by Agent)`);
+          }
+        } else if (data.status === 'PROCESSING' && processingEligible.includes(order.orderStatus)) {
           // The first garment entered Processing -> update the Order
           await prisma.order.update({
             where: { id: order.id },
@@ -108,10 +126,20 @@ export const initSocket = (server: HttpServer) => {
               description: 'Laundry items sorting at centralized branch hub.',
             }
           });
+          
+          // Complete the pickup delivery
+          const pickupDelivery = await prisma.delivery.findFirst({
+            where: { orderId: order.id, deliveryType: 'PICKUP' }
+          });
+          if (pickupDelivery && pickupDelivery.deliveryStatus !== 'COLLECTED') {
+            await prisma.delivery.update({
+              where: { id: pickupDelivery.id },
+              data: { deliveryStatus: 'COLLECTED' }
+            });
+          }
           console.log(`Order ${order.orderNumber} advanced to PROCESSING`);
         } else if (data.status === 'WASHING' && washingEligible.includes(order.orderStatus)) {
           // The first garment entered Washing -> update the Order
-          // If we skipped PROCESSING, we could insert both timelines, but let's just update status to WASHING
           await prisma.order.update({
             where: { id: order.id },
             data: { orderStatus: 'WASHING' }

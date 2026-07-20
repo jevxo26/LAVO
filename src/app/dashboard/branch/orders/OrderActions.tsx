@@ -111,6 +111,12 @@ export function OrderActions({ order, onUpdate }: { order: any, onUpdate?: () =>
         </Button>
       )}
 
+      {(!order.pickupAgentId && (order.orderStatus === 'PENDING' || order.orderStatus === 'CONFIRMED')) && (
+        <Button variant="outline" size="sm" onClick={openAssignModal} title="Assign Agent">
+          <Truck className="h-4 w-4 text-orange-500" />
+        </Button>
+      )}
+
       <Button variant="outline" size="sm" title="QR Codes" onClick={openQrModal}>
         <QrCode className="h-4 w-4" />
       </Button>

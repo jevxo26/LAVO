@@ -33,7 +33,7 @@ const OtpDialog = ({
         try {
             const token = localStorage.getItem("laundrix_token");
 
-            await axios.patch(
+            const res = await axios.patch(
                 `/api/delivery-agent/verify-delivery/${verification.deliveryId}`,
                 { otp },
                 {
@@ -42,7 +42,8 @@ const OtpDialog = ({
                     },
                 }
             );
-            toast.success("Delivery verified successfully");
+            // Use the message returned by the server (different for PICKUP vs DROP_OFF)
+            toast.success(res.data?.data?.message || "Verified successfully!");
 
             await fetchVerification();
 
@@ -69,7 +70,11 @@ const OtpDialog = ({
         >
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Verify Delivery OTP</DialogTitle>
+                    <DialogTitle>
+                        {verification?.deliveryType === 'PICKUP'
+                            ? '🛍️ Verify Pickup OTP'
+                            : '📦 Verify Delivery OTP'}
+                    </DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
                     <div>

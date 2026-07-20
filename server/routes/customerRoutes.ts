@@ -20,6 +20,7 @@ router.route('/orders')
 
 router.get('/orders/:id', CustomerController.getOrderDetails);
 router.get('/orders/:id/delivery-otp', CustomerController.getDeliveryOTP);
+router.delete('/orders/:id/cancel', CustomerController.cancelOrder);
 
 router.route('/wishlist')
   .get(CustomerController.getWishlist)

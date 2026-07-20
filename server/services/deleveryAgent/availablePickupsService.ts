@@ -2,34 +2,7 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-const calculateDistance = (
-    lat1: number,
-    lon1: number,
-    lat2: number,
-    lon2: number
-) => {
-    const R = 6371;
-
-    const dLat = ((lat2 - lat1) * Math.PI) / 180;
-    const dLon = ((lon2 - lon1) * Math.PI) / 180;
-
-    const a =
-        Math.sin(dLat / 2) *
-        Math.sin(dLat / 2) +
-        Math.cos((lat1 * Math.PI) / 180) *
-        Math.cos((lat2 * Math.PI) / 180) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
-
-    const c =
-        2 *
-        Math.atan2(
-            Math.sqrt(a),
-            Math.sqrt(1 - a)
-        );
-
-    return Number((R * c).toFixed(2));
-};
+import { calculateDistance } from "../../utils/geoUtils";
 
 export const getAvailablePickups = async (userId: string) => {
     const agent = await prisma.deliveryAgent.findUnique({
@@ -157,6 +130,10 @@ export const acceptPickup = async (
         );
     }
 
+    if (delivery.assignedAgentId !== null && delivery.assignedAgentId !== agent.id) {
+        throw new Error("This delivery has already been accepted by another agent.");
+    }
+
     const updatedDelivery = await prisma.$transaction(async (tx) => {
         // 1. Mark delivery as ACCEPTED
         const updated = await tx.delivery.update({
@@ -207,4 +184,52 @@ export const acceptPickup = async (
 
     console.log("ACCEPTED PICKUP DELIVERY:", updatedDelivery);
     return updatedDelivery;
-};
+};
+
+export const getPickupQRCodes = async (
+  userId: string,
+  deliveryId: string
+) => {
+  const agent = await prisma.deliveryAgent.findUnique({
+    where: { userId },
+  });
+
+  if (!agent) {
+    throw new Error("Delivery agent not found");
+  }
+
+  const delivery = await prisma.delivery.findUnique({
+    where: {
+      id: deliveryId,
+      assignedAgentId: agent.id,
+    },
+    include: {
+      order: {
+        include: {
+          items: {
+            include: {
+              garmentItems: {
+                include: {
+                  qrCodeRecord: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!delivery) {
+    throw new Error("Delivery not found or not assigned to you");
+  }
+
+  const garmentItems = delivery.order.items.flatMap((oi) => oi.garmentItems);
+
+  return garmentItems.map((gi) => ({
+    garmentId: gi.id,
+    garmentName: gi.garmentName,
+    qrCode: gi.qrCodeRecord?.qrCode || null,
+    status: gi.status,
+  }));
+};
