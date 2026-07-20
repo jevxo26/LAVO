@@ -49,10 +49,10 @@ const router = express_1.default.Router();
 // Only allow Branch Managers and Admins to access these routes
 router.use(authMiddleware_1.verifyToken);
 router.use((0, roleMiddleware_1.restrictTo)('BRANCH_MANAGER', 'Branch Manager', 'ADMIN', 'Admin', 'SUPER_ADMIN'));
-// Note: In a real app, the branchId would be derived from the logged-in BRANCH_MANAGER's profile.
-// For the admin viewing it, we allow passing ?branchId=xxx
 router.get('/overview', overviewController.getOverview);
 router.get('/orders', orderController.getOrders);
+router.get('/orders/:orderId/dev-otp', orderController.getDevOTP);
+router.put('/orders/:orderId/ready-for-delivery', orderController.markOrderReadyForDelivery);
 router.post('/orders/assign-agent', qrOrderController.assignAgentToOrder);
 router.get('/orders/:orderId/qr-codes', qrOrderController.getOrderQrCodes);
 router.post('/garment-items/:garmentItemId/generate-qr', qrOrderController.generateQrCode);

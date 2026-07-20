@@ -68,9 +68,28 @@ exports.getBranchById = (0, catchAsync_1.catchAsync)(async (req, res) => {
         data: branch
     });
 });
+const zod_1 = require("zod");
+const createBranchSchema = zod_1.z.object({
+    branchCode: zod_1.z.string().optional(),
+    branchName: zod_1.z.string().min(1, "Branch name cannot be empty"),
+    branchType: zod_1.z.string().optional(),
+    location: zod_1.z.string().optional(),
+    city: zod_1.z.string().optional(),
+    country: zod_1.z.string().optional(),
+    address: zod_1.z.string().optional(),
+    contact: zod_1.z.string().optional(),
+    phone: zod_1.z.string().optional(),
+    email: zod_1.z.string().email("Invalid email address").optional().or(zod_1.z.literal('')),
+    manager: zod_1.z.string().optional(),
+    managerId: zod_1.z.string().optional(),
+    latitude: zod_1.z.number().optional(),
+    longitude: zod_1.z.number().optional(),
+    // Accept 'Active', 'Inactive', 'ACTIVE', 'INACTIVE' — normalised to uppercase in the service
+    status: zod_1.z.string().optional().transform((val) => val === null || val === void 0 ? void 0 : val.toUpperCase()),
+}).refine((data) => !data.status || ['ACTIVE', 'INACTIVE'].includes(data.status), { message: "Status must be 'Active' or 'Inactive'", path: ['status'] });
 exports.createBranch = (0, catchAsync_1.catchAsync)(async (req, res) => {
-    // In a real app, you would validate req.body with Zod or express-validator here
-    const branch = await branchService.createBranch(req.body);
+    const validatedData = createBranchSchema.parse(req.body);
+    const branch = await branchService.createBranch(validatedData);
     (0, sendResponse_1.sendResponse)(res, {
         statusCode: 201,
         success: true,

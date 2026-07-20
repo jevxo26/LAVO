@@ -152,6 +152,49 @@ class CustomerService {
             });
         }
     }
+    // Order Placement logic
+    // Haversine formula: calculates the straight-line distance in km between two GPS coordinates
+    static haversineDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371; // Earth radius in km
+        const dLat = ((lat2 - lat1) * Math.PI) / 180;
+        const dLon = ((lon2 - lon1) * Math.PI) / 180;
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos((lat1 * Math.PI) / 180) *
+                Math.cos((lat2 * Math.PI) / 180) *
+                Math.sin(dLon / 2) *
+                Math.sin(dLon / 2);
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+    // Finds the nearest active branch and auto-assigns an available local delivery agent
+    static async routeOrderToBranch(customerLat, customerLon) {
+        const branches = await prisma.branch.findMany({
+            where: { status: 'ACTIVE' },
+            select: { id: true, latitude: true, longitude: true },
+        });
+        if (!branches.length)
+            return { branchId: null, agentId: null };
+        let nearestBranchId = null;
+        if (customerLat !== null && customerLon !== null) {
+            // Pick the branch with the shortest Haversine distance
+            let shortestDistance = Infinity;
+            for (const branch of branches) {
+                if (branch.latitude === null || branch.longitude === null)
+                    continue;
+                const dist = this.haversineDistance(customerLat, customerLon, branch.latitude, branch.longitude);
+                if (dist < shortestDistance) {
+                    shortestDistance = dist;
+                    nearestBranchId = branch.id;
+                }
+            }
+        }
+        else {
+            // No GPS data — fall back to the first active branch
+            nearestBranchId = branches[0].id;
+        }
+        if (!nearestBranchId)
+            return { branchId: null, agentId: null };
+        return { branchId: nearestBranchId, agentId: null };
+    }
 }
 exports.CustomerService = CustomerService;
 _a = CustomerService;
@@ -381,8 +424,8 @@ CustomerService.getTransactions = (0, catchServiceAsync_1.catchServiceAsync)(asy
         orderBy: { createdAt: 'desc' },
     });
 });
-// Order Placement logic
 CustomerService.placeOrder = (0, catchServiceAsync_1.catchServiceAsync)(async (userId, orderData) => {
+    var _b, _c, _d, _e;
     const customer = await _a.getOrCreateCustomer(userId);
     // 1. Calculate order prices
     let subtotal = 0.0;
@@ -420,7 +463,7 @@ CustomerService.placeOrder = (0, catchServiceAsync_1.catchServiceAsync)(async (u
             throw new Error('Insufficient wallet balance');
         }
     }
-    // Create dummy addresses for order relation
+    // TODO: Implement actual address selection instead of generating dummy addresses
     let address = await prisma.customerAddress.findFirst({
         where: { customerId: customer.id },
     });
@@ -439,12 +482,20 @@ CustomerService.placeOrder = (0, catchServiceAsync_1.catchServiceAsync)(async (u
     const orderNumber = `ORD-${Date.now()}`;
     // Date parsing
     const estimatedPickupTime = new Date(`${orderData.pickupDate}T${orderData.pickupTimeSlot.split(' - ')[0]}:00`);
+    // Route order to the nearest active branch and find a local delivery agent
+    const customerLat = (_c = (_b = orderData.latitude) !== null && _b !== void 0 ? _b : address.latitude) !== null && _c !== void 0 ? _c : null;
+    const customerLon = (_e = (_d = orderData.longitude) !== null && _d !== void 0 ? _d : address.longitude) !== null && _e !== void 0 ? _e : null;
+    const { branchId, agentId } = await _a.routeOrderToBranch(customerLat, customerLon);
     // 3. Create the Order inside transaction
     const result = await prisma.$transaction(async (tx) => {
+        var _b;
         const order = await tx.order.create({
             data: {
                 orderNumber,
                 customerId: customer.id,
+                branchId: branchId !== null && branchId !== void 0 ? branchId : undefined, // Auto-assigned nearest branch
+                pickupAgentId: agentId !== null && agentId !== void 0 ? agentId : undefined, // Auto-assigned local pickup agent
+                deliveryAgentId: agentId !== null && agentId !== void 0 ? agentId : undefined, // Pre-assign same agent for now
                 pickupAddressId: address.id,
                 deliveryAddressId: address.id,
                 orderType: 'STANDARD',
@@ -467,7 +518,52 @@ CustomerService.placeOrder = (0, catchServiceAsync_1.catchServiceAsync)(async (u
                     },
                 },
             },
+            include: {
+                items: {
+                    include: { garmentType: true }
+                }
+            }
         });
+        // Auto-create garment items and QR codes per piece
+        for (const oi of order.items) {
+            for (let i = 0; i < oi.quantity; i++) {
+                const garmentCode = `G-${Date.now().toString().slice(-4)}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+                const garmentItem = await tx.garmentItem.create({
+                    data: {
+                        orderItemId: oi.id,
+                        garmentCode,
+                        garmentName: ((_b = oi.garmentType) === null || _b === void 0 ? void 0 : _b.name) || 'Garment Item',
+                        status: 'PENDING'
+                    }
+                });
+                const qrCode = `LAVO-${garmentItem.id.slice(0, 8).toUpperCase()}-${Date.now()}`;
+                await tx.garmentQRCode.create({
+                    data: {
+                        garmentItemId: garmentItem.id,
+                        qrCode,
+                        status: 'ACTIVE'
+                    }
+                });
+            }
+        }
+        // Auto-create an unassigned PICKUP delivery record linked to the nearest branch
+        // This will be broadcast to all delivery agents in that branch
+        if (branchId) {
+            const deliveryNumber = `DEL-${Date.now().toString().slice(-6)}-${orderNumber.slice(-4)}`;
+            await tx.delivery.create({
+                data: {
+                    orderId: order.id,
+                    customerId: customer.id,
+                    branchId,
+                    deliveryNumber,
+                    deliveryType: 'PICKUP',
+                    deliveryStatus: 'PENDING',
+                    assignedAgentId: agentId !== null && agentId !== void 0 ? agentId : undefined,
+                    deliveryAddressId: address.id,
+                    scheduledDate: estimatedPickupTime,
+                },
+            });
+        }
         // Deduct from wallet if method is WALLET
         if (orderData.paymentMethod === 'WALLET') {
             const wallet = customer.wallets[0];
@@ -513,6 +609,9 @@ CustomerService.placeOrder = (0, catchServiceAsync_1.catchServiceAsync)(async (u
             }
         }
         return order;
+    }, {
+        maxWait: 5000,
+        timeout: 20000,
     });
     return result;
 });

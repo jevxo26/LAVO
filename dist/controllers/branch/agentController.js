@@ -42,7 +42,11 @@ exports.getDeliveryAgents = (0, catchServiceAsync_1.catchServiceAsync)(async (re
     const branch = await branchDashboardService_1.default.branch.findUnique({ where: { id: branchId } });
     if (!branch)
         throw new Error('Branch not found');
-    const agents = await branchDashboardService_1.default.deliveryAgent.findMany({ include: { user: true } });
+    // Only return agents who belong to this specific branch
+    const agents = await branchDashboardService_1.default.deliveryAgent.findMany({
+        where: { branchId },
+        include: { user: true }
+    });
     const formatted = agents.map((a) => {
         var _a, _b;
         return (Object.assign(Object.assign({}, a), { fullName: ((_a = a.user) === null || _a === void 0 ? void 0 : _a.fullName) || '-', email: ((_b = a.user) === null || _b === void 0 ? void 0 : _b.email) || '-' }));
@@ -50,13 +54,19 @@ exports.getDeliveryAgents = (0, catchServiceAsync_1.catchServiceAsync)(async (re
     (0, sendResponse_1.sendResponse)(res, { statusCode: 200, data: formatted });
 });
 exports.createDeliveryAgent = (0, catchServiceAsync_1.catchServiceAsync)(async (req, res) => {
-    await (0, branchDashboardService_1.getBranchOrFail)(req);
+    const branchId = await (0, branchDashboardService_1.getBranchOrFail)(req);
     const { fullName, email, employeeCode, phone, availability, status } = req.body;
+    const existingUser = await branchDashboardService_1.default.user.findUnique({ where: { email } });
+    if (existingUser) {
+        return (0, sendResponse_1.sendResponse)(res, { statusCode: 400, data: null, message: "A user with this email already exists" });
+    }
+    // TODO: Replace dummyPassword123 with a secure email invitation or auto-generation system
     const user = await branchDashboardService_1.default.user.create({
         data: { fullName, email, password: 'dummyPassword123', userType: 'DELIVERY_AGENT' }
     });
+    // Link the agent to the manager's branch so smart order routing works correctly
     const agent = await branchDashboardService_1.default.deliveryAgent.create({
-        data: { userId: user.id, employeeCode, phone, availability, status }
+        data: { userId: user.id, employeeCode, phone, availability, status, branchId }
     });
     (0, sendResponse_1.sendResponse)(res, { statusCode: 201, data: agent });
 });

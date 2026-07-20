@@ -9,5 +9,6 @@
     "isolatedModules": false,
     "moduleResolution": "node"
   },
-  "include": ["server/**/*.ts"]
+  "include": ["server/**/*.ts"],
+  "exclude": ["node_modules", "scratch", "dist"]
 }

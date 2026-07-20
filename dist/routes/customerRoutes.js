@@ -18,6 +18,8 @@ router.route('/orders')
     .get(customerController_1.CustomerController.getOrders)
     .post(customerController_1.CustomerController.placeOrder);
 router.get('/orders/:id', customerController_1.CustomerController.getOrderDetails);
+router.get('/orders/:id/delivery-otp', customerController_1.CustomerController.getDeliveryOTP);
+router.delete('/orders/:id/cancel', customerController_1.CustomerController.cancelOrder);
 router.route('/wishlist')
     .get(customerController_1.CustomerController.getWishlist)
     .post(customerController_1.CustomerController.addToWishlist);

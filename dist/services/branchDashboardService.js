@@ -9,6 +9,13 @@ const getBranchId = async (req) => {
     if (branchId)
         return branchId;
     if (((_a = req.user) === null || _a === void 0 ? void 0 : _a.role) === 'BRANCH_MANAGER' || ((_b = req.user) === null || _b === void 0 ? void 0 : _b.role) === 'Branch Manager') {
+        // First try BranchManager relation table (new structure)
+        const bm = await prisma.branchManager.findFirst({
+            where: { userId: req.user.userId || req.user.id }
+        });
+        if (bm === null || bm === void 0 ? void 0 : bm.branchId)
+            return bm.branchId;
+        // Fallback: legacy Branch.managerId field
         const branch = await prisma.branch.findFirst({
             where: { managerId: req.user.userId || req.user.id }
         });

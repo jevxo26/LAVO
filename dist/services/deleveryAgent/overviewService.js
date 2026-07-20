@@ -27,27 +27,41 @@ const getOverview = async (userId) => {
     const totalPickups = await prisma.delivery.count({
         where: {
             assignedAgentId: agent.id,
-            deliveryType: "PICKUP",
+            deliveryType: "DROP_OFF",
         },
     });
     const pendingPickups = await prisma.delivery.count({
         where: {
             assignedAgentId: agent.id,
-            deliveryType: "PICKUP",
+            deliveryType: "DROP_OFF",
             deliveryStatus: "PENDING",
         },
     });
     const totalDeliveries = await prisma.delivery.count({
         where: {
             assignedAgentId: agent.id,
-            deliveryType: "DELIVERY",
+            deliveryType: "DROP_OFF",
         },
     });
     const pendingDeliveries = await prisma.delivery.count({
         where: {
             assignedAgentId: agent.id,
-            deliveryType: "DELIVERY",
+            deliveryType: "DROP_OFF",
             deliveryStatus: "PENDING",
+        },
+    });
+    const inProgressDeliveries = await prisma.delivery.count({
+        where: {
+            assignedAgentId: agent.id,
+            deliveryType: "DROP_OFF",
+            deliveryStatus: "IN_PROGRESS",
+        },
+    });
+    const completedDeliveries = await prisma.delivery.count({
+        where: {
+            assignedAgentId: agent.id,
+            deliveryType: "DROP_OFF",
+            deliveryStatus: "DELIVERIED",
         },
     });
     return {
@@ -59,6 +73,8 @@ const getOverview = async (userId) => {
         pendingPickups,
         totalDeliveries,
         pendingDeliveries,
+        inProgressDeliveries,
+        completedDeliveries,
     };
 };
 exports.getOverview = getOverview;

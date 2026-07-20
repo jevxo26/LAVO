@@ -37,6 +37,7 @@ exports.getAnalytics = exports.getOverview = void 0;
 const catchServiceAsync_1 = require("../../utils/catchServiceAsync");
 const sendResponse_1 = require("../../utils/sendResponse");
 const branchDashboardService_1 = __importStar(require("../../services/branchDashboardService"));
+// TODO: Replace MACHINERY_MOCK with actual live machinery data from the database
 const MACHINERY_MOCK = [
     { type: 'Washer', count: 5, active: 4 },
     { type: 'Dryer', count: 5, active: 3 },

@@ -29,6 +29,7 @@ const customerRoutes_1 = __importDefault(require("./routes/customerRoutes"));
 const paymentRoutes_1 = __importDefault(require("./routes/paymentRoutes"));
 const chatRoutes_1 = __importDefault(require("./routes/chatRoutes"));
 const cmsRoutes_1 = __importDefault(require("./routes/cmsRoutes"));
+const ticketRoutes_1 = __importDefault(require("./routes/ticketRoutes"));
 const socket_1 = require("./socket");
 const prisma = new client_1.PrismaClient();
 const dev = process.env.NODE_ENV !== 'production';
@@ -90,6 +91,7 @@ app.prepare().then(async () => {
     server.use('/api/payments', paymentRoutes_1.default);
     server.use('/api/chat', chatRoutes_1.default);
     server.use('/api/cms', cmsRoutes_1.default);
+    server.use('/api/tickets', ticketRoutes_1.default);
     // Serve uploaded files statically
     server.use('/uploads', express_1.default.static(path_1.default.join(process.cwd(), 'public', 'uploads')));
     // Let Next.js handle all other routes

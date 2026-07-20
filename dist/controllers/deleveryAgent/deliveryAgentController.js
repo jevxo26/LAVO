@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.acceptPickup = exports.getAvailablePickups = exports.getOverview = void 0;
+exports.getPickupQRCodes = exports.acceptPickup = exports.getAvailablePickups = exports.getOverview = void 0;
 const catchAsync_1 = require("../../utils/catchAsync");
 const sendResponse_1 = require("../../utils/sendResponse");
 // import deliveryAgentService from "../services/deliveryAgentService";
@@ -41,10 +41,10 @@ const overviewService = __importStar(require("../../services/deleveryAgent/overv
 const availablePickupsService = __importStar(require("../../services/deleveryAgent/availablePickupsService"));
 exports.getOverview = (0, catchAsync_1.catchAsync)(async (req, res) => {
     var _a;
-    console.log("req.user =", req.user);
+    // console.log("req.user =", req.user);
     // const agentId = req.user?.id;
     const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId;
-    console.log("userID =", userId);
+    // console.log("userID =", userId);
     const result = await overviewService.getOverview(userId);
     (0, sendResponse_1.sendResponse)(res, {
         statusCode: 200,
@@ -68,8 +68,8 @@ exports.acceptPickup = (0, catchAsync_1.catchAsync)(async (req, res) => {
     var _a;
     const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId;
     const { deliveryId } = req.params;
-    console.log("Delivery ID:", deliveryId);
-    console.log("User ID:", userId);
+    //  console.log("Delivery ID:", deliveryId);
+    //  console.log("User ID:", userId);
     if (!deliveryId || Array.isArray(deliveryId)) {
         throw new Error("Invalid delivery id");
     }
@@ -79,5 +79,20 @@ exports.acceptPickup = (0, catchAsync_1.catchAsync)(async (req, res) => {
         success: true,
         message: "Pickup accepted successfully",
         data: result
+    });
+});
+exports.getPickupQRCodes = (0, catchAsync_1.catchAsync)(async (req, res) => {
+    var _a;
+    const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId;
+    const { deliveryId } = req.params;
+    if (!deliveryId || Array.isArray(deliveryId)) {
+        throw new Error("Invalid delivery id");
+    }
+    const result = await availablePickupsService.getPickupQRCodes(userId, deliveryId);
+    (0, sendResponse_1.sendResponse)(res, {
+        statusCode: 200,
+        success: true,
+        message: "Pickup QR codes fetched successfully",
+        data: result,
     });
 });
