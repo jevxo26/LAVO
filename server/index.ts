@@ -25,6 +25,7 @@ import customerRoutes from './routes/customerRoutes';
 import paymentRoutes from './routes/paymentRoutes';
 import chatRoutes from './routes/chatRoutes';
 import cmsRoutes from './routes/cmsRoutes';
+import ticketRoutes from './routes/ticketRoutes';
 
 import { initSocket } from './socket';
 
@@ -94,6 +95,7 @@ app.prepare().then(async () => {
   server.use('/api/payments', paymentRoutes);
   server.use('/api/chat', chatRoutes);
   server.use('/api/cms', cmsRoutes);
+  server.use('/api/tickets', ticketRoutes);
   // Serve uploaded files statically
   server.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));
 
