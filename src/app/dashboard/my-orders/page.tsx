@@ -14,7 +14,8 @@ import {
   CreditCard,
   CheckCircle,
   AlertTriangle,
-  Loader2
+  Loader2,
+  X
 } from "lucide-react";
 import { authFetch } from "@/lib/api";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -54,6 +55,7 @@ export default function MyOrdersPage() {
   const [activeTab, setActiveTab] = useState<string>("ALL");
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
 
   const loadOrders = async () => {
     try {
@@ -73,6 +75,31 @@ export default function MyOrdersPage() {
   useEffect(() => {
     loadOrders();
   }, []);
+
+  const handleCancelOrder = async (order: OrderRecord) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to cancel order ${order.orderNumber}? This cannot be undone.`
+    );
+    if (!confirmed) return;
+
+    setCancellingId(order.id);
+    try {
+      const res = await authFetch(`/customer/orders/${order.id}/cancel`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success("Order cancelled successfully");
+        loadOrders();
+      } else {
+        toast.error(data.message || "Failed to cancel order");
+      }
+    } catch {
+      toast.error("Failed to cancel order");
+    } finally {
+      setCancellingId(null);
+    }
+  };
 
   const handlePayNow = async (order: OrderRecord) => {
     try {
@@ -228,6 +255,27 @@ export default function MyOrdersPage() {
                           className="rounded-full text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-bold"
                         >
                           Pay Now
+                        </Button>
+                      )}
+
+                      {/* Cancel button — only for PENDING or CONFIRMED orders */}
+                      {['PENDING', 'CONFIRMED'].includes(order.orderStatus.toUpperCase()) && (
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCancelOrder(order);
+                          }}
+                          disabled={cancellingId === order.id}
+                          size="sm"
+                          variant="outline"
+                          className="rounded-full text-xs border-rose-200 text-rose-600 hover:bg-rose-50 hover:border-rose-300 font-bold"
+                        >
+                          {cancellingId === order.id ? (
+                            <Loader2 size={12} className="animate-spin mr-1" />
+                          ) : (
+                            <X size={12} className="mr-1" />
+                          )}
+                          Cancel
                         </Button>
                       )}
                       

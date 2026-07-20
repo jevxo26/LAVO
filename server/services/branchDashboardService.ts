@@ -7,6 +7,13 @@ export const getBranchId = async (req: any): Promise<string | null> => {
   if (branchId) return branchId;
 
   if (req.user?.role === 'BRANCH_MANAGER' || req.user?.role === 'Branch Manager') {
+    // First try BranchManager relation table (new structure)
+    const bm = await prisma.branchManager.findFirst({
+      where: { userId: req.user.userId || req.user.id }
+    });
+    if (bm?.branchId) return bm.branchId;
+
+    // Fallback: legacy Branch.managerId field
     const branch = await prisma.branch.findFirst({
       where: { managerId: req.user.userId || req.user.id }
     });

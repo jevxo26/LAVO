@@ -108,7 +108,7 @@ export default async function PartnerPage() {
                   <LocationCard 
                     name={vendor.name}
                     city={vendor.city}
-                    address={vendor.address}
+                    address={vendor.address || ""}
                     phone={vendor.phone}
                     hours={vendor.hours}
                     isVendor={true}

@@ -116,12 +116,16 @@ console.log("NOW:", new Date());
     },
   });
 
+  // Determine new status based on delivery type BEFORE updating
+  const isPickup = delivery.deliveryType === 'PICKUP';
+  const newDeliveryStatus = isPickup ? 'COLLECTED' : 'DELIVERED';
+
   await prisma.delivery.update({
     where: {
       id: deliveryId,
     },
     data: {
-      deliveryStatus: "DELIVERED",
+      deliveryStatus: newDeliveryStatus,
       completedAt: new Date(),
     },
   });
@@ -164,7 +168,10 @@ console.log("NOW:", new Date());
       verifiedAt: new Date(),
     },
   });
+
   return {
-    message: "Delivery verified successfully",
+    message: isPickup
+      ? "Pickup verified successfully — garments collected!"
+      : "Delivery verified successfully — order completed!",
   };
-};
+};

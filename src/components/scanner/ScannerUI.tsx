@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useSocket } from "@/hooks/useSocket";
 
-type ScanState = "idle" | "select_status" | "loading" | "success";
+type ScanState = "idle" | "select_status" | "loading" | "success" | "error";
 
 export interface ScanResult {
   qrCode: string;
@@ -16,7 +16,19 @@ export function useScannerLogic(user: any) {
   const [lastResult, setLastResult] = useState<ScanResult | null>(null);
   const [pendingCode, setPendingCode] = useState<string | null>(null);
   const [key, setKey] = useState(0);
-  const { emitScan } = useSocket();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const { socket, emitScan } = useSocket();
+
+  // Listen for scan errors from server
+  useEffect(() => {
+    if (!socket) return;
+    const onError = (data: { message: string }) => {
+      setErrorMessage(data.message || "Unknown scan error");
+      setScanState("error");
+    };
+    socket.on("scanError", onError);
+    return () => { socket.off("scanError", onError); };
+  }, [socket]);
 
   const handleScanSuccess = useCallback((decodedText: string) => {
     if (scanState !== "idle") return;
@@ -37,10 +49,14 @@ export function useScannerLogic(user: any) {
 
     emitScan(payload);
 
-    // Wait briefly then show success (socket is fire-and-forget; errors come back via scanError event)
-    await new Promise((r) => setTimeout(r, 1000));
-    setLastResult({ ...payload, timestamp: new Date() });
-    setScanState("success");
+    // Wait briefly — if server emits scanError it will switch to "error" state
+    await new Promise((r) => setTimeout(r, 1200));
+    // Only set success if we haven't already moved to error state
+    setScanState((current) => {
+      if (current === "error") return "error";
+      setLastResult({ ...payload, timestamp: new Date() });
+      return "success";
+    });
   }, [pendingCode, user, emitScan]);
 
   const handleScanFailure = useCallback(() => {}, []);
@@ -49,10 +65,11 @@ export function useScannerLogic(user: any) {
     setScanState("idle");
     setLastResult(null);
     setPendingCode(null);
+    setErrorMessage(null);
     setKey((k) => k + 1);
   };
 
-  return { scanState, lastResult, pendingCode, key, handleScanSuccess, handleScanFailure, handleStatusSelect, handleReset };
+  return { scanState, lastResult, pendingCode, key, errorMessage, handleScanSuccess, handleScanFailure, handleStatusSelect, handleReset };
 }
 
 

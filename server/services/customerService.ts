@@ -474,13 +474,7 @@ export class CustomerService {
 
     if (!nearestBranchId) return { branchId: null, agentId: null };
 
-    // Find the first available delivery agent that belongs to this branch
-    const agent = await prisma.deliveryAgent.findFirst({
-      where: { branchId: nearestBranchId, availability: true, status: 'ACTIVE' },
-      select: { id: true },
-    });
-
-    return { branchId: nearestBranchId, agentId: agent?.id ?? null };
+    return { branchId: nearestBranchId, agentId: null };
   }
 
   static placeOrder = catchServiceAsync(
@@ -607,9 +601,39 @@ export class CustomerService {
               },
             },
           },
+          include: {
+            items: {
+              include: { garmentType: true }
+            }
+          }
         });
 
-        // Auto-create a PICKUP delivery record linked to the nearest branch and agent
+        // Auto-create garment items and QR codes per piece
+        for (const oi of order.items) {
+          for (let i = 0; i < oi.quantity; i++) {
+            const garmentCode = `G-${Date.now().toString().slice(-4)}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+            const garmentItem = await tx.garmentItem.create({
+              data: {
+                orderItemId: oi.id,
+                garmentCode,
+                garmentName: oi.garmentType?.name || 'Garment Item',
+                status: 'PENDING'
+              }
+            });
+
+            const qrCode = `LAVO-${garmentItem.id.slice(0, 8).toUpperCase()}-${Date.now()}`;
+            await tx.garmentQRCode.create({
+              data: {
+                garmentItemId: garmentItem.id,
+                qrCode,
+                status: 'ACTIVE'
+              }
+            });
+          }
+        }
+
+        // Auto-create an unassigned PICKUP delivery record linked to the nearest branch
+        // This will be broadcast to all delivery agents in that branch
         if (branchId) {
           const deliveryNumber = `DEL-${Date.now().toString().slice(-6)}-${orderNumber.slice(-4)}`;
           await tx.delivery.create({
@@ -675,8 +699,10 @@ export class CustomerService {
             });
           }
         }
-
         return order;
+      }, {
+        maxWait: 5000,
+        timeout: 20000,
       });
 
       return result;

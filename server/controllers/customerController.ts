@@ -154,28 +154,110 @@ export class CustomerController {
       return;
     }
     
-    // 2. Find drop-off delivery
-    const delivery = await prisma.delivery.findFirst({
+    // 2. Find PICKUP delivery (agent coming to collect) - show OTP when order is CONFIRMED
+    const pickupDelivery = await prisma.delivery.findFirst({
+      where: { orderId: id, deliveryType: 'PICKUP' },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    let pickupOtpCode: string | null = null;
+    if (pickupDelivery) {
+      const pickupOtp = await prisma.deliveryOTP.findFirst({
+        where: { deliveryId: pickupDelivery.id, isUsed: false },
+        orderBy: { createdAt: 'desc' }
+      });
+      pickupOtpCode = pickupOtp?.otpCode || null;
+    }
+
+    // 3. Find DROP_OFF delivery (agent returning clean clothes) - show OTP when READY_FOR_DELIVERY
+    const dropoffDelivery = await prisma.delivery.findFirst({
       where: { orderId: id, deliveryType: 'DROP_OFF' },
       orderBy: { createdAt: 'desc' }
     });
-    
-    if (!delivery) {
-      sendResponse(res, { statusCode: 200, success: true, message: 'No delivery', data: { otpCode: null } });
-      return;
+
+    let dropoffOtpCode: string | null = null;
+    if (dropoffDelivery) {
+      const dropoffOtp = await prisma.deliveryOTP.findFirst({
+        where: { deliveryId: dropoffDelivery.id, isUsed: false },
+        orderBy: { createdAt: 'desc' }
+      });
+      dropoffOtpCode = dropoffOtp?.otpCode || null;
     }
-    
-    // 3. Find OTP
-    const otp = await prisma.deliveryOTP.findFirst({
-      where: { deliveryId: delivery.id },
-      orderBy: { createdAt: 'desc' }
-    });
     
     sendResponse(res, { 
       statusCode: 200, 
       success: true, 
       message: 'OTP fetched', 
-      data: { otpCode: otp?.otpCode || null } 
+      data: { 
+        // Legacy field kept for compatibility
+        otpCode: dropoffOtpCode,
+        // New separate fields
+        pickupOtpCode,
+        dropoffOtpCode,
+      } 
     });
+  });
+  static cancelOrder = catchAsync(async (req: any, res: Response) => {
+    const userId = req.user?.userId;
+    const { id } = req.params;
+
+    if (!userId) {
+      sendResponse(res, { statusCode: 401, message: 'Unauthorized' });
+      return;
+    }
+
+    // 1. Fetch the order and verify it belongs to this customer
+    const order = await prisma.order.findUnique({
+      where: { id },
+      include: { customer: true }
+    });
+
+    if (!order || order.customer.userId !== userId) {
+      sendResponse(res, { statusCode: 404, success: false, message: 'Order not found' });
+      return;
+    }
+
+    // 2. Only allow cancellation if not yet physically collected by agent
+    const cancellableStatuses = ['PENDING', 'CONFIRMED'];
+    if (!cancellableStatuses.includes(order.orderStatus)) {
+      sendResponse(res, {
+        statusCode: 400,
+        success: false,
+        message: `Order cannot be cancelled. It is already in "${order.orderStatus}" status. Please contact support.`
+      });
+      return;
+    }
+
+    // 3. Cancel everything in a transaction
+    await prisma.$transaction(async (tx) => {
+      // Delete all delivery records for this order (removes from agent history completely)
+      const deliveries = await tx.delivery.findMany({ where: { orderId: id } });
+      for (const delivery of deliveries) {
+        // Invalidate all OTPs
+        await tx.deliveryOTP.updateMany({
+          where: { deliveryId: delivery.id },
+          data: { isUsed: true }
+        });
+        // Remove delivery verifications, timelines, logs etc. via cascade
+        await tx.delivery.delete({ where: { id: delivery.id } });
+      }
+
+      // Cancel the order itself
+      await tx.order.update({
+        where: { id },
+        data: { orderStatus: 'CANCELLED' }
+      });
+
+      // Add a timeline entry
+      await tx.orderTimeline.create({
+        data: {
+          orderId: id,
+          status: 'CANCELLED',
+          description: 'Order was cancelled by the customer.'
+        }
+      });
+    });
+
+    sendResponse(res, { statusCode: 200, success: true, message: 'Order cancelled successfully' });
   });
 }
