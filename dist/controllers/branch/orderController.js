@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getOrders = void 0;
+exports.getDevOTP = exports.markOrderReadyForDelivery = exports.getOrders = void 0;
 const catchServiceAsync_1 = require("../../utils/catchServiceAsync");
 const sendResponse_1 = require("../../utils/sendResponse");
 const branchDashboardService_1 = __importStar(require("../../services/branchDashboardService"));
@@ -41,8 +41,39 @@ exports.getOrders = (0, catchServiceAsync_1.catchServiceAsync)(async (req, res) 
     const branchId = await (0, branchDashboardService_1.getBranchOrFail)(req);
     const orders = await branchDashboardService_1.default.order.findMany({
         where: { branchId },
-        include: { customer: true, items: { include: { service: true } } },
+        include: { customer: { include: { user: true } }, items: { include: { service: true } } },
         orderBy: { createdAt: 'desc' }
     });
     (0, sendResponse_1.sendResponse)(res, { statusCode: 200, data: orders });
+});
+const deliveryAssignmentService_1 = require("../../services/deleveryAgent/deliveryAssignmentService");
+exports.markOrderReadyForDelivery = (0, catchServiceAsync_1.catchServiceAsync)(async (req, res) => {
+    const branchId = await (0, branchDashboardService_1.getBranchOrFail)(req);
+    const { orderId } = req.params;
+    const order = await branchDashboardService_1.default.order.findFirst({ where: { id: orderId, branchId } });
+    if (!order)
+        throw new Error('Order not found or does not belong to your branch');
+    await branchDashboardService_1.default.order.update({
+        where: { id: orderId },
+        data: { orderStatus: 'READY_FOR_DELIVERY' }
+    });
+    // Automatically trigger the drop-off delivery engine
+    const delivery = await deliveryAssignmentService_1.DeliveryAssignmentService.autoAssignDropoffDelivery(orderId);
+    (0, sendResponse_1.sendResponse)(res, { statusCode: 200, data: { orderId, delivery } });
+});
+exports.getDevOTP = (0, catchServiceAsync_1.catchServiceAsync)(async (req, res) => {
+    const { orderId } = req.params;
+    const delivery = await branchDashboardService_1.default.delivery.findFirst({
+        where: { orderId, deliveryType: 'DROP_OFF' },
+        orderBy: { createdAt: 'desc' }
+    });
+    if (!delivery) {
+        (0, sendResponse_1.sendResponse)(res, { statusCode: 200, data: { otpCode: null, message: "No drop-off delivery found" } });
+        return;
+    }
+    const otp = await branchDashboardService_1.default.deliveryOTP.findFirst({
+        where: { deliveryId: delivery.id },
+        orderBy: { createdAt: 'desc' }
+    });
+    (0, sendResponse_1.sendResponse)(res, { statusCode: 200, data: { otpCode: (otp === null || otp === void 0 ? void 0 : otp.otpCode) || null, message: otp ? "OTP found" : "No OTP found" } });
 });

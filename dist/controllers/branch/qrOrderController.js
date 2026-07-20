@@ -45,14 +45,14 @@ exports.assignAgentToOrder = (0, catchServiceAsync_1.catchServiceAsync)(async (r
     const order = await branchDashboardService_1.default.order.findUnique({ where: { id: orderId } });
     if (!order)
         throw new Error('Order not found');
-    // Update order with the assigned agent
-    const updatedOrder = await branchDashboardService_1.default.order.update({
-        where: { id: orderId },
-        data: { deliveryAgentId: agentId }
-    });
     // Determine delivery type based on order status
     const isPickup = order.orderStatus === 'PENDING' || order.orderStatus === 'CONFIRMED';
     const deliveryType = isPickup ? 'PICKUP' : 'DROP_OFF';
+    // Update order with the assigned agent and advance status to CONFIRMED
+    const updatedOrder = await branchDashboardService_1.default.order.update({
+        where: { id: orderId },
+        data: Object.assign({ [isPickup ? 'pickupAgentId' : 'deliveryAgentId']: agentId }, (order.orderStatus === 'PENDING' ? { orderStatus: 'CONFIRMED' } : {}))
+    });
     // Create or update the delivery record
     // First see if an active delivery exists for this order & type
     let delivery = await branchDashboardService_1.default.delivery.findFirst({
@@ -61,7 +61,10 @@ exports.assignAgentToOrder = (0, catchServiceAsync_1.catchServiceAsync)(async (r
     if (delivery) {
         delivery = await branchDashboardService_1.default.delivery.update({
             where: { id: delivery.id },
-            data: { assignedAgentId: agentId }
+            data: {
+                assignedAgentId: agentId,
+                deliveryStatus: 'IN_PROGRESS'
+            }
         });
     }
     else {
@@ -95,11 +98,39 @@ exports.generateQrCode = (0, catchServiceAsync_1.catchServiceAsync)(async (req, 
     (0, sendResponse_1.sendResponse)(res, { statusCode: 201, data: record });
 });
 exports.getOrderQrCodes = (0, catchServiceAsync_1.catchServiceAsync)(async (req, res) => {
+    var _a;
     await (0, branchDashboardService_1.getBranchOrFail)(req);
     const { orderId } = req.params;
-    const items = await branchDashboardService_1.default.garmentItem.findMany({
+    let items = await branchDashboardService_1.default.garmentItem.findMany({
         where: { orderItem: { orderId } },
         include: { qrCodeRecord: true }
     });
+    // Auto-generate items based on order quantities if this is the first time
+    if (items.length === 0) {
+        const orderItems = await branchDashboardService_1.default.orderItem.findMany({
+            where: { orderId },
+            include: { garmentType: true }
+        });
+        const createPromises = [];
+        for (const oi of orderItems) {
+            for (let i = 0; i < oi.quantity; i++) {
+                createPromises.push(branchDashboardService_1.default.garmentItem.create({
+                    data: {
+                        orderItemId: oi.id,
+                        garmentCode: `G-${Date.now().toString().slice(-4)}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
+                        garmentName: ((_a = oi.garmentType) === null || _a === void 0 ? void 0 : _a.name) || 'Garment Item',
+                    }
+                }));
+            }
+        }
+        if (createPromises.length > 0) {
+            await Promise.all(createPromises);
+            // Refetch
+            items = await branchDashboardService_1.default.garmentItem.findMany({
+                where: { orderItem: { orderId } },
+                include: { qrCodeRecord: true }
+            });
+        }
+    }
     (0, sendResponse_1.sendResponse)(res, { statusCode: 200, data: items });
 });

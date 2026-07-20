@@ -54,6 +54,7 @@ exports.getEmployees = (0, catchServiceAsync_1.catchServiceAsync)(async (req, re
 exports.createEmployee = (0, catchServiceAsync_1.catchServiceAsync)(async (req, res) => {
     const branchId = await (0, branchDashboardService_1.getBranchOrFail)(req);
     const { fullName, email, designation, status } = req.body;
+    // TODO: Replace dummyPassword123 with a proper email invitation flow
     const user = await branchDashboardService_1.default.user.create({
         data: { fullName, email, password: 'dummyPassword123', userType: 'EMPLOYEE' }
     });

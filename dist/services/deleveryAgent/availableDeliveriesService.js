@@ -27,9 +27,26 @@ const getAvailableDeliveries = async (userId) => {
     }
     const deliveries = await prisma.delivery.findMany({
         where: {
-            assignedAgentId: agent.id,
-            deliveryType: "DELIVERY",
-            deliveryStatus: "PENDING",
+            deliveryType: "DROP_OFF",
+            // Only show drop-offs whose order is actually ready
+            order: {
+                orderStatus: { in: ["READY_FOR_DELIVERY", "DELIVERY"] }
+            },
+            OR: [
+                // Unassigned drop-offs for this branch — any agent can claim these
+                {
+                    branchId: agent.branchId,
+                    assignedAgentId: null,
+                    deliveryStatus: "PENDING",
+                },
+                // Already assigned to this agent and still active
+                {
+                    assignedAgentId: agent.id,
+                    deliveryStatus: {
+                        in: ["PENDING", "ASSIGNED", "ACCEPTED", "IN_PROGRESS"],
+                    },
+                }
+            ]
         },
         include: {
             customer: {
@@ -45,6 +62,8 @@ const getAvailableDeliveries = async (userId) => {
             createdAt: "desc",
         },
     });
+    // console.log("Total deliveries:", deliveries.length);
+    // console.log(deliveries);
     return deliveries.map((delivery) => {
         var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
         const customerAddress = delivery.customer.addresses.find((addr) => addr.isDefault) || delivery.customer.addresses[0];
@@ -96,17 +115,58 @@ const acceptDelivery = async (userId, deliveryId) => {
     if (!delivery) {
         throw new Error("Delivery not found");
     }
-    if (delivery.assignedAgentId !== agent.id) {
-        throw new Error("This delivery is not assigned to you");
+    // Allow self-assignment: if unassigned, this agent claims it.
+    // If already assigned to someone else, block it.
+    if (delivery.assignedAgentId && delivery.assignedAgentId !== agent.id) {
+        throw new Error("This delivery has already been claimed by another agent");
     }
-    return prisma.delivery.update({
-        where: {
-            id: deliveryId,
-        },
-        data: {
-            deliveryStatus: "IN_PROGRESS",
-            //   acceptedAt: new Date(),
-        },
+    if (delivery.deliveryStatus === "IN_PROGRESS") {
+        throw new Error("Delivery already started");
+    }
+    const updatedDelivery = await prisma.$transaction(async (tx) => {
+        const updated = await tx.delivery.update({
+            where: {
+                id: deliveryId,
+            },
+            data: {
+                assignedAgentId: agent.id, // self-assign if not already assigned
+                deliveryStatus: "IN_PROGRESS",
+            },
+        });
+        // Advance the order to OUT FOR DELIVERY
+        await tx.order.update({
+            where: { id: delivery.orderId },
+            data: { orderStatus: "DELIVERY" }
+        });
+        await tx.orderTimeline.create({
+            data: {
+                orderId: delivery.orderId,
+                status: "DELIVERY",
+                description: "Your clean laundry is out for delivery and on the way to you!",
+            }
+        });
+        const existingOtp = await tx.deliveryOTP.findFirst({
+            where: {
+                deliveryId: delivery.id,
+                isUsed: false,
+                expiresAt: {
+                    gt: new Date()
+                }
+            },
+        });
+        if (!existingOtp) {
+            const otp = Math.floor(100000 + Math.random() * 900000);
+            await tx.deliveryOTP.create({
+                data: {
+                    deliveryId: delivery.id,
+                    otpCode: otp.toString(),
+                    expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000),
+                },
+            });
+            console.log("Delivery OTP:", otp);
+        }
+        return updated;
     });
+    return updatedDelivery;
 };
 exports.acceptDelivery = acceptDelivery;

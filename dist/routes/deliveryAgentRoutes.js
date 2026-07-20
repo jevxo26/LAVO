@@ -50,6 +50,7 @@ router.use((0, roleMiddleware_1.restrictTo)("DELIVERY_AGENT"));
 router.get("/overview", deliveryAgentController.getOverview);
 router.get("/available-pickups", deliveryAgentController.getAvailablePickups);
 router.patch("/accept-pickup/:deliveryId", deliveryAgentController.acceptPickup);
+router.get("/pickup-qrcodes/:deliveryId", deliveryAgentController.getPickupQRCodes);
 router.get("/available-deliveries", availableDeliveriesController.getAvailableDeliveries);
 router.patch("/accept-delivery/:deliveryId", availableDeliveriesController.acceptDelivery);
 router.get("/optimized-routes", optimizeRouteController.getOptimizedRoutes);

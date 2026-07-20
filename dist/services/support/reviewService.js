@@ -74,6 +74,7 @@ const createReview = async (data) => {
                 orderStatus: 'DELIVERED',
                 paymentStatus: 'PAID',
                 grandTotal: 100,
+                // TODO: Replace hardcoded dummy addresses with actual user addresses
                 pickupAddressId: 'dummy_pickup',
                 deliveryAddressId: 'dummy_delivery',
                 orderType: 'STANDARD',
