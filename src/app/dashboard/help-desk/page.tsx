@@ -30,45 +30,59 @@ interface FAQItem {
   category: string;
 }
 
-interface SupportTicket {
+interface Ticket {
   id: string;
-  ticketNumber: string;
-  subject: string;
+  title: string;
+  description: string;
   priority: string;
   status: string;
+  assignedTo: string | null;
   createdAt: string;
   updatedAt: string;
-  category?: {
-    name: string;
-  };
+}
+
+interface Assignee {
+  id: string;
+  fullName: string;
+  userType: string;
 }
 
 export default function HelpDeskPage() {
-  const [tickets, setTickets] = useState<SupportTicket[]>([]);
+  const [tickets, setTickets] = useState<Ticket[]>([]);
   const [faqs, setFaqs] = useState<FAQItem[]>([]);
+  const [assignees, setAssignees] = useState<Assignee[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedFaqId, setExpandedFaqId] = useState<string | null>(null);
 
   // New ticket state
-  const [subject, setSubject] = useState("");
-  const [message, setMessage] = useState("");
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("NORMAL");
+  const [assignedTo, setAssignedTo] = useState("");
   const [createLoading, setCreateLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  // Chat state
+  // General Chat state (separate from tickets)
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatRole, setChatRole] = useState<"ADMIN" | "BRANCH_MANAGER" | null>(null);
 
   const loadData = async () => {
     try {
-      const ticketsRes = await authFetch("/customer/support/tickets");
+      // Load tickets
+      const ticketsRes = await authFetch("/tickets");
       const ticketsData = await ticketsRes.json();
       if (ticketsData.success) {
         setTickets(ticketsData.data);
       }
 
-      // Load FAQs dynamically from the database
+      // Load active assignees
+      const assigneesRes = await authFetch("/tickets/assignees");
+      const assigneesData = await assigneesRes.json();
+      if (assigneesData.success) {
+        setAssignees(assigneesData.data);
+      }
+
+      // Load FAQs
       const faqsRes = await fetch("/api/customer/faqs");
       const faqsData = await faqsRes.json();
       if (faqsData.success) {
@@ -88,25 +102,31 @@ export default function HelpDeskPage() {
 
   const handleCreateTicketSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!subject.trim() || !message.trim()) {
-      toast.error("Subject and initial message are required");
+    if (!title.trim() || !description.trim()) {
+      toast.error("Title and description are required");
       return;
     }
 
     setCreateLoading(true);
     try {
-      const res = await authFetch("/customer/support/tickets", {
+      const res = await authFetch("/tickets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ subject, message, priority }),
+        body: JSON.stringify({
+          title: title.trim(),
+          description: description.trim(),
+          priority,
+          assignedTo: assignedTo || null
+        }),
       });
 
       const data = await res.json();
       if (data.success) {
         toast.success("Support ticket created successfully");
-        setSubject("");
-        setMessage("");
+        setTitle("");
+        setDescription("");
         setPriority("NORMAL");
+        setAssignedTo("");
         setIsDialogOpen(false);
         // Refresh ticket list
         loadData();
@@ -123,9 +143,8 @@ export default function HelpDeskPage() {
   const getPriorityStyle = (prio: string) => {
     switch (prio.toUpperCase()) {
       case "HIGH":
-        return "bg-rose-50 text-rose-700 border-rose-100";
       case "URGENT":
-        return "bg-red-50 text-red-700 border-red-100";
+        return "bg-rose-50 text-rose-700 border-rose-100";
       case "MEDIUM":
         return "bg-amber-50 text-amber-700 border-amber-100";
       default:
@@ -134,14 +153,26 @@ export default function HelpDeskPage() {
   };
 
   const getStatusStyle = (status: string) => {
-    switch (status.toUpperCase()) {
-      case "OPEN":
+    switch (status) {
+      case "enabled-live-chat":
         return "bg-emerald-50 text-emerald-700 border-emerald-200";
-      case "RESOLVED":
-      case "CLOSED":
+      case "solved":
         return "bg-slate-100 text-slate-700 border-slate-200";
       default:
         return "bg-amber-50 text-amber-700 border-amber-200";
+    }
+  };
+
+  const formatStatus = (status: string) => {
+    switch (status) {
+      case "pendingReview":
+        return "Pending Review";
+      case "enabled-live-chat":
+        return "Live Chat Active";
+      case "solved":
+        return "Solved";
+      default:
+        return status;
     }
   };
 
@@ -167,7 +198,7 @@ export default function HelpDeskPage() {
         {/* Ticket Modal Dialog */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger
-            className="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full font-bold h-11 px-5 shadow-md shadow-indigo-100 hover:scale-[1.02] transition-transform"
+            className="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full font-bold h-11 px-5 shadow-md shadow-indigo-100 hover:scale-[1.02] transition-transform cursor-pointer"
           >
             <PlusCircle size={18} /> Open Support Ticket
           </DialogTrigger>
@@ -175,16 +206,16 @@ export default function HelpDeskPage() {
             <DialogHeader>
               <DialogTitle className="text-lg font-bold text-slate-900">Create Support Ticket</DialogTitle>
               <DialogDescription>
-                Briefly describe your issue, and our team will get back to you shortly.
+                Describe your issue, and assign it to a staff member if desired.
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleCreateTicketSubmit} className="space-y-4 pt-3">
               <div className="space-y-1">
-                <Label htmlFor="subject" className="text-xs font-bold text-slate-700">Subject</Label>
+                <Label htmlFor="title" className="text-xs font-bold text-slate-700">Title</Label>
                 <Input
-                  id="subject"
-                  value={subject}
-                  onChange={(e) => setSubject(e.target.value)}
+                  id="title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
                   placeholder="Order delayed, damaged garment, etc."
                   required
                   className="h-10 text-xs rounded-xl"
@@ -202,15 +233,33 @@ export default function HelpDeskPage() {
                   <option value="LOW">Low (General inquiry)</option>
                   <option value="NORMAL">Normal (Standard priority)</option>
                   <option value="HIGH">High (Urgent matter)</option>
+                  <option value="URGENT">Urgent (Immediate attention)</option>
                 </select>
               </div>
 
               <div className="space-y-1">
-                <Label htmlFor="message" className="text-xs font-bold text-slate-700">Describe the issue</Label>
+                <Label htmlFor="assignedTo" className="text-xs font-bold text-slate-700">Assign to Agent (Optional)</Label>
+                <select
+                  id="assignedTo"
+                  value={assignedTo}
+                  onChange={(e) => setAssignedTo(e.target.value)}
+                  className="w-full h-10 text-xs border rounded-xl bg-white px-3 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-semibold text-slate-700"
+                >
+                  <option value="">Choose an Admin or Branch Manager</option>
+                  {assignees.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {a.fullName} ({a.userType === 'BRANCH_MANAGER' ? 'Branch Manager' : 'Admin'})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="description" className="text-xs font-bold text-slate-700">Describe the issue</Label>
                 <textarea
-                  id="message"
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
+                  id="description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
                   placeholder="Provide details like Order Number, issue date, etc."
                   rows={4}
                   required
@@ -237,7 +286,7 @@ export default function HelpDeskPage() {
         </Dialog>
       </div>
 
-      {/* Live Chat Selection */}
+      {/* Live Chat Selection (General live chat feature) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
         <motion.div
           whileHover={{ y: -4, scale: 1.01 }}
@@ -312,28 +361,26 @@ export default function HelpDeskPage() {
                     <div className="flex justify-between items-start gap-4">
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                          <span className="font-bold text-slate-900 text-sm">{t.subject}</span>
+                          <span className="font-bold text-slate-900 text-sm">{t.title}</span>
                           <span className={`text-[9px] px-2 py-0.5 rounded-full border font-bold ${getPriorityStyle(t.priority)}`}>
                             {t.priority}
                           </span>
                         </div>
                         <div className="flex items-center gap-3 text-xs text-slate-400">
-                          <span className="font-semibold text-indigo-600">{t.ticketNumber}</span>
                           <span className="flex items-center gap-1">
                             <Clock size={11} /> {new Date(t.createdAt).toLocaleDateString()}
                           </span>
-                          {t.category && <span>Category: {t.category.name}</span>}
                         </div>
                       </div>
                       
                       <div className="flex flex-col items-end gap-2 shrink-0">
                         <span className={`text-[10px] px-2.5 py-0.5 rounded-full border font-bold ${getStatusStyle(t.status)}`}>
-                          {t.status}
+                          {formatStatus(t.status)}
                         </span>
                         
                         <Link href={`/dashboard/help-desk/${t.id}`}>
                           <Button variant="ghost" size="sm" className="text-xs font-bold text-indigo-600 hover:text-indigo-700 p-0 flex items-center gap-0.5">
-                            Open Chat <ArrowRight size={11} />
+                            Open Chat & Details <ArrowRight size={11} />
                           </Button>
                         </Link>
                       </div>

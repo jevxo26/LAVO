@@ -170,6 +170,48 @@ export const initSocket = (server: HttpServer) => {
       }
     });
 
+    // Ticket Chat Events
+    socket.on('joinTicketChat', (ticketId: string) => {
+      socket.join(`ticket_${ticketId}`);
+      console.log(`Socket ${socket.id} joined ticket room: ticket_${ticketId}`);
+    });
+
+    socket.on('sendTicketMessage', async (data: { ticketId: string; senderId: string; senderRole: string; content: string }) => {
+      try {
+        console.log("📨 Received sendTicketMessage:", data);
+        const ticket = await prisma.ticket.findUnique({
+          where: { id: data.ticketId }
+        });
+        if (!ticket) {
+          console.error(`❌ Ticket not found: ${data.ticketId}`);
+          return;
+        }
+        if (ticket.status !== 'enabled-live-chat') {
+          console.error(`❌ Ticket chat is not active (status: ${ticket.status})`);
+          return;
+        }
+        const message = await prisma.ticketChatMessage.create({
+          data: {
+            ticketId: data.ticketId,
+            senderId: data.senderId,
+            senderRole: data.senderRole || 'CUSTOMER',
+            content: data.content,
+          }
+        });
+        console.log("✅ Ticket message saved to DB:", message.id);
+        io.to(`ticket_${data.ticketId}`).emit('newTicketMessage', {
+          id: message.id,
+          content: message.content,
+          createdAt: message.createdAt,
+          senderId: message.senderId,
+          senderRole: message.senderRole,
+        });
+        console.log(`📢 Broadcasted newTicketMessage to room ticket_${data.ticketId}`);
+      } catch (err) {
+        console.error('❌ Error saving ticket chat message:', err);
+      }
+    });
+
     // Chat Events
     socket.on('joinChat', (sessionId: string) => {
       socket.join(`chat_${sessionId}`);
