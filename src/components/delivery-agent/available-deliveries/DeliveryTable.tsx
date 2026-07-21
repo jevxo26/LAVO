@@ -135,6 +135,14 @@ const DeliveryTable = ({ search }: DeliveryTableProps) => {
               {selectedDelivery?.branch}
             </p>
           </div>
+          <div>
+            <p className="text-slate-500">
+              Total Items
+            </p>
+            <p className="font-semibold text-indigo-600">
+              {selectedDelivery?.totalGarments ?? 1} Garment(s)
+            </p>
+          </div>
           <div className="col-span-2">
             <p className="text-slate-500">
               Address
@@ -181,7 +189,8 @@ const DeliveryTable = ({ search }: DeliveryTableProps) => {
       <AcceptDialog
         open={startOpen}
         title="Start Delivery"
-        description={`Are you sure you want to start Order #${selectedDelivery?.orderId}?`}
+        description={`Are you sure you want to start drop-off delivery for Order #${selectedDelivery?.orderId} (${selectedDelivery?.totalGarments ?? 1} item(s))?`}
+
         loading={isAccepting}
         isConfirmed={
           selectedDelivery?.status === "IN_PROGRESS"

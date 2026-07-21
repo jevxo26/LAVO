@@ -1,5 +1,5 @@
 import { ColumnDef } from "@tanstack/react-table";
-import { Eye, Truck } from "lucide-react";
+import { Eye, Truck, Package } from "lucide-react";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { AvailableDelivery } from "../types";
@@ -40,6 +40,16 @@ export const getDeliveryColumns = ({
     ),
   },
   {
+    accessorKey: "totalGarments",
+    header: "Garments",
+    cell: ({ row }) => (
+      <span className="inline-flex items-center gap-1 font-semibold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-md text-xs">
+        <Package className="h-3.5 w-3.5 text-slate-500" />
+        {row.original.totalGarments ?? 1} pcs
+      </span>
+    ),
+  },
+  {
     accessorKey: "branch",
     header: "Branch",
     cell: ({ row }) => (
@@ -61,6 +71,7 @@ export const getDeliveryColumns = ({
     accessorKey: "parcelType",
     header: "Parcel",
   },
+
   {
     accessorKey: "paymentType",
     header: "Payment",
