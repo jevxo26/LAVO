@@ -48,7 +48,13 @@ export function ScannerView({ user }: Props) {
               </p>
             )}
             {STATUSES.map((s) => {
-              const isAlreadyDone = s === currentGarmentStatus;
+              const HIERARCHY = ["PENDING", "CONFIRMED", "COLLECTED", "PROCESSING", "WASHING", "DRYING", "IRONING", "FOLDING", "READY_FOR_DELIVERY", "OUT_FOR_DELIVERY", "DELIVERED", "COMPLETED"];
+              const currentLevel = currentGarmentStatus ? HIERARCHY.indexOf(currentGarmentStatus.toUpperCase()) : -1;
+              const buttonLevel = HIERARCHY.indexOf(s.toUpperCase());
+
+              // A stage is disabled if the garment is already at or past that stage
+              const isAlreadyDone = currentLevel !== -1 && buttonLevel !== -1 && buttonLevel <= currentLevel;
+              
               return (
                 <button
                   key={s}
@@ -62,7 +68,7 @@ export function ScannerView({ user }: Props) {
                 >
                   {isAlreadyDone && <LockKeyhole size={13} className="shrink-0" />}
                   <span className={isAlreadyDone ? "line-through" : ""}>{s.replace(/_/g, " ")}</span>
-                  {isAlreadyDone && <span className="text-[10px] text-slate-500 ml-1">(already set)</span>}
+                  {isAlreadyDone && <span className="text-[10px] text-slate-500 ml-1">(completed)</span>}
                 </button>
               );
             })}

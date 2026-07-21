@@ -70,6 +70,18 @@ export const initSocket = (server: HttpServer) => {
 
         const order = garmentItem.orderItem.order;
 
+        // 2b. Prevent backward or duplicate status scans
+        const ALL_STAGES_LIST = ['PENDING', 'CONFIRMED', 'COLLECTED', 'PROCESSING', 'WASHING', 'DRYING', 'IRONING', 'FOLDING', 'READY_FOR_DELIVERY', 'OUT_FOR_DELIVERY', 'DELIVERED', 'COMPLETED'];
+        const currentGarmentIdx = ALL_STAGES_LIST.indexOf((garmentItem.status || '').toUpperCase());
+        const newGarmentIdx = ALL_STAGES_LIST.indexOf((data.status || '').toUpperCase());
+
+        if (currentGarmentIdx !== -1 && newGarmentIdx !== -1 && newGarmentIdx <= currentGarmentIdx) {
+          socket.emit('scanError', { 
+            message: `Garment '${garmentItem.garmentName}' is already at stage '${garmentItem.status.replace(/_/g, ' ')}'. Cannot set equal or earlier stage '${data.status.replace(/_/g, ' ')}'.` 
+          });
+          return;
+        }
+
         // 3. Update the GarmentItem status
         await prisma.garmentItem.update({
           where: { id: garmentItem.id },
