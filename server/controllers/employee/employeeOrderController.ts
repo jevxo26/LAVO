@@ -194,3 +194,39 @@ export const generateAllQrCodes = catchServiceAsync(async (req: any, res: Respon
     data: created
   });
 });
+
+/**
+ * GET /employee/garment-status?qrCode=<code>
+ * Returns the current status of a garment identified by its QR code.
+ * Used by the scanner UI to disable the already-applied stage button.
+ */
+export const getGarmentStatus = catchServiceAsync(async (req: any, res: Response) => {
+  const { qrCode } = req.query as { qrCode: string };
+
+  if (!qrCode) {
+    return sendResponse(res, { statusCode: 400, success: false, message: 'qrCode query param is required' });
+  }
+
+  const qrRecord = await prisma.garmentQRCode.findUnique({
+    where: { qrCode },
+    include: {
+      garmentItem: {
+        select: { status: true, garmentName: true }
+      }
+    }
+  });
+
+  if (!qrRecord || !qrRecord.garmentItem) {
+    return sendResponse(res, { statusCode: 404, success: false, message: 'QR code not found' });
+  }
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Garment status retrieved',
+    data: {
+      status: qrRecord.garmentItem.status,
+      garmentName: qrRecord.garmentItem.garmentName,
+    }
+  });
+});

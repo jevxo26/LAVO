@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, ScanLine, Loader2, RefreshCw, ArrowLeft, XCircle } from "lucide-react";
+import { CheckCircle2, ScanLine, Loader2, RefreshCw, ArrowLeft, XCircle, LockKeyhole } from "lucide-react";
 import { QrScanner } from "@/components/scanner/QrScanner";
 import { useScannerLogic } from "@/components/scanner/ScannerUI";
 import Link from "next/link";
@@ -14,7 +14,7 @@ export function ScannerView({ user }: Props) {
     : ["PROCESSING", "WASHING", "DRYING", "IRONING", "FOLDING", "READY_FOR_DELIVERY"];
 
   const {
-    scanState, lastResult, key, pendingCode, errorMessage,
+    scanState, lastResult, key, pendingCode, errorMessage, currentGarmentStatus,
     handleScanSuccess, handleScanFailure, handleStatusSelect, handleReset,
   } = useScannerLogic(user);
 
@@ -42,12 +42,30 @@ export function ScannerView({ user }: Props) {
           <div className="flex flex-col gap-3">
             <p className="text-white font-semibold text-center mb-2">Select current processing stage:</p>
             <p className="text-slate-500 text-xs text-center font-mono break-all mb-2">{pendingCode}</p>
-            {STATUSES.map((s) => (
-              <button key={s} onClick={() => handleStatusSelect(s)}
-                className="w-full rounded-xl bg-indigo-600/30 hover:bg-indigo-500/50 border border-indigo-500/40 text-indigo-200 font-semibold py-3 text-sm transition-colors">
-                {s.replace(/_/g, " ")}
-              </button>
-            ))}
+            {currentGarmentStatus && (
+              <p className="text-amber-400 text-xs text-center mb-1">
+                ⚠️ Current stage: <span className="font-bold">{currentGarmentStatus.replace(/_/g, " ")}</span>
+              </p>
+            )}
+            {STATUSES.map((s) => {
+              const isAlreadyDone = s === currentGarmentStatus;
+              return (
+                <button
+                  key={s}
+                  onClick={() => !isAlreadyDone && handleStatusSelect(s)}
+                  disabled={isAlreadyDone}
+                  className={`w-full rounded-xl border font-semibold py-3 text-sm transition-colors flex items-center justify-center gap-2 ${
+                    isAlreadyDone
+                      ? "bg-slate-800/60 border-slate-700/40 text-slate-600 cursor-not-allowed opacity-50"
+                      : "bg-indigo-600/30 hover:bg-indigo-500/50 border-indigo-500/40 text-indigo-200"
+                  }`}
+                >
+                  {isAlreadyDone && <LockKeyhole size={13} className="shrink-0" />}
+                  <span className={isAlreadyDone ? "line-through" : ""}>{s.replace(/_/g, " ")}</span>
+                  {isAlreadyDone && <span className="text-[10px] text-slate-500 ml-1">(already set)</span>}
+                </button>
+              );
+            })}
             <button onClick={handleReset} className="text-slate-500 text-xs text-center mt-2">Cancel</button>
           </div>
         )}
