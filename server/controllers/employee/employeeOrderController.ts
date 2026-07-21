@@ -7,20 +7,20 @@ const prisma = new PrismaClient();
 
 /**
  * Get all orders that have been picked up and need QR tagging / processing.
- * Status: PICKUP (garments collected from customer, arrived at branch)
+ * Status: PICKUP, PROCESSING, WASHING, DRYING, IRONING, FOLDING
  */
 export const getPickupOrders = catchServiceAsync(async (req: any, res: Response) => {
   const userId = req.user?.userId;
 
-  // Find the branch this employee belongs to
-  const employee = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { branchId: true, fullName: true }
+  // Find the branch this employee belongs to via BranchEmployee table
+  const branchEmployee = await prisma.branchEmployee.findFirst({
+    where: { employeeId: userId },
+    select: { branchId: true }
   });
 
-  const branchId = employee?.branchId;
+  const branchId = branchEmployee?.branchId;
 
-  const orders = await prisma.order.findMany({
+  const orders = await (prisma.order.findMany as any)({
     where: {
       ...(branchId ? { branchId } : {}),
       orderStatus: { in: ['PICKUP', 'PROCESSING', 'WASHING', 'DRYING', 'IRONING', 'FOLDING'] }
@@ -37,15 +37,15 @@ export const getPickupOrders = catchServiceAsync(async (req: any, res: Response)
           }
         }
       },
-      branch: { select: { name: true } }
+      branch: true
     },
     orderBy: { createdAt: 'asc' }
   });
 
-  const formatted = orders.map(order => {
-    const totalGarments = order.items.reduce((sum, item) => sum + item.garmentItems.length, 0);
+  const formatted = orders.map((order: any) => {
+    const totalGarments = order.items.reduce((sum: number, item: any) => sum + item.garmentItems.length, 0);
     const qrGenerated = order.items.reduce(
-      (sum, item) => sum + item.garmentItems.filter(g => g.qrCodeRecord).length,
+      (sum: number, item: any) => sum + item.garmentItems.filter((g: any) => g.qrCodeRecord).length,
       0
     );
 
@@ -55,7 +55,7 @@ export const getPickupOrders = catchServiceAsync(async (req: any, res: Response)
       orderStatus: order.orderStatus,
       customerName: order.customer?.user?.fullName || 'N/A',
       customerPhone: order.customer?.user?.phone || 'N/A',
-      branch: order.branch?.name || 'N/A',
+      branch: order.branch?.branchName || 'N/A',
       totalGarments,
       qrGenerated,
       allQrDone: totalGarments > 0 && qrGenerated === totalGarments,
@@ -74,7 +74,10 @@ export const getOrderQrCodes = catchServiceAsync(async (req: any, res: Response)
 
   let items = await prisma.garmentItem.findMany({
     where: { orderItem: { orderId } },
-    include: { qrCodeRecord: true, orderItem: { include: { garmentType: true } } }
+    include: {
+      qrCodeRecord: true,
+      orderItem: { include: { garmentType: true } }
+    }
   });
 
   // Auto-create garment item records if they don't exist yet
@@ -92,7 +95,7 @@ export const getOrderQrCodes = catchServiceAsync(async (req: any, res: Response)
             data: {
               orderItemId: oi.id,
               garmentCode: `G-${Date.now().toString().slice(-4)}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
-              garmentName: oi.garmentType?.name || 'Garment Item',
+              garmentName: (oi.garmentType as any)?.name || 'Garment Item',
             }
           })
         );
@@ -102,7 +105,10 @@ export const getOrderQrCodes = catchServiceAsync(async (req: any, res: Response)
       await Promise.all(createPromises);
       items = await prisma.garmentItem.findMany({
         where: { orderItem: { orderId } },
-        include: { qrCodeRecord: true, orderItem: { include: { garmentType: true } } }
+        include: {
+          qrCodeRecord: true,
+          orderItem: { include: { garmentType: true } }
+        }
       });
     }
   }
@@ -136,10 +142,39 @@ export const generateQrCode = catchServiceAsync(async (req: any, res: Response) 
 export const generateAllQrCodes = catchServiceAsync(async (req: any, res: Response) => {
   const { orderId } = req.params;
 
-  const items = await prisma.garmentItem.findMany({
+  // Ensure garment items exist first
+  let items = await prisma.garmentItem.findMany({
     where: { orderItem: { orderId } },
     include: { qrCodeRecord: true }
   });
+
+  if (items.length === 0) {
+    const orderItems = await prisma.orderItem.findMany({
+      where: { orderId },
+      include: { garmentType: true }
+    });
+    const createPromises = [];
+    for (const oi of orderItems) {
+      for (let i = 0; i < oi.quantity; i++) {
+        createPromises.push(
+          prisma.garmentItem.create({
+            data: {
+              orderItemId: oi.id,
+              garmentCode: `G-${Date.now().toString().slice(-4)}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
+              garmentName: (oi.garmentType as any)?.name || 'Garment Item',
+            }
+          })
+        );
+      }
+    }
+    if (createPromises.length > 0) {
+      await Promise.all(createPromises);
+      items = await prisma.garmentItem.findMany({
+        where: { orderItem: { orderId } },
+        include: { qrCodeRecord: true }
+      });
+    }
+  }
 
   const created: any[] = [];
   for (const item of items) {
