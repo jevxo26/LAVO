@@ -22,6 +22,7 @@ import financeRoutes from './routes/financeRoutes';
 import branchDashboardRoutes from './routes/branchDashboardRoutes';
 import deliveryAgentRoutes from './routes/deliveryAgentRoutes'
 import customerRoutes from './routes/customerRoutes';
+import employeeRoutes from './routes/employeeRoutes';
 import paymentRoutes from './routes/paymentRoutes';
 import chatRoutes from './routes/chatRoutes';
 import cmsRoutes from './routes/cmsRoutes';
@@ -91,6 +92,7 @@ app.prepare().then(async () => {
   server.use('/api/branch-dashboard', branchDashboardRoutes);
   server.use('/api/delivery-agent', deliveryAgentRoutes);
   server.use('/api/customer', customerRoutes);
+  server.use('/api/employee', employeeRoutes);
   server.use('/api/payments', paymentRoutes);
   server.use('/api/chat', chatRoutes);
   server.use('/api/cms', cmsRoutes);

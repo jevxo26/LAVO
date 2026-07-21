@@ -13,6 +13,7 @@ const ROLE_ROUTES: { prefix: string; allowed: string[] }[] = [
   { prefix: "/dashboard/logistics",allowed: ["SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER"] },
   { prefix: "/dashboard/branch",   allowed: ["SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER"] },
   { prefix: "/dashboard/delivery-agent", allowed: ["SUPER_ADMIN", "ADMIN", "DELIVERY_AGENT"] },
+  { prefix: "/dashboard/employee",       allowed: ["SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER", "EMPLOYEE"] },
   { prefix: "/dashboard/book",     allowed: ["CUSTOMER"] },
   { prefix: "/dashboard/my-orders",allowed: ["CUSTOMER"] },
   { prefix: "/dashboard/track-orders", allowed: ["CUSTOMER"] },
