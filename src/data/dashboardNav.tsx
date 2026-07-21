@@ -200,6 +200,16 @@ export const dashboardNavItems: NavItem[] = [
   },
 
   // =========================
+  // Employee Menu
+  // =========================
+  {
+    name: "Garment Intake & QR",
+    href: "/dashboard/employee/orders",
+    icon: PackageCheck,
+    roles: ["EMPLOYEE"],
+  },
+
+  // =========================
   // Delivery Agent Menu
   // =========================
   {
