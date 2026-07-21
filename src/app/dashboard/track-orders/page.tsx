@@ -1,7 +1,9 @@
 "use client";
 
-import React, { useEffect, useState, Suspense } from "react";
+import React, { useEffect, useState, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import { io, Socket } from "socket.io-client";
+import { useAuth } from "@/hooks/useAuth";
 import { 
   Search, 
   MapPin, 
@@ -44,6 +46,7 @@ interface OrderDetails {
 function TrackerContent() {
   const searchParams = useSearchParams();
   const initialOrderId = searchParams.get("orderId") || "";
+  const { user } = useAuth();
 
   const [orderNumberInput, setOrderNumberInput] = useState("");
   const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
@@ -51,6 +54,39 @@ function TrackerContent() {
   const [pickupOtp, setPickupOtp] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [activeOrders, setActiveOrders] = useState<Array<{ id: string; orderNumber: string }>>([]);
+  const socketRef = useRef<Socket | null>(null);
+  const activeOrderIdRef = useRef<string | null>(null);
+
+  // Socket: connect and join customer room for real-time order updates
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const socketUrl = typeof window !== 'undefined'
+      ? (process.env.NEXT_PUBLIC_API_URL?.startsWith('http')
+          ? process.env.NEXT_PUBLIC_API_URL.replace('/api', '')
+          : window.location.origin)
+      : '';
+
+    const socket = io(socketUrl, {
+      auth: { token: localStorage.getItem('laundrix_token') },
+      transports: ['websocket', 'polling'],
+    });
+    socketRef.current = socket;
+
+    socket.on('connect', () => {
+      socket.emit('joinCustomer', user.id);
+    });
+
+    socket.on('orderStatusUpdated', (payload: { orderId: string; orderStatus: string }) => {
+      // Only re-fetch if the update is for the currently displayed order
+      if (activeOrderIdRef.current && activeOrderIdRef.current === payload.orderId) {
+        fetchOrderDetails(payload.orderId);
+      }
+    });
+
+    return () => { socket.disconnect(); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   // Fetch active orders for dropdown quick selector
   useEffect(() => {
@@ -97,6 +133,7 @@ function TrackerContent() {
 
       if (data.success) {
         setOrderDetails(data.data);
+        activeOrderIdRef.current = data.data.id; // keep ref in sync for socket listener
         
         // Fetch OTPs (pickup OTP + dropoff OTP)
         try {

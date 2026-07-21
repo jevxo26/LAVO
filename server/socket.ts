@@ -26,6 +26,12 @@ export const initSocket = (server: HttpServer) => {
       console.log(`Socket ${socket.id} joined branch room: branch_${branchId}`);
     });
 
+    // Customer subscribes to their own order updates
+    socket.on('joinCustomer', (customerId: string) => {
+      socket.join(`customer_${customerId}`);
+      console.log(`Socket ${socket.id} joined customer room: customer_${customerId}`);
+    });
+
     socket.on('garmentScan', async (data: { qrCode: string; status: string; employeeId: string; branchId: string }) => {
       try {
         // 1. Look up the garment via its QR code record
@@ -46,6 +52,7 @@ export const initSocket = (server: HttpServer) => {
               include: {
                 order: {
                   include: {
+                    customer: true,
                     items: {
                       include: { garmentItems: true }
                     }
@@ -111,6 +118,7 @@ export const initSocket = (server: HttpServer) => {
                 description: 'All garments collected by delivery agent.',
               }
             });
+            io.to(`customer_${order.customer.userId}`).emit('orderStatusUpdated', { orderId: order.id, orderStatus: 'PICKUP' });
             console.log(`Order ${order.orderNumber} advanced to PICKUP (Collected by Agent)`);
           }
         } else if (data.status === 'PROCESSING' && processingEligible.includes(order.orderStatus)) {
@@ -126,6 +134,7 @@ export const initSocket = (server: HttpServer) => {
               description: 'Laundry items sorting at centralized branch hub.',
             }
           });
+          io.to(`customer_${order.customer.userId}`).emit('orderStatusUpdated', { orderId: order.id, orderStatus: 'PROCESSING' });
           
           // Complete the pickup delivery
           const pickupDelivery = await prisma.delivery.findFirst({
@@ -163,6 +172,7 @@ export const initSocket = (server: HttpServer) => {
               description: 'Garments undergoing washing / dry-cleaning cycles.',
             }
           });
+          io.to(`customer_${order.customer.userId}`).emit('orderStatusUpdated', { orderId: order.id, orderStatus: 'WASHING' });
           console.log(`Order ${order.orderNumber} advanced to WASHING`);
         }
 
@@ -177,6 +187,8 @@ export const initSocket = (server: HttpServer) => {
               where: { id: order.id },
               data: { orderStatus: 'READY_FOR_DELIVERY' }
             });
+
+            io.to(`customer_${order.customer.userId}`).emit('orderStatusUpdated', { orderId: order.id, orderStatus: 'READY_FOR_DELIVERY' });
 
             // Auto-assign a DROP_OFF delivery agent
             try {
