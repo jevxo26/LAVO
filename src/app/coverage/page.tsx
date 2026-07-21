@@ -1,4 +1,4 @@
-import { Navber } from "@/components/Navber";
+import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { CityCard } from "@/components/coverage/CityCard";
 import MapWrapper from "@/components/coverage/MapWrapper";
@@ -59,14 +59,14 @@ export default async function CoveragePage() {
     : defaultCities;
 
   return (
-    <main className="min-h-screen flex flex-col bg-slate-50">
-      <Navber />
+    <main className="min-h-screen flex flex-col bg-surface-light">
+      <Navbar />
       
       <div className="flex-1 flex flex-col">
         <PageHero data={heroSection} />
 
         {/* Content Section overlapping the hero */}
-        <div className="max-w-[1200px] w-full mx-auto px-4 md:px-6 relative z-20">
+        <div className="max-w-7xl w-full mx-auto px-4 md:px-6 relative z-20">
           
           {/* Search Card */}
           <div className="bg-white rounded-[24px] p-6 my-8 shadow-xl border border-slate-100 max-w-3xl mx-auto mb-8">
@@ -95,7 +95,7 @@ export default async function CoveragePage() {
 
         {/* Cities Grid Section */}
         <section className="w-full py-16 bg-transparent">
-          <div className="max-w-[1200px] mx-auto px-4 md:px-6">
+          <div className="max-w-7xl mx-auto px-4 md:px-6">
             
             <div className="text-center mb-10">
               <h2 className="text-xl md:text-2xl font-bold text-slate-900 mb-2">{citiesSection?.title || "Coverage by Area"}</h2>

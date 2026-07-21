@@ -6,7 +6,7 @@ import { ShoppingBag } from "lucide-react";
 export function Footer() {
   return (
     <footer className="bg-[#0a0f1c] text-slate-400 pt-16 pb-8">
-      <div className="max-w-[1440px] mx-auto px-4 md:px-6">
+      <div className="max-w-7xl mx-auto px-4 md:px-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-12 lg:gap-8 mb-12">
           {/* Logo and About */}
           <div className="lg:col-span-2">
@@ -14,8 +14,8 @@ export function Footer() {
               <div className="flex items-center justify-center w-8 h-8 rounded-md bg-blue-600 text-white">
                 <ShoppingBag size={16} />
               </div>
-              <span className="text-xl font-bold tracking-tight text-white">
-                LAUNDRIX
+              <span className="text-xl font-bold tracking-wide text-white">
+                LAUNDR<span className="text-primary">IX</span>
               </span>
             </Link>
             <p className="text-sm leading-relaxed mb-8 max-w-sm text-slate-400">
@@ -336,9 +336,17 @@ export function Footer() {
         {/* Copyright */}
         <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[13px]">
           <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-slate-500">
-            <p>© {new Date().getFullYear()} LAUNDRIX</p> | 
-            <p>All rights reserved</p> | 
-            <p>Developed by <Link href="https://www.jevxo.com" className="hover:text-white hover:underline transition-colors"><span className="text-blue-400 font-bold">Jevxo</span></Link></p>
+            <p>© {new Date().getFullYear()} LAUNDRIX</p> |
+            <p>All rights reserved</p> |
+            <p>
+              Developed by{" "}
+              <Link
+                href="https://www.jevxo.com"
+                className="hover:text-white hover:underline transition-colors"
+              >
+                <span className="text-blue-400 font-bold">Jevxo</span>
+              </Link>
+            </p>
           </div>
           <div className="flex items-center gap-4 sm:gap-6 flex-wrap">
             <Link href="#" className="hover:text-white transition-colors">

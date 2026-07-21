@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { Navber } from "@/components/Navber";
+import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { serviceDetails } from "@/data/servicesDetails";
 import { ServiceDetailsHero } from "@/components/services/details/ServiceDetailsHero";
@@ -37,7 +37,7 @@ export default function ServiceDetailsPage({ params }: PageProps) {
 
   return (
     <main className="min-h-screen flex flex-col bg-white">
-      <Navber />
+      <Navbar />
       
       <div className="flex-1">
         <ServiceDetailsHero

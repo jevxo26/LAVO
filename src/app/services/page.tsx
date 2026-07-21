@@ -1,4 +1,4 @@
-import { Navber } from "@/components/Navber";
+import { Navbar } from "@/components/Navbar";
 import { PageHero } from "@/components/shared/PageHero";
 import { ServicesGrid } from "@/components/services/ServicesGrid";
 import { ServicePromise } from "@/components/services/ServicePromise";
@@ -26,8 +26,8 @@ export default async function ServicesPage() {
   };
 
   return (
-    <main className="min-h-screen flex flex-col bg-slate-50">
-      <Navber />
+    <main className="min-h-screen flex flex-col bg-surface-light">
+      <Navbar />
       
       <div className="flex-1">
         <PageHero data={getSection("hero")} />

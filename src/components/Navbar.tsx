@@ -16,7 +16,7 @@ const navLinks = [
   { name: "Partner", href: "/partner" },
 ];
 
-export function Navber() {
+export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
@@ -32,14 +32,13 @@ export function Navber() {
 
   return (
     <nav className="fixed top-0 left-0 w-full z-50 bg-white border-b border-slate-100 shadow-sm transition-all duration-300">
-      <div className="max-w-[1440px] mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
-        
+      <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
           <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary text-white">
             <ShoppingBag size={20} />
           </div>
-          <span className="text-xl font-bold tracking-tight text-slate-900">
+          <span className="text-xl font-bold tracking-wide text-slate-900">
             LAUNDR<span className="text-primary">IX</span>
           </span>
         </Link>
@@ -47,13 +46,17 @@ export function Navber() {
         {/* Desktop Navigation */}
         <div className="hidden lg:flex items-center space-x-8">
           {links.map((item) => {
-            const isActive = pathname === item.href || (item.name === "Services" && pathname.startsWith("/services"));
+            const isActive =
+              pathname === item.href ||
+              (item.name === "Services" && pathname.startsWith("/services"));
             return (
               <Link
                 key={item.name}
                 href={item.href}
                 className={`relative py-2 text-sm font-medium transition-colors ${
-                  isActive ? "text-primary" : "text-slate-500 hover:text-slate-900"
+                  isActive
+                    ? "text-primary"
+                    : "text-slate-500 hover:text-slate-900"
                 }`}
               >
                 {item.name}
@@ -67,25 +70,25 @@ export function Navber() {
 
         {/* Action Buttons */}
         <div className="hidden lg:flex items-center space-x-3">
-          <Link
+          {/* <Link
             href="/track"
             className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 text-white text-sm font-medium hover:bg-slate-800 transition-colors"
           >
             <QrCode size={16} />
             Track Order
-          </Link>
-          
+          </Link> */}
+
           {mounted && isAuthenticated ? (
             <button
               onClick={logout}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-slate-200 text-slate-700 text-sm font-medium hover:bg-slate-50 transition-colors"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-slate-200 text-slate-700 text-sm font-medium hover:bg-surface-light transition-colors"
             >
               Logout
             </button>
           ) : (
             <Link
               href="/login"
-              className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-slate-200 text-slate-700 text-sm font-medium hover:bg-slate-50 transition-colors"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-slate-200 text-slate-700 text-sm font-medium hover:bg-surface-light transition-colors"
             >
               <LogIn size={16} />
               Login
@@ -122,7 +125,9 @@ export function Navber() {
                 href={item.href}
                 onClick={() => setIsOpen(false)}
                 className={`text-sm font-medium px-4 py-2 rounded-md ${
-                  pathname === item.href ? "bg-primary/5 text-primary" : "text-slate-600 hover:bg-slate-50"
+                  pathname === item.href
+                    ? "bg-primary/5 text-primary"
+                    : "text-slate-600 hover:bg-surface-light"
                 }`}
               >
                 {item.name}
@@ -130,13 +135,25 @@ export function Navber() {
             ))}
           </div>
           <div className="flex flex-col gap-2 pt-4 border-t">
-            <Link href="/track" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-slate-900 text-white text-sm font-medium">
+            <Link
+              href="/track"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-slate-900 text-white text-sm font-medium"
+            >
               <QrCode size={16} /> Track Order
             </Link>
-            <Link href="/login" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-full border text-slate-700 text-sm font-medium">
+            <Link
+              href="/login"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-full border text-slate-700 text-sm font-medium"
+            >
               <LogIn size={16} /> Login
             </Link>
-            <Link href="/book" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-primary text-white text-sm font-medium">
+            <Link
+              href="/book"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-primary text-white text-sm font-medium"
+            >
               Book Pickup <ArrowRight size={16} />
             </Link>
           </div>

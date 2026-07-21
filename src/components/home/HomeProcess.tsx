@@ -49,7 +49,7 @@ export function HomeProcess({ data }: { data?: any }) {
 
   return (
     <section className="py-24 bg-white border-t border-slate-100">
-      <div className="max-w-[1440px] mx-auto px-4 md:px-6">
+      <div className="max-w-7xl mx-auto px-4 md:px-6">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -85,7 +85,7 @@ export function HomeProcess({ data }: { data?: any }) {
               className="flex flex-col items-center text-center relative z-10"
             >
               <div className="relative mb-6">
-                <div className="w-20 h-20 bg-[#1f5df9] rounded-3xl flex items-center justify-center text-white shadow-xl shadow-blue-500/30 transform transition-transform hover:scale-105">
+                <div className="w-20 h-20 bg-brand-blue rounded-3xl flex items-center justify-center text-white shadow-xl shadow-blue-500/30 transform transition-transform hover:scale-105">
                   {getIcon(step.icon, { size: 32 })}
                 </div>
                 <div className="absolute -top-3 -right-3 w-8 h-8 bg-slate-900 rounded-full flex items-center justify-center text-white text-xs font-bold border-4 border-white shadow-sm">

@@ -10,7 +10,7 @@ export function HomeCTA({ data }: { data?: any }) {
 
   return (
     <section className="bg-blue-700 py-24 border-t border-blue-600">
-      <div className="max-w-[1440px] mx-auto px-4 md:px-6 text-center">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 text-center">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -31,7 +31,7 @@ export function HomeCTA({ data }: { data?: any }) {
           transition={{ delay: 0.1 }}
           className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10"
         >
-          <button className="flex items-center justify-center gap-2 bg-[#0EA5E9] hover:bg-[#0284C7] text-white px-8 py-3.5 rounded-full font-bold transition-colors w-full sm:w-auto shadow-lg">
+          <button className="flex items-center justify-center gap-2 bg-brand-sky hover:bg-brand-sky-hover text-white px-8 py-3.5 rounded-full font-bold transition-colors w-full sm:w-auto shadow-lg">
             Schedule Pickup
             <ArrowRight size={18} />
           </button>

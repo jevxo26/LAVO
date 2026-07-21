@@ -34,7 +34,7 @@ export function HomeWhyLaundrix({ data }: { data?: any }) {
 
   return (
     <section className="py-24 bg-white">
-      <div className="max-w-[1440px] mx-auto px-4 md:px-6">
+      <div className="max-w-7xl mx-auto px-4 md:px-6">
         <div className="flex flex-col lg:flex-row gap-16 items-center">
           
           <motion.div 

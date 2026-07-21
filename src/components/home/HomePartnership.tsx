@@ -60,8 +60,8 @@ export function HomePartnership({ data }: { data?: any }) {
   ];
 
   return (
-    <section className="bg-[#F8FAFC] py-24">
-      <div className="max-w-[1440px] mx-auto px-4 md:px-6">
+    <section className="bg-surface-light py-24">
+      <div className="max-w-7xl mx-auto px-4 md:px-6">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -111,7 +111,7 @@ export function HomePartnership({ data }: { data?: any }) {
                 ))}
               </ul>
 
-              <button className="flex items-center justify-center gap-2 bg-[#0EA5E9] hover:bg-[#0284C7] text-white w-full py-3 rounded-xl font-semibold transition-colors mt-auto shadow-sm">
+              <button className="flex items-center justify-center gap-2 bg-brand-sky hover:bg-brand-sky-hover text-white w-full py-3 rounded-xl font-semibold transition-colors mt-auto shadow-sm">
                 Apply Now
                 <ArrowRight size={16} />
               </button>

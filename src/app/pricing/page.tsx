@@ -1,4 +1,4 @@
-import { Navber } from "@/components/Navber";
+import { Navbar } from "@/components/Navbar";
 import { PricingCalculator } from "@/components/pricing/PricingCalculator";
 import { PageHero } from "@/components/shared/PageHero";
 import { Footer } from "@/components/Footer";
@@ -30,8 +30,8 @@ export default async function PricingPage() {
   };
 
   return (
-    <main className="min-h-screen flex flex-col bg-slate-50">
-      <Navber />
+    <main className="min-h-screen flex flex-col bg-surface-light">
+      <Navbar />
       
       <div className="flex-1">
         <PageHero data={getSection("hero")} />

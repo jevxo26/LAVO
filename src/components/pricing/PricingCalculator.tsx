@@ -142,7 +142,7 @@ export function PricingCalculator({ data }: { data?: any }) {
 
   return (
     <section className="w-full pb-16 bg-transparent">
-      <div className="max-w-[1200px] mx-auto px-4 md:px-6">
+      <div className="max-w-7xl mx-auto px-4 md:px-6">
 
         {/* Calculator Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center mb-20">
@@ -203,13 +203,13 @@ export function PricingCalculator({ data }: { data?: any }) {
               <div className="flex flex-col gap-3">
                 <label className="text-lg font-bold text-slate-900">Quantity</label>
                 <div className="flex items-center justify-between border border-slate-200 rounded-xl px-3 py-2">
-                  <button onClick={decrementQuantity} className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-slate-50 border border-slate-100 text-slate-600 transition-colors">
+                  <button onClick={decrementQuantity} className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-surface-light border border-slate-100 text-slate-600 transition-colors">
                     <Minus size={16} />
                   </button>
                   <span className="text-xl font-bold text-slate-900 w-16 text-center">
                     {quantity}
                   </span>
-                  <button onClick={incrementQuantity} className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-slate-50 border border-slate-100 text-slate-600 transition-colors">
+                  <button onClick={incrementQuantity} className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-surface-light border border-slate-100 text-slate-600 transition-colors">
                     <Plus size={16} />
                   </button>
                 </div>
@@ -245,11 +245,11 @@ export function PricingCalculator({ data }: { data?: any }) {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="lg:col-span-5 bg-[#0B101E] text-white rounded-[24px] p-8 shadow-xl border border-slate-800"
+            className="lg:col-span-5 bg-navy-darker text-white rounded-[24px] p-8 shadow-xl border border-slate-800"
           >
             <h3 className="text-lg font-bold tracking-wide uppercase mb-6 text-white">ESTIMATED PRICE</h3>
 
-            <div className="bg-[#1f5df9] rounded-2xl p-6 text-center mb-6">
+            <div className="bg-brand-blue rounded-2xl p-6 text-center mb-6">
               <span className="block text-blue-100 text-xs font-medium mb-1">Estimated Total</span>
               <div className="text-4xl md:text-5xl font-bold text-white mb-1 tracking-tight">
                 ৳ {total}
@@ -258,25 +258,25 @@ export function PricingCalculator({ data }: { data?: any }) {
             </div>
 
             <div className="grid grid-cols-2 gap-4 mb-8">
-              <div className="bg-[#2A3143]/50 border border-white/5 rounded-xl p-4">
+              <div className="bg-slate-card border border-white/5 rounded-xl p-4">
                 <span className="block text-slate-400 text-xs mb-1 font-medium">Service</span>
                 <span className="block text-white font-semibold text-sm truncate">{selectedService.name}</span>
               </div>
-              <div className="bg-[#2A3143]/50 border border-white/5 rounded-xl p-4">
+              <div className="bg-slate-card border border-white/5 rounded-xl p-4">
                 <span className="block text-slate-400 text-xs mb-1 font-medium">Delivery</span>
                 <span className="block text-white font-semibold text-sm truncate">{deliveryLabel}</span>
               </div>
-              <div className="bg-[#2A3143]/50 border border-white/5 rounded-xl p-4">
+              <div className="bg-slate-card border border-white/5 rounded-xl p-4">
                 <span className="block text-slate-400 text-xs mb-1 font-medium">Pickup</span>
                 <span className="block text-white font-semibold text-sm">Free</span>
               </div>
-              <div className="bg-[#2A3143]/50 border border-white/5 rounded-xl p-4">
+              <div className="bg-slate-card border border-white/5 rounded-xl p-4">
                 <span className="block text-slate-400 text-xs mb-1 font-medium">Payment</span>
                 <span className="block text-white font-semibold text-sm">On delivery</span>
               </div>
             </div>
 
-            <button className="w-full flex items-center justify-center gap-2 bg-[#1f5df9] hover:bg-blue-600 text-white font-bold py-4 rounded-xl transition-colors">
+            <button className="w-full flex items-center justify-center gap-2 bg-brand-blue hover:bg-blue-600 text-white font-bold py-4 rounded-xl transition-colors">
               Schedule Pickup ৳ {total}
             </button>
           </motion.div>

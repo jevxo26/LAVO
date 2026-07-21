@@ -43,8 +43,8 @@ export function HomeMobileApp({ data }: { data?: any }) {
   ];
 
   return (
-    <section className="bg-[#0F172A] py-24 border-t-4 border-blue-600 overflow-hidden">
-      <div className="max-w-[1440px] mx-auto px-4 md:px-6">
+    <section className="bg-navy-dark py-24 border-t-4 border-blue-600 overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 md:px-6">
         <div className="flex flex-col lg:flex-row items-center justify-between gap-16">
           <motion.div 
             initial={{ opacity: 0, x: -30 }}

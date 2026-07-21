@@ -35,8 +35,8 @@ export function HomeTestimonials({ data }: { data?: any }) {
   ];
 
   return (
-    <section className="py-24 bg-[#F8FAFC]">
-      <div className="max-w-[1440px] mx-auto px-4 md:px-6">
+    <section className="py-24 bg-surface-light">
+      <div className="max-w-7xl mx-auto px-4 md:px-6">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -66,7 +66,7 @@ export function HomeTestimonials({ data }: { data?: any }) {
             >
               <div className="flex text-yellow-400 mb-6 gap-1">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} size={16} fill="currentColor" className="text-[#FBBF24]" />
+                  <Star key={i} size={16} fill="currentColor" className="text-amber-star" />
                 ))}
               </div>
               <p className="text-slate-600 mb-8 flex-grow leading-relaxed text-sm">
