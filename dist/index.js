@@ -26,6 +26,7 @@ const financeRoutes_1 = __importDefault(require("./routes/financeRoutes"));
 const branchDashboardRoutes_1 = __importDefault(require("./routes/branchDashboardRoutes"));
 const deliveryAgentRoutes_1 = __importDefault(require("./routes/deliveryAgentRoutes"));
 const customerRoutes_1 = __importDefault(require("./routes/customerRoutes"));
+const employeeRoutes_1 = __importDefault(require("./routes/employeeRoutes"));
 const paymentRoutes_1 = __importDefault(require("./routes/paymentRoutes"));
 const chatRoutes_1 = __importDefault(require("./routes/chatRoutes"));
 const cmsRoutes_1 = __importDefault(require("./routes/cmsRoutes"));
@@ -88,6 +89,7 @@ app.prepare().then(async () => {
     server.use('/api/branch-dashboard', branchDashboardRoutes_1.default);
     server.use('/api/delivery-agent', deliveryAgentRoutes_1.default);
     server.use('/api/customer', customerRoutes_1.default);
+    server.use('/api/employee', employeeRoutes_1.default);
     server.use('/api/payments', paymentRoutes_1.default);
     server.use('/api/chat', chatRoutes_1.default);
     server.use('/api/cms', cmsRoutes_1.default);

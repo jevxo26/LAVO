@@ -26,7 +26,7 @@ export function ServiceDetailsHero({
 }: ServiceDetailsHeroProps) {
   return (
     <section className="w-full pt-32 pb-12 md:pb-16 lg:pb-20 bg-slate-50 overflow-hidden">
-      <div className="max-w-[1440px] mx-auto px-4 md:px-6">
+      <div className="max-w-7xl mx-auto px-4 md:px-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           
           {/* Left Side: Content */}

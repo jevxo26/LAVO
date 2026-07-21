@@ -1,4 +1,4 @@
-import { Navber } from "@/components/Navber";
+import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { PageHero } from "@/components/shared/PageHero";
 import { MapPin, Clock, Phone } from "lucide-react";
@@ -92,15 +92,15 @@ export default async function BranchesPage() {
     : defaultBranches;
 
   return (
-    <main className="min-h-screen flex flex-col bg-[#F8FAFC]">
-      <Navber />
+    <main className="min-h-screen flex flex-col bg-surface-light">
+      <Navbar />
 
       <div className="flex-1 flex flex-col">
         <PageHero data={heroSection} />
 
         {/* Locations Grid Section */}
-        <section className="w-full py-12 md:py-16 bg-[#F8FAFC]">
-          <div className="max-w-[1440px] mx-auto px-4 md:px-6">
+        <section className="w-full py-12 md:py-16 bg-surface-light">
+          <div className="max-w-7xl mx-auto px-4 md:px-6">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               
               {/* Left Side: Branch Cards (2 columns on md) */}
@@ -139,7 +139,7 @@ export default async function BranchesPage() {
                       <button className="w-full py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50 transition-colors">
                         Directions
                       </button>
-                      <button className="w-full py-2.5 rounded-xl bg-[#1f5df9] text-white text-sm font-semibold hover:bg-blue-600 transition-colors">
+                      <button className="w-full py-2.5 rounded-xl bg-brand-blue text-white text-sm font-semibold hover:bg-blue-600 transition-colors">
                         Book Pickup
                       </button>
                     </div>

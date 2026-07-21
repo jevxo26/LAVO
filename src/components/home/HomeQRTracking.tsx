@@ -18,8 +18,8 @@ export function HomeQRTracking({ data }: { data?: any }) {
   ];
 
   return (
-    <section className="bg-[#0F172A] py-24 border-t border-slate-800">
-      <div className="max-w-[1440px] mx-auto px-4 md:px-6">
+    <section className="bg-navy-dark py-24 border-t border-slate-800">
+      <div className="max-w-7xl mx-auto px-4 md:px-6">
         <div className="flex flex-col lg:flex-row items-center gap-16">
           <motion.div 
             initial={{ opacity: 0, x: -30 }}
@@ -69,7 +69,7 @@ export function HomeQRTracking({ data }: { data?: any }) {
               </li>
             </ul>
 
-            <button className="flex items-center justify-center gap-2 bg-[#0EA5E9] hover:bg-[#0284C7] text-white px-8 py-3.5 rounded-full font-bold transition-colors w-full sm:w-auto shadow-lg">
+            <button className="flex items-center justify-center gap-2 bg-brand-sky hover:bg-brand-sky-hover text-white px-8 py-3.5 rounded-full font-bold transition-colors w-full sm:w-auto shadow-lg">
               Track Your Order
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
             </button>
@@ -82,7 +82,7 @@ export function HomeQRTracking({ data }: { data?: any }) {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="lg:w-1/2 w-full"
           >
-            <div className="bg-[#192135] rounded-3xl p-8 border border-slate-800 shadow-2xl relative">
+            <div className="bg-navy-card rounded-3xl p-8 border border-slate-800 shadow-2xl relative">
               <div className="flex justify-between items-center mb-10">
                 <span className="text-xs font-mono text-slate-500 tracking-wider">ORDER #LXR-2025-04821</span>
                 <span className="text-[10px] bg-yellow-500/20 text-yellow-500 px-3 py-1 rounded-full font-bold">In Processing</span>
@@ -101,8 +101,8 @@ export function HomeQRTracking({ data }: { data?: any }) {
                           ${step.active 
                             ? 'bg-blue-600 border-blue-600 text-white' 
                             : step.current
-                              ? 'border-blue-600 bg-[#192135]'
-                              : 'border-slate-700 bg-[#192135]'
+                              ? 'border-blue-600 bg-navy-card'
+                              : 'border-slate-700 bg-navy-card'
                           }
                         `}>
                           {step.active && <Check size={14} />}

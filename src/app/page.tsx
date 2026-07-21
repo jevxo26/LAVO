@@ -1,4 +1,4 @@
-import { Navber } from "@/components/Navber";
+import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { HomeHero } from "@/components/home/HomeHero";
 import { HomeServices } from "@/components/home/HomeServices";
@@ -38,9 +38,9 @@ export default async function Home() {
 
   return (
     <div className="flex flex-col min-h-screen bg-white font-sans overflow-x-hidden">
-      <Navber />
+      <Navbar />
 
-      <main className="flex-1 relative z-10 pt-20">
+      <main className="flex-1 relative z-10 pt-16">
         <HomeHero data={getSection("hero")} />
         <HomeServices data={getSection("services")} />
         <HomeProcess data={getSection("process")} />

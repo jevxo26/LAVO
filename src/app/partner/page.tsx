@@ -1,4 +1,4 @@
-import { Navber } from "@/components/Navber";
+import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { PageHero } from "@/components/shared/PageHero";
 import { LocationCard } from "@/components/corporate/LocationCard";
@@ -93,15 +93,15 @@ export default async function PartnerPage() {
     : defaultVendors;
 
   return (
-    <main className="min-h-screen flex flex-col bg-slate-50">
-      <Navber />
+    <main className="min-h-screen flex flex-col bg-surface-light">
+      <Navbar />
       
       <div className="flex-1 flex flex-col">
         <PageHero data={heroSection} />
         
         {/* Vendors Grid Section */}
-        <section className="w-full py-12 md:py-16 lg:py-20 bg-slate-50">
-          <div className="max-w-[1440px] mx-auto px-4 md:px-6">
+        <section className="w-full py-12 md:py-16 lg:py-20 bg-surface-light">
+          <div className="max-w-7xl mx-auto px-4 md:px-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {displayVendors.map((vendor, idx) => (
                 <div key={idx} className="animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-both" style={{ animationDelay: `${idx * 100}ms` }}>
