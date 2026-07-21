@@ -109,7 +109,7 @@ app.prepare().then(async () => {
   // Global Error Handler
   server.use((err: any, req: Request, res: Response, next: express.NextFunction) => {
     console.error(err);
-    
+
     let statusCode = err.statusCode || 500;
     if (err.message === 'User already exists with this email') statusCode = 409;
     if (err.message === 'User already exists with this phone number') statusCode = 409;
@@ -117,9 +117,9 @@ app.prepare().then(async () => {
     if (err.message === 'Vehicle already exists with this number') statusCode = 409;
     if (err.message === 'Invalid email or password') statusCode = 401;
     if (err.message === 'Unauthorized') statusCode = 401;
-    
+
     const message = err.message || 'Internal Server Error';
-    res.status(statusCode).json({ 
+    res.status(statusCode).json({
       success: false,
       message: message,
       data: null
