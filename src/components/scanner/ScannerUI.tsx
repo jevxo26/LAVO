@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useSocket } from "@/hooks/useSocket";
 import { authFetch } from "@/lib/api";
 
@@ -19,6 +19,7 @@ export function useScannerLogic(user: any) {
   const [key, setKey] = useState(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [currentGarmentStatus, setCurrentGarmentStatus] = useState<string | null>(null);
+  const isProcessingScanRef = useRef(false);
   const { socket, emitScan } = useSocket();
 
   // Listen for scan errors from server
@@ -33,11 +34,14 @@ export function useScannerLogic(user: any) {
   }, [socket]);
 
   const handleScanSuccess = useCallback(async (decodedText: string) => {
-    if (scanState !== "idle") return;
+    if (isProcessingScanRef.current) return;
+    isProcessingScanRef.current = true;
+
     setPendingCode(decodedText);
     setCurrentGarmentStatus(null);
+    setScanState("select_status");
 
-    // Fetch current garment status so we can disable the already-done button
+    // Fetch current garment status concurrently
     try {
       const res = await authFetch(`/employee/garment-status?qrCode=${encodeURIComponent(decodedText)}`);
       if (res.ok) {
@@ -49,9 +53,7 @@ export function useScannerLogic(user: any) {
     } catch {
       // silently ignore — not critical
     }
-
-    setScanState("select_status");
-  }, [scanState]);
+  }, []);
 
   const handleStatusSelect = useCallback(async (status: string) => {
     if (!pendingCode) return;
@@ -79,6 +81,7 @@ export function useScannerLogic(user: any) {
   const handleScanFailure = useCallback(() => {}, []);
 
   const handleReset = () => {
+    isProcessingScanRef.current = false;
     setScanState("idle");
     setLastResult(null);
     setPendingCode(null);
