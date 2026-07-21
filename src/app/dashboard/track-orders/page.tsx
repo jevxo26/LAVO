@@ -172,30 +172,40 @@ function TrackerContent() {
   };
 
   const trackingSteps = [
-    { key: "PENDING", label: "Order Placed", desc: "We received your laundry request." },
-    { key: "CONFIRMED", label: "Confirmed", desc: "A pickup agent has been assigned to your zone." },
-    { key: "PICKUP", label: "Collected", desc: "Garments collected. Waterproof QR tracking labels generated." },
-    { key: "PROCESSING", label: "Sorting & Prep", desc: "Laundry items sorting at centralized branch hub." },
-    { key: "WASHING", label: "Washing & Drying", desc: "Garments undergoing washing / dry-cleaning cycles." },
-    { key: "DELIVERY", label: "Out for Delivery", desc: "Garments packaged and assigned to delivery agent." },
-    { key: "COMPLETED", label: "Delivered", desc: "Laundry package successfully hand-delivered." },
+    { key: "PENDING",            label: "Order Placed",        desc: "We received your laundry request." },
+    { key: "CONFIRMED",          label: "Confirmed",           desc: "A pickup agent has been assigned to your zone." },
+    { key: "PICKUP",             label: "Collected",           desc: "Garments collected and QR tracking labels generated." },
+    { key: "PROCESSING",         label: "Sorting & Prep",      desc: "Laundry items sorting at the centralized branch hub." },
+    { key: "WASHING",            label: "Washing",             desc: "Garments undergoing washing or dry-cleaning cycles." },
+    { key: "DRYING",             label: "Drying",              desc: "Garments being dried at optimal temperature." },
+    { key: "IRONING",            label: "Ironing",             desc: "Garments being pressed and ironed for a fresh finish." },
+    { key: "FOLDING",            label: "Folding & Packing",   desc: "Garments neatly folded and packed for delivery." },
+    { key: "READY_FOR_DELIVERY", label: "Ready for Delivery",  desc: "Your laundry is packed and a delivery agent has been assigned." },
+    { key: "OUT_FOR_DELIVERY",   label: "Out for Delivery",    desc: "Delivery agent is on the way to your address." },
+    { key: "DELIVERED",          label: "Delivered",           desc: "Laundry package successfully hand-delivered. Enjoy!" },
   ];
 
   // Helper to determine index of active status
   const getStepIndex = (status: string) => {
-    const uppercaseStatus = status.toUpperCase();
-    if (uppercaseStatus === "CANCELLED") return -1;
-    
-    // Group sub-statuses for layout simplification
-    if (uppercaseStatus === "PROCESSING") return 3;
-    if (uppercaseStatus === "WASHING") return 4;
-    
-    // Map the new automated statuses to the timeline
-    if (uppercaseStatus === "READY_FOR_DELIVERY" || uppercaseStatus === "OUT_FOR_DELIVERY") return 5;
-    if (uppercaseStatus === "DELIVERED") return 6;
-    
-    const index = trackingSteps.findIndex((step) => step.key === uppercaseStatus);
-    return index !== -1 ? index : 0;
+    const s = status.toUpperCase();
+    if (s === "CANCELLED") return -1;
+    // Map every possible order/garment status to the correct step index
+    const map: Record<string, number> = {
+      PENDING:            0,
+      CONFIRMED:          1,
+      PICKUP:             2,
+      PROCESSING:         3,
+      WASHING:            4,
+      DRYING:             5,
+      IRONING:            6,
+      FOLDING:            7,
+      READY_FOR_DELIVERY: 8,
+      OUT_FOR_DELIVERY:   9,
+      DELIVERED:          10,
+      COMPLETED:          10, // alias
+      DELIVERY:           9,  // legacy alias
+    };
+    return map[s] ?? 0;
   };
 
   const currentStepIndex = orderDetails ? getStepIndex(orderDetails.orderStatus) : 0;
