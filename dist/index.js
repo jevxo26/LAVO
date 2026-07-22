@@ -31,6 +31,12 @@ const paymentRoutes_1 = __importDefault(require("./routes/paymentRoutes"));
 const chatRoutes_1 = __importDefault(require("./routes/chatRoutes"));
 const cmsRoutes_1 = __importDefault(require("./routes/cmsRoutes"));
 const ticketRoutes_1 = __importDefault(require("./routes/ticketRoutes"));
+const roleRoutes_1 = __importDefault(require("./routes/roleRoutes"));
+const featureFlagRoutes_1 = __importDefault(require("./routes/featureFlagRoutes"));
+const auditLogRoutes_1 = __importDefault(require("./routes/auditLogRoutes"));
+const analyticsRoutes_1 = __importDefault(require("./routes/analyticsRoutes"));
+const adminVendorRoutes_1 = __importDefault(require("./routes/adminVendorRoutes"));
+const adminSupportRoutes_1 = __importDefault(require("./routes/adminSupportRoutes"));
 const socket_1 = require("./socket");
 const prisma = new client_1.PrismaClient();
 const dev = process.env.NODE_ENV !== 'production';
@@ -94,6 +100,12 @@ app.prepare().then(async () => {
     server.use('/api/chat', chatRoutes_1.default);
     server.use('/api/cms', cmsRoutes_1.default);
     server.use('/api/tickets', ticketRoutes_1.default);
+    server.use('/api/roles', roleRoutes_1.default);
+    server.use('/api/feature-flags', featureFlagRoutes_1.default);
+    server.use('/api/audit-logs', auditLogRoutes_1.default);
+    server.use('/api/analytics', analyticsRoutes_1.default);
+    server.use('/api/admin/vendors', adminVendorRoutes_1.default);
+    server.use('/api/admin/support', adminSupportRoutes_1.default);
     // Serve uploaded files statically
     server.use('/uploads', express_1.default.static(path_1.default.join(process.cwd(), 'public', 'uploads')));
     // Let Next.js handle all other routes
