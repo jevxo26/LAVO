@@ -178,8 +178,12 @@ export const acceptDelivery = async (
 
   const orderInfo = await prisma.order.findUnique({
     where: { id: delivery.orderId },
-    select: { orderNumber: true }
+    select: { orderNumber: true, deliveryAddressId: true }
   });
+
+  const specificAddress = orderInfo?.deliveryAddressId
+    ? await prisma.customerAddress.findUnique({ where: { id: orderInfo.deliveryAddressId } })
+    : null;
 
   const updatedDelivery = await prisma.$transaction(
     async (tx) => {
@@ -238,9 +242,9 @@ export const acceptDelivery = async (
         );
       }
 
-      // Trigger Delivery OTP SMS to Customer
-      const customerPhone = customerInfo?.user?.phone || customerInfo?.addresses?.[0]?.receiverPhone;
-      const customerName = customerInfo?.user?.fullName || customerInfo?.addresses?.[0]?.receiverName;
+      // Trigger Delivery OTP SMS to Customer (Priority: specificAddress.receiverPhone -> user.phone -> addresses[0].receiverPhone)
+      const customerPhone = specificAddress?.receiverPhone || customerInfo?.user?.phone || customerInfo?.addresses?.[0]?.receiverPhone;
+      const customerName = specificAddress?.receiverName || customerInfo?.user?.fullName || customerInfo?.addresses?.[0]?.receiverName;
       const orderNum = orderInfo?.orderNumber || delivery.orderId;
 
       if (customerPhone && otpToSend) {

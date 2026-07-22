@@ -144,8 +144,12 @@ export const acceptPickup = async (
 
     const orderInfo = await prisma.order.findUnique({
         where: { id: delivery.orderId },
-        select: { orderNumber: true }
+        select: { orderNumber: true, pickupAddressId: true }
     });
+
+    const specificAddress = orderInfo?.pickupAddressId
+        ? await prisma.customerAddress.findUnique({ where: { id: orderInfo.pickupAddressId } })
+        : null;
 
     const updatedDelivery = await prisma.$transaction(async (tx) => {
         // 1. Mark delivery as ACCEPTED
@@ -194,9 +198,9 @@ export const acceptPickup = async (
             otpToSend = otp.toString();
         }
 
-        // Trigger Pickup OTP SMS to Customer
-        const customerPhone = customerInfo?.user?.phone || customerInfo?.addresses?.[0]?.receiverPhone;
-        const customerName = customerInfo?.user?.fullName || customerInfo?.addresses?.[0]?.receiverName;
+        // Trigger Pickup OTP SMS to Customer (Priority: specificAddress.receiverPhone -> user.phone -> addresses[0].receiverPhone)
+        const customerPhone = specificAddress?.receiverPhone || customerInfo?.user?.phone || customerInfo?.addresses?.[0]?.receiverPhone;
+        const customerName = specificAddress?.receiverName || customerInfo?.user?.fullName || customerInfo?.addresses?.[0]?.receiverName;
         const orderNum = orderInfo?.orderNumber || delivery.orderId;
 
         if (customerPhone && otpToSend) {
