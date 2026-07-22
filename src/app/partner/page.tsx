@@ -3,6 +3,9 @@ import { Footer } from "@/components/Footer";
 import { PageHero } from "@/components/shared/PageHero";
 import { LocationCard } from "@/components/corporate/LocationCard";
 import prisma from "@/lib/prisma";
+import PartnerRequirementsCard from "@/components/corporate/PartnerRequirementsCard";
+import PartnerApplicationForm from "@/components/corporate/PartnerApplicationForm";
+
 
 export const revalidate = 0;
 
@@ -10,6 +13,7 @@ export const metadata = {
   title: "Our Partners | Laundrix",
   description: "Find authorized LAUNDRIX vendors and partners.",
 };
+
 
 export default async function PartnerPage() {
   const page = await prisma.cmsPage.findUnique({
@@ -81,31 +85,31 @@ export default async function PartnerPage() {
 
   const displayVendors: VendorItem[] = (vendorsSection?.items?.length ?? 0) > 0
     ? vendorsSection!.items.map((item) => {
-        const parts = item.subtitle?.split('·') ?? [];
-        return {
-          name: item.title ?? "",
-          city: "Vendor",
-          address: item.content,
-          hours: parts[0]?.trim() ?? "Mon-Sun 8am-10pm",
-          phone: "+880 1711-000000"
-        };
-      })
+      const parts = item.subtitle?.split('·') ?? [];
+      return {
+        name: item.title ?? "",
+        city: "Vendor",
+        address: item.content,
+        hours: parts[0]?.trim() ?? "Mon-Sun 8am-10pm",
+        phone: "+880 1711-000000"
+      };
+    })
     : defaultVendors;
 
   return (
     <main className="min-h-screen flex flex-col bg-surface-light">
       <Navbar />
-      
+
       <div className="flex-1 flex flex-col">
         <PageHero data={heroSection} />
-        
+
         {/* Vendors Grid Section */}
         <section className="w-full py-12 md:py-16 lg:py-20 bg-surface-light">
           <div className="max-w-7xl mx-auto px-4 md:px-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {displayVendors.map((vendor, idx) => (
                 <div key={idx} className="animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-both" style={{ animationDelay: `${idx * 100}ms` }}>
-                  <LocationCard 
+                  <LocationCard
                     name={vendor.name}
                     city={vendor.city}
                     address={vendor.address || ""}
@@ -120,6 +124,9 @@ export default async function PartnerPage() {
         </section>
       </div>
 
+      <PartnerRequirementsCard />
+      
+      <PartnerApplicationForm />
       <Footer />
     </main>
   );
