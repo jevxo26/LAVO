@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { SMSService } from "../smsService";
 
 const prisma = new PrismaClient();
 
@@ -107,9 +108,9 @@ export const getAvailableDeliveries = async (
       id: delivery.id,
       orderId: delivery.orderId,
       customerName:
-        delivery.customer.user.fullName,
+        delivery.customer?.user?.fullName || customerAddress?.receiverName || "N/A",
       customerPhone:
-        delivery.customer.user.phone,
+        delivery.customer?.user?.phone || customerAddress?.receiverPhone || "N/A",
       branch:
         delivery.branch?.branchName ?? "N/A",
       deliveryAddress:
@@ -165,6 +166,25 @@ export const acceptDelivery = async (
   if (delivery.deliveryStatus === "IN_PROGRESS") {
     throw new Error("Delivery already started");
   }
+
+  // Fetch customer profile & address info for SMS
+  const customerInfo = await prisma.customer.findUnique({
+    where: { id: delivery.customerId },
+    include: {
+      user: { select: { fullName: true, phone: true } },
+      addresses: { select: { receiverName: true, receiverPhone: true } }
+    }
+  });
+
+  const orderInfo = await prisma.order.findUnique({
+    where: { id: delivery.orderId },
+    select: { orderNumber: true, deliveryAddressId: true }
+  });
+
+  const specificAddress = orderInfo?.deliveryAddressId
+    ? await prisma.customerAddress.findUnique({ where: { id: orderInfo.deliveryAddressId } })
+    : null;
+
   const updatedDelivery = await prisma.$transaction(
     async (tx) => {
       const updated = await tx.delivery.update({
@@ -201,6 +221,7 @@ export const acceptDelivery = async (
             }
           },
         });
+      let otpToSend = existingOtp?.otpCode;
       if (!existingOtp) {
         const otp = Math.floor(
           100000 + Math.random() * 900000
@@ -214,11 +235,27 @@ export const acceptDelivery = async (
             ),
           },
         });
+        otpToSend = otp.toString();
         console.log(
           "Delivery OTP:",
           otp
         );
       }
+
+      // Trigger Delivery OTP SMS to Customer (Priority: specificAddress.receiverPhone -> user.phone -> addresses[0].receiverPhone)
+      const customerPhone = specificAddress?.receiverPhone || customerInfo?.user?.phone || customerInfo?.addresses?.[0]?.receiverPhone;
+      const customerName = specificAddress?.receiverName || customerInfo?.user?.fullName || customerInfo?.addresses?.[0]?.receiverName;
+      const orderNum = orderInfo?.orderNumber || delivery.orderId;
+
+      if (customerPhone && otpToSend) {
+        console.log(`📱 [Delivery OTP SMS] Sending OTP ${otpToSend} to customer phone: ${customerPhone} for Order ${orderNum}`);
+        SMSService.sendDeliveryOTP(customerPhone, otpToSend, orderNum, customerName).catch((err) => {
+          console.error("[Delivery SMS Error]:", err);
+        });
+      } else {
+        console.warn(`⚠️ [Delivery OTP SMS] Could not send SMS for Order ${orderNum}: Customer phone number not found in profile or address.`);
+      }
+
       return updated;
     }
   );

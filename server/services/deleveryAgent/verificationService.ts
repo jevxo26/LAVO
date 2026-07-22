@@ -41,8 +41,8 @@ export const getVerificationList = async (userId: string) => {
       deliveryId: delivery.id,
       orderId: delivery.orderId,
       deliveryType: delivery.deliveryType,
-      customerName: delivery.customer.user.fullName,
-      customerPhone: delivery.customer.user.phone,
+      customerName: delivery.customer?.user?.fullName || address?.receiverName || "N/A",
+      customerPhone: delivery.customer?.user?.phone || address?.receiverPhone || "N/A",
       deliveryAddress: address?.fullAddress ?? "N/A",
       deliveryStatus: delivery.deliveryStatus,
       verificationStatus:

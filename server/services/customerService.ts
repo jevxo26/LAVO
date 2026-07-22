@@ -542,20 +542,24 @@ export class CustomerService {
         }
       }
 
-      // TODO: Implement actual address selection instead of generating dummy addresses
-      let address = await prisma.customerAddress.findFirst({
-        where: { customerId: customer.id },
+      // Always create a new CustomerAddress for this order with the receiverPhone & address entered by the customer at checkout
+      const address = await prisma.customerAddress.create({
+        data: {
+          customerId: customer.id,
+          receiverName: orderData.receiverName || customer.user.fullName,
+          receiverPhone: orderData.receiverPhone || customer.user.phone || '000000',
+          fullAddress: orderData.pickupAddress,
+          city: 'Dhaka',
+          latitude: orderData.latitude ?? null,
+          longitude: orderData.longitude ?? null,
+        },
       });
 
-      if (!address) {
-        address = await prisma.customerAddress.create({
-          data: {
-            customerId: customer.id,
-            receiverName: orderData.receiverName || customer.user.fullName,
-            receiverPhone: orderData.receiverPhone || customer.user.phone || '000000',
-            fullAddress: orderData.pickupAddress,
-            city: 'Dhaka',
-          },
+      // Also update the customer user phone if a new phone number was provided at checkout
+      if (orderData.receiverPhone && orderData.receiverPhone !== customer.user.phone) {
+        await prisma.user.update({
+          where: { id: userId },
+          data: { phone: orderData.receiverPhone },
         });
       }
 

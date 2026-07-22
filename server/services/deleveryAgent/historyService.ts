@@ -23,6 +23,7 @@ export const getDeliveryHistory = async (userId: string) => {
             customer: {
                 include: {
                     user: true,
+                    addresses: true,
                 },
             },
             branch: true,
@@ -36,8 +37,8 @@ export const getDeliveryHistory = async (userId: string) => {
     return deliveries.map((delivery) => ({
         deliveryId: delivery.id,
         orderId: delivery.orderId,
-        customerName: delivery.customer.user.fullName,
-        customerPhone: delivery.customer.user.phone,
+        customerName: delivery.customer?.user?.fullName || delivery.customer?.addresses?.[0]?.receiverName || "N/A",
+        customerPhone: delivery.customer?.user?.phone || delivery.customer?.addresses?.[0]?.receiverPhone || "N/A",
         serviceType: delivery.order.orderType,
         branch: delivery.branch?.branchName ?? "N/A",
         amount: delivery.order.grandTotal,
