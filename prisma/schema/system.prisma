@@ -231,3 +231,24 @@ model ChatMessage {
   createdAt   DateTime    @default(now())
 }
 
+model AuditLog {
+  id          String   @id @default(uuid())
+  module      String
+  action      String
+  performedBy String
+  oldValue    String?
+  newValue    String?
+  ipAddress   String?
+  createdAt   DateTime @default(now())
+}
+
+model SystemLog {
+  id         String   @id @default(uuid())
+  logLevel   String
+  module     String
+  message    String
+  stackTrace String?
+  server     String?
+  createdAt  DateTime @default(now())
+}
+

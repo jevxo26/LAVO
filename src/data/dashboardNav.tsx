@@ -15,7 +15,11 @@ import {
   Heart,
   Wallet,
   QrCode,
+  ShieldAlert,
   Star,
+  Gauge,
+  TrendingUp,
+  Banknote,
 } from "lucide-react";
 
 export interface NavItem {
@@ -35,11 +39,20 @@ export const dashboardNavItems: NavItem[] = [
       "SUPER_ADMIN",
       "ADMIN",
       "BRANCH_MANAGER",
-      "VENDOR",
       "EMPLOYEE",
       "DELIVERY_AGENT",
       "CUSTOMER",
     ],
+  },
+  {
+    name: "Executive Analytics",
+    href: "/dashboard/analytics",
+    icon: CircleDollarSign,
+    roles: ["SUPER_ADMIN", "ADMIN"],
+    name: "Dashboard",
+    href: "/dashboard/vendor/dashboard",
+    icon: LayoutDashboard,
+    roles: ["VENDOR"],
   },
 
   // =========================
@@ -97,9 +110,27 @@ export const dashboardNavItems: NavItem[] = [
     roles: ["SUPER_ADMIN", "ADMIN"],
     children: [
       {
-        name: "Users",
+        name: "Customer Management",
         href: "/dashboard/users",
         icon: Users,
+        roles: ["SUPER_ADMIN", "ADMIN"],
+      },
+      {
+        name: "Branch Employees",
+        href: "/dashboard/branch/employees",
+        icon: UsersRound,
+        roles: ["SUPER_ADMIN", "ADMIN"],
+      },
+      {
+        name: "Delivery Agents",
+        href: "/dashboard/branch/delivery",
+        icon: Truck,
+        roles: ["SUPER_ADMIN", "ADMIN"],
+      },
+      {
+        name: "Roles & Permissions",
+        href: "/dashboard/users/roles",
+        icon: ShieldAlert,
         roles: ["SUPER_ADMIN", "ADMIN"],
       },
     ],
@@ -114,7 +145,7 @@ export const dashboardNavItems: NavItem[] = [
     name: "Vendors",
     href: "/dashboard/vendors",
     icon: PackageCheck,
-    roles: ["SUPER_ADMIN", "ADMIN", "VENDOR"],
+    roles: ["SUPER_ADMIN", "ADMIN"],
   },
   {
     name: "Laundry Services",
@@ -210,6 +241,59 @@ export const dashboardNavItems: NavItem[] = [
     href: "/scanner",
     icon: QrCode,
     roles: ["SUPER_ADMIN", "EMPLOYEE", "BRANCH_MANAGER"],
+  },
+
+  // =========================
+  // Vendor Menu
+  // =========================
+  {
+    name: "Vendor Operations",
+    icon: Store,
+    roles: ["VENDOR"],
+    children: [
+      {
+        name: "Orders",
+        href: "/dashboard/vendor/orders",
+        icon: ClipboardList,
+        roles: ["VENDOR"],
+      },
+      {
+        name: "Services",
+        href: "/dashboard/vendor/services",
+        icon: Shirt,
+        roles: ["VENDOR"],
+      },
+      {
+        name: "Capacity",
+        href: "/dashboard/vendor/capacity",
+        icon: Gauge,
+        roles: ["VENDOR"],
+      },
+      {
+        name: "Employees",
+        href: "/dashboard/vendor/employees",
+        icon: UsersRound,
+        roles: ["VENDOR"],
+      },
+      {
+        name: "Wallet",
+        href: "/dashboard/vendor/wallet",
+        icon: Wallet,
+        roles: ["VENDOR"],
+      },
+      {
+        name: "Payouts",
+        href: "/dashboard/vendor/payouts",
+        icon: Banknote,
+        roles: ["VENDOR"],
+      },
+      {
+        name: "Performance",
+        href: "/dashboard/vendor/performance",
+        icon: TrendingUp,
+        roles: ["VENDOR"],
+      },
+    ],
   },
 
   // =========================

@@ -27,6 +27,13 @@ import paymentRoutes from './routes/paymentRoutes';
 import chatRoutes from './routes/chatRoutes';
 import cmsRoutes from './routes/cmsRoutes';
 import ticketRoutes from './routes/ticketRoutes';
+import roleRoutes from './routes/roleRoutes';
+import featureFlagRoutes from './routes/featureFlagRoutes';
+import auditLogRoutes from './routes/auditLogRoutes';
+import analyticsRoutes from './routes/analyticsRoutes';
+import adminVendorRoutes from './routes/adminVendorRoutes';
+import adminSupportRoutes from './routes/adminSupportRoutes';
+import vendorDashboardRoutes from './routes/vendorDashboardRoutes';
 
 import { initSocket } from './socket';
 
@@ -98,6 +105,13 @@ app.prepare().then(async () => {
   server.use('/api/chat', chatRoutes);
   server.use('/api/cms', cmsRoutes);
   server.use('/api/tickets', ticketRoutes);
+  server.use('/api/roles', roleRoutes);
+  server.use('/api/feature-flags', featureFlagRoutes);
+  server.use('/api/audit-logs', auditLogRoutes);
+  server.use('/api/analytics', analyticsRoutes);
+  server.use('/api/admin/vendors', adminVendorRoutes);
+  server.use('/api/admin/support', adminSupportRoutes);
+  server.use('/api/vendor-dashboard', vendorDashboardRoutes);
   // Serve uploaded files statically
   server.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));
 

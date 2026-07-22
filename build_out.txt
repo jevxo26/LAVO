@@ -13,16 +13,16 @@
 - Environments: .env
 
   Creating an optimized production build ...
-✓ Compiled successfully in 21.3s
+✓ Compiled successfully in 35.3s
   Running TypeScript ...
-  Finished TypeScript in 25.5s ...
+  Finished TypeScript in 28.7s ...
   Collecting page data using 11 workers ...
-  Generating static pages using 11 workers (0/39) ...
-  Generating static pages using 11 workers (9/39) 
+  Generating static pages using 11 workers (0/41) ...
+  Generating static pages using 11 workers (10/41) 
 null
-  Generating static pages using 11 workers (19/39) 
-  Generating static pages using 11 workers (29/39) 
-✓ Generating static pages using 11 workers (39/39) in 2.1s
+  Generating static pages using 11 workers (20/41) 
+  Generating static pages using 11 workers (30/41) 
+✓ Generating static pages using 11 workers (41/41) in 2.3s
   Finalizing page optimization ...
 
 Route (app)
@@ -32,6 +32,7 @@ Route (app)
 ├ ƒ /corporate
 ├ ƒ /coverage
 ├ ○ /dashboard
+├ ○ /dashboard/analytics
 ├ ○ /dashboard/book
 ├ ○ /dashboard/branch
 ├ ○ /dashboard/branch/analytics
@@ -62,6 +63,7 @@ Route (app)
 ├ ƒ /dashboard/support/[id]
 ├ ○ /dashboard/track-orders
 ├ ○ /dashboard/users
+├ ○ /dashboard/users/roles
 ├ ○ /dashboard/vendors
 ├ ○ /dashboard/wallet
 ├ ○ /dashboard/wishlist
