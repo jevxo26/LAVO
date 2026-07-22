@@ -27,7 +27,10 @@ export const getPickupOrders = catchServiceAsync(async (req: any, res: Response)
     },
     include: {
       customer: {
-        include: { user: { select: { fullName: true, phone: true } } }
+        include: {
+          user: { select: { fullName: true, phone: true } },
+          addresses: { select: { receiverName: true, receiverPhone: true } }
+        }
       },
       items: {
         include: {
@@ -53,8 +56,8 @@ export const getPickupOrders = catchServiceAsync(async (req: any, res: Response)
       id: order.id,
       orderNumber: order.orderNumber,
       orderStatus: order.orderStatus,
-      customerName: order.customer?.user?.fullName || 'N/A',
-      customerPhone: order.customer?.user?.phone || 'N/A',
+      customerName: order.customer?.user?.fullName || order.customer?.addresses?.[0]?.receiverName || 'N/A',
+      customerPhone: order.customer?.user?.phone || order.customer?.addresses?.[0]?.receiverPhone || 'N/A',
       branch: order.branch?.branchName || 'N/A',
       totalGarments,
       qrGenerated,

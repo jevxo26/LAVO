@@ -84,9 +84,9 @@ export const getAvailablePickups = async (userId: string) => {
             orderId: delivery.orderId,
             deliveryType: delivery.deliveryType,
             customerName:
-                delivery.customer?.user?.fullName ?? "N/A",
+                delivery.customer?.user?.fullName || customerAddress?.receiverName || "N/A",
             customerPhone:
-                delivery.customer?.user?.phone ?? "N/A",
+                delivery.customer?.user?.phone || customerAddress?.receiverPhone || "N/A",
             branch:
                 delivery.branch?.branchName ?? "N/A",
             pickupAddress:
