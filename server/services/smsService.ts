@@ -24,7 +24,7 @@ export class SMSService {
   }
 
   private static get senderId(): string {
-    return process.env.SMS_SENDER_ID || 'LAUNDRIX';
+    return process.env.SMS_SENDER_ID || 'MIXBITE';
   }
 
   private static get apiUrl(): string {
