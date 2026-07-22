@@ -89,7 +89,7 @@
     "typescript": "^5"
   },
   "prisma": {
-    "schema": "prisma/schema",
+    "schema": "prisma/schema.prisma",
     "seed": "ts-node --project tsconfig.server.json prisma/seed.ts"
   }
 }
