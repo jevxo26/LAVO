@@ -8,6 +8,7 @@ export interface AvailablePickup {
   distance: string; 
   priority: string;
   status: string;
+  totalGarments?: number;
   createdAt: string;
 }
 
@@ -25,8 +26,10 @@ export interface AvailableDelivery {
   distance: string;
   priority: string;
   status: string;
+  totalGarments?: number;
   createdAt: string;
 }
+
 
 export interface OptimizedRoute {
   id: string;

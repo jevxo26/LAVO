@@ -125,6 +125,32 @@ export class CustomerController {
     sendResponse(res, { statusCode: 201, success: true, message: 'Reply posted', data: result });
   });
 
+  static getMyReviews = catchAsync(async (req: any, res: Response) => {
+    const userId = req.user?.userId;
+    if (!userId) {
+      sendResponse(res, { statusCode: 401, message: 'Unauthorized' });
+      return;
+    }
+    const result = await CustomerService.getMyReviews(userId);
+    sendResponse(res, { statusCode: 200, success: true, message: 'Reviews fetched successfully', data: result });
+  });
+
+  static submitReview = catchAsync(async (req: any, res: Response) => {
+    const userId = req.user?.userId;
+    const { orderId } = req.params;
+    if (!userId) {
+      sendResponse(res, { statusCode: 401, message: 'Unauthorized' });
+      return;
+    }
+    const { rating, title, comment } = req.body;
+    if (!rating || !comment) {
+      sendResponse(res, { statusCode: 400, message: 'Rating and comment are required' });
+      return;
+    }
+    const result = await CustomerService.submitReview(userId, orderId, { rating: Number(rating), title, comment });
+    sendResponse(res, { statusCode: 201, success: true, message: 'Review submitted successfully', data: result });
+  });
+
   static getFAQs = catchAsync(async (req: Request, res: Response) => {
     const result = await CustomerService.getFAQs();
     sendResponse(res, { statusCode: 200, success: true, data: result });

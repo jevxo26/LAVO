@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { SMSService } from "../smsService";
 
 const prisma = new PrismaClient();
 
@@ -83,9 +84,9 @@ export const getAvailablePickups = async (userId: string) => {
             orderId: delivery.orderId,
             deliveryType: delivery.deliveryType,
             customerName:
-                delivery.customer?.user?.fullName ?? "N/A",
+                delivery.customer?.user?.fullName || customerAddress?.receiverName || "N/A",
             customerPhone:
-                delivery.customer?.user?.phone ?? "N/A",
+                delivery.customer?.user?.phone || customerAddress?.receiverPhone || "N/A",
             branch:
                 delivery.branch?.branchName ?? "N/A",
             pickupAddress:
@@ -93,6 +94,7 @@ export const getAvailablePickups = async (userId: string) => {
             distance:
                 distance ? `${distance} KM` : "N/A",
             priority: "NORMAL",
+            totalGarments: delivery.order?.totalGarments ?? 0,
             status:
                 delivery.deliveryStatus,
             createdAt:
@@ -117,12 +119,9 @@ export const acceptPickup = async (
         );
     }
 
-    const delivery =
-        await prisma.delivery.findUnique({
-            where: {
-                id: deliveryId
-            }
-        });
+    const delivery = await prisma.delivery.findUnique({
+        where: { id: deliveryId }
+    });
 
     if (!delivery) {
         throw new Error(
@@ -133,6 +132,24 @@ export const acceptPickup = async (
     if (delivery.assignedAgentId !== null && delivery.assignedAgentId !== agent.id) {
         throw new Error("This delivery has already been accepted by another agent.");
     }
+
+    // Fetch customer profile & address info for SMS
+    const customerInfo = await prisma.customer.findUnique({
+        where: { id: delivery.customerId },
+        include: {
+            user: { select: { fullName: true, phone: true } },
+            addresses: { select: { receiverName: true, receiverPhone: true } }
+        }
+    });
+
+    const orderInfo = await prisma.order.findUnique({
+        where: { id: delivery.orderId },
+        select: { orderNumber: true, pickupAddressId: true }
+    });
+
+    const specificAddress = orderInfo?.pickupAddressId
+        ? await prisma.customerAddress.findUnique({ where: { id: orderInfo.pickupAddressId } })
+        : null;
 
     const updatedDelivery = await prisma.$transaction(async (tx) => {
         // 1. Mark delivery as ACCEPTED
@@ -168,6 +185,7 @@ export const acceptPickup = async (
             }
         });
 
+        let otpToSend = existingOtp?.otpCode;
         if (!existingOtp) {
             const otp = Math.floor(100000 + Math.random() * 900000);
             await tx.deliveryOTP.create({
@@ -177,6 +195,21 @@ export const acceptPickup = async (
                     expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
                 }
             });
+            otpToSend = otp.toString();
+        }
+
+        // Trigger Pickup OTP SMS to Customer (Priority: specificAddress.receiverPhone -> user.phone -> addresses[0].receiverPhone)
+        const customerPhone = specificAddress?.receiverPhone || customerInfo?.user?.phone || customerInfo?.addresses?.[0]?.receiverPhone;
+        const customerName = specificAddress?.receiverName || customerInfo?.user?.fullName || customerInfo?.addresses?.[0]?.receiverName;
+        const orderNum = orderInfo?.orderNumber || delivery.orderId;
+
+        if (customerPhone && otpToSend) {
+            console.log(`📱 [Pickup OTP SMS] Sending OTP ${otpToSend} to customer phone: ${customerPhone} for Order ${orderNum}`);
+            SMSService.sendPickupOTP(customerPhone, otpToSend, orderNum, customerName).catch((err) => {
+                console.error("[Pickup SMS Error]:", err);
+            });
+        } else {
+            console.warn(`⚠️ [Pickup OTP SMS] Could not send SMS for Order ${orderNum}: Customer phone number not found in profile or address.`);
         }
 
         return updated;

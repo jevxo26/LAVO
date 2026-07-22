@@ -53,9 +53,14 @@ export function QrScanner({
       isMounted = false;
       clearTimeout(initTimer);
       if (scanner) {
-        scanner.clear().catch((error) => {
-          console.error("Failed to clear html5QrcodeScanner. ", error);
-        });
+        try {
+          const res = scanner.clear();
+          if (res && typeof res.catch === "function") {
+            res.catch(() => {});
+          }
+        } catch {
+          // ignore html5-qrcode unmount DOM exceptions
+        }
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

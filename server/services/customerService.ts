@@ -542,20 +542,24 @@ export class CustomerService {
         }
       }
 
-      // TODO: Implement actual address selection instead of generating dummy addresses
-      let address = await prisma.customerAddress.findFirst({
-        where: { customerId: customer.id },
+      // Always create a new CustomerAddress for this order with the receiverPhone & address entered by the customer at checkout
+      const address = await prisma.customerAddress.create({
+        data: {
+          customerId: customer.id,
+          receiverName: orderData.receiverName || customer.user.fullName,
+          receiverPhone: orderData.receiverPhone || customer.user.phone || '000000',
+          fullAddress: orderData.pickupAddress,
+          city: 'Dhaka',
+          latitude: orderData.latitude ?? null,
+          longitude: orderData.longitude ?? null,
+        },
       });
 
-      if (!address) {
-        address = await prisma.customerAddress.create({
-          data: {
-            customerId: customer.id,
-            receiverName: orderData.receiverName || customer.user.fullName,
-            receiverPhone: orderData.receiverPhone || customer.user.phone || '000000',
-            fullAddress: orderData.pickupAddress,
-            city: 'Dhaka',
-          },
+      // Also update the customer user phone if a new phone number was provided at checkout
+      if (orderData.receiverPhone && orderData.receiverPhone !== customer.user.phone) {
+        await prisma.user.update({
+          where: { id: userId },
+          data: { phone: orderData.receiverPhone },
         });
       }
 
@@ -745,4 +749,98 @@ export class CustomerService {
     if (!order) throw new Error('Order not found');
     return order;
   });
+
+  // ─── Reviews ────────────────────────────────────────────────────────────────
+
+  /**
+   * Returns all completed/delivered orders for this customer, each annotated
+   * with their existing review (if any).
+   */
+  static getMyReviews = catchServiceAsync(async (userId: string) => {
+    const customer = await this.getOrCreateCustomer(userId);
+
+    const orders = await prisma.order.findMany({
+      where: {
+        customerId: customer.id,
+        orderStatus: { in: ['COMPLETED', 'DELIVERED'] },
+      },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        items: {
+          take: 1,
+          include: { service: true },
+        },
+        reviews: {
+          take: 1,
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+    });
+
+    return orders.map((order) => {
+      const review = order.reviews[0] ?? null;
+      const serviceName = order.items[0]?.service?.serviceName ?? 'Laundry Service';
+
+      return {
+        orderId: order.id,
+        orderNumber: order.orderNumber,
+        orderDate: order.createdAt,
+        serviceName,
+        grandTotal: order.grandTotal,
+        review: review
+          ? {
+              id: review.id,
+              rating: review.rating,
+              title: review.title ?? null,
+              comment: review.review,
+              status: review.status,
+              createdAt: review.createdAt,
+            }
+          : null,
+      };
+    });
+  });
+
+  /**
+   * Submits a new review for a completed order.
+   * Throws if the order doesn't belong to this customer, isn't completed, or
+   * already has a review.
+   */
+  static submitReview = catchServiceAsync(
+    async (
+      userId: string,
+      orderId: string,
+      data: { rating: number; title?: string; comment: string }
+    ) => {
+      const customer = await this.getOrCreateCustomer(userId);
+
+      const order = await prisma.order.findFirst({
+        where: {
+          id: orderId,
+          customerId: customer.id,
+          orderStatus: { in: ['COMPLETED', 'DELIVERED'] },
+        },
+        include: { reviews: { take: 1 } },
+      });
+
+      if (!order) {
+        throw new Error('Order not found or not eligible for review.');
+      }
+
+      if (order.reviews.length > 0) {
+        throw new Error('You have already submitted a review for this order.');
+      }
+
+      return prisma.review.create({
+        data: {
+          orderId: order.id,
+          customerId: customer.id,
+          rating: data.rating,
+          title: data.title ?? null,
+          review: data.comment,
+          status: 'PUBLISHED',
+        },
+      });
+    }
+  );
 }

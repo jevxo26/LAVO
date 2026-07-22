@@ -1,7 +1,9 @@
 "use client";
 
-import React, { useEffect, useState, Suspense } from "react";
+import React, { useEffect, useState, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import { io, Socket } from "socket.io-client";
+import { useAuth } from "@/hooks/useAuth";
 import { 
   Search, 
   MapPin, 
@@ -44,13 +46,45 @@ interface OrderDetails {
 function TrackerContent() {
   const searchParams = useSearchParams();
   const initialOrderId = searchParams.get("orderId") || "";
+  const { user } = useAuth();
 
   const [orderNumberInput, setOrderNumberInput] = useState("");
   const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
-  const [deliveryOtp, setDeliveryOtp] = useState<string | null>(null);
-  const [pickupOtp, setPickupOtp] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [activeOrders, setActiveOrders] = useState<Array<{ id: string; orderNumber: string }>>([]);
+  const socketRef = useRef<Socket | null>(null);
+  const activeOrderIdRef = useRef<string | null>(null);
+
+  // Socket: connect and join customer room for real-time order updates
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const socketUrl = typeof window !== 'undefined'
+      ? (process.env.NEXT_PUBLIC_API_URL?.startsWith('http')
+          ? process.env.NEXT_PUBLIC_API_URL.replace('/api', '')
+          : window.location.origin)
+      : '';
+
+    const socket = io(socketUrl, {
+      auth: { token: localStorage.getItem('laundrix_token') },
+      transports: ['websocket', 'polling'],
+    });
+    socketRef.current = socket;
+
+    socket.on('connect', () => {
+      socket.emit('joinCustomer', user.id);
+    });
+
+    socket.on('orderStatusUpdated', (payload: { orderId: string; orderStatus: string }) => {
+      // Only re-fetch if the update is for the currently displayed order
+      if (activeOrderIdRef.current && activeOrderIdRef.current === payload.orderId) {
+        fetchOrderDetails(payload.orderId);
+      }
+    });
+
+    return () => { socket.disconnect(); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   // Fetch active orders for dropdown quick selector
   useEffect(() => {
@@ -97,26 +131,10 @@ function TrackerContent() {
 
       if (data.success) {
         setOrderDetails(data.data);
-        
-        // Fetch OTPs (pickup OTP + dropoff OTP)
-        try {
-          const otpRes = await authFetch(`/customer/orders/${data.data.id}/delivery-otp`);
-          const otpData = await otpRes.json();
-          if (otpData.success) {
-            setPickupOtp(otpData.data?.pickupOtpCode || null);
-            setDeliveryOtp(otpData.data?.dropoffOtpCode || null);
-          } else {
-            setPickupOtp(null);
-            setDeliveryOtp(null);
-          }
-        } catch (e) {
-          setPickupOtp(null);
-          setDeliveryOtp(null);
-        }
+        activeOrderIdRef.current = data.data.id; // keep ref in sync for socket listener
       } else {
         toast.error("Order details not found. Enter a valid order number.");
         setOrderDetails(null);
-        setDeliveryOtp(null);
       }
     } catch {
       toast.error("Error fetching order tracking details");
@@ -135,30 +153,40 @@ function TrackerContent() {
   };
 
   const trackingSteps = [
-    { key: "PENDING", label: "Order Placed", desc: "We received your laundry request." },
-    { key: "CONFIRMED", label: "Confirmed", desc: "A pickup agent has been assigned to your zone." },
-    { key: "PICKUP", label: "Collected", desc: "Garments collected. Waterproof QR tracking labels generated." },
-    { key: "PROCESSING", label: "Sorting & Prep", desc: "Laundry items sorting at centralized branch hub." },
-    { key: "WASHING", label: "Washing & Drying", desc: "Garments undergoing washing / dry-cleaning cycles." },
-    { key: "DELIVERY", label: "Out for Delivery", desc: "Garments packaged and assigned to delivery agent." },
-    { key: "COMPLETED", label: "Delivered", desc: "Laundry package successfully hand-delivered." },
+    { key: "PENDING",            label: "Order Placed",        desc: "We received your laundry request." },
+    { key: "CONFIRMED",          label: "Confirmed",           desc: "A pickup agent has been assigned to your zone." },
+    { key: "PICKUP",             label: "Collected",           desc: "Garments collected and QR tracking labels generated." },
+    { key: "PROCESSING",         label: "Sorting & Prep",      desc: "Laundry items sorting at the centralized branch hub." },
+    { key: "WASHING",            label: "Washing",             desc: "Garments undergoing washing or dry-cleaning cycles." },
+    { key: "DRYING",             label: "Drying",              desc: "Garments being dried at optimal temperature." },
+    { key: "IRONING",            label: "Ironing",             desc: "Garments being pressed and ironed for a fresh finish." },
+    { key: "FOLDING",            label: "Folding & Packing",   desc: "Garments neatly folded and packed for delivery." },
+    { key: "READY_FOR_DELIVERY", label: "Ready for Delivery",  desc: "Your laundry is packed and a delivery agent has been assigned." },
+    { key: "OUT_FOR_DELIVERY",   label: "Out for Delivery",    desc: "Delivery agent is on the way to your address." },
+    { key: "DELIVERED",          label: "Delivered",           desc: "Laundry package successfully hand-delivered. Enjoy!" },
   ];
 
   // Helper to determine index of active status
   const getStepIndex = (status: string) => {
-    const uppercaseStatus = status.toUpperCase();
-    if (uppercaseStatus === "CANCELLED") return -1;
-    
-    // Group sub-statuses for layout simplification
-    if (uppercaseStatus === "PROCESSING") return 3;
-    if (uppercaseStatus === "WASHING") return 4;
-    
-    // Map the new automated statuses to the timeline
-    if (uppercaseStatus === "READY_FOR_DELIVERY" || uppercaseStatus === "OUT_FOR_DELIVERY") return 5;
-    if (uppercaseStatus === "DELIVERED") return 6;
-    
-    const index = trackingSteps.findIndex((step) => step.key === uppercaseStatus);
-    return index !== -1 ? index : 0;
+    const s = status.toUpperCase();
+    if (s === "CANCELLED") return -1;
+    // Map every possible order/garment status to the correct step index
+    const map: Record<string, number> = {
+      PENDING:            0,
+      CONFIRMED:          1,
+      PICKUP:             2,
+      PROCESSING:         3,
+      WASHING:            4,
+      DRYING:             5,
+      IRONING:            6,
+      FOLDING:            7,
+      READY_FOR_DELIVERY: 8,
+      OUT_FOR_DELIVERY:   9,
+      DELIVERED:          10,
+      COMPLETED:          10, // alias
+      DELIVERY:           9,  // legacy alias
+    };
+    return map[s] ?? 0;
   };
 
   const currentStepIndex = orderDetails ? getStepIndex(orderDetails.orderStatus) : 0;
@@ -283,47 +311,6 @@ function TrackerContent() {
           {/* Quick Invoice/Logistics details panel */}
           <div className="lg:col-span-4 space-y-6">
             
-            {/* Pickup OTP — shown when agent is coming to COLLECT garments */}
-            {pickupOtp && (
-              <Card className="border border-amber-200 shadow-sm bg-amber-50/60">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base font-bold text-amber-900 flex items-center gap-2">
-                    <Package size={18} className="text-amber-600" />
-                    Pickup Verification OTP
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-xs text-amber-800 mb-3">Our agent is on the way to collect your garments. Share this OTP with the agent when they arrive at your door.</p>
-                  <div className="bg-white border border-amber-300 rounded-lg p-4 text-center">
-                    <span className="text-3xl font-black tracking-widest text-amber-600 font-mono">
-                      {pickupOtp}
-                    </span>
-                  </div>
-                  <p className="text-[10px] text-amber-700 mt-2 text-center">⚠️ Do NOT share this OTP until the agent is at your door</p>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Dropoff OTP — shown when agent is coming to RETURN clean clothes */}
-            {deliveryOtp && (
-              <Card className="border border-indigo-100 shadow-sm bg-indigo-50/50">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base font-bold text-indigo-900 flex items-center gap-2">
-                    <CheckCircle2 size={18} className="text-indigo-600" />
-                    Delivery Verification OTP
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-xs text-indigo-700 mb-3">Your clean clothes are on the way! Share this OTP with the delivery agent when they arrive to confirm receipt.</p>
-                  <div className="bg-white border border-indigo-200 rounded-lg p-4 text-center">
-                    <span className="text-3xl font-black tracking-widest text-indigo-600 font-mono">
-                      {deliveryOtp}
-                    </span>
-                  </div>
-                  <p className="text-[10px] text-indigo-600 mt-2 text-center">⚠️ Do NOT share this OTP until the agent is at your door</p>
-                </CardContent>
-              </Card>
-            )}
 
             <Card className="border border-slate-100 shadow-sm bg-gradient-to-br from-white to-slate-50/50">
               <CardHeader>

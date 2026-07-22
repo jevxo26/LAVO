@@ -58,7 +58,7 @@ export class TicketService {
     }
 
     // Resolve sender names for the messages
-    const senderIds = Array.from(new Set(ticket.messages.map((m) => m.senderId)));
+    const senderIds: string[] = Array.from(new Set(ticket.messages.map((m: any) => m.senderId)));
     if (ticket.customerId) senderIds.push(ticket.customerId);
     if (ticket.assignedTo) senderIds.push(ticket.assignedTo);
 
@@ -69,7 +69,7 @@ export class TicketService {
 
     const userMap = new Map(users.map((u) => [u.id, u]));
 
-    const formattedMessages = ticket.messages.map((m) => {
+    const formattedMessages = ticket.messages.map((m: any) => {
       const sender = userMap.get(m.senderId);
       return {
         id: m.id,

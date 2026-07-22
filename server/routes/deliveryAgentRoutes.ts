@@ -27,10 +27,6 @@ router.patch(
   deliveryAgentController.acceptPickup
 );
 
-router.get(
-  "/pickup-qrcodes/:deliveryId",
-  deliveryAgentController.getPickupQRCodes
-);
 
 router.get(
   "/available-deliveries",
