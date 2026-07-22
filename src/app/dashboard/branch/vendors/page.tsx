@@ -28,7 +28,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { authFetch } from "@/lib/authFetch";
+import { authFetch } from "@/lib/api";
 
 interface Vendor {
   id: string;
