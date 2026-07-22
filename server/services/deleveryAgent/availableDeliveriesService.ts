@@ -128,11 +128,13 @@ export const getAvailableDeliveries = async (
         ? `${distance} KM`
         : "N/A",
       priority: "NORMAL",
+      totalGarments: delivery.order?.totalGarments ?? 0,
       status: delivery.deliveryStatus,
       createdAt: delivery.createdAt,
     };
   });
 };
+
 
 
 export const acceptDelivery = async (

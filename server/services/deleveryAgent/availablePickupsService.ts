@@ -93,6 +93,7 @@ export const getAvailablePickups = async (userId: string) => {
             distance:
                 distance ? `${distance} KM` : "N/A",
             priority: "NORMAL",
+            totalGarments: delivery.order?.totalGarments ?? 0,
             status:
                 delivery.deliveryStatus,
             createdAt:

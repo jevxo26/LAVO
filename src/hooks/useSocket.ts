@@ -1,29 +1,25 @@
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { io, Socket } from "socket.io-client";
 
-let socket: Socket | null = null;
+let globalSocket: Socket | null = null;
 
 export function useSocket(branchId?: string) {
-  const socketRef = useRef<Socket | null>(null);
+  const [socketInstance, setSocketInstance] = useState<Socket | null>(globalSocket);
 
   useEffect(() => {
-    if (!socket) {
-      socket = io(window.location.origin, {
+    if (!globalSocket) {
+      globalSocket = io(window.location.origin, {
         auth: { token: localStorage.getItem("laundrix_token") },
         transports: ["websocket", "polling"],
       });
     }
-    socketRef.current = socket;
+    setSocketInstance(globalSocket);
 
-    if (branchId) {
-      socket.emit("joinBranch", branchId);
+    if (branchId && globalSocket) {
+      globalSocket.emit("joinBranch", branchId);
     }
-
-    return () => {
-      // Keep connection alive across nav — don't disconnect
-    };
   }, [branchId]);
 
   const emitScan = useCallback((data: {
@@ -32,8 +28,9 @@ export function useSocket(branchId?: string) {
     employeeId: string;
     branchId: string;
   }) => {
-    socketRef.current?.emit("garmentScan", data);
+    globalSocket?.emit("garmentScan", data);
   }, []);
 
-  return { socket: socketRef.current, emitScan };
+  return { socket: socketInstance, emitScan };
 }
+

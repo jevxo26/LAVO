@@ -1,5 +1,5 @@
 import { ColumnDef } from "@tanstack/react-table";
-import { Eye, Check, Printer } from "lucide-react";
+import { Eye, Check, Package } from "lucide-react";
 
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Button } from "@/components/ui/button";
@@ -8,13 +8,11 @@ import { AvailablePickup } from "../types";
 type PickupColumnsProps = {
   onView: (pickup: AvailablePickup) => void;
   onAccept: (pickup: AvailablePickup) => void;
-  onPrintQR: (pickup: AvailablePickup) => void;
 };
 
 export const getPickupColumns = ({
   onView,
   onAccept,
-  onPrintQR,
 }: PickupColumnsProps): ColumnDef<AvailablePickup>[] => [
   {
     accessorKey: "orderId",
@@ -38,6 +36,17 @@ export const getPickupColumns = ({
           {row.original.customerPhone}
         </p>
       </div>
+    ),
+  },
+
+  {
+    accessorKey: "totalGarments",
+    header: "Garment Count",
+    cell: ({ row }) => (
+      <span className="inline-flex items-center gap-1 font-semibold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-md text-xs">
+        <Package className="h-3.5 w-3.5 text-slate-500" />
+        {row.original.totalGarments ?? 1} pcs
+      </span>
     ),
   },
 
@@ -110,6 +119,7 @@ export const getPickupColumns = ({
             size="icon"
             variant="outline"
             onClick={() => onView(row.original)}
+            title="View Details"
           >
             <Eye className="h-4 w-4" />
           </Button>
@@ -118,19 +128,9 @@ export const getPickupColumns = ({
             <Button
               size="icon"
               onClick={() => onAccept(row.original)}
+              title="Accept Pickup"
             >
               <Check className="h-4 w-4" />
-            </Button>
-          )}
-
-          {isAccepted && (
-            <Button
-              size="icon"
-              variant="default"
-              onClick={() => onPrintQR(row.original)}
-              title="Print QR Labels"
-            >
-              <Printer className="h-4 w-4" />
             </Button>
           )}
         </div>

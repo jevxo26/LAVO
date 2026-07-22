@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useSocket } from "@/hooks/useSocket";
+import { authFetch } from "@/lib/api";
 
 type ScanState = "idle" | "select_status" | "loading" | "success" | "error";
 
@@ -17,6 +18,8 @@ export function useScannerLogic(user: any) {
   const [pendingCode, setPendingCode] = useState<string | null>(null);
   const [key, setKey] = useState(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [currentGarmentStatus, setCurrentGarmentStatus] = useState<string | null>(null);
+  const isProcessingScanRef = useRef(false);
   const { socket, emitScan } = useSocket();
 
   // Listen for scan errors from server
@@ -30,11 +33,27 @@ export function useScannerLogic(user: any) {
     return () => { socket.off("scanError", onError); };
   }, [socket]);
 
-  const handleScanSuccess = useCallback((decodedText: string) => {
-    if (scanState !== "idle") return;
+  const handleScanSuccess = useCallback(async (decodedText: string) => {
+    if (isProcessingScanRef.current) return;
+    isProcessingScanRef.current = true;
+
     setPendingCode(decodedText);
+    setCurrentGarmentStatus(null);
     setScanState("select_status");
-  }, [scanState]);
+
+    // Fetch current garment status concurrently
+    try {
+      const res = await authFetch(`/employee/garment-status?qrCode=${encodeURIComponent(decodedText)}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.data?.status) {
+          setCurrentGarmentStatus(data.data.status);
+        }
+      }
+    } catch {
+      // silently ignore — not critical
+    }
+  }, []);
 
   const handleStatusSelect = useCallback(async (status: string) => {
     if (!pendingCode) return;
@@ -62,14 +81,16 @@ export function useScannerLogic(user: any) {
   const handleScanFailure = useCallback(() => {}, []);
 
   const handleReset = () => {
+    isProcessingScanRef.current = false;
     setScanState("idle");
     setLastResult(null);
     setPendingCode(null);
     setErrorMessage(null);
+    setCurrentGarmentStatus(null);
     setKey((k) => k + 1);
   };
 
-  return { scanState, lastResult, pendingCode, key, errorMessage, handleScanSuccess, handleScanFailure, handleStatusSelect, handleReset };
+  return { scanState, lastResult, pendingCode, key, errorMessage, currentGarmentStatus, handleScanSuccess, handleScanFailure, handleStatusSelect, handleReset };
 }
 
 
