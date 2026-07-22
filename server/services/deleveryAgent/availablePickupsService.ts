@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { SMSService } from "../smsService";
 
 const prisma = new PrismaClient();
 
@@ -118,12 +119,20 @@ export const acceptPickup = async (
         );
     }
 
-    const delivery =
-        await prisma.delivery.findUnique({
-            where: {
-                id: deliveryId
+    const delivery = await prisma.delivery.findUnique({
+        where: { id: deliveryId },
+        include: {
+            order: {
+                include: {
+                    customer: {
+                        include: {
+                            user: { select: { fullName: true, phone: true } }
+                        }
+                    }
+                }
             }
-        });
+        }
+    });
 
     if (!delivery) {
         throw new Error(
@@ -169,6 +178,7 @@ export const acceptPickup = async (
             }
         });
 
+        let otpToSend = existingOtp?.otpCode;
         if (!existingOtp) {
             const otp = Math.floor(100000 + Math.random() * 900000);
             await tx.deliveryOTP.create({
@@ -177,6 +187,18 @@ export const acceptPickup = async (
                     otpCode: otp.toString(),
                     expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
                 }
+            });
+            otpToSend = otp.toString();
+        }
+
+        // Trigger Pickup OTP SMS to Customer
+        const customerPhone = delivery.order?.customer?.user?.phone;
+        const customerName = delivery.order?.customer?.user?.fullName;
+        const orderNum = delivery.order?.orderNumber || delivery.orderId;
+
+        if (customerPhone && otpToSend) {
+            SMSService.sendPickupOTP(customerPhone, otpToSend, orderNum, customerName).catch((err) => {
+                console.error("[Pickup SMS Error]:", err);
             });
         }
 

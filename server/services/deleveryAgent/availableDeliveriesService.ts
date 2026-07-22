@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { SMSService } from "../smsService";
 
 const prisma = new PrismaClient();
 
@@ -153,6 +154,17 @@ export const acceptDelivery = async (
     where: {
       id: deliveryId,
     },
+    include: {
+      order: {
+        include: {
+          customer: {
+            include: {
+              user: { select: { fullName: true, phone: true } }
+            }
+          }
+        }
+      }
+    }
   });
   if (!delivery) {
     throw new Error("Delivery not found");
@@ -201,6 +213,7 @@ export const acceptDelivery = async (
             }
           },
         });
+      let otpToSend = existingOtp?.otpCode;
       if (!existingOtp) {
         const otp = Math.floor(
           100000 + Math.random() * 900000
@@ -214,11 +227,24 @@ export const acceptDelivery = async (
             ),
           },
         });
+        otpToSend = otp.toString();
         console.log(
           "Delivery OTP:",
           otp
         );
       }
+
+      // Trigger Delivery OTP SMS to Customer
+      const customerPhone = delivery.order?.customer?.user?.phone;
+      const customerName = delivery.order?.customer?.user?.fullName;
+      const orderNum = delivery.order?.orderNumber || delivery.orderId;
+
+      if (customerPhone && otpToSend) {
+        SMSService.sendDeliveryOTP(customerPhone, otpToSend, orderNum, customerName).catch((err) => {
+          console.error("[Delivery SMS Error]:", err);
+        });
+      }
+
       return updated;
     }
   );
