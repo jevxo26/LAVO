@@ -20,11 +20,11 @@ const formatPhoneNumber = (phone: string): string => {
 
 export class SMSService {
   private static get apiKey(): string {
-    return process.env.SMS_API_KEY || 'C30009696a2fb72e7cc260.50730368';
+    return process.env.SMS_API_KEY || '';
   }
 
   private static get senderId(): string {
-    return process.env.SMS_SENDER_ID || 'MIXBITE';
+    return process.env.SMS_SENDER_ID || '';
   }
 
   private static get apiUrl(): string {
@@ -36,6 +36,11 @@ export class SMSService {
    */
   static async sendSMS(to: string, message: string): Promise<boolean> {
     try {
+      if (!this.apiKey || !this.senderId) {
+        console.warn('[SMS Service] SMS_API_KEY or SMS_SENDER_ID is missing in environment variables. Skipping SMS.');
+        return false;
+      }
+
       if (!to) {
         console.warn('[SMS Service] Target phone number is empty. Skipping SMS.');
         return false;
