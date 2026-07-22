@@ -154,19 +154,6 @@ export const acceptDelivery = async (
     where: {
       id: deliveryId,
     },
-    include: {
-      order: {
-        include: {
-          customer: {
-            include: {
-              user: { select: { fullName: true, phone: true } }
-            }
-          },
-          deliveryAddress: true,
-          pickupAddress: true,
-        }
-      }
-    }
   });
   if (!delivery) {
     throw new Error("Delivery not found");
@@ -179,6 +166,21 @@ export const acceptDelivery = async (
   if (delivery.deliveryStatus === "IN_PROGRESS") {
     throw new Error("Delivery already started");
   }
+
+  // Fetch customer profile & address info for SMS
+  const customerInfo = await prisma.customer.findUnique({
+    where: { id: delivery.customerId },
+    include: {
+      user: { select: { fullName: true, phone: true } },
+      addresses: { select: { receiverName: true, receiverPhone: true } }
+    }
+  });
+
+  const orderInfo = await prisma.order.findUnique({
+    where: { id: delivery.orderId },
+    select: { orderNumber: true }
+  });
+
   const updatedDelivery = await prisma.$transaction(
     async (tx) => {
       const updated = await tx.delivery.update({
@@ -236,10 +238,10 @@ export const acceptDelivery = async (
         );
       }
 
-      // Trigger Delivery OTP SMS to Customer (Try user.phone -> deliveryAddress.receiverPhone -> pickupAddress.receiverPhone)
-      const customerPhone = delivery.order?.customer?.user?.phone || (delivery.order as any)?.deliveryAddress?.receiverPhone || (delivery.order as any)?.pickupAddress?.receiverPhone;
-      const customerName = delivery.order?.customer?.user?.fullName || (delivery.order as any)?.deliveryAddress?.receiverName;
-      const orderNum = delivery.order?.orderNumber || delivery.orderId;
+      // Trigger Delivery OTP SMS to Customer
+      const customerPhone = customerInfo?.user?.phone || customerInfo?.addresses?.[0]?.receiverPhone;
+      const customerName = customerInfo?.user?.fullName || customerInfo?.addresses?.[0]?.receiverName;
+      const orderNum = orderInfo?.orderNumber || delivery.orderId;
 
       if (customerPhone && otpToSend) {
         console.log(`📱 [Delivery OTP SMS] Sending OTP ${otpToSend} to customer phone: ${customerPhone} for Order ${orderNum}`);

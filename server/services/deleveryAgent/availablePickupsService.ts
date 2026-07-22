@@ -120,20 +120,7 @@ export const acceptPickup = async (
     }
 
     const delivery = await prisma.delivery.findUnique({
-        where: { id: deliveryId },
-        include: {
-            order: {
-                include: {
-                    customer: {
-                        include: {
-                            user: { select: { fullName: true, phone: true } }
-                        }
-                    },
-                    pickupAddress: true,
-                    deliveryAddress: true,
-                }
-            }
-        }
+        where: { id: deliveryId }
     });
 
     if (!delivery) {
@@ -145,6 +132,20 @@ export const acceptPickup = async (
     if (delivery.assignedAgentId !== null && delivery.assignedAgentId !== agent.id) {
         throw new Error("This delivery has already been accepted by another agent.");
     }
+
+    // Fetch customer profile & address info for SMS
+    const customerInfo = await prisma.customer.findUnique({
+        where: { id: delivery.customerId },
+        include: {
+            user: { select: { fullName: true, phone: true } },
+            addresses: { select: { receiverName: true, receiverPhone: true } }
+        }
+    });
+
+    const orderInfo = await prisma.order.findUnique({
+        where: { id: delivery.orderId },
+        select: { orderNumber: true }
+    });
 
     const updatedDelivery = await prisma.$transaction(async (tx) => {
         // 1. Mark delivery as ACCEPTED
@@ -193,10 +194,10 @@ export const acceptPickup = async (
             otpToSend = otp.toString();
         }
 
-        // Trigger Pickup OTP SMS to Customer (Try user.phone -> pickupAddress.receiverPhone -> deliveryAddress.receiverPhone)
-        const customerPhone = delivery.order?.customer?.user?.phone || (delivery.order as any)?.pickupAddress?.receiverPhone || (delivery.order as any)?.deliveryAddress?.receiverPhone;
-        const customerName = delivery.order?.customer?.user?.fullName || (delivery.order as any)?.pickupAddress?.receiverName;
-        const orderNum = delivery.order?.orderNumber || delivery.orderId;
+        // Trigger Pickup OTP SMS to Customer
+        const customerPhone = customerInfo?.user?.phone || customerInfo?.addresses?.[0]?.receiverPhone;
+        const customerName = customerInfo?.user?.fullName || customerInfo?.addresses?.[0]?.receiverName;
+        const orderNum = orderInfo?.orderNumber || delivery.orderId;
 
         if (customerPhone && otpToSend) {
             console.log(`📱 [Pickup OTP SMS] Sending OTP ${otpToSend} to customer phone: ${customerPhone} for Order ${orderNum}`);
