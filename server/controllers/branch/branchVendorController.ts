@@ -203,12 +203,12 @@ export class BranchVendorController {
         },
       });
 
-      // Create OrderTimeline entry
+      // Create OrderTimeline entry (customer-facing neutral description)
       await tx.orderTimeline.create({
         data: {
           orderId,
           status: updatedOrder.orderStatus,
-          description: `Order assigned to Partner Vendor "${vendor.businessName}" for garment processing.`,
+          description: "Your garments are currently undergoing sorting and professional garment processing.",
         },
       });
 
