@@ -128,7 +128,9 @@ export const acceptPickup = async (
                         include: {
                             user: { select: { fullName: true, phone: true } }
                         }
-                    }
+                    },
+                    pickupAddress: true,
+                    deliveryAddress: true,
                 }
             }
         }
@@ -191,15 +193,18 @@ export const acceptPickup = async (
             otpToSend = otp.toString();
         }
 
-        // Trigger Pickup OTP SMS to Customer
-        const customerPhone = delivery.order?.customer?.user?.phone;
-        const customerName = delivery.order?.customer?.user?.fullName;
+        // Trigger Pickup OTP SMS to Customer (Try user.phone -> pickupAddress.receiverPhone -> deliveryAddress.receiverPhone)
+        const customerPhone = delivery.order?.customer?.user?.phone || (delivery.order as any)?.pickupAddress?.receiverPhone || (delivery.order as any)?.deliveryAddress?.receiverPhone;
+        const customerName = delivery.order?.customer?.user?.fullName || (delivery.order as any)?.pickupAddress?.receiverName;
         const orderNum = delivery.order?.orderNumber || delivery.orderId;
 
         if (customerPhone && otpToSend) {
+            console.log(`📱 [Pickup OTP SMS] Sending OTP ${otpToSend} to customer phone: ${customerPhone} for Order ${orderNum}`);
             SMSService.sendPickupOTP(customerPhone, otpToSend, orderNum, customerName).catch((err) => {
                 console.error("[Pickup SMS Error]:", err);
             });
+        } else {
+            console.warn(`⚠️ [Pickup OTP SMS] Could not send SMS for Order ${orderNum}: Customer phone number not found in profile or address.`);
         }
 
         return updated;

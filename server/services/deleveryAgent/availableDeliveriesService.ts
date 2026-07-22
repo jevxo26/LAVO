@@ -161,7 +161,9 @@ export const acceptDelivery = async (
             include: {
               user: { select: { fullName: true, phone: true } }
             }
-          }
+          },
+          deliveryAddress: true,
+          pickupAddress: true,
         }
       }
     }
@@ -234,15 +236,18 @@ export const acceptDelivery = async (
         );
       }
 
-      // Trigger Delivery OTP SMS to Customer
-      const customerPhone = delivery.order?.customer?.user?.phone;
-      const customerName = delivery.order?.customer?.user?.fullName;
+      // Trigger Delivery OTP SMS to Customer (Try user.phone -> deliveryAddress.receiverPhone -> pickupAddress.receiverPhone)
+      const customerPhone = delivery.order?.customer?.user?.phone || (delivery.order as any)?.deliveryAddress?.receiverPhone || (delivery.order as any)?.pickupAddress?.receiverPhone;
+      const customerName = delivery.order?.customer?.user?.fullName || (delivery.order as any)?.deliveryAddress?.receiverName;
       const orderNum = delivery.order?.orderNumber || delivery.orderId;
 
       if (customerPhone && otpToSend) {
+        console.log(`📱 [Delivery OTP SMS] Sending OTP ${otpToSend} to customer phone: ${customerPhone} for Order ${orderNum}`);
         SMSService.sendDeliveryOTP(customerPhone, otpToSend, orderNum, customerName).catch((err) => {
           console.error("[Delivery SMS Error]:", err);
         });
+      } else {
+        console.warn(`⚠️ [Delivery OTP SMS] Could not send SMS for Order ${orderNum}: Customer phone number not found in profile or address.`);
       }
 
       return updated;
