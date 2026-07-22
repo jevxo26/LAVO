@@ -8,6 +8,7 @@ import * as employeeController from '../controllers/branch/employeeController';
 import * as inventoryController from '../controllers/branch/inventoryController';
 import * as agentController from '../controllers/branch/agentController';
 import * as qrOrderController from '../controllers/branch/qrOrderController';
+import { BranchVendorController } from '../controllers/branch/branchVendorController';
 
 const router = express.Router();
 
@@ -37,5 +38,8 @@ router.post('/delivery-agents', agentController.createDeliveryAgent);
 router.patch('/delivery-agents/:id', agentController.updateDeliveryAgent);
 router.delete('/delivery-agents/:id', agentController.deleteDeliveryAgent);
 router.get('/analytics', overviewController.getAnalytics);
+
+router.get('/vendors', BranchVendorController.getBranchVendors);
+router.post('/vendors/assign-order', BranchVendorController.assignOrderToVendor);
 
 export default router;

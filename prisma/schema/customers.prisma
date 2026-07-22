@@ -288,6 +288,7 @@ model Branch {
   analytics          BranchAnalytics[]
   notifications      BranchNotification[]
   settings           BranchSetting?
+  vendors            Vendor[]
   orders             Order[]
   pickupRequests     PickupRequest[]
   laundryProcessings LaundryProcessing[]

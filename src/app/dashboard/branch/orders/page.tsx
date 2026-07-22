@@ -55,10 +55,24 @@ export default function BranchOrders() {
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Active Orders</h1>
-        <p className="text-muted-foreground">Manage laundry orders currently in the facility.</p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Active Orders</h1>
+          <p className="text-muted-foreground">Manage laundry orders currently in the facility.</p>
+        </div>
       </div>
+
+      {orders.length > 5 && (
+        <div className="p-4 bg-amber-50 border border-amber-300 rounded-xl flex items-center justify-between gap-4 text-amber-900 text-xs font-medium">
+          <div className="flex items-center gap-2">
+            <span className="text-base font-bold">⚠️ High Order Volume Alert:</span>
+            <span>You have {orders.length} active orders in this branch (exceeds 5 order limit). You can delegate overflow orders to your 3 branch partner vendors.</span>
+          </div>
+          <a href="/dashboard/branch/vendors" className="underline font-bold text-indigo-700 whitespace-nowrap">
+            View Partner Vendors &rarr;
+          </a>
+        </div>
+      )}
 
       <Card>
         <CardHeader>
@@ -70,6 +84,7 @@ export default function BranchOrders() {
               <TableRow>
                 <TableHead>Order No</TableHead>
                 <TableHead>Customer</TableHead>
+                <TableHead>Assigned Vendor</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Amount</TableHead>
                 <TableHead>Date</TableHead>
@@ -87,11 +102,20 @@ export default function BranchOrders() {
                     <TableCell className="font-medium">{order.orderNumber}</TableCell>
                     <TableCell>{order.customer?.user?.fullName || 'Unknown'}</TableCell>
                     <TableCell>
+                      {order.vendor ? (
+                        <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-200 text-xs font-semibold">
+                          {order.vendor.businessName}
+                        </Badge>
+                      ) : (
+                        <span className="text-xs text-slate-400">In-house Branch</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
                       <Badge className={getStatusColor(order.orderStatus)} variant="outline">
                         {order.orderStatus}
                       </Badge>
                     </TableCell>
-                    <TableCell>${order.grandTotal}</TableCell>
+                    <TableCell>৳{order.grandTotal}</TableCell>
                     <TableCell>{new Date(order.createdAt).toLocaleDateString()}</TableCell>
                     <TableCell>
                       <OrderActions order={order} onUpdate={fetchOrders} />

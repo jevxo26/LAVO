@@ -638,6 +638,7 @@ model Branch {
   analytics          BranchAnalytics[]
   notifications      BranchNotification[]
   settings           BranchSetting?
+  vendors            Vendor[]
   orders             Order[]
   pickupRequests     PickupRequest[]
   laundryProcessings LaundryProcessing[]
@@ -2212,6 +2213,8 @@ model Vendor {
   tradeLicenseNo String?
   taxId          String?
   businessType   String?
+  branchId       String?
+  branch         Branch?   @relation(fields: [branchId], references: [id])
   status         String    @default("ACTIVE")
   isVerified     Boolean   @default(false)
   joinedAt       DateTime  @default(now())

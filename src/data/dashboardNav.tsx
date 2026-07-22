@@ -177,6 +177,12 @@ export const dashboardNavItems: NavItem[] = [
         roles: ["SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER"],
       },
       {
+        name: "Partner Vendors",
+        href: "/dashboard/branch/vendors",
+        icon: Store,
+        roles: ["SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER"],
+      },
+      {
         name: "Inventory",
         href: "/dashboard/branch/inventory",
         icon: Boxes,
