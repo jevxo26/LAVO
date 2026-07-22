@@ -15,6 +15,7 @@ import {
   Heart,
   Wallet,
   QrCode,
+  ShieldAlert,
   Star,
   Gauge,
   TrendingUp,
@@ -44,6 +45,10 @@ export const dashboardNavItems: NavItem[] = [
     ],
   },
   {
+    name: "Executive Analytics",
+    href: "/dashboard/analytics",
+    icon: CircleDollarSign,
+    roles: ["SUPER_ADMIN", "ADMIN"],
     name: "Dashboard",
     href: "/dashboard/vendor/dashboard",
     icon: LayoutDashboard,
@@ -105,9 +110,27 @@ export const dashboardNavItems: NavItem[] = [
     roles: ["SUPER_ADMIN", "ADMIN"],
     children: [
       {
-        name: "Users",
+        name: "Customer Management",
         href: "/dashboard/users",
         icon: Users,
+        roles: ["SUPER_ADMIN", "ADMIN"],
+      },
+      {
+        name: "Branch Employees",
+        href: "/dashboard/branch/employees",
+        icon: UsersRound,
+        roles: ["SUPER_ADMIN", "ADMIN"],
+      },
+      {
+        name: "Delivery Agents",
+        href: "/dashboard/branch/delivery",
+        icon: Truck,
+        roles: ["SUPER_ADMIN", "ADMIN"],
+      },
+      {
+        name: "Roles & Permissions",
+        href: "/dashboard/users/roles",
+        icon: ShieldAlert,
         roles: ["SUPER_ADMIN", "ADMIN"],
       },
     ],

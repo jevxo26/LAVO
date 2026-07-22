@@ -12,11 +12,20 @@ import {
   AlertCircle,
   CheckCircle2,
   Timer,
+  Headphones,
+  Ticket as TicketIcon,
+  Star,
+  Megaphone,
 } from "lucide-react";
 import { authFetch } from "@/lib/api";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/lib/toast";
+import { useAuth } from "@/hooks/useAuth";
+import { SupportTicketsTab } from "@/components/dashboard/support/SupportTicketsTab";
+import { ReviewModerationTab } from "@/components/dashboard/support/ReviewModerationTab";
+import { AnnouncementsTab } from "@/components/dashboard/support/AnnouncementsTab";
+import { SupportTables } from "@/components/support/Table";
 
 interface Ticket {
   id: string;
@@ -58,7 +67,11 @@ const STATUS_META: Record<string, { label: string; style: string; icon: React.El
 function TicketCard({ ticket }: { ticket: Ticket }) {
   const priority = ticket.priority.toUpperCase();
   const statusKey = ticket.status as keyof typeof STATUS_META;
-  const status = STATUS_META[statusKey] ?? { label: ticket.status, style: "bg-slate-100 text-slate-600 border-slate-200", icon: AlertCircle };
+  const status = STATUS_META[statusKey] ?? {
+    label: ticket.status,
+    style: "bg-slate-100 text-slate-600 border-slate-200",
+    icon: AlertCircle,
+  };
   const StatusIcon = status.icon;
 
   return (
@@ -69,17 +82,25 @@ function TicketCard({ ticket }: { ticket: Ticket }) {
           <ClipboardList size={16} />
         </div>
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2 flex-wrap mb-1">
-            <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold ${PRIORITY_STYLES[priority] ?? "bg-slate-50 text-slate-600 border-slate-200"}`}>
+          <div className="mb-1 flex flex-wrap items-center gap-2">
+            <span
+              className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold ${
+                PRIORITY_STYLES[priority] ?? "bg-slate-50 text-slate-600 border-slate-200"
+              }`}
+            >
               {ticket.priority}
             </span>
-            <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${status.style}`}>
+            <span
+              className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${status.style}`}
+            >
               <StatusIcon size={9} />
               {status.label}
             </span>
           </div>
           <h3 className="truncate text-sm font-bold text-slate-900">{ticket.title}</h3>
-          <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-slate-500">{ticket.description}</p>
+          <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-slate-500">
+            {ticket.description}
+          </p>
         </div>
       </div>
 
@@ -87,7 +108,13 @@ function TicketCard({ ticket }: { ticket: Ticket }) {
       <div className="flex items-center justify-between border-t border-slate-50 pt-3">
         <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
           <Clock size={11} />
-          <span>{new Date(ticket.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+          <span>
+            {new Date(ticket.createdAt).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            })}
+          </span>
         </div>
         <Link href={`/dashboard/support/${ticket.id}`}>
           <Button
@@ -128,8 +155,13 @@ function StatCard({
 }
 
 export default function SupportPage() {
+  const [activeTab, setActiveTab] = useState<"tickets" | "reviews" | "announcements">("tickets");
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const { user } = useAuth();
+  const isPlatformAdmin =
+    user && ["SUPER_ADMIN", "ADMIN"].includes(user.userType?.toUpperCase());
 
   const loadAssignedTickets = async () => {
     setLoading(true);
@@ -156,62 +188,143 @@ export default function SupportPage() {
   const solved = tickets.filter((t) => t.status === "solved").length;
 
   return (
-    <div className="space-y-8">
-      {/* Page header */}
-      <div>
-        <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">Customer Support</h1>
-        <p className="mt-1 text-sm text-slate-500">
-          Manage support tickets assigned to you, enable live chat, and mark issues as resolved.
-        </p>
+    <div className="mx-auto w-full max-w-7xl space-y-6 p-6 md:p-8">
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <div className="rounded-xl bg-blue-50 p-2.5 text-blue-600">
+          <Headphones size={24} />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+            Support & Moderation Operations
+          </h1>
+          <p className="mt-0.5 text-sm text-slate-400">
+            Solve assigned support tickets, moderate feedback ratings, and broadcast announcements.
+          </p>
+        </div>
       </div>
 
-      {/* Stat cards */}
-      {!loading && tickets.length > 0 && (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-          <StatCard label="Total Assigned" value={tickets.length} icon={TicketCheck} color="bg-indigo-50 text-indigo-600" />
-          <StatCard label="Pending Review" value={pending} icon={Timer} color="bg-amber-50 text-amber-600" />
-          <StatCard label="Chat Active" value={active} icon={MessageCircle} color="bg-emerald-50 text-emerald-600" />
-          <StatCard label="Solved" value={solved} icon={CheckCircle2} color="bg-slate-100 text-slate-600" />
+      {/* Admin Tabs */}
+      {isPlatformAdmin && (
+        <div className="flex gap-6 border-b border-slate-200">
+          <button
+            onClick={() => setActiveTab("tickets")}
+            className={`flex items-center gap-2 pb-3.5 text-sm font-bold border-b-2 transition-all ${
+              activeTab === "tickets"
+                ? "border-blue-600 text-blue-600"
+                : "border-transparent text-slate-400 hover:text-slate-600"
+            }`}
+          >
+            <TicketIcon size={18} /> Support Tickets
+          </button>
+          <button
+            onClick={() => setActiveTab("reviews")}
+            className={`flex items-center gap-2 pb-3.5 text-sm font-bold border-b-2 transition-all ${
+              activeTab === "reviews"
+                ? "border-blue-600 text-blue-600"
+                : "border-transparent text-slate-400 hover:text-slate-600"
+            }`}
+          >
+            <Star size={18} /> Review Moderation
+          </button>
+          <button
+            onClick={() => setActiveTab("announcements")}
+            className={`flex items-center gap-2 pb-3.5 text-sm font-bold border-b-2 transition-all ${
+              activeTab === "announcements"
+                ? "border-blue-600 text-blue-600"
+                : "border-transparent text-slate-400 hover:text-slate-600"
+            }`}
+          >
+            <Megaphone size={18} /> Announcements
+          </button>
         </div>
       )}
 
-      {/* Tickets Assigned to Me */}
-      <Card className="overflow-hidden rounded-3xl border border-slate-100 shadow-sm">
-        <CardHeader className="flex flex-row items-center justify-between border-b border-slate-50 bg-slate-50/40 px-6 py-5">
-          <div>
-            <CardTitle className="text-base font-bold text-slate-900">Tickets Assigned to Me</CardTitle>
-            <CardDescription className="text-xs text-slate-400">
-              Follow up and chat with customers on tickets assigned to you.
-            </CardDescription>
-          </div>
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
-            <ClipboardList size={18} />
-          </div>
-        </CardHeader>
-
-        <CardContent className="p-6">
-          {loading ? (
-            <div className="flex justify-center py-16">
-              <Loader2 className="animate-spin text-indigo-500" size={32} />
-            </div>
-          ) : tickets.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100">
-                <TicketCheck size={26} className="text-slate-400" />
+      {/* Render Panel */}
+      <div className="mt-4 space-y-8">
+        {activeTab === "tickets" && (
+          <div className="space-y-6">
+            {/* Stat cards */}
+            {!loading && tickets.length > 0 && (
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                <StatCard
+                  label="Total Assigned"
+                  value={tickets.length}
+                  icon={TicketCheck}
+                  color="bg-indigo-50 text-indigo-600"
+                />
+                <StatCard
+                  label="Pending Review"
+                  value={pending}
+                  icon={Timer}
+                  color="bg-amber-50 text-amber-600"
+                />
+                <StatCard
+                  label="Chat Active"
+                  value={active}
+                  icon={MessageCircle}
+                  color="bg-emerald-50 text-emerald-600"
+                />
+                <StatCard
+                  label="Solved"
+                  value={solved}
+                  icon={CheckCircle2}
+                  color="bg-slate-100 text-slate-600"
+                />
               </div>
-              <p className="text-sm font-semibold text-slate-600">No tickets assigned to you</p>
-              <p className="mt-1 text-xs text-slate-400">New assignments will appear here automatically.</p>
-            </div>
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {tickets.map((t) => (
-                <TicketCard key={t.id} ticket={t} />
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            )}
 
+            {/* Assigned Tickets */}
+            <Card className="overflow-hidden rounded-3xl border border-slate-100 shadow-sm">
+              <CardHeader className="flex flex-row items-center justify-between border-b border-slate-50 bg-slate-50/40 px-6 py-5">
+                <div>
+                  <CardTitle className="text-base font-bold text-slate-900">
+                    Tickets Assigned to Me
+                  </CardTitle>
+                  <CardDescription className="text-xs text-slate-400">
+                    Follow up and chat with customers on tickets assigned to you.
+                  </CardDescription>
+                </div>
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+                  <ClipboardList size={18} />
+                </div>
+              </CardHeader>
+
+              <CardContent className="p-6">
+                {loading ? (
+                  <div className="flex justify-center py-16">
+                    <Loader2 className="animate-spin text-indigo-500" size={32} />
+                  </div>
+                ) : tickets.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-16 text-center">
+                    <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100">
+                      <TicketCheck size={26} className="text-slate-400" />
+                    </div>
+                    <p className="text-sm font-semibold text-slate-600">
+                      No tickets assigned to you
+                    </p>
+                    <p className="mt-1 text-xs text-slate-400">
+                      New assignments will appear here automatically.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                    {tickets.map((t) => (
+                      <TicketCard key={t.id} ticket={t} />
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <SupportTicketsTab />
+            {isPlatformAdmin && <SupportTables />}
+          </div>
+        )}
+
+        {isPlatformAdmin && activeTab === "reviews" && <ReviewModerationTab />}
+        {isPlatformAdmin && activeTab === "announcements" && <AnnouncementsTab />}
+      </div>
     </div>
   );
 }

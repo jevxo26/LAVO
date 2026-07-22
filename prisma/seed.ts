@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { runCmsSeeder } from "./seeders/cmsSeeder";
+import { runRoleSeeder } from "./seeders/roleSeeder";
 
 const prisma = new PrismaClient();
 
@@ -314,6 +315,9 @@ async function main() {
   }
 
   console.log("Seed completed successfully!");
+  
+  // Run Roles & Permissions Seeder
+  await runRoleSeeder();
   
   // Run CMS Seeder
   await runCmsSeeder();
