@@ -50,8 +50,6 @@ function TrackerContent() {
 
   const [orderNumberInput, setOrderNumberInput] = useState("");
   const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
-  const [deliveryOtp, setDeliveryOtp] = useState<string | null>(null);
-  const [pickupOtp, setPickupOtp] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [activeOrders, setActiveOrders] = useState<Array<{ id: string; orderNumber: string }>>([]);
   const socketRef = useRef<Socket | null>(null);
@@ -134,26 +132,9 @@ function TrackerContent() {
       if (data.success) {
         setOrderDetails(data.data);
         activeOrderIdRef.current = data.data.id; // keep ref in sync for socket listener
-        
-        // Fetch OTPs (pickup OTP + dropoff OTP)
-        try {
-          const otpRes = await authFetch(`/customer/orders/${data.data.id}/delivery-otp`);
-          const otpData = await otpRes.json();
-          if (otpData.success) {
-            setPickupOtp(otpData.data?.pickupOtpCode || null);
-            setDeliveryOtp(otpData.data?.dropoffOtpCode || null);
-          } else {
-            setPickupOtp(null);
-            setDeliveryOtp(null);
-          }
-        } catch (e) {
-          setPickupOtp(null);
-          setDeliveryOtp(null);
-        }
       } else {
         toast.error("Order details not found. Enter a valid order number.");
         setOrderDetails(null);
-        setDeliveryOtp(null);
       }
     } catch {
       toast.error("Error fetching order tracking details");
@@ -330,47 +311,6 @@ function TrackerContent() {
           {/* Quick Invoice/Logistics details panel */}
           <div className="lg:col-span-4 space-y-6">
             
-            {/* Pickup OTP — shown when agent is coming to COLLECT garments */}
-            {pickupOtp && (
-              <Card className="border border-amber-200 shadow-sm bg-amber-50/60">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base font-bold text-amber-900 flex items-center gap-2">
-                    <Package size={18} className="text-amber-600" />
-                    Pickup Verification OTP
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-xs text-amber-800 mb-3">Our agent is on the way to collect your garments. Share this OTP with the agent when they arrive at your door.</p>
-                  <div className="bg-white border border-amber-300 rounded-lg p-4 text-center">
-                    <span className="text-3xl font-black tracking-widest text-amber-600 font-mono">
-                      {pickupOtp}
-                    </span>
-                  </div>
-                  <p className="text-[10px] text-amber-700 mt-2 text-center">⚠️ Do NOT share this OTP until the agent is at your door</p>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Dropoff OTP — shown when agent is coming to RETURN clean clothes */}
-            {deliveryOtp && (
-              <Card className="border border-indigo-100 shadow-sm bg-indigo-50/50">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base font-bold text-indigo-900 flex items-center gap-2">
-                    <CheckCircle2 size={18} className="text-indigo-600" />
-                    Delivery Verification OTP
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-xs text-indigo-700 mb-3">Your clean clothes are on the way! Share this OTP with the delivery agent when they arrive to confirm receipt.</p>
-                  <div className="bg-white border border-indigo-200 rounded-lg p-4 text-center">
-                    <span className="text-3xl font-black tracking-widest text-indigo-600 font-mono">
-                      {deliveryOtp}
-                    </span>
-                  </div>
-                  <p className="text-[10px] text-indigo-600 mt-2 text-center">⚠️ Do NOT share this OTP until the agent is at your door</p>
-                </CardContent>
-              </Card>
-            )}
 
             <Card className="border border-slate-100 shadow-sm bg-gradient-to-br from-white to-slate-50/50">
               <CardHeader>
