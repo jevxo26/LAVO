@@ -18,11 +18,18 @@ export const getPickupOrders = catchServiceAsync(async (req: any, res: Response)
     select: { branchId: true }
   });
 
+  // Find if user is linked to a Vendor
+  const vendorRecord = await prisma.vendor.findFirst({
+    where: { OR: [{ email: req.user?.email }, { phone: req.user?.phone }] },
+    select: { id: true }
+  });
+
   const branchId = branchEmployee?.branchId;
+  const vendorId = vendorRecord?.id;
 
   const orders = await (prisma.order.findMany as any)({
     where: {
-      ...(branchId ? { branchId } : {}),
+      ...(vendorId ? { vendorId } : branchId ? { branchId } : {}),
       orderStatus: { in: ['PICKUP', 'PROCESSING', 'WASHING', 'DRYING', 'IRONING', 'FOLDING'] }
     },
     include: {
