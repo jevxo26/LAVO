@@ -15,6 +15,7 @@ import {
   Heart,
   Wallet,
   QrCode,
+  Star,
 } from "lucide-react";
 
 export interface NavItem {
@@ -72,6 +73,12 @@ export const dashboardNavItems: NavItem[] = [
     name: "My Wallet",
     href: "/dashboard/wallet",
     icon: Wallet,
+    roles: ["CUSTOMER"],
+  },
+  {
+    name: "My Reviews",
+    href: "/dashboard/my-reviews",
+    icon: Star,
     roles: ["CUSTOMER"],
   },
   {
@@ -174,6 +181,12 @@ export const dashboardNavItems: NavItem[] = [
     name: "Customer Support",
     href: "/dashboard/support",
     icon: Headphones,
+    roles: ["SUPER_ADMIN", "ADMIN"],
+  },
+  {
+    name: "Customer Reviews",
+    href: "/dashboard/customer-reviews",
+    icon: Star,
     roles: ["SUPER_ADMIN", "ADMIN"],
   },
   {

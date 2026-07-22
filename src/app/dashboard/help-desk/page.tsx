@@ -2,17 +2,16 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { 
-  Headphones, 
-  HelpCircle, 
-  PlusCircle, 
-  MessageSquare, 
-  ChevronDown, 
+import {
+  HelpCircle,
+  PlusCircle,
+  MessageSquare,
+  ChevronDown,
   Clock,
   ArrowRight,
   Loader2
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { authFetch } from "@/lib/api";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,7 +20,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "@/lib/toast";
 
-import LiveChatModal from "@/components/dashboard/LiveChatModal";
+
 
 interface FAQItem {
   id: string;
@@ -62,9 +61,7 @@ export default function HelpDeskPage() {
   const [createLoading, setCreateLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  // General Chat state (separate from tickets)
-  const [isChatOpen, setIsChatOpen] = useState(false);
-  const [chatRole, setChatRole] = useState<"ADMIN" | "BRANCH_MANAGER" | null>(null);
+
 
   const loadData = async () => {
     try {
@@ -286,54 +283,7 @@ export default function HelpDeskPage() {
         </Dialog>
       </div>
 
-      {/* Live Chat Selection (General live chat feature) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-        <motion.div
-          whileHover={{ y: -4, scale: 1.01 }}
-          onClick={() => { setChatRole("ADMIN"); setIsChatOpen(true); }}
-          className="cursor-pointer bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-3xl p-6 text-white shadow-lg shadow-indigo-200/50 relative overflow-hidden group"
-        >
-          <div className="absolute -right-4 -top-4 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all"></div>
-          <div className="relative z-10 flex items-start justify-between">
-            <div>
-              <h3 className="text-xl font-bold mb-1">Central Support</h3>
-              <p className="text-indigo-100 text-sm max-w-[80%]">General inquiries, billing, and system-wide issues.</p>
-            </div>
-            <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center">
-              <MessageSquare className="text-white" size={24} />
-            </div>
-          </div>
-          <div className="mt-8 flex items-center gap-2 text-sm font-semibold text-indigo-50">
-            Start Live Chat <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-          </div>
-        </motion.div>
 
-        <motion.div
-          whileHover={{ y: -4, scale: 1.01 }}
-          onClick={() => { setChatRole("BRANCH_MANAGER"); setIsChatOpen(true); }}
-          className="cursor-pointer bg-gradient-to-br from-slate-800 to-slate-900 rounded-3xl p-6 text-white shadow-lg shadow-slate-200/50 relative overflow-hidden group"
-        >
-          <div className="absolute -right-4 -top-4 w-32 h-32 bg-white/5 rounded-full blur-2xl group-hover:bg-white/10 transition-all"></div>
-          <div className="relative z-10 flex items-start justify-between">
-            <div>
-              <h3 className="text-xl font-bold mb-1">Branch Support</h3>
-              <p className="text-slate-300 text-sm max-w-[80%]">Order status, specific laundry requests, and delivery details.</p>
-            </div>
-            <div className="w-12 h-12 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center">
-              <Headphones className="text-white" size={24} />
-            </div>
-          </div>
-          <div className="mt-8 flex items-center gap-2 text-sm font-semibold text-slate-300">
-            Start Live Chat <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-          </div>
-        </motion.div>
-      </div>
-      
-      <LiveChatModal 
-        targetRole={chatRole}
-        isOpen={isChatOpen}
-        onClose={() => setIsChatOpen(false)}
-      />
 
       {/* Main Grid: Tickets list and FAQ Accordion */}
       <div className="grid gap-8 lg:grid-cols-12 items-start">
