@@ -31,13 +31,13 @@ const getStoredToken = (): string | null =>
 const persistToken = (token: string) => {
   if (typeof window === "undefined") return;
   localStorage.setItem(TOKEN_KEY, token);
-  document.cookie = `${TOKEN_KEY}=${token}; path=/; max-age=${30 * 24 * 60 * 60}; SameSite=Strict`;
+  document.cookie = `${TOKEN_KEY}=${token}; path=/; max-age=${30 * 24 * 60 * 60}; SameSite=Lax`;
 };
 
 const clearToken = () => {
   if (typeof window === "undefined") return;
   localStorage.removeItem(TOKEN_KEY);
-  document.cookie = `${TOKEN_KEY}=; path=/; max-age=0; SameSite=Strict`;
+  document.cookie = `${TOKEN_KEY}=; path=/; max-age=0; SameSite=Lax`;
 };
 
 // ── Async Thunks ──────────────────────────────────────────────────────────────
