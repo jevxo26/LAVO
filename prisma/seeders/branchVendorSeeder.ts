@@ -63,7 +63,6 @@ export async function seedBranchVendors() {
             ownerName,
             email: user.email,
             phone: user.phone || phone,
-            branchId: branch.id,
             status: 'ACTIVE',
             isVerified: true,
           }
@@ -71,7 +70,7 @@ export async function seedBranchVendors() {
       } else {
         vendor = await prisma.vendor.update({
           where: { id: vendor.id },
-          data: { branchId: branch.id }
+          data: { status: 'ACTIVE' }
         });
       }
 

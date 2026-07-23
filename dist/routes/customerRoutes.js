@@ -31,4 +31,6 @@ router.route('/support/tickets/:id')
     .get(customerController_1.CustomerController.getTicketDetails);
 router.post('/support/tickets/:id/messages', customerController_1.CustomerController.replyToTicket);
 router.get('/wallet/transactions', customerController_1.CustomerController.getTransactions);
+router.get('/reviews', customerController_1.CustomerController.getMyReviews);
+router.post('/reviews/:orderId', customerController_1.CustomerController.submitReview);
 exports.default = router;

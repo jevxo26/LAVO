@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.generateAllQrCodes = exports.generateQrCode = exports.getOrderQrCodes = exports.getPickupOrders = void 0;
+exports.getGarmentStatus = exports.generateAllQrCodes = exports.generateQrCode = exports.getOrderQrCodes = exports.getPickupOrders = void 0;
 const catchServiceAsync_1 = require("../../utils/catchServiceAsync");
 const sendResponse_1 = require("../../utils/sendResponse");
 const client_1 = require("@prisma/client");
@@ -10,19 +10,28 @@ const prisma = new client_1.PrismaClient();
  * Status: PICKUP, PROCESSING, WASHING, DRYING, IRONING, FOLDING
  */
 exports.getPickupOrders = (0, catchServiceAsync_1.catchServiceAsync)(async (req, res) => {
-    var _a;
+    var _a, _b, _c;
     const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId;
     // Find the branch this employee belongs to via BranchEmployee table
     const branchEmployee = await prisma.branchEmployee.findFirst({
         where: { employeeId: userId },
         select: { branchId: true }
     });
+    // Find if user is linked to a Vendor
+    const vendorRecord = await prisma.vendor.findFirst({
+        where: { OR: [{ email: (_b = req.user) === null || _b === void 0 ? void 0 : _b.email }, { phone: (_c = req.user) === null || _c === void 0 ? void 0 : _c.phone }] },
+        select: { id: true }
+    });
     const branchId = branchEmployee === null || branchEmployee === void 0 ? void 0 : branchEmployee.branchId;
+    const vendorId = vendorRecord === null || vendorRecord === void 0 ? void 0 : vendorRecord.id;
     const orders = await prisma.order.findMany({
-        where: Object.assign(Object.assign({}, (branchId ? { branchId } : {})), { orderStatus: { in: ['PICKUP', 'PROCESSING', 'WASHING', 'DRYING', 'IRONING', 'FOLDING'] } }),
+        where: Object.assign(Object.assign({}, (vendorId ? { vendorId } : branchId ? { branchId } : {})), { orderStatus: { in: ['PICKUP', 'PROCESSING', 'WASHING', 'DRYING', 'IRONING', 'FOLDING'] } }),
         include: {
             customer: {
-                include: { user: { select: { fullName: true, phone: true } } }
+                include: {
+                    user: { select: { fullName: true, phone: true } },
+                    addresses: { select: { receiverName: true, receiverPhone: true } }
+                }
             },
             items: {
                 include: {
@@ -37,16 +46,16 @@ exports.getPickupOrders = (0, catchServiceAsync_1.catchServiceAsync)(async (req,
         orderBy: { createdAt: 'asc' }
     });
     const formatted = orders.map((order) => {
-        var _a, _b, _c, _d, _e;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
         const totalGarments = order.items.reduce((sum, item) => sum + item.garmentItems.length, 0);
         const qrGenerated = order.items.reduce((sum, item) => sum + item.garmentItems.filter((g) => g.qrCodeRecord).length, 0);
         return {
             id: order.id,
             orderNumber: order.orderNumber,
             orderStatus: order.orderStatus,
-            customerName: ((_b = (_a = order.customer) === null || _a === void 0 ? void 0 : _a.user) === null || _b === void 0 ? void 0 : _b.fullName) || 'N/A',
-            customerPhone: ((_d = (_c = order.customer) === null || _c === void 0 ? void 0 : _c.user) === null || _d === void 0 ? void 0 : _d.phone) || 'N/A',
-            branch: ((_e = order.branch) === null || _e === void 0 ? void 0 : _e.branchName) || 'N/A',
+            customerName: ((_b = (_a = order.customer) === null || _a === void 0 ? void 0 : _a.user) === null || _b === void 0 ? void 0 : _b.fullName) || ((_e = (_d = (_c = order.customer) === null || _c === void 0 ? void 0 : _c.addresses) === null || _d === void 0 ? void 0 : _d[0]) === null || _e === void 0 ? void 0 : _e.receiverName) || 'N/A',
+            customerPhone: ((_g = (_f = order.customer) === null || _f === void 0 ? void 0 : _f.user) === null || _g === void 0 ? void 0 : _g.phone) || ((_k = (_j = (_h = order.customer) === null || _h === void 0 ? void 0 : _h.addresses) === null || _j === void 0 ? void 0 : _j[0]) === null || _k === void 0 ? void 0 : _k.receiverPhone) || 'N/A',
+            branch: ((_l = order.branch) === null || _l === void 0 ? void 0 : _l.branchName) || 'N/A',
             totalGarments,
             qrGenerated,
             allQrDone: totalGarments > 0 && qrGenerated === totalGarments,
@@ -166,5 +175,36 @@ exports.generateAllQrCodes = (0, catchServiceAsync_1.catchServiceAsync)(async (r
         success: true,
         message: `${created.length} QR code(s) generated`,
         data: created
+    });
+});
+/**
+ * GET /employee/garment-status?qrCode=<code>
+ * Returns the current status of a garment identified by its QR code.
+ * Used by the scanner UI to disable the already-applied stage button.
+ */
+exports.getGarmentStatus = (0, catchServiceAsync_1.catchServiceAsync)(async (req, res) => {
+    const { qrCode } = req.query;
+    if (!qrCode) {
+        return (0, sendResponse_1.sendResponse)(res, { statusCode: 400, success: false, message: 'qrCode query param is required' });
+    }
+    const qrRecord = await prisma.garmentQRCode.findUnique({
+        where: { qrCode },
+        include: {
+            garmentItem: {
+                select: { status: true, garmentName: true }
+            }
+        }
+    });
+    if (!qrRecord || !qrRecord.garmentItem) {
+        return (0, sendResponse_1.sendResponse)(res, { statusCode: 404, success: false, message: 'QR code not found' });
+    }
+    (0, sendResponse_1.sendResponse)(res, {
+        statusCode: 200,
+        success: true,
+        message: 'Garment status retrieved',
+        data: {
+            status: qrRecord.garmentItem.status,
+            garmentName: qrRecord.garmentItem.garmentName,
+        }
     });
 });

@@ -97,7 +97,7 @@ export default function VendorPayoutsPage() {
 
       {/* Filter */}
       <div className="flex items-center gap-3">
-        <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(1); }}>
+        <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v || "ALL"); setPage(1); }}>
           <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
           <SelectContent>
             {STATUS_FILTER.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
@@ -163,7 +163,7 @@ export default function VendorPayoutsPage() {
             </div>
             <div className="space-y-1">
               <Label>Payment Method</Label>
-              <Select value={method} onValueChange={setMethod}>
+              <Select value={method} onValueChange={(v) => setMethod(v || "BANK_TRANSFER")}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="BANK_TRANSFER">Bank Transfer</SelectItem>

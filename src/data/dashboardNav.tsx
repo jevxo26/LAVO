@@ -49,6 +49,8 @@ export const dashboardNavItems: NavItem[] = [
     href: "/dashboard/analytics",
     icon: CircleDollarSign,
     roles: ["SUPER_ADMIN", "ADMIN"],
+  },
+  {
     name: "Dashboard",
     href: "/dashboard/vendor/dashboard",
     icon: LayoutDashboard,
@@ -131,7 +133,13 @@ export const dashboardNavItems: NavItem[] = [
         name: "Roles & Permissions",
         href: "/dashboard/users/roles",
         icon: ShieldAlert,
-        roles: ["SUPER_ADMIN", "ADMIN"],
+        roles: ["SUPER_ADMIN"],
+      },
+      {
+        name: "Permission Studio",
+        href: "/dashboard/users/permissions",
+        icon: ShieldAlert,
+        roles: ["SUPER_ADMIN"],
       },
     ],
   },
@@ -230,13 +238,13 @@ export const dashboardNavItems: NavItem[] = [
     name: "Website CMS",
     href: "/dashboard/cms",
     icon: LayoutDashboard,
-    roles: ["SUPER_ADMIN", "ADMIN"],
+    roles: ["SUPER_ADMIN"],
   },
   {
     name: "Settings",
     href: "/dashboard/settings",
     icon: Settings,
-    roles: ["SUPER_ADMIN", "ADMIN"],
+    roles: ["SUPER_ADMIN"],
   },
 
   // =========================

@@ -1,0 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const adminOverviewController_1 = require("../controllers/adminOverviewController");
+const auth_middleware_1 = require("../middlewares/auth.middleware");
+const rbac_middleware_1 = require("../middlewares/rbac.middleware");
+const router = (0, express_1.Router)();
+router.use(auth_middleware_1.requireAuth);
+router.get("/super-admin", rbac_middleware_1.requireSuperAdmin, adminOverviewController_1.AdminOverviewController.getSuperAdminData);
+router.get("/normal-admin", (0, rbac_middleware_1.restrictTo)("SUPER_ADMIN", "ADMIN"), adminOverviewController_1.AdminOverviewController.getNormalAdminData);
+exports.default = router;

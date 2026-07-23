@@ -425,7 +425,7 @@ CustomerService.getTransactions = (0, catchServiceAsync_1.catchServiceAsync)(asy
     });
 });
 CustomerService.placeOrder = (0, catchServiceAsync_1.catchServiceAsync)(async (userId, orderData) => {
-    var _b, _c, _d, _e;
+    var _b, _c, _d, _e, _f, _g;
     const customer = await _a.getOrCreateCustomer(userId);
     // 1. Calculate order prices
     let subtotal = 0.0;
@@ -463,19 +463,23 @@ CustomerService.placeOrder = (0, catchServiceAsync_1.catchServiceAsync)(async (u
             throw new Error('Insufficient wallet balance');
         }
     }
-    // TODO: Implement actual address selection instead of generating dummy addresses
-    let address = await prisma.customerAddress.findFirst({
-        where: { customerId: customer.id },
+    // Always create a new CustomerAddress for this order with the receiverPhone & address entered by the customer at checkout
+    const address = await prisma.customerAddress.create({
+        data: {
+            customerId: customer.id,
+            receiverName: orderData.receiverName || customer.user.fullName,
+            receiverPhone: orderData.receiverPhone || customer.user.phone || '000000',
+            fullAddress: orderData.pickupAddress,
+            city: 'Dhaka',
+            latitude: (_b = orderData.latitude) !== null && _b !== void 0 ? _b : null,
+            longitude: (_c = orderData.longitude) !== null && _c !== void 0 ? _c : null,
+        },
     });
-    if (!address) {
-        address = await prisma.customerAddress.create({
-            data: {
-                customerId: customer.id,
-                receiverName: orderData.receiverName || customer.user.fullName,
-                receiverPhone: orderData.receiverPhone || customer.user.phone || '000000',
-                fullAddress: orderData.pickupAddress,
-                city: 'Dhaka',
-            },
+    // Also update the customer user phone if a new phone number was provided at checkout
+    if (orderData.receiverPhone && orderData.receiverPhone !== customer.user.phone) {
+        await prisma.user.update({
+            where: { id: userId },
+            data: { phone: orderData.receiverPhone },
         });
     }
     // Generate unique order number
@@ -483,8 +487,8 @@ CustomerService.placeOrder = (0, catchServiceAsync_1.catchServiceAsync)(async (u
     // Date parsing
     const estimatedPickupTime = new Date(`${orderData.pickupDate}T${orderData.pickupTimeSlot.split(' - ')[0]}:00`);
     // Route order to the nearest active branch and find a local delivery agent
-    const customerLat = (_c = (_b = orderData.latitude) !== null && _b !== void 0 ? _b : address.latitude) !== null && _c !== void 0 ? _c : null;
-    const customerLon = (_e = (_d = orderData.longitude) !== null && _d !== void 0 ? _d : address.longitude) !== null && _e !== void 0 ? _e : null;
+    const customerLat = (_e = (_d = orderData.latitude) !== null && _d !== void 0 ? _d : address.latitude) !== null && _e !== void 0 ? _e : null;
+    const customerLon = (_g = (_f = orderData.longitude) !== null && _f !== void 0 ? _f : address.longitude) !== null && _g !== void 0 ? _g : null;
     const { branchId, agentId } = await _a.routeOrderToBranch(customerLat, customerLon);
     // 3. Create the Order inside transaction
     const result = await prisma.$transaction(async (tx) => {
@@ -649,4 +653,84 @@ CustomerService.getOrderDetails = (0, catchServiceAsync_1.catchServiceAsync)(asy
     if (!order)
         throw new Error('Order not found');
     return order;
+});
+// ─── Reviews ────────────────────────────────────────────────────────────────
+/**
+ * Returns all completed/delivered orders for this customer, each annotated
+ * with their existing review (if any).
+ */
+CustomerService.getMyReviews = (0, catchServiceAsync_1.catchServiceAsync)(async (userId) => {
+    const customer = await _a.getOrCreateCustomer(userId);
+    const orders = await prisma.order.findMany({
+        where: {
+            customerId: customer.id,
+            orderStatus: { in: ['COMPLETED', 'DELIVERED'] },
+        },
+        orderBy: { createdAt: 'desc' },
+        include: {
+            items: {
+                take: 1,
+                include: { service: true },
+            },
+            reviews: {
+                take: 1,
+                orderBy: { createdAt: 'desc' },
+            },
+        },
+    });
+    return orders.map((order) => {
+        var _b, _c, _d, _e, _f;
+        const review = (_b = order.reviews[0]) !== null && _b !== void 0 ? _b : null;
+        const serviceName = (_e = (_d = (_c = order.items[0]) === null || _c === void 0 ? void 0 : _c.service) === null || _d === void 0 ? void 0 : _d.serviceName) !== null && _e !== void 0 ? _e : 'Laundry Service';
+        return {
+            orderId: order.id,
+            orderNumber: order.orderNumber,
+            orderDate: order.createdAt,
+            serviceName,
+            grandTotal: order.grandTotal,
+            review: review
+                ? {
+                    id: review.id,
+                    rating: review.rating,
+                    title: (_f = review.title) !== null && _f !== void 0 ? _f : null,
+                    comment: review.review,
+                    status: review.status,
+                    createdAt: review.createdAt,
+                }
+                : null,
+        };
+    });
+});
+/**
+ * Submits a new review for a completed order.
+ * Throws if the order doesn't belong to this customer, isn't completed, or
+ * already has a review.
+ */
+CustomerService.submitReview = (0, catchServiceAsync_1.catchServiceAsync)(async (userId, orderId, data) => {
+    var _b;
+    const customer = await _a.getOrCreateCustomer(userId);
+    const order = await prisma.order.findFirst({
+        where: {
+            id: orderId,
+            customerId: customer.id,
+            orderStatus: { in: ['COMPLETED', 'DELIVERED'] },
+        },
+        include: { reviews: { take: 1 } },
+    });
+    if (!order) {
+        throw new Error('Order not found or not eligible for review.');
+    }
+    if (order.reviews.length > 0) {
+        throw new Error('You have already submitted a review for this order.');
+    }
+    return prisma.review.create({
+        data: {
+            orderId: order.id,
+            customerId: customer.id,
+            rating: data.rating,
+            title: (_b = data.title) !== null && _b !== void 0 ? _b : null,
+            review: data.comment,
+            status: 'PUBLISHED',
+        },
+    });
 });

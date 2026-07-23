@@ -31,15 +31,15 @@ const getVerificationList = async (userId) => {
         },
     });
     return deliveries.map((delivery) => {
-        var _a, _b;
+        var _a, _b, _c, _d, _e, _f;
         const address = (_a = delivery.customer.addresses.find((a) => a.isDefault)) !== null && _a !== void 0 ? _a : delivery.customer.addresses[0];
         return {
             deliveryId: delivery.id,
             orderId: delivery.orderId,
             deliveryType: delivery.deliveryType,
-            customerName: delivery.customer.user.fullName,
-            customerPhone: delivery.customer.user.phone,
-            deliveryAddress: (_b = address === null || address === void 0 ? void 0 : address.fullAddress) !== null && _b !== void 0 ? _b : "N/A",
+            customerName: ((_c = (_b = delivery.customer) === null || _b === void 0 ? void 0 : _b.user) === null || _c === void 0 ? void 0 : _c.fullName) || (address === null || address === void 0 ? void 0 : address.receiverName) || "N/A",
+            customerPhone: ((_e = (_d = delivery.customer) === null || _d === void 0 ? void 0 : _d.user) === null || _e === void 0 ? void 0 : _e.phone) || (address === null || address === void 0 ? void 0 : address.receiverPhone) || "N/A",
+            deliveryAddress: (_f = address === null || address === void 0 ? void 0 : address.fullAddress) !== null && _f !== void 0 ? _f : "N/A",
             deliveryStatus: delivery.deliveryStatus,
             verificationStatus: delivery.verifications.length > 0 &&
                 delivery.verifications[0].verifiedAt

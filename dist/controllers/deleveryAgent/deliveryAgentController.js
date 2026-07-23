@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getPickupQRCodes = exports.acceptPickup = exports.getAvailablePickups = exports.getOverview = void 0;
+exports.acceptPickup = exports.getAvailablePickups = exports.getOverview = void 0;
 const catchAsync_1 = require("../../utils/catchAsync");
 const sendResponse_1 = require("../../utils/sendResponse");
 // import deliveryAgentService from "../services/deliveryAgentService";
@@ -79,20 +79,5 @@ exports.acceptPickup = (0, catchAsync_1.catchAsync)(async (req, res) => {
         success: true,
         message: "Pickup accepted successfully",
         data: result
-    });
-});
-exports.getPickupQRCodes = (0, catchAsync_1.catchAsync)(async (req, res) => {
-    var _a;
-    const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId;
-    const { deliveryId } = req.params;
-    if (!deliveryId || Array.isArray(deliveryId)) {
-        throw new Error("Invalid delivery id");
-    }
-    const result = await availablePickupsService.getPickupQRCodes(userId, deliveryId);
-    (0, sendResponse_1.sendResponse)(res, {
-        statusCode: 200,
-        success: true,
-        message: "Pickup QR codes fetched successfully",
-        data: result,
     });
 });

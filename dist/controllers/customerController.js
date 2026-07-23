@@ -130,6 +130,32 @@ CustomerController.replyToTicket = (0, catchAsync_1.catchAsync)(async (req, res)
     const result = await customerService_1.CustomerService.replyToTicket(userId, req.params.id, message);
     (0, sendResponse_1.sendResponse)(res, { statusCode: 201, success: true, message: 'Reply posted', data: result });
 });
+CustomerController.getMyReviews = (0, catchAsync_1.catchAsync)(async (req, res) => {
+    var _b;
+    const userId = (_b = req.user) === null || _b === void 0 ? void 0 : _b.userId;
+    if (!userId) {
+        (0, sendResponse_1.sendResponse)(res, { statusCode: 401, message: 'Unauthorized' });
+        return;
+    }
+    const result = await customerService_1.CustomerService.getMyReviews(userId);
+    (0, sendResponse_1.sendResponse)(res, { statusCode: 200, success: true, message: 'Reviews fetched successfully', data: result });
+});
+CustomerController.submitReview = (0, catchAsync_1.catchAsync)(async (req, res) => {
+    var _b;
+    const userId = (_b = req.user) === null || _b === void 0 ? void 0 : _b.userId;
+    const { orderId } = req.params;
+    if (!userId) {
+        (0, sendResponse_1.sendResponse)(res, { statusCode: 401, message: 'Unauthorized' });
+        return;
+    }
+    const { rating, title, comment } = req.body;
+    if (!rating || !comment) {
+        (0, sendResponse_1.sendResponse)(res, { statusCode: 400, message: 'Rating and comment are required' });
+        return;
+    }
+    const result = await customerService_1.CustomerService.submitReview(userId, orderId, { rating: Number(rating), title, comment });
+    (0, sendResponse_1.sendResponse)(res, { statusCode: 201, success: true, message: 'Review submitted successfully', data: result });
+});
 CustomerController.getFAQs = (0, catchAsync_1.catchAsync)(async (req, res) => {
     const result = await customerService_1.CustomerService.getFAQs();
     (0, sendResponse_1.sendResponse)(res, { statusCode: 200, success: true, data: result });

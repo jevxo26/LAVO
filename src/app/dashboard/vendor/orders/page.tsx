@@ -151,7 +151,7 @@ export default function VendorOrdersPage() {
             className="pl-9"
           />
         </div>
-        <Select value={status} onValueChange={(v) => { setStatus(v); setPage(1); }}>
+        <Select value={status} onValueChange={(v) => { setStatus(v || "ALL"); setPage(1); }}>
           <SelectTrigger className="w-44">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
@@ -265,7 +265,7 @@ export default function VendorOrdersPage() {
       <Dialog open={statusDialogOpen} onOpenChange={setStatusDialogOpen}>
         <DialogContent>
           <DialogHeader><DialogTitle>Update Order Status</DialogTitle></DialogHeader>
-          <Select value={newStatus} onValueChange={setNewStatus}>
+          <Select value={newStatus} onValueChange={(v) => setNewStatus(v || "")}>
             <SelectTrigger><SelectValue placeholder="Select new status" /></SelectTrigger>
             <SelectContent>
               {STATUS_OPTIONS.filter((s) => s !== "ALL").map((s) => (
