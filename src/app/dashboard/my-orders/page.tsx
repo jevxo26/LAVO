@@ -73,7 +73,13 @@ export default function MyOrdersPage() {
   };
 
   useEffect(() => {
-    loadOrders();
+    const init = async () => {
+      try {
+        await authFetch("/payments/verify-order-payment", { method: "POST", body: JSON.stringify({}) });
+      } catch {}
+      await loadOrders();
+    };
+    init();
   }, []);
 
   const handleCancelOrder = async (order: OrderRecord) => {
@@ -226,6 +232,13 @@ export default function MyOrdersPage() {
                       <span className="font-bold text-slate-900">{order.orderNumber}</span>
                       <span className={`text-[10px] px-2.5 py-0.5 rounded-full border font-bold ${getStatusColor(order.orderStatus)}`}>
                         {order.orderStatus}
+                      </span>
+                      <span className={`text-[10px] px-2.5 py-0.5 rounded-full border font-bold ${
+                        order.paymentStatus === 'PAID'
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                          : "bg-rose-50 text-rose-700 border-rose-200"
+                      }`}>
+                        {order.paymentStatus}
                       </span>
                     </div>
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">

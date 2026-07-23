@@ -5,14 +5,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const paymentController_1 = require("../controllers/paymentController");
-const authMiddleware_1 = require("../middlewares/authMiddleware");
+const paymentCallbackController_1 = require("../controllers/paymentCallbackController");
+const auth_middleware_1 = require("../middlewares/auth.middleware");
 const router = express_1.default.Router();
-// Public callback hooks from SSLCommerz (needs to bypass token verification because they are server-to-server or redirect POSTs)
-router.post('/sslcommerz/success', paymentController_1.PaymentController.handleSuccess);
-router.post('/sslcommerz/fail', paymentController_1.PaymentController.handleFail);
-router.post('/sslcommerz/cancel', paymentController_1.PaymentController.handleCancel);
-router.post('/sslcommerz/ipn', paymentController_1.PaymentController.handleIPN);
-// Protected endpoints for initiating payments from client
-router.post('/sslcommerz/initiate', authMiddleware_1.verifyToken, paymentController_1.PaymentController.initiateOrderPayment);
-router.post('/sslcommerz/topup', authMiddleware_1.verifyToken, paymentController_1.PaymentController.initiateWalletTopup);
+// Public callback hooks from SSLCommerz & simulated gateway (supports POST and GET)
+router.all("/sslcommerz/success", paymentCallbackController_1.PaymentCallbackController.handleSuccess);
+router.all("/sslcommerz/fail", paymentCallbackController_1.PaymentCallbackController.handleFail);
+router.all("/sslcommerz/cancel", paymentCallbackController_1.PaymentCallbackController.handleCancel);
+// Protected endpoints for client initiation & verification
+router.post("/sslcommerz/initiate", auth_middleware_1.requireAuth, paymentController_1.PaymentController.initiateOrderPayment);
+router.post("/verify-order-payment", auth_middleware_1.requireAuth, paymentController_1.PaymentController.verifyOrderPayment);
 exports.default = router;

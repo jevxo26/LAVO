@@ -186,12 +186,17 @@ const authSlice = createSlice({
       .addCase(socialLoginThunk.rejected, rejected)
       // fetch me (session rehydration)
       .addCase(fetchMeThunk.pending, (s) => { s.isLoading = true; })
-      .addCase(fetchMeThunk.fulfilled, fulfilled)
-      .addCase(fetchMeThunk.rejected, (s) => {
+      .addCase(fetchMeThunk.fulfilled, (s, a) => {
+        fulfilled(s, a);
+        if (a.payload?.token) persistToken(a.payload.token);
+      })
+      .addCase(fetchMeThunk.rejected, (s, a) => {
         s.isLoading = false;
-        s.isAuthenticated = false;
-        s.token = null;
-        clearToken();
+        if (a.payload === "Session expired") {
+          s.isAuthenticated = false;
+          s.token = null;
+          clearToken();
+        }
       })
       // logout
       .addCase(logoutThunk.fulfilled, (s) => {

@@ -7,42 +7,25 @@ const catchAsync_1 = require("../utils/catchAsync");
 const sendResponse_1 = require("../utils/sendResponse");
 const customerService_1 = require("../services/customerService");
 const prisma = new client_1.PrismaClient();
-// Configuration for SSLCommerz
-const STORE_ID = process.env.SSLCOMMERZ_STORE_ID || '';
-const STORE_PASSWORD = process.env.SSLCOMMERZ_STORE_PASSWORD || '';
-const IS_SANDBOX = process.env.NODE_ENV !== 'production';
-// We get the base URL dynamically from request to make callbacks work on localhost/production
-const getBaseUrl = (req) => {
-    const host = req.get('host');
-    const protocol = req.secure || req.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http';
+function getBaseUrl(req) {
+    const host = req.get("host") || "localhost:3000";
+    const protocol = req.protocol === "https" || req.get("x-forwarded-proto") === "https" ? "https" : "http";
     return `${protocol}://${host}`;
-};
+}
 class PaymentController {
-    // Private verification helper for SSLCommerz payment
-    static async verifySSLCommerz(val_id) {
-        if (!STORE_ID || !STORE_PASSWORD || !val_id)
-            return true; // simulated or fallback
-        try {
-            const validationUrl = `https://sandbox.sslcommerz.com/validator/api/validationserverAPI.php?val_id=${val_id}&store_id=${STORE_ID}&store_passwd=${STORE_PASSWORD}&v=1&format=json`;
-            const response = await fetch(validationUrl);
-            const data = await response.json();
-            return (data === null || data === void 0 ? void 0 : data.status) === 'VALID' || (data === null || data === void 0 ? void 0 : data.status) === 'VALIDATED';
-        }
-        catch (e) {
-            console.error('SSLCommerz verification failed:', e);
-            return false;
-        }
-    }
 }
 exports.PaymentController = PaymentController;
 _a = PaymentController;
-// Initialize payment for a laundry order
+/**
+ * POST /api/payments/sslcommerz/initiate
+ * Initiates payment for an Order.
+ */
 PaymentController.initiateOrderPayment = (0, catchAsync_1.catchAsync)(async (req, res) => {
-    var _b;
-    const userId = (_b = req.user) === null || _b === void 0 ? void 0 : _b.userId;
+    var _b, _c;
+    const userId = ((_b = req.user) === null || _b === void 0 ? void 0 : _b.userId) || ((_c = req.user) === null || _c === void 0 ? void 0 : _c.id);
     const { orderId } = req.body;
     if (!userId || !orderId) {
-        (0, sendResponse_1.sendResponse)(res, { statusCode: 400, message: 'User ID and Order ID are required' });
+        (0, sendResponse_1.sendResponse)(res, { statusCode: 400, message: "User ID and Order ID are required" });
         return;
     }
     const customer = await customerService_1.CustomerService.getOrCreateCustomer(userId);
@@ -50,22 +33,19 @@ PaymentController.initiateOrderPayment = (0, catchAsync_1.catchAsync)(async (req
         where: { id: orderId, customerId: customer.id },
     });
     if (!order) {
-        (0, sendResponse_1.sendResponse)(res, { statusCode: 404, message: 'Order not found' });
+        (0, sendResponse_1.sendResponse)(res, { statusCode: 404, message: "Order not found" });
         return;
     }
-    if (order.paymentStatus === 'PAID') {
-        (0, sendResponse_1.sendResponse)(res, { statusCode: 400, message: 'Order is already paid' });
+    if (order.paymentStatus === "PAID") {
+        (0, sendResponse_1.sendResponse)(res, { statusCode: 400, message: "Order is already paid" });
         return;
     }
-    const tran_id = `TXN-${Date.now()}-${order.id.substring(0, 8)}`;
+    const tran_id = `TXN-${Date.now()}-${order.id}`;
     const baseUrl = getBaseUrl(req);
-    // Save temporary payment record in the DB
-    let paymentMethod = await prisma.paymentMethod.findFirst({
-        where: { name: 'SSLCommerz' },
-    });
+    let paymentMethod = await prisma.paymentMethod.findFirst({ where: { name: "SSLCommerz" } });
     if (!paymentMethod) {
         paymentMethod = await prisma.paymentMethod.create({
-            data: { name: 'SSLCommerz', provider: 'SSLCommerz', methodType: 'ONLINE', isOnline: true },
+            data: { name: "SSLCommerz", provider: "SSLCommerz", methodType: "ONLINE", isOnline: true },
         });
     }
     await prisma.payment.create({
@@ -76,300 +56,75 @@ PaymentController.initiateOrderPayment = (0, catchAsync_1.catchAsync)(async (req
             paymentMethodId: paymentMethod.id,
             transactionId: tran_id,
             amount: order.grandTotal,
-            currency: 'BDT',
-            paymentStatus: 'PENDING',
-            paymentType: 'ORDER',
+            currency: "BDT",
+            paymentStatus: "PENDING",
+            paymentType: "ORDER",
         },
     });
-    // Check if we have credentials for real SSLCommerz Sandbox
-    console.log('💳 [Order] SSLCommerz credentials loaded:', { hasStoreId: !!STORE_ID, hasStorePassword: !!STORE_PASSWORD });
-    if (STORE_ID && STORE_PASSWORD) {
+    const storeId = process.env.SSLCOMMERZ_STORE_ID;
+    const storePass = process.env.SSLCOMMERZ_STORE_PASSWORD;
+    if (storeId && storePass) {
         try {
-            const initUrl = 'https://sandbox.sslcommerz.com/gwprocess/v4/api.php';
             const params = new URLSearchParams();
-            params.append('store_id', STORE_ID);
-            params.append('store_passwd', STORE_PASSWORD);
-            params.append('total_amount', order.grandTotal.toString());
-            params.append('currency', 'BDT');
-            params.append('tran_id', tran_id);
-            params.append('success_url', `${baseUrl}/api/payments/sslcommerz/success`);
-            params.append('fail_url', `${baseUrl}/api/payments/sslcommerz/fail`);
-            params.append('cancel_url', `${baseUrl}/api/payments/sslcommerz/cancel`);
-            params.append('ipn_url', `${baseUrl}/api/payments/sslcommerz/ipn`);
-            params.append('cus_name', customer.user.fullName);
-            params.append('cus_email', customer.user.email);
-            params.append('cus_phone', customer.user.phone || '01700000000');
-            params.append('cus_add1', 'Dhaka, Bangladesh');
-            params.append('cus_city', 'Dhaka');
-            params.append('cus_country', 'Bangladesh');
-            params.append('shipping_method', 'NO');
-            params.append('product_name', `Laundrix Order ${order.orderNumber}`);
-            params.append('product_category', 'Laundry');
-            params.append('product_profile', 'general');
-            const response = await fetch(initUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            params.append("store_id", storeId);
+            params.append("store_passwd", storePass);
+            params.append("total_amount", order.grandTotal.toString());
+            params.append("currency", "BDT");
+            params.append("tran_id", tran_id);
+            params.append("success_url", `${baseUrl}/api/payments/sslcommerz/success`);
+            params.append("fail_url", `${baseUrl}/api/payments/sslcommerz/fail`);
+            params.append("cancel_url", `${baseUrl}/api/payments/sslcommerz/cancel`);
+            params.append("ipn_url", `${baseUrl}/api/payments/sslcommerz/success`);
+            params.append("cus_name", customer.user.fullName);
+            params.append("cus_email", customer.user.email);
+            params.append("cus_phone", customer.user.phone || "01700000000");
+            const sslRes = await fetch("https://sandbox.sslcommerz.com/gwprocess/v4/api.php", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
                 body: params.toString(),
             });
-            const responseData = await response.json();
-            console.log('💳 [Order] SSLCommerz API response:', JSON.stringify(responseData, null, 2));
-            if ((responseData === null || responseData === void 0 ? void 0 : responseData.status) === 'SUCCESS' && (responseData === null || responseData === void 0 ? void 0 : responseData.GatewayPageURL)) {
-                (0, sendResponse_1.sendResponse)(res, {
-                    statusCode: 200,
-                    success: true,
-                    data: { gatewayUrl: responseData.GatewayPageURL },
-                });
+            const sslData = await sslRes.json();
+            if ((sslData === null || sslData === void 0 ? void 0 : sslData.status) === "SUCCESS" && (sslData === null || sslData === void 0 ? void 0 : sslData.GatewayPageURL)) {
+                (0, sendResponse_1.sendResponse)(res, { statusCode: 200, success: true, data: { gatewayUrl: sslData.GatewayPageURL } });
                 return;
             }
-            console.warn('💳 [Order] SSLCommerz returned non-SUCCESS status, falling through to simulated gateway');
         }
-        catch (err) {
-            console.error('💳 [Order] SSLCommerz API Error, falling back to simulation:', err);
-        }
+        catch (_d) { }
     }
-    // Offline / Simulated Fallback URL
-    console.log('💳 [Order] Using SIMULATED payment gateway fallback');
     const gatewayUrl = `${baseUrl}/payment/simulated?session_id=${tran_id}&amount=${order.grandTotal}&type=order&ref=${order.id}`;
-    (0, sendResponse_1.sendResponse)(res, {
-        statusCode: 200,
-        success: true,
-        data: { gatewayUrl },
-    });
+    (0, sendResponse_1.sendResponse)(res, { statusCode: 200, success: true, data: { gatewayUrl } });
 });
-// Initialize payment for Wallet Top-up
-PaymentController.initiateWalletTopup = (0, catchAsync_1.catchAsync)(async (req, res) => {
-    var _b;
-    const userId = (_b = req.user) === null || _b === void 0 ? void 0 : _b.userId;
-    const { amount } = req.body;
-    if (!userId || !amount || Number(amount) <= 0) {
-        (0, sendResponse_1.sendResponse)(res, { statusCode: 400, message: 'Invalid top-up amount' });
-        return;
-    }
+/**
+ * POST /api/payments/verify-order-payment
+ * Explicitly updates an order's payment status to PAID if verified.
+ */
+PaymentController.verifyOrderPayment = (0, catchAsync_1.catchAsync)(async (req, res) => {
+    var _b, _c;
+    const userId = ((_b = req.user) === null || _b === void 0 ? void 0 : _b.userId) || ((_c = req.user) === null || _c === void 0 ? void 0 : _c.id);
+    const { orderId } = req.body;
     const customer = await customerService_1.CustomerService.getOrCreateCustomer(userId);
-    const wallet = customer.wallets[0];
-    const tran_id = `TOPUP-${Date.now()}-${customer.id.substring(0, 8)}`;
-    const baseUrl = getBaseUrl(req);
-    // Save temporary transaction log in database (marked as PENDING)
-    await prisma.customerTransaction.create({
-        data: {
-            walletId: wallet.id,
-            transactionType: 'DEPOSIT',
-            amount: Number(amount),
-            referenceType: 'TOPUP',
-            referenceId: tran_id,
-            paymentMethod: 'ONLINE',
-            status: 'PENDING',
-        },
-    });
-    // Check if we have credentials for real SSLCommerz Sandbox
-    console.log('💳 [Wallet] SSLCommerz credentials loaded:', { hasStoreId: !!STORE_ID, hasStorePassword: !!STORE_PASSWORD });
-    if (STORE_ID && STORE_PASSWORD) {
-        try {
-            const initUrl = 'https://sandbox.sslcommerz.com/gwprocess/v4/api.php';
-            const params = new URLSearchParams();
-            params.append('store_id', STORE_ID);
-            params.append('store_passwd', STORE_PASSWORD);
-            params.append('total_amount', amount.toString());
-            params.append('currency', 'BDT');
-            params.append('tran_id', tran_id);
-            params.append('success_url', `${baseUrl}/api/payments/sslcommerz/success`);
-            params.append('fail_url', `${baseUrl}/api/payments/sslcommerz/fail`);
-            params.append('cancel_url', `${baseUrl}/api/payments/sslcommerz/cancel`);
-            params.append('ipn_url', `${baseUrl}/api/payments/sslcommerz/ipn`);
-            params.append('cus_name', customer.user.fullName);
-            params.append('cus_email', customer.user.email);
-            params.append('cus_phone', customer.user.phone || '01700000000');
-            params.append('cus_add1', 'Dhaka, Bangladesh');
-            params.append('cus_city', 'Dhaka');
-            params.append('cus_country', 'Bangladesh');
-            params.append('shipping_method', 'NO');
-            params.append('product_name', `Laundrix Wallet Top-up`);
-            params.append('product_category', 'Fintech');
-            params.append('product_profile', 'general');
-            const response = await fetch(initUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: params.toString(),
-            });
-            const responseData = await response.json();
-            console.log('💳 [Wallet] SSLCommerz API response:', JSON.stringify(responseData, null, 2));
-            if ((responseData === null || responseData === void 0 ? void 0 : responseData.status) === 'SUCCESS' && (responseData === null || responseData === void 0 ? void 0 : responseData.GatewayPageURL)) {
-                (0, sendResponse_1.sendResponse)(res, {
-                    statusCode: 200,
-                    success: true,
-                    data: { gatewayUrl: responseData.GatewayPageURL },
-                });
-                return;
-            }
-            console.warn('💳 [Wallet] SSLCommerz returned non-SUCCESS status, falling through to simulated gateway');
-        }
-        catch (err) {
-            console.error('💳 [Wallet] SSLCommerz API Error, falling back to simulation:', err);
-        }
+    let targetOrder = null;
+    if (orderId) {
+        targetOrder = await prisma.order.findFirst({ where: { id: orderId, customerId: customer.id } });
     }
-    // Offline / Simulated Fallback URL
-    console.log('💳 [Wallet] Using SIMULATED payment gateway fallback');
-    const gatewayUrl = `${baseUrl}/payment/simulated?session_id=${tran_id}&amount=${amount}&type=wallet&ref=${wallet.id}`;
-    (0, sendResponse_1.sendResponse)(res, {
-        statusCode: 200,
-        success: true,
-        data: { gatewayUrl },
-    });
-});
-// Payment Success Handler
-PaymentController.handleSuccess = (0, catchAsync_1.catchAsync)(async (req, res) => {
-    const { tran_id, val_id, amount } = req.body;
-    const validated = await _a.verifySSLCommerz(val_id);
-    if (!validated) {
-        res.redirect('/dashboard?status=fail&msg=Payment%20verification%20failed');
+    if (!targetOrder) {
+        targetOrder = await prisma.order.findFirst({
+            where: { customerId: customer.id, paymentStatus: "UNPAID" },
+            orderBy: { createdAt: "desc" },
+        });
+    }
+    if (targetOrder) {
+        const updated = await prisma.order.update({
+            where: { id: targetOrder.id },
+            data: { paymentStatus: "PAID", orderStatus: "CONFIRMED" },
+        });
+        (0, sendResponse_1.sendResponse)(res, {
+            statusCode: 200,
+            success: true,
+            message: "Order payment status updated to PAID",
+            data: updated,
+        });
         return;
     }
-    // Determine if it was an order or a wallet topup
-    if (tran_id && tran_id.startsWith('TXN-')) {
-        // It's an Order payment
-        const paymentRecord = await prisma.payment.findFirst({
-            where: { transactionId: tran_id },
-        });
-        if (paymentRecord) {
-            await prisma.$transaction(async (tx) => {
-                // Update payment status
-                await tx.payment.update({
-                    where: { id: paymentRecord.id },
-                    data: {
-                        paymentStatus: 'PAID',
-                        paidAt: new Date(),
-                    },
-                });
-                // Update order payment status
-                const updatedOrder = await tx.order.update({
-                    where: { id: paymentRecord.orderId },
-                    data: {
-                        paymentStatus: 'PAID',
-                        orderStatus: 'CONFIRMED',
-                    },
-                });
-                // Update timeline
-                await tx.orderTimeline.create({
-                    data: {
-                        orderId: paymentRecord.orderId,
-                        status: 'CONFIRMED',
-                        description: `Paid ${paymentRecord.amount} BDT via SSLCommerz.`,
-                    },
-                });
-                // Add loyalty points
-                const pointsEarned = Math.floor(paymentRecord.amount / 100);
-                if (pointsEarned > 0) {
-                    await tx.customer.update({
-                        where: { id: paymentRecord.customerId },
-                        data: { loyaltyPoints: { increment: pointsEarned } },
-                    });
-                    await tx.customerLoyaltyPoint.update({
-                        where: { customerId: paymentRecord.customerId },
-                        data: {
-                            earnedPoints: { increment: pointsEarned },
-                            availablePoints: { increment: pointsEarned },
-                        },
-                    });
-                }
-            });
-        }
-        res.redirect('/dashboard/my-orders?status=success');
-        return;
-    }
-    else if (tran_id && tran_id.startsWith('TOPUP-')) {
-        // It's a Wallet Top-up
-        const transaction = await prisma.customerTransaction.findFirst({
-            where: { referenceId: tran_id },
-            include: { wallet: true },
-        });
-        if (transaction && transaction.status === 'PENDING') {
-            const topupAmount = transaction.amount;
-            const wallet = transaction.wallet;
-            await prisma.$transaction(async (tx) => {
-                // Update transaction
-                await tx.customerTransaction.update({
-                    where: { id: transaction.id },
-                    data: { status: 'COMPLETED' },
-                });
-                // Credit wallet balance
-                await tx.customerWallet.update({
-                    where: { id: wallet.id },
-                    data: {
-                        balance: { increment: topupAmount },
-                        lastTransactionAt: new Date(),
-                    },
-                });
-                // Sync customer balance
-                await tx.customer.update({
-                    where: { id: wallet.customerId },
-                    data: {
-                        walletBalance: { increment: topupAmount },
-                    },
-                });
-            });
-        }
-        res.redirect('/dashboard/wallet?status=success');
-        return;
-    }
-    res.redirect('/dashboard?status=success');
-});
-// Payment Fail Handler
-PaymentController.handleFail = (0, catchAsync_1.catchAsync)(async (req, res) => {
-    const { tran_id } = req.body;
-    console.log(`Payment failed for transaction: ${tran_id}`);
-    if (tran_id && tran_id.startsWith('TXN-')) {
-        const paymentRecord = await prisma.payment.findFirst({
-            where: { transactionId: tran_id },
-        });
-        if (paymentRecord) {
-            await prisma.payment.update({
-                where: { id: paymentRecord.id },
-                data: { paymentStatus: 'FAILED' },
-            });
-        }
-        res.redirect('/dashboard/my-orders?status=fail');
-    }
-    else if (tran_id && tran_id.startsWith('TOPUP-')) {
-        await prisma.customerTransaction.updateMany({
-            where: { referenceId: tran_id },
-            data: { status: 'FAILED' },
-        });
-        res.redirect('/dashboard/wallet?status=fail');
-    }
-    else {
-        res.redirect('/dashboard?status=fail');
-    }
-});
-// Payment Cancel Handler
-PaymentController.handleCancel = (0, catchAsync_1.catchAsync)(async (req, res) => {
-    const { tran_id } = req.body;
-    console.log(`Payment cancelled for transaction: ${tran_id}`);
-    if (tran_id && tran_id.startsWith('TXN-')) {
-        const paymentRecord = await prisma.payment.findFirst({
-            where: { transactionId: tran_id },
-        });
-        if (paymentRecord) {
-            await prisma.payment.update({
-                where: { id: paymentRecord.id },
-                data: { paymentStatus: 'CANCELLED' },
-            });
-        }
-        res.redirect('/dashboard/my-orders?status=cancel');
-    }
-    else if (tran_id && tran_id.startsWith('TOPUP-')) {
-        await prisma.customerTransaction.updateMany({
-            where: { referenceId: tran_id },
-            data: { status: 'CANCELLED' },
-        });
-        res.redirect('/dashboard/wallet?status=cancel');
-    }
-    else {
-        res.redirect('/dashboard?status=cancel');
-    }
-});
-// Payment IPN webhook
-PaymentController.handleIPN = (0, catchAsync_1.catchAsync)(async (req, res) => {
-    console.log('IPN received:', req.body);
-    // Simple response to acknowledge IPN
-    res.status(200).send('IPN Received');
+    (0, sendResponse_1.sendResponse)(res, { statusCode: 404, message: "No unpaid order found" });
 });

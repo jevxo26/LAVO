@@ -10,7 +10,7 @@ export class RegisterController {
   });
 
   static me = catchAsync(async (req: any, res: Response) => {
-    const userId = req.user?.userId;
+    const userId = req.user?.userId || req.user?.id || req.user?.sub;
     if (!userId) {
       sendResponse(res, { statusCode: 401, message: 'Unauthorized' });
       return;
