@@ -106,17 +106,22 @@ export class PaymentCallbackController {
         });
       }
 
-      res.redirect("/dashboard/my-orders?status=success");
+      const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+      res.redirect(`${frontendUrl}/dashboard/my-orders?status=success`);
     } catch {
-      res.redirect("/dashboard/my-orders?status=success");
+      const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+      res.redirect(`${frontendUrl}/dashboard/my-orders?status=success`);
     }
   };
 
   static handleFail = async (req: Request, res: Response): Promise<void> => {
-    res.redirect("/dashboard/my-orders?status=fail");
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+    res.redirect(`${frontendUrl}/dashboard/my-orders?status=fail`);
   };
 
   static handleCancel = async (req: Request, res: Response): Promise<void> => {
-    res.redirect("/dashboard/my-orders?status=cancel");
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+    res.redirect(`${frontendUrl}/dashboard/my-orders?status=cancel`);
   };
 }
+
