@@ -17,6 +17,7 @@ export class BranchVendorController {
     // 1. Fetch vendors linked to this branch
     const vendors = (await prisma.vendor.findMany({
       where: {
+        branchId,
         status: 'ACTIVE',
         ...(search
           ? {
@@ -135,7 +136,7 @@ export class BranchVendorController {
 
     // 2. Verify Vendor belongs to branch and has available capacity
     const vendor = (await prisma.vendor.findFirst({
-      where: { id: vendorId, status: 'ACTIVE' } as any,
+      where: { id: vendorId, branchId, status: 'ACTIVE' } as any,
       include: { capacity: true },
     })) as any;
 
