@@ -238,8 +238,11 @@ export class PaymentController {
 
   // Payment Success Handler
   static handleSuccess = catchAsync(async (req: Request, res: Response) => {
-    const { tran_id, val_id, amount } = req.body;
+    const tran_id = (req.body?.tran_id || req.query?.tran_id || '').toString();
+    const val_id = (req.body?.val_id || req.query?.val_id || '').toString();
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    console.log('💳 [SSLCommerz Success Callback]', { tran_id, val_id, body: req.body, query: req.query });
+
     const validated = await this.verifySSLCommerz(val_id);
 
     if (!validated) {
@@ -250,9 +253,25 @@ export class PaymentController {
     // Determine if it was an order or a wallet topup
     if (tran_id && tran_id.startsWith('TXN-')) {
       // It's an Order payment
-      const paymentRecord = await prisma.payment.findFirst({
+      let paymentRecord = await prisma.payment.findFirst({
         where: { transactionId: tran_id },
       });
+
+      if (!paymentRecord) {
+        // Fallback search by order ID extracted from transaction suffix TXN-{timestamp}-{orderId}
+        const orderIdPart = tran_id.split('-').pop();
+        if (orderIdPart) {
+          paymentRecord = await prisma.payment.findFirst({
+            where: {
+              OR: [
+                { orderId: orderIdPart },
+                { orderId: { endsWith: orderIdPart } },
+                { transactionId: { contains: tran_id } }
+              ]
+            }
+          });
+        }
+      }
 
       if (paymentRecord) {
         await prisma.$transaction(async (tx) => {

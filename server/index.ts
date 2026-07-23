@@ -76,6 +76,7 @@ app.prepare().then(async () => {
     skip: (req) => req.url.startsWith('/_next/') || req.url.includes('favicon.ico')
   }));
   server.use(express.json());
+  server.use(express.urlencoded({ extended: true }));
   server.use(cookieParser());
 
   // Database Connection using Prisma
