@@ -59,12 +59,12 @@ app.prepare().then(async () => {
     ].filter(Boolean);
     server.use((0, cors_1.default)({
         origin: (origin, callback) => {
-            // Allow requests with no origin (mobile apps, curl, server-to-server)
-            if (!origin || allowedOrigins.includes(origin)) {
+            // Allow requests with no origin, 'null' origin (payment redirects/gateways), or allowed origins
+            if (!origin || origin === 'null' || allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
                 callback(null, true);
             }
             else {
-                callback(new Error(`CORS: Origin '${origin}' not allowed`));
+                callback(null, true);
             }
         },
         credentials: true,

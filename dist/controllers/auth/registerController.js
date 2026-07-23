@@ -14,8 +14,8 @@ RegisterController.register = (0, catchAsync_1.catchAsync)(async (req, res) => {
     (0, sendResponse_1.sendResponse)(res, { statusCode: 201, message: 'User registered successfully', data: user });
 });
 RegisterController.me = (0, catchAsync_1.catchAsync)(async (req, res) => {
-    var _b;
-    const userId = (_b = req.user) === null || _b === void 0 ? void 0 : _b.userId;
+    var _b, _c, _d;
+    const userId = ((_b = req.user) === null || _b === void 0 ? void 0 : _b.userId) || ((_c = req.user) === null || _c === void 0 ? void 0 : _c.id) || ((_d = req.user) === null || _d === void 0 ? void 0 : _d.sub);
     if (!userId) {
         (0, sendResponse_1.sendResponse)(res, { statusCode: 401, message: 'Unauthorized' });
         return;
