@@ -112,9 +112,9 @@ export const getAvailableDeliveries = async (
       id: delivery.id,
       orderId: delivery.orderId,
       customerName:
-        delivery.customer?.user?.fullName || customerAddress?.receiverName || "N/A",
+        customerAddress?.receiverName || delivery.customer?.user?.fullName || "N/A",
       customerPhone:
-        delivery.customer?.user?.phone || customerAddress?.receiverPhone || "N/A",
+        customerAddress?.receiverPhone || delivery.customer?.user?.phone || "N/A",
       branch:
         delivery.branch?.branchName ?? "N/A",
       deliveryAddress:
