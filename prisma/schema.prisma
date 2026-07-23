@@ -258,20 +258,6 @@ model UserRole {
   @@unique([userId, roleId])
 }
 
-model AdminPermission {
-  id                   String   @id @default(uuid())
-  userId               String   @unique
-  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  canManageCustomerOps Boolean  @default(false)
-  canManageBranchOps   Boolean  @default(false)
-  canManageVendorOps   Boolean  @default(false)
-  canManageAgentOps    Boolean  @default(false)
-  canManageEmployeeOps Boolean  @default(false)
-  canManageFinance     Boolean  @default(false)
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
-}
-
 model BranchRole {
   id          String   @id @default(uuid())
   branchId    String // Will map to Branch model later
@@ -344,6 +330,20 @@ model EmployeePermission {
   canApprove   Boolean    @default(false)
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
+}
+
+model AdminPermission {
+  id                   String   @id @default(uuid())
+  userId               String   @unique
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  canManageCustomerOps Boolean  @default(false)
+  canManageBranchOps   Boolean  @default(false)
+  canManageVendorOps   Boolean  @default(false)
+  canManageAgentOps    Boolean  @default(false)
+  canManageEmployeeOps Boolean  @default(false)
+  canManageFinance     Boolean  @default(false)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 }
 
 // --- From customers.prisma ---
