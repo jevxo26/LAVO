@@ -37,6 +37,11 @@ const auditLogRoutes_1 = __importDefault(require("./routes/auditLogRoutes"));
 const analyticsRoutes_1 = __importDefault(require("./routes/analyticsRoutes"));
 const adminVendorRoutes_1 = __importDefault(require("./routes/adminVendorRoutes"));
 const adminSupportRoutes_1 = __importDefault(require("./routes/adminSupportRoutes"));
+const vendorDashboardRoutes_1 = __importDefault(require("./routes/vendorDashboardRoutes"));
+const adminUserRoutes_1 = __importDefault(require("./routes/adminUserRoutes"));
+const adminPermissionRoutes_1 = __importDefault(require("./routes/adminPermissionRoutes"));
+const adminOverviewRoutes_1 = __importDefault(require("./routes/adminOverviewRoutes"));
+const auditMiddleware_1 = require("./middlewares/auditMiddleware");
 const socket_1 = require("./socket");
 const prisma = new client_1.PrismaClient();
 const dev = process.env.NODE_ENV !== 'production';
@@ -82,6 +87,7 @@ app.prepare().then(async () => {
     server.get('/api/health', (req, res) => {
         res.json({ status: 'ok', timestamp: new Date() });
     });
+    server.use(auditMiddleware_1.auditLogger);
     server.use('/api/users', userRoutes_1.default);
     server.use('/api/auth', authRoutes_1.default);
     server.use('/api/upload', uploadRoutes_1.default);
@@ -106,6 +112,10 @@ app.prepare().then(async () => {
     server.use('/api/analytics', analyticsRoutes_1.default);
     server.use('/api/admin/vendors', adminVendorRoutes_1.default);
     server.use('/api/admin/support', adminSupportRoutes_1.default);
+    server.use('/api/admin/users', adminUserRoutes_1.default);
+    server.use('/api/admin/permissions', adminPermissionRoutes_1.default);
+    server.use('/api/admin/overview', adminOverviewRoutes_1.default);
+    server.use('/api/vendor-dashboard', vendorDashboardRoutes_1.default);
     // Serve uploaded files statically
     server.use('/uploads', express_1.default.static(path_1.default.join(process.cwd(), 'public', 'uploads')));
     // Let Next.js handle all other routes

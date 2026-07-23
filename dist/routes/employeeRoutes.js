@@ -51,4 +51,6 @@ router.get('/orders/:orderId/qr-codes', employeeOrderController.getOrderQrCodes)
 router.post('/garment-items/:garmentItemId/generate-qr', employeeOrderController.generateQrCode);
 // Generate QR codes for ALL garments in an order at once
 router.post('/orders/:orderId/generate-all-qr', employeeOrderController.generateAllQrCodes);
+// Fetch current garment status by QR code (used by scanner to disable already-applied stage button)
+router.get('/garment-status', employeeOrderController.getGarmentStatus);
 exports.default = router;

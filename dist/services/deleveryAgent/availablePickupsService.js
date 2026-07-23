@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getPickupQRCodes = exports.acceptPickup = exports.getAvailablePickups = void 0;
 const client_1 = require("@prisma/client");
+const smsService_1 = require("../smsService");
 const prisma = new client_1.PrismaClient();
 const geoUtils_1 = require("../../utils/geoUtils");
 const getAvailablePickups = async (userId) => {
@@ -73,12 +74,13 @@ const getAvailablePickups = async (userId) => {
             id: delivery.id,
             orderId: delivery.orderId,
             deliveryType: delivery.deliveryType,
-            customerName: (_g = (_f = (_e = delivery.customer) === null || _e === void 0 ? void 0 : _e.user) === null || _f === void 0 ? void 0 : _f.fullName) !== null && _g !== void 0 ? _g : "N/A",
-            customerPhone: (_k = (_j = (_h = delivery.customer) === null || _h === void 0 ? void 0 : _h.user) === null || _j === void 0 ? void 0 : _j.phone) !== null && _k !== void 0 ? _k : "N/A",
-            branch: (_m = (_l = delivery.branch) === null || _l === void 0 ? void 0 : _l.branchName) !== null && _m !== void 0 ? _m : "N/A",
-            pickupAddress: (_o = customerAddress === null || customerAddress === void 0 ? void 0 : customerAddress.fullAddress) !== null && _o !== void 0 ? _o : "N/A",
+            customerName: ((_f = (_e = delivery.customer) === null || _e === void 0 ? void 0 : _e.user) === null || _f === void 0 ? void 0 : _f.fullName) || (customerAddress === null || customerAddress === void 0 ? void 0 : customerAddress.receiverName) || "N/A",
+            customerPhone: ((_h = (_g = delivery.customer) === null || _g === void 0 ? void 0 : _g.user) === null || _h === void 0 ? void 0 : _h.phone) || (customerAddress === null || customerAddress === void 0 ? void 0 : customerAddress.receiverPhone) || "N/A",
+            branch: (_k = (_j = delivery.branch) === null || _j === void 0 ? void 0 : _j.branchName) !== null && _k !== void 0 ? _k : "N/A",
+            pickupAddress: (_l = customerAddress === null || customerAddress === void 0 ? void 0 : customerAddress.fullAddress) !== null && _l !== void 0 ? _l : "N/A",
             distance: distance ? `${distance} KM` : "N/A",
             priority: "NORMAL",
+            totalGarments: (_o = (_m = delivery.order) === null || _m === void 0 ? void 0 : _m.totalGarments) !== null && _o !== void 0 ? _o : 0,
             status: delivery.deliveryStatus,
             createdAt: delivery.createdAt
         };
@@ -95,9 +97,7 @@ const acceptPickup = async (userId, deliveryId) => {
         throw new Error("Agent not found");
     }
     const delivery = await prisma.delivery.findUnique({
-        where: {
-            id: deliveryId
-        }
+        where: { id: deliveryId }
     });
     if (!delivery) {
         throw new Error("Delivery not found");
@@ -105,7 +105,23 @@ const acceptPickup = async (userId, deliveryId) => {
     if (delivery.assignedAgentId !== null && delivery.assignedAgentId !== agent.id) {
         throw new Error("This delivery has already been accepted by another agent.");
     }
+    // Fetch customer profile & address info for SMS
+    const customerInfo = await prisma.customer.findUnique({
+        where: { id: delivery.customerId },
+        include: {
+            user: { select: { fullName: true, phone: true } },
+            addresses: { select: { receiverName: true, receiverPhone: true } }
+        }
+    });
+    const orderInfo = await prisma.order.findUnique({
+        where: { id: delivery.orderId },
+        select: { orderNumber: true, pickupAddressId: true }
+    });
+    const specificAddress = (orderInfo === null || orderInfo === void 0 ? void 0 : orderInfo.pickupAddressId)
+        ? await prisma.customerAddress.findUnique({ where: { id: orderInfo.pickupAddressId } })
+        : null;
     const updatedDelivery = await prisma.$transaction(async (tx) => {
+        var _a, _b, _c, _d, _e, _f;
         // 1. Mark delivery as ACCEPTED
         const updated = await tx.delivery.update({
             where: { id: deliveryId },
@@ -135,6 +151,7 @@ const acceptPickup = async (userId, deliveryId) => {
                 expiresAt: { gt: new Date() }
             }
         });
+        let otpToSend = existingOtp === null || existingOtp === void 0 ? void 0 : existingOtp.otpCode;
         if (!existingOtp) {
             const otp = Math.floor(100000 + Math.random() * 900000);
             await tx.deliveryOTP.create({
@@ -144,6 +161,20 @@ const acceptPickup = async (userId, deliveryId) => {
                     expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
                 }
             });
+            otpToSend = otp.toString();
+        }
+        // Trigger Pickup OTP SMS to Customer (Priority: specificAddress.receiverPhone -> user.phone -> addresses[0].receiverPhone)
+        const customerPhone = (specificAddress === null || specificAddress === void 0 ? void 0 : specificAddress.receiverPhone) || ((_a = customerInfo === null || customerInfo === void 0 ? void 0 : customerInfo.user) === null || _a === void 0 ? void 0 : _a.phone) || ((_c = (_b = customerInfo === null || customerInfo === void 0 ? void 0 : customerInfo.addresses) === null || _b === void 0 ? void 0 : _b[0]) === null || _c === void 0 ? void 0 : _c.receiverPhone);
+        const customerName = (specificAddress === null || specificAddress === void 0 ? void 0 : specificAddress.receiverName) || ((_d = customerInfo === null || customerInfo === void 0 ? void 0 : customerInfo.user) === null || _d === void 0 ? void 0 : _d.fullName) || ((_f = (_e = customerInfo === null || customerInfo === void 0 ? void 0 : customerInfo.addresses) === null || _e === void 0 ? void 0 : _e[0]) === null || _f === void 0 ? void 0 : _f.receiverName);
+        const orderNum = (orderInfo === null || orderInfo === void 0 ? void 0 : orderInfo.orderNumber) || delivery.orderId;
+        if (customerPhone && otpToSend) {
+            console.log(`📱 [Pickup OTP SMS] Sending OTP ${otpToSend} to customer phone: ${customerPhone} for Order ${orderNum}`);
+            smsService_1.SMSService.sendPickupOTP(customerPhone, otpToSend, orderNum, customerName).catch((err) => {
+                console.error("[Pickup SMS Error]:", err);
+            });
+        }
+        else {
+            console.warn(`⚠️ [Pickup OTP SMS] Could not send SMS for Order ${orderNum}: Customer phone number not found in profile or address.`);
         }
         return updated;
     });

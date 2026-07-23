@@ -56,6 +56,11 @@ const initSocket = (server) => {
             socket.join(`branch_${branchId}`);
             console.log(`Socket ${socket.id} joined branch room: branch_${branchId}`);
         });
+        // Customer subscribes to their own order updates
+        socket.on('joinCustomer', (customerId) => {
+            socket.join(`customer_${customerId}`);
+            console.log(`Socket ${socket.id} joined customer room: customer_${customerId}`);
+        });
         socket.on('garmentScan', async (data) => {
             try {
                 // 1. Look up the garment via its QR code record
@@ -74,6 +79,7 @@ const initSocket = (server) => {
                             include: {
                                 order: {
                                     include: {
+                                        customer: true,
                                         items: {
                                             include: { garmentItems: true }
                                         }
@@ -88,6 +94,16 @@ const initSocket = (server) => {
                     return;
                 }
                 const order = garmentItem.orderItem.order;
+                // 2b. Prevent backward or duplicate status scans
+                const ALL_STAGES_LIST = ['PENDING', 'CONFIRMED', 'COLLECTED', 'PROCESSING', 'WASHING', 'DRYING', 'IRONING', 'FOLDING', 'READY_FOR_DELIVERY', 'OUT_FOR_DELIVERY', 'DELIVERED', 'COMPLETED'];
+                const currentGarmentIdx = ALL_STAGES_LIST.indexOf((garmentItem.status || '').toUpperCase());
+                const newGarmentIdx = ALL_STAGES_LIST.indexOf((data.status || '').toUpperCase());
+                if (currentGarmentIdx !== -1 && newGarmentIdx !== -1 && newGarmentIdx <= currentGarmentIdx) {
+                    socket.emit('scanError', {
+                        message: `Garment '${garmentItem.garmentName}' is already at stage '${garmentItem.status.replace(/_/g, ' ')}'. Cannot set equal or earlier stage '${data.status.replace(/_/g, ' ')}'.`
+                    });
+                    return;
+                }
                 // 3. Update the GarmentItem status
                 await prisma.garmentItem.update({
                     where: { id: garmentItem.id },
@@ -112,98 +128,83 @@ const initSocket = (server) => {
                 const payload = Object.assign(Object.assign({}, data), { garmentName: garmentItem.garmentName, orderNumber: order.orderNumber, timestamp: new Date() });
                 io.to(`branch_${data.branchId}`).emit('garmentStatusUpdated', payload);
                 console.log('Scan saved and broadcast:', payload);
-                // 7. Update Order status based on intermediate garment scans
-                const processingEligible = ['PENDING', 'CONFIRMED', 'PICKUP'];
-                const washingEligible = ['PENDING', 'CONFIRMED', 'PICKUP', 'PROCESSING'];
+                // 7. Advance Order status only when ALL garments have reached (or passed) a given stage
+                // Stage hierarchy: PROCESSING → WASHING → DRYING → IRONING → FOLDING → READY_FOR_DELIVERY
+                const stageHierarchy = ['PROCESSING', 'WASHING', 'DRYING', 'IRONING', 'FOLDING', 'READY_FOR_DELIVERY'];
+                const stageIndex = stageHierarchy.indexOf(data.status);
+                const allGarments = order.items.flatMap((item) => item.garmentItems);
+                // Helper: is garment at or past a given stage?
+                const atOrPast = (garmentStatus, targetStage) => {
+                    const gi = stageHierarchy.indexOf(garmentStatus);
+                    const ti = stageHierarchy.indexOf(targetStage);
+                    if (ti === -1)
+                        return false;
+                    if (gi === -1)
+                        return false;
+                    return gi >= ti;
+                };
+                // --- COLLECTED → PICKUP (all garments collected) ---
                 if (data.status === 'COLLECTED' && (order.orderStatus === 'PENDING' || order.orderStatus === 'CONFIRMED')) {
-                    const allGarments = order.items.flatMap((item) => item.garmentItems);
-                    const allCollected = allGarments.every((g) => g.id === garmentItem.id || g.status === 'COLLECTED' || g.status === 'PROCESSING' || g.status === 'WASHING' || g.status === 'READY_FOR_DELIVERY');
+                    const allCollected = allGarments.every((g) => g.id === garmentItem.id ||
+                        ['COLLECTED', 'PROCESSING', 'WASHING', 'DRYING', 'IRONING', 'FOLDING', 'READY_FOR_DELIVERY'].includes(g.status));
                     if (allCollected) {
-                        await prisma.order.update({
-                            where: { id: order.id },
-                            data: { orderStatus: 'PICKUP' }
-                        });
-                        await prisma.orderTimeline.create({
-                            data: {
-                                orderId: order.id,
-                                status: 'PICKUP',
-                                description: 'All garments collected by delivery agent.',
+                        await prisma.order.update({ where: { id: order.id }, data: { orderStatus: 'PICKUP' } });
+                        await prisma.orderTimeline.create({ data: { orderId: order.id, status: 'PICKUP', description: 'All garments collected by delivery agent.' } });
+                        io.to(`customer_${order.customer.userId}`).emit('orderStatusUpdated', { orderId: order.id, orderStatus: 'PICKUP' });
+                        console.log(`Order ${order.orderNumber} → PICKUP`);
+                    }
+                }
+                // --- Intermediate stages: only advance when ALL garments are at or past the scanned stage ---
+                if (stageIndex !== -1) {
+                    const allAtOrPast = allGarments.every((g) => g.id === garmentItem.id ? true : atOrPast(g.status, data.status));
+                    if (allAtOrPast && order.orderStatus !== data.status) {
+                        // Only advance if order hasn't already been set to this stage or beyond
+                        const orderStageIndex = stageHierarchy.indexOf(order.orderStatus);
+                        if (orderStageIndex < stageIndex || orderStageIndex === -1) {
+                            const stageDescriptions = {
+                                PROCESSING: 'All garments are now sorting at the centralized branch hub.',
+                                WASHING: 'All garments have entered washing / dry-cleaning cycles.',
+                                DRYING: 'All garments are being dried.',
+                                IRONING: 'All garments are being pressed and ironed.',
+                                FOLDING: 'All garments are folded and packed for delivery.',
+                                READY_FOR_DELIVERY: 'All garments are ready. A delivery agent has been assigned.',
+                            };
+                            await prisma.order.update({ where: { id: order.id }, data: { orderStatus: data.status } });
+                            await prisma.orderTimeline.create({
+                                data: {
+                                    orderId: order.id,
+                                    status: data.status,
+                                    description: stageDescriptions[data.status] || `Order advanced to ${data.status}.`,
+                                }
+                            });
+                            io.to(`customer_${order.customer.userId}`).emit('orderStatusUpdated', { orderId: order.id, orderStatus: data.status });
+                            console.log(`Order ${order.orderNumber} → ${data.status} (all garments confirmed)`);
+                            // When all garments reach PROCESSING, mark pickup delivery as COLLECTED
+                            if (data.status === 'PROCESSING') {
+                                const pickupDelivery = await prisma.delivery.findFirst({
+                                    where: { orderId: order.id, deliveryType: 'PICKUP' }
+                                });
+                                if (pickupDelivery && pickupDelivery.deliveryStatus !== 'COLLECTED') {
+                                    await prisma.delivery.update({ where: { id: pickupDelivery.id }, data: { deliveryStatus: 'COLLECTED' } });
+                                }
                             }
-                        });
-                        console.log(`Order ${order.orderNumber} advanced to PICKUP (Collected by Agent)`);
-                    }
-                }
-                else if (data.status === 'PROCESSING' && processingEligible.includes(order.orderStatus)) {
-                    // The first garment entered Processing -> update the Order
-                    await prisma.order.update({
-                        where: { id: order.id },
-                        data: { orderStatus: 'PROCESSING' }
-                    });
-                    await prisma.orderTimeline.create({
-                        data: {
-                            orderId: order.id,
-                            status: 'PROCESSING',
-                            description: 'Laundry items sorting at centralized branch hub.',
-                        }
-                    });
-                    // Complete the pickup delivery
-                    const pickupDelivery = await prisma.delivery.findFirst({
-                        where: { orderId: order.id, deliveryType: 'PICKUP' }
-                    });
-                    if (pickupDelivery && pickupDelivery.deliveryStatus !== 'COLLECTED') {
-                        await prisma.delivery.update({
-                            where: { id: pickupDelivery.id },
-                            data: { deliveryStatus: 'COLLECTED' }
-                        });
-                    }
-                    console.log(`Order ${order.orderNumber} advanced to PROCESSING`);
-                }
-                else if (data.status === 'WASHING' && washingEligible.includes(order.orderStatus)) {
-                    // The first garment entered Washing -> update the Order
-                    await prisma.order.update({
-                        where: { id: order.id },
-                        data: { orderStatus: 'WASHING' }
-                    });
-                    // Optionally backfill PROCESSING timeline if missed
-                    if (processingEligible.includes(order.orderStatus)) {
-                        await prisma.orderTimeline.create({
-                            data: {
-                                orderId: order.id,
-                                status: 'PROCESSING',
-                                description: 'Laundry items sorting at centralized branch hub.',
+                            // When all garments are READY_FOR_DELIVERY, auto-assign DROP_OFF agent
+                            if (data.status === 'READY_FOR_DELIVERY') {
+                                try {
+                                    const { DeliveryAssignmentService } = await Promise.resolve().then(() => __importStar(require('./services/deleveryAgent/deliveryAssignmentService')));
+                                    await DeliveryAssignmentService.autoAssignDropoffDelivery(order.id);
+                                }
+                                catch (e) {
+                                    console.error('Auto-assign dropoff failed:', e);
+                                }
+                                io.to(`branch_${data.branchId}`).emit('orderReadyForDelivery', { orderId: order.id, orderNumber: order.orderNumber });
+                                console.log(`✅ All garments READY — Order ${order.orderNumber} auto-assigned for DROP_OFF delivery!`);
                             }
-                        });
+                        }
                     }
-                    await prisma.orderTimeline.create({
-                        data: {
-                            orderId: order.id,
-                            status: 'WASHING',
-                            description: 'Garments undergoing washing / dry-cleaning cycles.',
-                        }
-                    });
-                    console.log(`Order ${order.orderNumber} advanced to WASHING`);
-                }
-                // 8. THE MAGIC TRIGGER: Check if ALL garments in this order are now READY
-                if (data.status === 'READY_FOR_DELIVERY') {
-                    const allGarments = order.items.flatMap((item) => item.garmentItems);
-                    const allReady = allGarments.every((g) => g.id === garmentItem.id || g.status === 'READY_FOR_DELIVERY');
-                    if (allReady && order.orderStatus !== 'READY_FOR_DELIVERY') {
-                        // Update order status
-                        await prisma.order.update({
-                            where: { id: order.id },
-                            data: { orderStatus: 'READY_FOR_DELIVERY' }
-                        });
-                        // Auto-assign a DROP_OFF delivery agent
-                        try {
-                            const { DeliveryAssignmentService } = await Promise.resolve().then(() => __importStar(require('./services/deleveryAgent/deliveryAssignmentService')));
-                            await DeliveryAssignmentService.autoAssignDropoffDelivery(order.id);
-                        }
-                        catch (e) {
-                            console.error('Auto-assign dropoff failed:', e);
-                        }
-                        // Notify the branch manager dashboard
-                        io.to(`branch_${data.branchId}`).emit('orderReadyForDelivery', { orderId: order.id, orderNumber: order.orderNumber });
-                        console.log(`✅ All garments READY — Order ${order.orderNumber} auto-assigned for DROP_OFF delivery!`);
+                    else if (!allAtOrPast) {
+                        const done = allGarments.filter((g) => g.id === garmentItem.id ? true : atOrPast(g.status, data.status)).length;
+                        console.log(`Order ${order.orderNumber}: ${done}/${allGarments.length} garments at ${data.status} — waiting for rest.`);
                     }
                 }
             }

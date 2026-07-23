@@ -45,6 +45,7 @@ const employeeController = __importStar(require("../controllers/branch/employeeC
 const inventoryController = __importStar(require("../controllers/branch/inventoryController"));
 const agentController = __importStar(require("../controllers/branch/agentController"));
 const qrOrderController = __importStar(require("../controllers/branch/qrOrderController"));
+const branchVendorController_1 = require("../controllers/branch/branchVendorController");
 const router = express_1.default.Router();
 // Only allow Branch Managers and Admins to access these routes
 router.use(authMiddleware_1.verifyToken);
@@ -69,4 +70,6 @@ router.post('/delivery-agents', agentController.createDeliveryAgent);
 router.patch('/delivery-agents/:id', agentController.updateDeliveryAgent);
 router.delete('/delivery-agents/:id', agentController.deleteDeliveryAgent);
 router.get('/analytics', overviewController.getAnalytics);
+router.get('/vendors', branchVendorController_1.BranchVendorController.getBranchVendors);
+router.post('/vendors/assign-order', branchVendorController_1.BranchVendorController.assignOrderToVendor);
 exports.default = router;

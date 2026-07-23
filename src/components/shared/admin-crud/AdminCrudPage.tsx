@@ -91,6 +91,12 @@ export function AdminCrudPage<TRecord extends AdminRecord>({
     fetchData()
   }, [fetchData, isAuthLoading])
 
+  const user = useAppSelector((s) => s.auth.user)
+  const isSuperAdmin = user && (user.userType?.toUpperCase() === "SUPER_ADMIN" || (user as any).role?.toUpperCase() === "SUPER_ADMIN")
+  const isNormalAdmin = user && (user.userType?.toUpperCase() === "ADMIN" || (user as any).role?.toUpperCase() === "ADMIN")
+  const isUserManagementModule = config.endpoint?.includes("users") || config.title?.toLowerCase().includes("user")
+  const isReadOnlyView = isNormalAdmin && !isSuperAdmin && isUserManagementModule
+
   const columns = React.useMemo<ColumnDef<TRecord>[]>(
     () => [
       ...config.columns.map((column) => ({
@@ -103,19 +109,23 @@ export function AdminCrudPage<TRecord extends AdminRecord>({
           />
         ),
       })),
-      {
-        id: "actions",
-        header: () => <span className="sr-only">Actions</span>,
-        cell: ({ row }) => (
-          <ActionMenu
-            row={row.original}
-            onEdit={setEditingRecord}
-            onDelete={setDeletingRecord}
-          />
-        ),
-      },
+      ...(!isReadOnlyView
+        ? [
+            {
+              id: "actions",
+              header: () => <span className="sr-only">Actions</span>,
+              cell: ({ row }: CellContext<TRecord, unknown>) => (
+                <ActionMenu
+                  row={row.original}
+                  onEdit={setEditingRecord}
+                  onDelete={setDeletingRecord}
+                />
+              ),
+            },
+          ]
+        : []),
     ],
-    [config.columns]
+    [config.columns, isReadOnlyView]
   )
 
   const table = useReactTable({
@@ -204,7 +214,7 @@ export function AdminCrudPage<TRecord extends AdminRecord>({
       <PageHeader
         title={config.title}
         description={config.description}
-        actionLabel={config.createLabel}
+        actionLabel={!isReadOnlyView ? config.createLabel : undefined}
         actionIcon={Plus}
         onAction={() => setCreateOpen(true)}
       />

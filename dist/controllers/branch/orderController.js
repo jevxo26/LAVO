@@ -41,7 +41,11 @@ exports.getOrders = (0, catchServiceAsync_1.catchServiceAsync)(async (req, res) 
     const branchId = await (0, branchDashboardService_1.getBranchOrFail)(req);
     const orders = await branchDashboardService_1.default.order.findMany({
         where: { branchId },
-        include: { customer: { include: { user: true } }, items: { include: { service: true } } },
+        include: {
+            customer: { include: { user: true } },
+            vendor: { select: { id: true, businessName: true, vendorCode: true } },
+            items: { include: { service: true } }
+        },
         orderBy: { createdAt: 'desc' }
     });
     (0, sendResponse_1.sendResponse)(res, { statusCode: 200, data: orders });

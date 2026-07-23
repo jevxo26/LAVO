@@ -34,6 +34,10 @@ import analyticsRoutes from './routes/analyticsRoutes';
 import adminVendorRoutes from './routes/adminVendorRoutes';
 import adminSupportRoutes from './routes/adminSupportRoutes';
 import vendorDashboardRoutes from './routes/vendorDashboardRoutes';
+import adminUserRoutes from './routes/adminUserRoutes';
+import adminPermissionRoutes from './routes/adminPermissionRoutes';
+import adminOverviewRoutes from './routes/adminOverviewRoutes';
+import { auditLogger } from './middlewares/auditMiddleware';
 
 import { initSocket } from './socket';
 
@@ -87,6 +91,7 @@ app.prepare().then(async () => {
     res.json({ status: 'ok', timestamp: new Date() });
   });
 
+  server.use(auditLogger);
   server.use('/api/users', userRoutes);
   server.use('/api/auth', authRoutes);
   server.use('/api/upload', uploadRoutes);
@@ -111,6 +116,9 @@ app.prepare().then(async () => {
   server.use('/api/analytics', analyticsRoutes);
   server.use('/api/admin/vendors', adminVendorRoutes);
   server.use('/api/admin/support', adminSupportRoutes);
+  server.use('/api/admin/users', adminUserRoutes);
+  server.use('/api/admin/permissions', adminPermissionRoutes);
+  server.use('/api/admin/overview', adminOverviewRoutes);
   server.use('/api/vendor-dashboard', vendorDashboardRoutes);
   // Serve uploaded files statically
   server.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));

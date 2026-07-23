@@ -1,0 +1,89 @@
+
+> laundrix@0.1.0 dev
+> node scripts/ensure-dev-port-free.js && nodemon --watch server --watch tsconfig.server.json --ext ts --exec ts-node --project tsconfig.server.json server/index.ts
+
+[33m[nodemon] 3.1.14[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] watching path(s): server\**\* tsconfig.server.json[39m
+[33m[nodemon] watching extensions: ts[39m
+[32m[nodemon] starting `ts-node --project tsconfig.server.json server/index.ts`[39m
+◇ injected env (23) from .env // tip: ⌘ enable debugging { debug: true }
+◇ injected env (0) from .env // tip: ⌘ suppress logs { quiet: true }
+C:\Users\LOQ\Desktop\MY WORKS Web Dev\JEVXO\LAVO\node_modules\ts-node\src\index.ts:859
+    return new TSError(diagnosticText, diagnosticCodes, diagnostics);
+           ^
+TSError: ⨯ Unable to compile TypeScript:
+server/controllers/branch/branchVendorController.ts(20,9): error TS2353: Object literal may only specify known properties, and 'branchId' does not exist in type 'VendorWhereInput'.
+server/controllers/branch/branchVendorController.ts(47,31): error TS2339: Property 'capacity' does not exist on type '{ email: string; id: string; phone: string; status: string; isVerified: boolean; createdAt: Date; updatedAt: Date; deletedAt: Date | null; vendorCode: string; businessName: string; ... 4 more ...; joinedAt: Date; }'.
+server/controllers/branch/branchVendorController.ts(48,31): error TS2339: Property 'orders' does not exist on type '{ email: string; id: string; phone: string; status: string; isVerified: boolean; createdAt: Date; updatedAt: Date; deletedAt: Date | null; vendorCode: string; businessName: string; ... 4 more ...; joinedAt: Date; }'.
+server/controllers/branch/branchVendorController.ts(60,17): error TS2339: Property 'profile' does not exist on type '{ email: string; id: string; phone: string; status: string; isVerified: boolean; createdAt: Date; updatedAt: Date; deletedAt: Date | null; vendorCode: string; businessName: string; ... 4 more ...; joinedAt: Date; }'.
+server/controllers/branch/branchVendorController.ts(64,28): error TS2339: Property 'capacity' does not exist on type '{ email: string; id: string; phone: string; status: string; isVerified: boolean; createdAt: Date; updatedAt: Date; deletedAt: Date | null; vendorCode: string; businessName: string; ... 4 more ...; joinedAt: Date; }'.
+server/controllers/branch/branchVendorController.ts(66,25): error TS2339: Property 'orders' does not exist on type '{ email: string; id: string; phone: string; status: string; isVerified: boolean; createdAt: Date; updatedAt: Date; deletedAt: Date | null; vendorCode: string; businessName: string; ... 4 more ...; joinedAt: Date; }'.
+server/controllers/branch/branchVendorController.ts(139,30): error TS2353: Object literal may only specify known properties, and 'branchId' does not exist in type 'VendorWhereInput'.
+server/controllers/branch/branchVendorController.ts(148,29): error TS2339: Property 'capacity' does not exist on type '{ email: string; id: string; phone: string; status: string; isVerified: boolean; createdAt: Date; updatedAt: Date; deletedAt: Date | null; vendorCode: string; businessName: string; ... 4 more ...; joinedAt: Date; }'.
+
+    at createTSError (C:\Users\LOQ\Desktop\MY WORKS Web Dev\JEVXO\LAVO\node_modules\ts-node\src\index.ts:859:12)
+    at reportTSError (C:\Users\LOQ\Desktop\MY WORKS Web Dev\JEVXO\LAVO\node_modules\ts-node\src\index.ts:863:19)
+    at getOutput (C:\Users\LOQ\Desktop\MY WORKS Web Dev\JEVXO\LAVO\node_modules\ts-node\src\index.ts:1077:36)
+    at Object.compile (C:\Users\LOQ\Desktop\MY WORKS Web Dev\JEVXO\LAVO\node_modules\ts-node\src\index.ts:1433:41)
+    at Module.m._compile (C:\Users\LOQ\Desktop\MY WORKS Web Dev\JEVXO\LAVO\node_modules\ts-node\src\index.ts:1617:30)
+    at node:internal/modules/cjs/loader:1985:10
+    at Object.require.extensions.<computed> [as .ts] (C:\Users\LOQ\Desktop\MY WORKS Web Dev\JEVXO\LAVO\node_modules\ts-node\src\index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1577:32)
+    at Module._load (node:internal/modules/cjs/loader:1379:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19) {
+  diagnosticCodes: [
+    2353, 2339, 2339,
+    2339, 2339, 2339,
+    2353, 2339
+  ]
+}
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node --project tsconfig.server.json server/index.ts`[39m
+◇ injected env (23) from .env // tip: ⌘ multiple files { path: ['.env.local', '.env'] }
+◇ injected env (0) from .env // tip: ⌘ suppress logs { quiet: true }
+C:\Users\LOQ\Desktop\MY WORKS Web Dev\JEVXO\LAVO\node_modules\ts-node\src\index.ts:859
+    return new TSError(diagnosticText, diagnosticCodes, diagnostics);
+           ^
+TSError: ⨯ Unable to compile TypeScript:
+server/controllers/branch/branchVendorController.ts(138,30): error TS2353: Object literal may only specify known properties, and 'branchId' does not exist in type 'VendorWhereInput'.
+server/controllers/branch/branchVendorController.ts(147,29): error TS2339: Property 'capacity' does not exist on type '{ email: string; id: string; phone: string; status: string; isVerified: boolean; createdAt: Date; updatedAt: Date; deletedAt: Date | null; vendorCode: string; businessName: string; ... 4 more ...; joinedAt: Date; }'.
+
+    at createTSError (C:\Users\LOQ\Desktop\MY WORKS Web Dev\JEVXO\LAVO\node_modules\ts-node\src\index.ts:859:12)
+    at reportTSError (C:\Users\LOQ\Desktop\MY WORKS Web Dev\JEVXO\LAVO\node_modules\ts-node\src\index.ts:863:19)
+    at getOutput (C:\Users\LOQ\Desktop\MY WORKS Web Dev\JEVXO\LAVO\node_modules\ts-node\src\index.ts:1077:36)
+    at Object.compile (C:\Users\LOQ\Desktop\MY WORKS Web Dev\JEVXO\LAVO\node_modules\ts-node\src\index.ts:1433:41)
+    at Module.m._compile (C:\Users\LOQ\Desktop\MY WORKS Web Dev\JEVXO\LAVO\node_modules\ts-node\src\index.ts:1617:30)
+    at node:internal/modules/cjs/loader:1985:10
+    at Object.require.extensions.<computed> [as .ts] (C:\Users\LOQ\Desktop\MY WORKS Web Dev\JEVXO\LAVO\node_modules\ts-node\src\index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1577:32)
+    at Module._load (node:internal/modules/cjs/loader:1379:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19) {
+  diagnosticCodes: [ 2353, 2339 ]
+}
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node --project tsconfig.server.json server/index.ts`[39m
+◇ injected env (23) from .env // tip: ⌘ override existing { override: true }
+◇ injected env (0) from .env // tip: ⌘ override existing { override: true }
+⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of C:\Users\LOQ\package-lock.json as the root directory.
+ To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * C:\Users\LOQ\Desktop\MY WORKS Web Dev\JEVXO\LAVO\package-lock.json
+
+Prisma connected to the database successfully!
+> Ready on http://localhost:3000
+○ Compiling / ...
+[2026-07-23T04:27:27.922Z] GET / 200 33698.624 ms - -
+ GET / 200 in 33.7s (next.js: 19.4s, application-code: 14.3s)
+⨯ upstream image response failed for https://images.unsplash.com/photo-1582735689141-c11bb356c6d5?auto=format&fit=crop&q=80&w=800 404
+[browser] Image with src "https://images.unsplash.com/photo-1545173168-9f1947eebb7f?auto=format&fit=crop&q=80&w=1200" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[browser] Image with src "https://images.unsplash.com/photo-1545173168-9f1947eebb7f?auto=format&fit=crop&q=80&w=1200" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+[2026-07-23T04:27:32.201Z] GET /api/auth/me 200 2632.012 ms - 279
+[2026-07-23T04:27:35.790Z] GET /sw.js 404 4428.857 ms - -
+ GET /sw.js 404 in 4.4s (next.js: 4.2s, application-code: 225ms)
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }

@@ -43,6 +43,7 @@ model User {
   customer             Customer?
   pickupAgent          PickupAgent?
   deliveryAgent        DeliveryAgent?
+  adminPermission      AdminPermission?
 }
 
 model UserProfile {
@@ -225,7 +226,6 @@ model Permission {
   updatedAt      DateTime @updatedAt
 
   roles               RolePermission[]
-  adminPermissions    AdminPermission[]
   branchPermissions   BranchPermission[]
   vendorPermissions   VendorPermission[]
   employeePermissions EmployeePermission[]
@@ -259,18 +259,17 @@ model UserRole {
 }
 
 model AdminPermission {
-  id           String     @id @default(uuid())
-  adminId      String // Refers to User.id where userType = Admin
-  permissionId String
-  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
-  canView      Boolean    @default(false)
-  canCreate    Boolean    @default(false)
-  canUpdate    Boolean    @default(false)
-  canDelete    Boolean    @default(false)
-  canApprove   Boolean    @default(false)
-  canAssign    Boolean    @default(false)
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  id                   String   @id @default(uuid())
+  userId               String   @unique
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  canManageCustomerOps Boolean  @default(false)
+  canManageBranchOps   Boolean  @default(false)
+  canManageVendorOps   Boolean  @default(false)
+  canManageAgentOps    Boolean  @default(false)
+  canManageEmployeeOps Boolean  @default(false)
+  canManageFinance     Boolean  @default(false)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 }
 
 model BranchRole {

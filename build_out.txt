@@ -13,22 +13,32 @@
 - Environments: .env
 
   Creating an optimized production build ...
-✓ Compiled successfully in 35.3s
+✓ Compiled successfully in 41s
   Running TypeScript ...
-  Finished TypeScript in 28.7s ...
+  Finished TypeScript in 37.2s ...
   Collecting page data using 11 workers ...
-  Generating static pages using 11 workers (0/41) ...
-  Generating static pages using 11 workers (10/41) 
+  Generating static pages using 11 workers (0/58) ...
+The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+  Generating static pages using 11 workers (14/58) 
+The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+  Generating static pages using 11 workers (28/58) 
+  Generating static pages using 11 workers (43/58) 
 null
-  Generating static pages using 11 workers (20/41) 
-  Generating static pages using 11 workers (30/41) 
-✓ Generating static pages using 11 workers (41/41) in 2.3s
+✓ Generating static pages using 11 workers (58/58) in 4.6s
   Finalizing page optimization ...
 
 Route (app)
 ┌ ƒ /
 ├ ○ /_not-found
+├ ○ /admin/dashboard
 ├ ƒ /branches
+├ ○ /contact
 ├ ƒ /corporate
 ├ ƒ /coverage
 ├ ○ /dashboard
@@ -41,8 +51,10 @@ Route (app)
 ├ ○ /dashboard/branch/inventory
 ├ ○ /dashboard/branch/orders
 ├ ○ /dashboard/branch/overview
+├ ○ /dashboard/branch/vendors
 ├ ○ /dashboard/branches
 ├ ○ /dashboard/cms
+├ ○ /dashboard/customer-reviews
 ├ ○ /dashboard/delivery
 ├ ○ /dashboard/delivery-agent/deliveries
 ├ ○ /dashboard/delivery-agent/history
@@ -57,16 +69,28 @@ Route (app)
 ├ ƒ /dashboard/help-desk/[id]
 ├ ○ /dashboard/logistics
 ├ ○ /dashboard/my-orders
+├ ○ /dashboard/my-reviews
 ├ ○ /dashboard/services
 ├ ○ /dashboard/settings
 ├ ○ /dashboard/support
 ├ ƒ /dashboard/support/[id]
 ├ ○ /dashboard/track-orders
+├ ○ /dashboard/unauthorized
 ├ ○ /dashboard/users
+├ ○ /dashboard/users/permissions
 ├ ○ /dashboard/users/roles
+├ ○ /dashboard/vendor/capacity
+├ ○ /dashboard/vendor/dashboard
+├ ○ /dashboard/vendor/employees
+├ ○ /dashboard/vendor/orders
+├ ○ /dashboard/vendor/payouts
+├ ○ /dashboard/vendor/performance
+├ ○ /dashboard/vendor/services
+├ ○ /dashboard/vendor/wallet
 ├ ○ /dashboard/vendors
 ├ ○ /dashboard/wallet
 ├ ○ /dashboard/wishlist
+├ ○ /insights
 ├ ○ /login
 ├ ƒ /partner
 ├ ○ /payment/simulated
@@ -74,7 +98,8 @@ Route (app)
 ├ ○ /register
 ├ ○ /scanner
 ├ ƒ /services
-└ ƒ /services/[slug]
+├ ƒ /services/[slug]
+└ ○ /story
 
 
 ƒ Proxy (Middleware)

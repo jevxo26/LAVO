@@ -210,7 +210,7 @@ export default function VendorEmployeesPage() {
             )}
             <div className="space-y-1">
               <Label>Status</Label>
-              <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
+              <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v || "ACTIVE" })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="ACTIVE">Active</SelectItem>
