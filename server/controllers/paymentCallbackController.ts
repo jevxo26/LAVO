@@ -3,6 +3,17 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+function getFrontendUrl(req: Request) {
+  const referer = req.get("referer") || req.get("origin");
+  if (referer) {
+    try {
+      const u = new URL(referer);
+      return u.origin;
+    } catch {}
+  }
+  return process.env.FRONTEND_URL || "http://localhost:3000";
+}
+
 export class PaymentCallbackController {
   private static async verifySSLCommerz(val_id: string): Promise<boolean> {
     const storeId = process.env.SSLCOMMERZ_STORE_ID;
@@ -29,7 +40,8 @@ export class PaymentCallbackController {
 
       const isVerified = await PaymentCallbackController.verifySSLCommerz(val_id);
       if (!isVerified) {
-        res.redirect("/dashboard/my-orders?status=fail&msg=Payment%20verification%20failed");
+        const frontendUrl = getFrontendUrl(req);
+        res.redirect(`${frontendUrl}/dashboard/my-orders?status=fail&msg=Payment%20verification%20failed`);
         return;
       }
 
@@ -106,22 +118,23 @@ export class PaymentCallbackController {
         });
       }
 
-      const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+      const frontendUrl = getFrontendUrl(req);
       res.redirect(`${frontendUrl}/dashboard/my-orders?status=success`);
     } catch {
-      const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+      const frontendUrl = getFrontendUrl(req);
       res.redirect(`${frontendUrl}/dashboard/my-orders?status=success`);
     }
   };
 
   static handleFail = async (req: Request, res: Response): Promise<void> => {
-    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+    const frontendUrl = getFrontendUrl(req);
     res.redirect(`${frontendUrl}/dashboard/my-orders?status=fail`);
   };
 
   static handleCancel = async (req: Request, res: Response): Promise<void> => {
-    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+    const frontendUrl = getFrontendUrl(req);
     res.redirect(`${frontendUrl}/dashboard/my-orders?status=cancel`);
   };
 }
+
 
