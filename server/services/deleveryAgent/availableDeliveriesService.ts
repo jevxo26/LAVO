@@ -211,6 +211,20 @@ export const acceptDelivery = async (
         }
       });
 
+      // Broadcast real-time Socket event to Customer Dashboard & Order Tracker
+      try {
+        const { getIO } = await import("../../socket");
+        if (customerInfo?.userId) {
+          getIO().to(`customer_${customerInfo.userId}`).emit("orderStatusUpdated", {
+            orderId: delivery.orderId,
+            orderStatus: "DELIVERY",
+          });
+          console.log(`📢 [Socket] Broadcasted orderStatusUpdated (DELIVERY) to customer_${customerInfo.userId}`);
+        }
+      } catch (err) {
+        console.error("Socket broadcast failed in acceptDelivery:", err);
+      }
+
       const existingOtp =
         await tx.deliveryOTP.findFirst({
           where: {

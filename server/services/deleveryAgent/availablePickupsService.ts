@@ -176,6 +176,20 @@ export const acceptPickup = async (
             }
         });
 
+        // Broadcast real-time Socket event to Customer Dashboard & Order Tracker
+        try {
+            const { getIO } = await import("../../socket");
+            if (customerInfo?.userId) {
+                getIO().to(`customer_${customerInfo.userId}`).emit("orderStatusUpdated", {
+                    orderId: delivery.orderId,
+                    orderStatus: "CONFIRMED",
+                });
+                console.log(`📢 [Socket] Broadcasted orderStatusUpdated (CONFIRMED) to customer_${customerInfo.userId}`);
+            }
+        } catch (err) {
+            console.error("Socket broadcast failed in acceptPickup:", err);
+        }
+
         // 4. Generate a pickup verification OTP (agent presents to customer at pickup)
         const existingOtp = await tx.deliveryOTP.findFirst({
             where: {

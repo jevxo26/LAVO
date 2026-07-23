@@ -144,6 +144,23 @@ console.log("NOW:", new Date());
         description: 'Your clean laundry has been successfully delivered. Thank you!',
       }
     });
+
+    try {
+      const { getIO } = await import('../../socket');
+      const order = await prisma.order.findUnique({
+        where: { id: delivery.orderId },
+        include: { customer: true },
+      });
+      if (order?.customer?.userId) {
+        getIO().to(`customer_${order.customer.userId}`).emit('orderStatusUpdated', {
+          orderId: delivery.orderId,
+          orderStatus: 'COMPLETED',
+        });
+        console.log(`📢 [Socket] Broadcasted orderStatusUpdated (COMPLETED) to customer_${order.customer.userId}`);
+      }
+    } catch (err) {
+      console.error('Socket broadcast failed in verifyOTP:', err);
+    }
   } else if (delivery.deliveryType === 'PICKUP') {
     // Pickup verified = garments collected, now being taken to the branch
     await prisma.order.update({
@@ -157,6 +174,23 @@ console.log("NOW:", new Date());
         description: 'Your garments have been collected and are on their way to the laundry hub.',
       }
     });
+
+    try {
+      const { getIO } = await import('../../socket');
+      const order = await prisma.order.findUnique({
+        where: { id: delivery.orderId },
+        include: { customer: true },
+      });
+      if (order?.customer?.userId) {
+        getIO().to(`customer_${order.customer.userId}`).emit('orderStatusUpdated', {
+          orderId: delivery.orderId,
+          orderStatus: 'PICKUP',
+        });
+        console.log(`📢 [Socket] Broadcasted orderStatusUpdated (PICKUP) to customer_${order.customer.userId}`);
+      }
+    } catch (err) {
+      console.error('Socket broadcast failed in verifyOTP:', err);
+    }
   }
 
   await prisma.deliveryVerification.create({
