@@ -146,6 +146,9 @@ export const acceptDelivery = async (
     where: {
       userId,
     },
+    include: {
+      user: { select: { phone: true, fullName: true } }
+    }
   });
   if (!agent) {
     throw new Error("Delivery agent not found");
@@ -211,6 +214,20 @@ export const acceptDelivery = async (
         }
       });
 
+      // Broadcast real-time Socket event to Customer Dashboard & Order Tracker
+      try {
+        const { getIO } = await import("../../socket");
+        if (customerInfo?.userId) {
+          getIO().to(`customer_${customerInfo.userId}`).emit("orderStatusUpdated", {
+            orderId: delivery.orderId,
+            orderStatus: "DELIVERY",
+          });
+          console.log(`📢 [Socket] Broadcasted orderStatusUpdated (DELIVERY) to customer_${customerInfo.userId}`);
+        }
+      } catch (err) {
+        console.error("Socket broadcast failed in acceptDelivery:", err);
+      }
+
       const existingOtp =
         await tx.deliveryOTP.findFirst({
           where: {
@@ -245,11 +262,12 @@ export const acceptDelivery = async (
       // Trigger Delivery OTP SMS to Customer (Priority: specificAddress.receiverPhone -> user.phone -> addresses[0].receiverPhone)
       const customerPhone = specificAddress?.receiverPhone || customerInfo?.user?.phone || customerInfo?.addresses?.[0]?.receiverPhone;
       const customerName = specificAddress?.receiverName || customerInfo?.user?.fullName || customerInfo?.addresses?.[0]?.receiverName;
+      const agentPhone = agent.user?.phone || agent.phone;
       const orderNum = orderInfo?.orderNumber || delivery.orderId;
 
       if (customerPhone && otpToSend) {
-        console.log(`📱 [Delivery OTP SMS] Sending OTP ${otpToSend} to customer phone: ${customerPhone} for Order ${orderNum}`);
-        SMSService.sendDeliveryOTP(customerPhone, otpToSend, orderNum, customerName).catch((err) => {
+        console.log(`📱 [Delivery OTP SMS] Sending OTP ${otpToSend} with agent phone ${agentPhone} to customer phone: ${customerPhone} for Order ${orderNum}`);
+        SMSService.sendDeliveryOTP(customerPhone, otpToSend, orderNum, customerName, agentPhone).catch((err) => {
           console.error("[Delivery SMS Error]:", err);
         });
       } else {

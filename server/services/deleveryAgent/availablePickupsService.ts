@@ -110,6 +110,9 @@ export const acceptPickup = async (
         await prisma.deliveryAgent.findUnique({
             where: {
                 userId
+            },
+            include: {
+                user: { select: { phone: true, fullName: true } }
             }
         });
 
@@ -176,6 +179,20 @@ export const acceptPickup = async (
             }
         });
 
+        // Broadcast real-time Socket event to Customer Dashboard & Order Tracker
+        try {
+            const { getIO } = await import("../../socket");
+            if (customerInfo?.userId) {
+                getIO().to(`customer_${customerInfo.userId}`).emit("orderStatusUpdated", {
+                    orderId: delivery.orderId,
+                    orderStatus: "CONFIRMED",
+                });
+                console.log(`📢 [Socket] Broadcasted orderStatusUpdated (CONFIRMED) to customer_${customerInfo.userId}`);
+            }
+        } catch (err) {
+            console.error("Socket broadcast failed in acceptPickup:", err);
+        }
+
         // 4. Generate a pickup verification OTP (agent presents to customer at pickup)
         const existingOtp = await tx.deliveryOTP.findFirst({
             where: {
@@ -201,11 +218,12 @@ export const acceptPickup = async (
         // Trigger Pickup OTP SMS to Customer (Priority: specificAddress.receiverPhone -> user.phone -> addresses[0].receiverPhone)
         const customerPhone = specificAddress?.receiverPhone || customerInfo?.user?.phone || customerInfo?.addresses?.[0]?.receiverPhone;
         const customerName = specificAddress?.receiverName || customerInfo?.user?.fullName || customerInfo?.addresses?.[0]?.receiverName;
+        const agentPhone = agent.user?.phone || agent.phone;
         const orderNum = orderInfo?.orderNumber || delivery.orderId;
 
         if (customerPhone && otpToSend) {
-            console.log(`📱 [Pickup OTP SMS] Sending OTP ${otpToSend} to customer phone: ${customerPhone} for Order ${orderNum}`);
-            SMSService.sendPickupOTP(customerPhone, otpToSend, orderNum, customerName).catch((err) => {
+            console.log(`📱 [Pickup OTP SMS] Sending OTP ${otpToSend} with agent phone ${agentPhone} to customer phone: ${customerPhone} for Order ${orderNum}`);
+            SMSService.sendPickupOTP(customerPhone, otpToSend, orderNum, customerName, agentPhone).catch((err) => {
                 console.error("[Pickup SMS Error]:", err);
             });
         } else {

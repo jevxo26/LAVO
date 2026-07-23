@@ -70,18 +70,20 @@ export class SMSService {
   /**
    * Send Pickup OTP SMS to Customer when agent claims pickup task
    */
-  static async sendPickupOTP(phone: string, otpCode: string, orderNumber: string, customerName?: string): Promise<boolean> {
+  static async sendPickupOTP(phone: string, otpCode: string, orderNumber: string, customerName?: string, agentPhone?: string): Promise<boolean> {
     const namePart = customerName ? `${customerName}, ` : '';
-    const message = `Hello ${namePart}your LAUNDRIX pickup agent is on the way. Your Pickup Verification OTP is: ${otpCode}. Share this OTP with the agent upon arrival. Order #${orderNumber}`;
+    const agentContact = agentPhone ? ` Agent Contact: ${agentPhone}.` : '';
+    const message = `Hello ${namePart}your LAUNDRIX pickup agent is on the way. Your Pickup Verification OTP is: ${otpCode}.${agentContact} Share this OTP with the agent upon arrival. Order #${orderNumber}`;
     return this.sendSMS(phone, message);
   }
 
   /**
    * Send Delivery OTP SMS to Customer when agent claims dropoff task
    */
-  static async sendDeliveryOTP(phone: string, otpCode: string, orderNumber: string, customerName?: string): Promise<boolean> {
+  static async sendDeliveryOTP(phone: string, otpCode: string, orderNumber: string, customerName?: string, agentPhone?: string): Promise<boolean> {
     const namePart = customerName ? `${customerName}, ` : '';
-    const message = `Hello ${namePart}your clean clothes are out for delivery! Your Delivery Verification OTP is: ${otpCode}. Share this OTP with the delivery agent upon receipt. Order #${orderNumber}`;
+    const agentContact = agentPhone ? ` Agent Contact: ${agentPhone}.` : '';
+    const message = `Hello ${namePart}your clean clothes are out for delivery! Your Delivery Verification OTP is: ${otpCode}.${agentContact} Share this OTP with the delivery agent upon receipt. Order #${orderNumber}`;
     return this.sendSMS(phone, message);
   }
 }
