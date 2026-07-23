@@ -62,8 +62,8 @@ app.prepare().then(async () => {
 
   server.use(cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (mobile apps, curl, server-to-server)
-      if (!origin || allowedOrigins.includes(origin)) {
+      // Allow requests with no origin, 'null' origin (form POST redirects), SSLCommerz gateways, or configured allowed origins
+      if (!origin || origin === 'null' || allowedOrigins.includes(origin) || origin.includes('sslcommerz.com')) {
         callback(null, true);
       } else {
         callback(new Error(`CORS: Origin '${origin}' not allowed`));
