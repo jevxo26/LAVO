@@ -59,12 +59,15 @@ export const getPickupOrders = catchServiceAsync(async (req: any, res: Response)
       0
     );
 
+    const addr = order.customer?.addresses?.find((a: any) => a.id === order.pickupAddressId) || order.customer?.addresses?.[0];
+
     return {
       id: order.id,
       orderNumber: order.orderNumber,
       orderStatus: order.orderStatus,
-      customerName: order.customer?.user?.fullName || order.customer?.addresses?.[0]?.receiverName || 'N/A',
-      customerPhone: order.customer?.user?.phone || order.customer?.addresses?.[0]?.receiverPhone || 'N/A',
+      customerName: addr?.receiverName || order.customer?.user?.fullName || 'N/A',
+      customerPhone: addr?.receiverPhone || order.customer?.user?.phone || 'N/A',
+      customerAddress: addr?.fullAddress || 'N/A',
       branch: order.branch?.branchName || 'N/A',
       totalGarments,
       qrGenerated,

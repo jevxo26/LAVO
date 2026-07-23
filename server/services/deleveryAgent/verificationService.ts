@@ -33,16 +33,18 @@ export const getVerificationList = async (userId: string) => {
   });
 
   return deliveries.map((delivery) => {
+    const targetAddressId = delivery.deliveryAddressId || (delivery.deliveryType === 'PICKUP' ? delivery.order?.pickupAddressId : delivery.order?.deliveryAddressId);
     const address =
-      delivery.customer.addresses.find((a) => a.isDefault) ??
-      delivery.customer.addresses[0];
+      delivery.customer?.addresses.find((a) => a.id === targetAddressId) ??
+      delivery.customer?.addresses.find((a) => a.isDefault) ??
+      delivery.customer?.addresses[0];
 
     return {
       deliveryId: delivery.id,
       orderId: delivery.orderId,
       deliveryType: delivery.deliveryType,
-      customerName: delivery.customer?.user?.fullName || address?.receiverName || "N/A",
-      customerPhone: delivery.customer?.user?.phone || address?.receiverPhone || "N/A",
+      customerName: address?.receiverName || delivery.customer?.user?.fullName || "N/A",
+      customerPhone: address?.receiverPhone || delivery.customer?.user?.phone || "N/A",
       deliveryAddress: address?.fullAddress ?? "N/A",
       deliveryStatus: delivery.deliveryStatus,
       verificationStatus:

@@ -1,5 +1,5 @@
 import { ColumnDef } from "@tanstack/react-table";
-import { Eye, Check, Package } from "lucide-react";
+import { Eye, Check, Package, Store, Building2 } from "lucide-react";
 
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Button } from "@/components/ui/button";
@@ -51,11 +51,28 @@ export const getPickupColumns = ({
   },
 
   {
-    accessorKey: "branch",
-    header: "Branch",
-    cell: ({ row }) => (
-      <span className="font-medium">{row.original.branch}</span>
-    ),
+    accessorKey: "dropoffDestination",
+    header: "Drop-off Hub / Destination",
+    cell: ({ row }) => {
+      const dest = row.original.dropoffDestination;
+      if (dest?.isVendor) {
+        return (
+          <div className="inline-flex flex-col">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200">
+              <Store className="h-3.5 w-3.5 text-purple-600" />
+              Vendor: {dest.name}
+            </span>
+            <span className="text-[11px] text-slate-400 mt-0.5 font-mono">Code: {dest.code}</span>
+          </div>
+        );
+      }
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200">
+          <Building2 className="h-3.5 w-3.5 text-blue-600" />
+          Main Hub: {dest?.name || row.original.branch}
+        </span>
+      );
+    },
   },
 
   {

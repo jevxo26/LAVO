@@ -4,6 +4,13 @@ export interface AvailablePickup {
   customerName: string;
   customerPhone: string;
   branch: string;
+  dropoffDestination?: {
+    isVendor: boolean;
+    type: string;
+    name: string;
+    code?: string;
+    phone?: string;
+  };
   pickupAddress: string;
   distance: string; 
   priority: string;

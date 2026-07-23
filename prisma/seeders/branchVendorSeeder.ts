@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt';
 const prisma = new PrismaClient();
 
 export async function seedBranchVendors() {
-  console.log('🌱 Starting Branch Vendor Seeding (3 Vendors per Branch across 8 Divisions)...');
+  console.log('🌱 Starting Branch Vendor & Vendor Employee Seeding (3 Vendors per Branch, 3 Employees per Vendor across 8 Divisions)...');
 
   const passwordHash = await bcrypt.hash('Lavo@2026', 10);
 
@@ -19,6 +19,13 @@ export async function seedBranchVendors() {
   }
 
   let totalVendorsCreated = 0;
+  let totalVendorEmployeesCreated = 0;
+
+  const employeeRoles = [
+    { designation: 'Washer & Dry Cleaning Operator', department: 'Washing & Processing' },
+    { designation: 'Ironing & Pressing Specialist', department: 'Finishing & Pressing' },
+    { designation: 'Packaging & Quality Specialist', department: 'Quality & Packing' }
+  ];
 
   for (const branch of branches) {
     const slug = branch.branchCode.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -30,7 +37,7 @@ export async function seedBranchVendors() {
       const businessName = `${branch.branchName} Partner Wash ${i}`;
       const ownerName = `Vendor ${i} (${branch.branchName})`;
 
-      // 1. Upsert User account for Vendor
+      // 1. Upsert User account for Vendor Owner
       const user = await prisma.user.upsert({
         where: { email },
         update: {
@@ -96,7 +103,7 @@ export async function seedBranchVendors() {
         });
       }
 
-      // 4. Upsert VendorCapacity (Default: 20-30 daily max garments/orders capacity)
+      // 4. Upsert VendorCapacity
       const dailyCapacity = 15 + i * 5; // e.g. 20, 25, 30
       await prisma.vendorCapacity.upsert({
         where: { vendorId: vendor.id },
@@ -113,19 +120,67 @@ export async function seedBranchVendors() {
         }
       });
 
+      // 5. Seed 3 Vendor Employees for this Vendor
+      for (let j = 1; j <= 3; j++) {
+        const empCodeSlug = vendorCode.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const empEmail = `vemp${j}_${empCodeSlug}@laundrix.com`;
+        const empPhone = `+88017${Math.floor(10000000 + Math.random() * 90000000)}`;
+        const empName = `${businessName} Tech ${j}`;
+        const role = employeeRoles[j - 1];
+
+        const empUser = await prisma.user.upsert({
+          where: { email: empEmail },
+          update: {
+            password: passwordHash,
+            userType: 'EMPLOYEE',
+            status: 'ACTIVE',
+            isVerified: true
+          },
+          create: {
+            email: empEmail,
+            fullName: empName,
+            phone: empPhone,
+            password: passwordHash,
+            userType: 'EMPLOYEE',
+            status: 'ACTIVE',
+            isVerified: true
+          }
+        });
+
+        // Link User as VendorEmployee
+        const existingVEmp = await prisma.vendorEmployee.findFirst({
+          where: { vendorId: vendor.id, employeeId: empUser.id }
+        });
+
+        if (!existingVEmp) {
+          await prisma.vendorEmployee.create({
+            data: {
+              vendorId: vendor.id,
+              employeeId: empUser.id,
+              designation: role.designation,
+              department: role.department,
+              joiningDate: new Date(),
+              status: 'ACTIVE'
+            }
+          });
+        }
+
+        totalVendorEmployeesCreated++;
+      }
+
       totalVendorsCreated++;
     }
 
-    console.log(`✅ Linked 3 Vendors to Branch: ${branch.branchName}`);
+    console.log(`✅ Linked 3 Vendors & 9 Vendor Employees to Branch: ${branch.branchName}`);
   }
 
-  console.log(`🎉 Branch Vendor Seeding Completed! Created/Updated ${totalVendorsCreated} Vendors.`);
+  console.log(`🎉 Seeding Completed! Created/Updated ${totalVendorsCreated} Vendors and ${totalVendorEmployeesCreated} Vendor Employees across all 8 division branches.`);
 }
 
 if (require.main === module) {
   seedBranchVendors()
     .catch((e) => {
-      console.error('❌ Error seeding branch vendors:', e);
+      console.error('❌ Error seeding branch vendors & vendor employees:', e);
       process.exit(1);
     })
     .finally(async () => {

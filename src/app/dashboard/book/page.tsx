@@ -187,6 +187,10 @@ export default function BookLaundryPage() {
       toast.error("Please enter a pickup address");
       return;
     }
+    if (!receiverPhone.trim()) {
+      toast.error("Please enter a contact phone number");
+      return;
+    }
     if (!pickupDate) {
       toast.error("Please choose a pickup date");
       return;

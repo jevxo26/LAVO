@@ -38,7 +38,11 @@ export const getAvailablePickups = async (userId: string) => {
             ]
         },
         include: {
-            order: true,
+            order: {
+                include: {
+                    vendor: true
+                }
+            },
             customer: {
                 include: {
                     user: true,
@@ -51,15 +55,7 @@ export const getAvailablePickups = async (userId: string) => {
             createdAt: "desc"
         }
     });
-    // console.log("Agent ID:", agent.id);
-    // console.log(
-    //     "Assigned Deliveries:",
-    //     deliveries.map(d => ({
-    //         id: d.id,
-    //         type: d.deliveryType,
-    //         status: d.deliveryStatus
-    //     }))
-    // );
+
     return deliveries.map((delivery) => {
         const targetAddressId = delivery.deliveryAddressId || delivery.order?.pickupAddressId;
         const customerAddress =
@@ -69,6 +65,24 @@ export const getAvailablePickups = async (userId: string) => {
             delivery.customer?.addresses.find(
                 addr => addr.isDefault
             ) || delivery.customer?.addresses[0];
+
+        const assignedVendor = (delivery.order as any)?.vendor;
+        const dropoffDestination = assignedVendor
+            ? {
+                isVendor: true,
+                type: "VENDOR",
+                name: assignedVendor.businessName,
+                code: assignedVendor.vendorCode,
+                phone: assignedVendor.phone || "N/A",
+              }
+            : {
+                isVendor: false,
+                type: "BRANCH",
+                name: delivery.branch?.branchName || "Main Branch Hub",
+                code: delivery.branch?.branchCode || "BRANCH",
+                phone: delivery.branch?.phone || "N/A",
+              };
+
         let distance = null;
         if (
             delivery.branch?.latitude &&
@@ -88,11 +102,12 @@ export const getAvailablePickups = async (userId: string) => {
             orderId: delivery.orderId,
             deliveryType: delivery.deliveryType,
             customerName:
-                delivery.customer?.user?.fullName || customerAddress?.receiverName || "N/A",
+                customerAddress?.receiverName || delivery.customer?.user?.fullName || "N/A",
             customerPhone:
-                delivery.customer?.user?.phone || customerAddress?.receiverPhone || "N/A",
+                customerAddress?.receiverPhone || delivery.customer?.user?.phone || "N/A",
             branch:
                 delivery.branch?.branchName ?? "N/A",
+            dropoffDestination,
             pickupAddress:
                 customerAddress?.fullAddress ?? "N/A",
             distance:

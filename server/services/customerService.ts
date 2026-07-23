@@ -498,6 +498,14 @@ export class CustomerService {
     ) => {
       const customer = await this.getOrCreateCustomer(userId);
 
+      if (!orderData.pickupAddress || !orderData.pickupAddress.trim()) {
+        throw new Error('Pickup address is required to place an order.');
+      }
+
+      if (!orderData.receiverPhone || !orderData.receiverPhone.trim()) {
+        throw new Error('Receiver phone number is required to place an order.');
+      }
+
       // 1. Calculate order prices
       let subtotal = 0.0;
       const orderItemsToCreate: any[] = [];
@@ -546,9 +554,9 @@ export class CustomerService {
       const address = await prisma.customerAddress.create({
         data: {
           customerId: customer.id,
-          receiverName: orderData.receiverName || customer.user.fullName,
-          receiverPhone: orderData.receiverPhone || customer.user.phone || '000000',
-          fullAddress: orderData.pickupAddress,
+          receiverName: orderData.receiverName?.trim() || customer.user.fullName || 'Customer',
+          receiverPhone: orderData.receiverPhone.trim(),
+          fullAddress: orderData.pickupAddress.trim(),
           city: 'Dhaka',
           latitude: orderData.latitude ?? null,
           longitude: orderData.longitude ?? null,
