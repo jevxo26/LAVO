@@ -146,6 +146,9 @@ export const acceptDelivery = async (
     where: {
       userId,
     },
+    include: {
+      user: { select: { phone: true, fullName: true } }
+    }
   });
   if (!agent) {
     throw new Error("Delivery agent not found");
@@ -259,11 +262,12 @@ export const acceptDelivery = async (
       // Trigger Delivery OTP SMS to Customer (Priority: specificAddress.receiverPhone -> user.phone -> addresses[0].receiverPhone)
       const customerPhone = specificAddress?.receiverPhone || customerInfo?.user?.phone || customerInfo?.addresses?.[0]?.receiverPhone;
       const customerName = specificAddress?.receiverName || customerInfo?.user?.fullName || customerInfo?.addresses?.[0]?.receiverName;
+      const agentPhone = agent.user?.phone || agent.phone;
       const orderNum = orderInfo?.orderNumber || delivery.orderId;
 
       if (customerPhone && otpToSend) {
-        console.log(`📱 [Delivery OTP SMS] Sending OTP ${otpToSend} to customer phone: ${customerPhone} for Order ${orderNum}`);
-        SMSService.sendDeliveryOTP(customerPhone, otpToSend, orderNum, customerName).catch((err) => {
+        console.log(`📱 [Delivery OTP SMS] Sending OTP ${otpToSend} with agent phone ${agentPhone} to customer phone: ${customerPhone} for Order ${orderNum}`);
+        SMSService.sendDeliveryOTP(customerPhone, otpToSend, orderNum, customerName, agentPhone).catch((err) => {
           console.error("[Delivery SMS Error]:", err);
         });
       } else {
