@@ -43,7 +43,8 @@ export const getDeliveryHistory = async (userId: string) => {
 
         return {
             deliveryId: delivery.id,
-            orderId: delivery.orderId,
+            orderId: delivery.order?.orderNumber || delivery.orderId,
+            rawOrderId: delivery.orderId,
             customerName: address?.receiverName || delivery.customer?.user?.fullName || "N/A",
             customerPhone: address?.receiverPhone || delivery.customer?.user?.phone || "N/A",
             customerAddress: address?.fullAddress || "N/A",
