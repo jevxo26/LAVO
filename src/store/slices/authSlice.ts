@@ -31,13 +31,13 @@ const getStoredToken = (): string | null =>
 const persistToken = (token: string) => {
   if (typeof window === "undefined") return;
   localStorage.setItem(TOKEN_KEY, token);
-  document.cookie = `${TOKEN_KEY}=${token}; path=/; max-age=${30 * 24 * 60 * 60}; SameSite=Strict`;
+  document.cookie = `${TOKEN_KEY}=${token}; path=/; max-age=${30 * 24 * 60 * 60}; SameSite=Lax`;
 };
 
 const clearToken = () => {
   if (typeof window === "undefined") return;
   localStorage.removeItem(TOKEN_KEY);
-  document.cookie = `${TOKEN_KEY}=; path=/; max-age=0; SameSite=Strict`;
+  document.cookie = `${TOKEN_KEY}=; path=/; max-age=0; SameSite=Lax`;
 };
 
 // ── Async Thunks ──────────────────────────────────────────────────────────────
@@ -186,12 +186,17 @@ const authSlice = createSlice({
       .addCase(socialLoginThunk.rejected, rejected)
       // fetch me (session rehydration)
       .addCase(fetchMeThunk.pending, (s) => { s.isLoading = true; })
-      .addCase(fetchMeThunk.fulfilled, fulfilled)
-      .addCase(fetchMeThunk.rejected, (s) => {
+      .addCase(fetchMeThunk.fulfilled, (s, a) => {
+        fulfilled(s, a);
+        if (a.payload?.token) persistToken(a.payload.token);
+      })
+      .addCase(fetchMeThunk.rejected, (s, a) => {
         s.isLoading = false;
-        s.isAuthenticated = false;
-        s.token = null;
-        clearToken();
+        if (a.payload === "Session expired") {
+          s.isAuthenticated = false;
+          s.token = null;
+          clearToken();
+        }
       })
       // logout
       .addCase(logoutThunk.fulfilled, (s) => {

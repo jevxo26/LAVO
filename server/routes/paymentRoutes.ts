@@ -1,17 +1,17 @@
-import express from 'express';
-import { PaymentController } from '../controllers/paymentController';
-import { verifyToken } from '../middlewares/authMiddleware';
+import express from "express";
+import { PaymentController } from "../controllers/paymentController";
+import { PaymentCallbackController } from "../controllers/paymentCallbackController";
+import { requireAuth } from "../middlewares/auth.middleware";
 
 const router = express.Router();
 
-// Public callback hooks from SSLCommerz (needs to bypass token verification because they are server-to-server or redirect POSTs)
-router.post('/sslcommerz/success', PaymentController.handleSuccess);
-router.post('/sslcommerz/fail', PaymentController.handleFail);
-router.post('/sslcommerz/cancel', PaymentController.handleCancel);
-router.post('/sslcommerz/ipn', PaymentController.handleIPN);
+// Public callback hooks from SSLCommerz & simulated gateway (supports POST and GET)
+router.all("/sslcommerz/success", PaymentCallbackController.handleSuccess);
+router.all("/sslcommerz/fail", PaymentCallbackController.handleFail);
+router.all("/sslcommerz/cancel", PaymentCallbackController.handleCancel);
 
-// Protected endpoints for initiating payments from client
-router.post('/sslcommerz/initiate', verifyToken, PaymentController.initiateOrderPayment);
-router.post('/sslcommerz/topup', verifyToken, PaymentController.initiateWalletTopup);
+// Protected endpoints for client initiation & verification
+router.post("/sslcommerz/initiate", requireAuth, PaymentController.initiateOrderPayment);
+router.post("/verify-order-payment", requireAuth, PaymentController.verifyOrderPayment);
 
 export default router;

@@ -29,48 +29,24 @@ function SimulatedPaymentContent() {
   const postToCallback = async (endpoint: string) => {
     setProcessing(true);
     try {
-      const res = await fetch(`/api/payments/sslcommerz/${endpoint}`, {
+      await fetch(`/api/payments/sslcommerz/${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           tran_id: sessionId,
-          val_id: "", // empty — verifySSLCommerz treats empty val_id as simulated
+          val_id: "SIMULATED_VAL_ID",
           amount,
+          ref,
         }),
-        redirect: "follow",
       });
 
-      // The server handler responds with a redirect (302).
-      // fetch with redirect:"follow" follows it, but since this is a
-      // server-side redirect to a page route, we need to navigate manually.
-      if (res.redirected) {
-        window.location.href = res.url;
-        return;
-      }
+      const dest =
+        type === "wallet"
+          ? `/dashboard/wallet?status=${endpoint}`
+          : `/dashboard/my-orders?status=${endpoint}`;
 
-      // Fallback: if the response wasn't a redirect, navigate manually
-      if (endpoint === "success") {
-        setStatus("success");
-        const dest =
-          type === "wallet"
-            ? "/dashboard/wallet?status=success"
-            : "/dashboard/my-orders?status=success";
-        setTimeout(() => (window.location.href = dest), 1200);
-      } else if (endpoint === "cancel") {
-        setStatus("cancel");
-        const dest =
-          type === "wallet"
-            ? "/dashboard/wallet?status=cancel"
-            : "/dashboard/my-orders?status=cancel";
-        setTimeout(() => (window.location.href = dest), 1200);
-      } else {
-        setStatus("fail");
-        const dest =
-          type === "wallet"
-            ? "/dashboard/wallet?status=fail"
-            : "/dashboard/my-orders?status=fail";
-        setTimeout(() => (window.location.href = dest), 1200);
-      }
+      setStatus(endpoint as any);
+      setTimeout(() => router.push(dest), 600);
     } catch {
       setStatus("fail");
       setProcessing(false);

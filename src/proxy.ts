@@ -48,6 +48,7 @@ export function proxy(req: NextRequest) {
   }
 
   const token = req.cookies.get(TOKEN_KEY)?.value;
+  const isPaymentReturn = req.nextUrl.searchParams.has("status");
 
   if (isGuestOnly && token) {
     const dashUrl = req.nextUrl.clone();
@@ -55,7 +56,7 @@ export function proxy(req: NextRequest) {
     return NextResponse.redirect(dashUrl);
   }
 
-  if ((isDashboard || isScanner) && !token) {
+  if ((isDashboard || isScanner) && !token && !isPaymentReturn) {
     const loginUrl = req.nextUrl.clone();
     loginUrl.pathname = "/login";
     loginUrl.searchParams.set("redirect", pathname);
@@ -65,7 +66,9 @@ export function proxy(req: NextRequest) {
   if (token && (isDashboard || isScanner)) {
     const payload = decodeJwtPayload(token);
 
-    if (!payload || typeof payload.role !== "string") {
+    const rawRole = (payload?.userType || payload?.role || "") as string;
+
+    if (!payload || !rawRole) {
       const loginUrl = req.nextUrl.clone();
       loginUrl.pathname = "/login";
       const response = NextResponse.redirect(loginUrl);
@@ -73,7 +76,6 @@ export function proxy(req: NextRequest) {
       return response;
     }
 
-    const rawRole = payload.role as string;
     const role = rawRole.toUpperCase().replace(' ', '_');
 
     if (typeof payload.exp === "number" && payload.exp * 1000 < Date.now()) {
