@@ -61,7 +61,11 @@ export const getAvailablePickups = async (userId: string) => {
     //     }))
     // );
     return deliveries.map((delivery) => {
+        const targetAddressId = delivery.deliveryAddressId || delivery.order?.pickupAddressId;
         const customerAddress =
+            delivery.customer?.addresses.find(
+                addr => addr.id === targetAddressId
+            ) ||
             delivery.customer?.addresses.find(
                 addr => addr.isDefault
             ) || delivery.customer?.addresses[0];

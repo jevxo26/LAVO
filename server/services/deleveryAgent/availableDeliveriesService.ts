@@ -84,10 +84,14 @@ export const getAvailableDeliveries = async (
   // console.log("Total deliveries:", deliveries.length);
   // console.log(deliveries);
   return deliveries.map((delivery) => {
+    const targetAddressId = delivery.deliveryAddressId || delivery.order?.deliveryAddressId;
     const customerAddress =
-      delivery.customer.addresses.find(
+      delivery.customer?.addresses.find(
+        (addr) => addr.id === targetAddressId
+      ) ||
+      delivery.customer?.addresses.find(
         (addr) => addr.isDefault
-      ) || delivery.customer.addresses[0];
+      ) || delivery.customer?.addresses[0];
 
     let distance = null;
 
