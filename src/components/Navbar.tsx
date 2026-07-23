@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, QrCode, LogIn, ArrowRight, ShoppingBag } from "lucide-react";
+import { Menu, X, QrCode, LogIn, ArrowRight, ShoppingBag, ChevronDown } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
 const navLinks = [
@@ -16,11 +16,37 @@ const navLinks = [
   { name: "Partner", href: "/partner" },
 ];
 
+const moreLinks = [
+  { name: "Our Story", href: "/story" },
+  { name: "Insights & Resources", href: "/insights" },
+  { name: "Get in Touch", href: "/contact" },
+];
+
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
   const { isAuthenticated, logout } = useAuth();
+  const [moreOpen, setMoreOpen] = useState(false);
+
+  const moreRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        moreRef.current &&
+        !moreRef.current.contains(event.target as Node)
+      ) {
+        setMoreOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     setMounted(true);
@@ -53,11 +79,10 @@ export function Navbar() {
               <Link
                 key={item.name}
                 href={item.href}
-                className={`relative py-2 text-sm font-medium transition-colors ${
-                  isActive
-                    ? "text-primary"
-                    : "text-slate-500 hover:text-slate-900"
-                }`}
+                className={`relative py-2 text-sm font-medium transition-colors ${isActive
+                  ? "text-primary"
+                  : "text-slate-500 hover:text-slate-900"
+                  }`}
               >
                 {item.name}
                 {isActive && (
@@ -66,6 +91,41 @@ export function Navbar() {
               </Link>
             );
           })}
+          <div className="relative" ref={moreRef}>
+            <button
+              onClick={() => setMoreOpen((prev) => !prev)}
+              className={`flex items-center gap-1 py-2 text-sm font-medium transition-colors ${moreLinks.some((item) => pathname === item.href)
+                  ? "text-primary"
+                  : "text-slate-500 hover:text-slate-900"
+                }`}
+            >
+              More
+
+              <ChevronDown
+                size={16}
+                className={`transition-transform ${moreOpen ? "rotate-180" : ""
+                  }`}
+              />
+            </button>
+
+            {moreOpen && (
+              <div className="absolute right-0 mt-3 w-60 rounded-2xl border border-slate-200 bg-white shadow-xl py-2 z-50">
+                {moreLinks.map((item) => (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    onClick={() => setMoreOpen(false)}
+                    className={`block px-5 py-3 text-sm transition-colors ${pathname === item.href
+                        ? "bg-primary/5 text-primary"
+                        : "text-slate-700 hover:bg-slate-50"
+                      }`}
+                  >
+                    {item.name}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Action Buttons */}
@@ -124,15 +184,33 @@ export function Navbar() {
                 key={item.name}
                 href={item.href}
                 onClick={() => setIsOpen(false)}
-                className={`text-sm font-medium px-4 py-2 rounded-md ${
-                  pathname === item.href
-                    ? "bg-primary/5 text-primary"
-                    : "text-slate-600 hover:bg-surface-light"
-                }`}
+                className={`text-sm font-medium px-4 py-2 rounded-md ${pathname === item.href
+                  ? "bg-primary/5 text-primary"
+                  : "text-slate-600 hover:bg-surface-light"
+                  }`}
               >
                 {item.name}
               </Link>
             ))}
+            <div className="border-t pt-2">
+              <p className="px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                More
+              </p>
+
+              {moreLinks.map((item) => (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  onClick={() => setIsOpen(false)}
+                  className={`block px-4 py-2 rounded-md text-sm ${pathname === item.href
+                    ? "bg-primary/5 text-primary"
+                    : "text-slate-600 hover:bg-surface-light"
+                    }`}
+                >
+                  {item.name}
+                </Link>
+              ))}
+            </div>
           </div>
           <div className="flex flex-col gap-2 pt-4 border-t">
             <Link
