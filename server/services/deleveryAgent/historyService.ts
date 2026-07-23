@@ -34,16 +34,25 @@ export const getDeliveryHistory = async (userId: string) => {
         },
     });
 
-    return deliveries.map((delivery) => ({
-        deliveryId: delivery.id,
-        orderId: delivery.orderId,
-        customerName: delivery.customer?.user?.fullName || delivery.customer?.addresses?.[0]?.receiverName || "N/A",
-        customerPhone: delivery.customer?.user?.phone || delivery.customer?.addresses?.[0]?.receiverPhone || "N/A",
-        serviceType: delivery.order.orderType,
-        branch: delivery.branch?.branchName ?? "N/A",
-        amount: delivery.order.grandTotal,
-        paymentStatus: delivery.order.paymentStatus,
-        status: delivery.deliveryStatus,
-        completedAt: delivery.completedAt,
-    }));
+    return deliveries.map((delivery) => {
+        const targetAddressId = delivery.deliveryAddressId || delivery.order?.deliveryAddressId;
+        const address =
+            delivery.customer?.addresses.find((a) => a.id === targetAddressId) ??
+            delivery.customer?.addresses.find((a) => a.isDefault) ??
+            delivery.customer?.addresses[0];
+
+        return {
+            deliveryId: delivery.id,
+            orderId: delivery.orderId,
+            customerName: address?.receiverName || delivery.customer?.user?.fullName || "N/A",
+            customerPhone: address?.receiverPhone || delivery.customer?.user?.phone || "N/A",
+            customerAddress: address?.fullAddress || "N/A",
+            serviceType: delivery.order.orderType,
+            branch: delivery.branch?.branchName ?? "N/A",
+            amount: delivery.order.grandTotal,
+            paymentStatus: delivery.order.paymentStatus,
+            status: delivery.deliveryStatus,
+            completedAt: delivery.completedAt,
+        };
+    });
 };
