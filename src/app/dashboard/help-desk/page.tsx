@@ -1,90 +1,46 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import Link from "next/link";
+import { useEffect, useState } from "react";
 import {
   HelpCircle,
-  PlusCircle,
   MessageSquare,
-  ChevronDown,
-  Clock,
-  ArrowRight,
-  Loader2
+  PlusCircle,
+  Sparkles,
+  Inbox,
 } from "lucide-react";
-import { AnimatePresence, motion } from "framer-motion";
 import { authFetch } from "@/lib/api";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "@/lib/toast";
 
-
-
-interface FAQItem {
-  id: string;
-  question: string;
-  answer: string;
-  category: string;
-}
-
-interface Ticket {
-  id: string;
-  title: string;
-  description: string;
-  priority: string;
-  status: string;
-  assignedTo: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface Assignee {
-  id: string;
-  fullName: string;
-  userType: string;
-}
+import { Ticket, FAQItem, Assignee } from "@/components/help-desk/types";
+import { HelpDeskSkeleton }  from "@/components/help-desk/HelpDeskSkeletons";
+import { TicketCard }        from "@/components/help-desk/TicketCard";
+import { FAQAccordion }      from "@/components/help-desk/FAQAccordion";
+import { NewTicketDialog }   from "@/components/help-desk/NewTicketDialog";
 
 export default function HelpDeskPage() {
-  const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [faqs, setFaqs] = useState<FAQItem[]>([]);
-  const [assignees, setAssignees] = useState<Assignee[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [tickets, setTickets]             = useState<Ticket[]>([]);
+  const [faqs, setFaqs]                   = useState<FAQItem[]>([]);
+  const [assignees, setAssignees]         = useState<Assignee[]>([]);
+  const [loading, setLoading]             = useState(true);
   const [expandedFaqId, setExpandedFaqId] = useState<string | null>(null);
-
-  // New ticket state
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [priority, setPriority] = useState("NORMAL");
-  const [assignedTo, setAssignedTo] = useState("");
-  const [createLoading, setCreateLoading] = useState(false);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-
+  const [dialogOpen, setDialogOpen]       = useState(false);
 
   const loadData = async () => {
     try {
-      // Load tickets
-      const ticketsRes = await authFetch("/tickets");
-      const ticketsData = await ticketsRes.json();
-      if (ticketsData.success) {
-        setTickets(ticketsData.data);
-      }
-
-      // Load active assignees
-      const assigneesRes = await authFetch("/tickets/assignees");
-      const assigneesData = await assigneesRes.json();
-      if (assigneesData.success) {
-        setAssignees(assigneesData.data);
-      }
-
-      // Load FAQs
-      const faqsRes = await fetch("/api/customer/faqs");
-      const faqsData = await faqsRes.json();
-      if (faqsData.success) {
-        setFaqs(faqsData.data);
-      }
+      const [ticketsRes, assigneesRes, faqsRes] = await Promise.all([
+        authFetch("/tickets"),
+        authFetch("/tickets/assignees"),
+        fetch("/api/customer/faqs"),
+      ]);
+      const [tData, aData, fData] = await Promise.all([
+        ticketsRes.json(),
+        assigneesRes.json(),
+        faqsRes.json(),
+      ]);
+      if (tData.success) setTickets(tData.data);
+      if (aData.success) setAssignees(aData.data);
+      if (fData.success) setFaqs(fData.data);
     } catch (err) {
       console.error("Error loading help desk data:", err);
       toast.error("Failed to load help desk details");
@@ -93,309 +49,138 @@ export default function HelpDeskPage() {
     }
   };
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  useEffect(() => { loadData(); }, []);
 
-  const handleCreateTicketSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!title.trim() || !description.trim()) {
-      toast.error("Title and description are required");
-      return;
-    }
+  if (loading) return <HelpDeskSkeleton />;
 
-    setCreateLoading(true);
-    try {
-      const res = await authFetch("/tickets", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: title.trim(),
-          description: description.trim(),
-          priority,
-          assignedTo: assignedTo || null
-        }),
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        toast.success("Support ticket created successfully");
-        setTitle("");
-        setDescription("");
-        setPriority("NORMAL");
-        setAssignedTo("");
-        setIsDialogOpen(false);
-        // Refresh ticket list
-        loadData();
-      } else {
-        toast.error(data.message || "Failed to create support ticket");
-      }
-    } catch {
-      toast.error("Failed to submit support ticket");
-    } finally {
-      setCreateLoading(false);
-    }
-  };
-
-  const getPriorityStyle = (prio: string) => {
-    switch (prio.toUpperCase()) {
-      case "HIGH":
-      case "URGENT":
-        return "bg-rose-50 text-rose-700 border-rose-100";
-      case "MEDIUM":
-        return "bg-amber-50 text-amber-700 border-amber-100";
-      default:
-        return "bg-slate-50 text-slate-700 border-slate-100";
-    }
-  };
-
-  const getStatusStyle = (status: string) => {
-    switch (status) {
-      case "enabled-live-chat":
-        return "bg-emerald-50 text-emerald-700 border-emerald-200";
-      case "solved":
-        return "bg-slate-100 text-slate-700 border-slate-200";
-      default:
-        return "bg-amber-50 text-amber-700 border-amber-200";
-    }
-  };
-
-  const formatStatus = (status: string) => {
-    switch (status) {
-      case "pendingReview":
-        return "Pending Review";
-      case "enabled-live-chat":
-        return "Live Chat Active";
-      case "solved":
-        return "Solved";
-      default:
-        return status;
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="flex h-[60vh] flex-col items-center justify-center">
-        <Loader2 size={36} className="text-indigo-600 animate-spin mb-4" />
-        <p className="text-slate-600 font-medium">Loading Help Desk...</p>
-      </div>
-    );
-  }
+  const openCount   = tickets.filter((t) => t.status !== "solved").length;
+  const solvedCount = tickets.filter((t) => t.status === "solved").length;
 
   return (
-    <div className="space-y-12">
-      
-      {/* Help Desk header and ticket creation */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">Help Desk & Support</h1>
-          <p className="text-slate-500">Contact customer care, file issues, and search frequently asked questions.</p>
+    <div className="space-y-7">
+
+      {/* ── Hero Header ──────────────────────────────────────────────────── */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-700 px-7 py-8">
+        <div className="pointer-events-none absolute inset-0 opacity-10">
+          <div className="absolute -top-12 -right-12 h-56 w-56 rounded-full bg-white" />
+          <div className="absolute -bottom-10 -left-8 h-40 w-40 rounded-full bg-white" />
         </div>
 
-        {/* Ticket Modal Dialog */}
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger
-            className="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full font-bold h-11 px-5 shadow-md shadow-indigo-100 hover:scale-[1.02] transition-transform cursor-pointer"
-          >
-            <PlusCircle size={18} /> Open Support Ticket
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-md rounded-2xl">
-            <DialogHeader>
-              <DialogTitle className="text-lg font-bold text-slate-900">Create Support Ticket</DialogTitle>
-              <DialogDescription>
-                Describe your issue, and assign it to a staff member if desired.
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleCreateTicketSubmit} className="space-y-4 pt-3">
-              <div className="space-y-1">
-                <Label htmlFor="title" className="text-xs font-bold text-slate-700">Title</Label>
-                <Input
-                  id="title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Order delayed, damaged garment, etc."
-                  required
-                  className="h-10 text-xs rounded-xl"
-                />
-              </div>
+        <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="flex items-center gap-2 mb-1.5">
+              <Sparkles size={13} className="text-indigo-200" />
+              <span className="text-indigo-200 text-[11px] font-semibold uppercase tracking-widest">
+                Customer Support
+              </span>
+            </div>
+            <h1 className="text-2xl font-extrabold tracking-tight text-white">Help Desk</h1>
+            <p className="mt-1 text-sm text-indigo-200">
+              File issues, chat with support agents, and browse FAQs.
+            </p>
+          </div>
 
-              <div className="space-y-1">
-                <Label htmlFor="priority" className="text-xs font-bold text-slate-700">Priority Level</Label>
-                <select
-                  id="priority"
-                  value={priority}
-                  onChange={(e) => setPriority(e.target.value)}
-                  className="w-full h-10 text-xs border rounded-xl bg-white px-3 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-semibold text-slate-700"
-                >
-                  <option value="LOW">Low (General inquiry)</option>
-                  <option value="NORMAL">Normal (Standard priority)</option>
-                  <option value="HIGH">High (Urgent matter)</option>
-                  <option value="URGENT">Urgent (Immediate attention)</option>
-                </select>
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="assignedTo" className="text-xs font-bold text-slate-700">Assign to Agent (Optional)</Label>
-                <select
-                  id="assignedTo"
-                  value={assignedTo}
-                  onChange={(e) => setAssignedTo(e.target.value)}
-                  className="w-full h-10 text-xs border rounded-xl bg-white px-3 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-semibold text-slate-700"
-                >
-                  <option value="">Choose an Admin or Branch Manager</option>
-                  {assignees.map((a) => (
-                    <option key={a.id} value={a.id}>
-                      {a.fullName} ({a.userType === 'BRANCH_MANAGER' ? 'Branch Manager' : 'Admin'})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="description" className="text-xs font-bold text-slate-700">Describe the issue</Label>
-                <textarea
-                  id="description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Provide details like Order Number, issue date, etc."
-                  rows={4}
-                  required
-                  className="w-full text-xs border rounded-xl p-3 focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-white"
-                />
-              </div>
-
-              <Button
-                type="submit"
-                disabled={createLoading}
-                className="w-full rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold h-11 mt-4"
-              >
-                {createLoading ? (
-                  <>
-                    <Loader2 size={16} className="animate-spin mr-2" />
-                    Submitting ticket...
-                  </>
-                ) : (
-                  "Submit Ticket"
-                )}
-              </Button>
-            </form>
-          </DialogContent>
-        </Dialog>
+          <div className="flex items-center gap-3 shrink-0">
+            {tickets.length > 0 && (
+              <>
+                <div className="rounded-xl bg-white/10 border border-white/20 backdrop-blur-sm px-4 py-3 text-center">
+                  <p className="text-indigo-200 text-[10px] font-semibold uppercase tracking-wider">Open</p>
+                  <p className="text-white font-extrabold text-xl leading-tight">{openCount}</p>
+                </div>
+                <div className="rounded-xl bg-white/10 border border-white/20 backdrop-blur-sm px-4 py-3 text-center">
+                  <p className="text-indigo-200 text-[10px] font-semibold uppercase tracking-wider">Solved</p>
+                  <p className="text-white font-extrabold text-xl leading-tight">{solvedCount}</p>
+                </div>
+              </>
+            )}
+            <Button
+              onClick={() => setDialogOpen(true)}
+              className="h-10 rounded-xl bg-white text-indigo-700 hover:bg-indigo-50 font-bold text-xs px-4 gap-1.5 shadow-sm"
+            >
+              <PlusCircle size={14} /> New Ticket
+            </Button>
+          </div>
+        </div>
       </div>
 
+      {/* ── Main grid ────────────────────────────────────────────────────── */}
+      <div className="grid gap-6 lg:grid-cols-12 items-start">
 
+        {/* Tickets panel */}
+        <div className="lg:col-span-7 rounded-2xl border border-slate-100 bg-white shadow-sm overflow-hidden">
+          <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50">
+                <MessageSquare size={14} className="text-indigo-500" />
+              </div>
+              <div>
+                <h2 className="text-sm font-extrabold text-slate-900">My Support Tickets</h2>
+                <p className="text-[11px] text-slate-400">Track inquiries and chat with agents</p>
+              </div>
+            </div>
+            <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-bold text-slate-600">
+              {tickets.length}
+            </span>
+          </div>
 
-      {/* Main Grid: Tickets list and FAQ Accordion */}
-      <div className="grid gap-8 lg:grid-cols-12 items-start">
-        
-        {/* Left column: My Tickets */}
-        <Card className="lg:col-span-6 border border-slate-100 shadow-sm">
-          <CardHeader className="border-b border-slate-50 flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="text-lg font-bold text-slate-900">My Support Tickets</CardTitle>
-              <CardDescription className="text-xs">Follow logs of your inquiries and chat with support agents.</CardDescription>
-            </div>
-            <div className="text-slate-400">
-              <MessageSquare size={18} />
-            </div>
-          </CardHeader>
-          <CardContent className="p-5">
+          <div className="p-5">
             {tickets.length === 0 ? (
-              <div className="text-center py-12 text-slate-400 text-sm">
-                No active tickets submitted.
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50">
+                  <Inbox size={24} className="text-indigo-400" />
+                </div>
+                <p className="text-sm font-semibold text-slate-700">No tickets yet</p>
+                <p className="mt-1 text-xs text-slate-400">Open a new ticket if you need help.</p>
+                <Button
+                  size="sm"
+                  onClick={() => setDialogOpen(true)}
+                  className="mt-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold gap-1.5"
+                >
+                  <PlusCircle size={12} /> New Ticket
+                </Button>
               </div>
             ) : (
-              <div className="space-y-4">
-                {tickets.map((t) => (
-                  <div key={t.id} className="p-4 rounded-xl border border-slate-100 hover:border-indigo-100 hover:bg-indigo-50/5 transition-all">
-                    <div className="flex justify-between items-start gap-4">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-slate-900 text-sm">{t.title}</span>
-                          <span className={`text-[9px] px-2 py-0.5 rounded-full border font-bold ${getPriorityStyle(t.priority)}`}>
-                            {t.priority}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-3 text-xs text-slate-400">
-                          <span className="flex items-center gap-1">
-                            <Clock size={11} /> {new Date(t.createdAt).toLocaleDateString()}
-                          </span>
-                        </div>
-                      </div>
-                      
-                      <div className="flex flex-col items-end gap-2 shrink-0">
-                        <span className={`text-[10px] px-2.5 py-0.5 rounded-full border font-bold ${getStatusStyle(t.status)}`}>
-                          {formatStatus(t.status)}
-                        </span>
-                        
-                        <Link href={`/dashboard/help-desk/${t.id}`}>
-                          <Button variant="ghost" size="sm" className="text-xs font-bold text-indigo-600 hover:text-indigo-700 p-0 flex items-center gap-0.5">
-                            Open Chat & Details <ArrowRight size={11} />
-                          </Button>
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+              <div className="space-y-3">
+                {tickets.map((t) => <TicketCard key={t.id} ticket={t} />)}
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        {/* Right column: FAQ Accordion */}
-        <Card className="lg:col-span-6 border border-slate-100 shadow-sm">
-          <CardHeader className="border-b border-slate-50 flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="text-lg font-bold text-slate-900">Frequently Asked Questions</CardTitle>
-              <CardDescription className="text-xs">Quick self-help answers updated live by admins.</CardDescription>
-            </div>
-            <div className="text-slate-400">
-              <HelpCircle size={18} />
-            </div>
-          </CardHeader>
-          <CardContent className="p-5">
-            {faqs.length === 0 ? (
-              <div className="text-center py-12 text-slate-400 text-sm">
-                No FAQs compiled yet.
+        {/* FAQ panel */}
+        <div className="lg:col-span-5 rounded-2xl border border-slate-100 bg-white shadow-sm overflow-hidden">
+          <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-50">
+                <HelpCircle size={14} className="text-violet-500" />
               </div>
-            ) : (
-              <div className="space-y-3.5">
-                {faqs.map((faq) => {
-                  const isExpanded = expandedFaqId === faq.id;
-                  return (
-                    <div key={faq.id} className="border-b border-slate-100 pb-3 last:border-0 last:pb-0">
-                      <button
-                        onClick={() => setExpandedFaqId(isExpanded ? null : faq.id)}
-                        className="w-full flex items-center justify-between text-left font-bold text-slate-800 hover:text-indigo-600 transition-colors py-1.5 text-xs sm:text-sm"
-                      >
-                        <span>{faq.question}</span>
-                        <ChevronDown size={16} className={`text-slate-400 transition-transform ${isExpanded ? "rotate-180 text-indigo-600" : ""}`} />
-                      </button>
-                      
-                      <AnimatePresence>
-                        {isExpanded && (
-                          <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: "auto" }}
-                            exit={{ opacity: 0, height: 0 }}
-                            transition={{ duration: 0.2 }}
-                            className="overflow-hidden"
-                          >
-                            <p className="text-slate-500 text-xs sm:text-sm leading-relaxed pt-2 pl-1 bg-indigo-50/10 p-2.5 rounded-lg border border-indigo-50/20">
-                              {faq.answer}
-                            </p>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  );
-                })}
+              <div>
+                <h2 className="text-sm font-extrabold text-slate-900">FAQs</h2>
+                <p className="text-[11px] text-slate-400">Quick self-help answers</p>
               </div>
-            )}
-          </CardContent>
-        </Card>
+            </div>
+            <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-bold text-slate-600">
+              {faqs.length}
+            </span>
+          </div>
 
+          <div className="px-6 py-2">
+            <FAQAccordion
+              faqs={faqs}
+              expandedId={expandedFaqId}
+              onToggle={(id) => setExpandedFaqId(expandedFaqId === id ? null : id)}
+            />
+          </div>
+        </div>
       </div>
+
+      {/* Dialog */}
+      <NewTicketDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        assignees={assignees}
+        onCreated={loadData}
+      />
     </div>
   );
 }
