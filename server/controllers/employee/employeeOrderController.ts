@@ -36,7 +36,7 @@ export const getPickupOrders = catchServiceAsync(async (req: any, res: Response)
       customer: {
         include: {
           user: { select: { fullName: true, phone: true } },
-          addresses: { select: { receiverName: true, receiverPhone: true } }
+          addresses: { select: { id: true, receiverName: true, receiverPhone: true, fullAddress: true } }
         }
       },
       items: {
