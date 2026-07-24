@@ -25,6 +25,13 @@ export interface AvailableDelivery {
   customerName: string;
   customerPhone: string;
   branch: string;
+  pickupSource?: {
+    isVendor: boolean;
+    type: string;
+    name: string;
+    code?: string;
+    phone?: string;
+  };
   deliveryAddress: string;
   parcelType: string;
   paymentType: string;
@@ -36,6 +43,7 @@ export interface AvailableDelivery {
   totalGarments?: number;
   createdAt: string;
 }
+
 
 
 export interface OptimizedRoute {

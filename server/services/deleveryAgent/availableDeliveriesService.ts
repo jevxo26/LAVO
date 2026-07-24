@@ -75,14 +75,17 @@ export const getAvailableDeliveries = async (
         },
       },
       branch: true,
-      order: true,
+      order: {
+        include: {
+          vendor: true,
+        },
+      },
     },
     orderBy: {
       createdAt: "desc",
     },
   });
-  // console.log("Total deliveries:", deliveries.length);
-  // console.log(deliveries);
+
   return deliveries.map((delivery) => {
     const targetAddressId = delivery.deliveryAddressId || delivery.order?.deliveryAddressId;
     const customerAddress =
@@ -92,6 +95,23 @@ export const getAvailableDeliveries = async (
       delivery.customer?.addresses.find(
         (addr) => addr.isDefault
       ) || delivery.customer?.addresses[0];
+
+    const assignedVendor = (delivery.order as any)?.vendor;
+    const pickupSource = assignedVendor
+      ? {
+          isVendor: true,
+          type: "VENDOR",
+          name: assignedVendor.businessName,
+          code: assignedVendor.vendorCode,
+          phone: assignedVendor.phone || "N/A",
+        }
+      : {
+          isVendor: false,
+          type: "BRANCH",
+          name: delivery.branch?.branchName || "Main Branch Hub",
+          code: delivery.branch?.branchCode || "BRANCH",
+          phone: delivery.branch?.phone || "N/A",
+        };
 
     let distance = null;
 
@@ -118,6 +138,7 @@ export const getAvailableDeliveries = async (
         customerAddress?.receiverPhone || delivery.customer?.user?.phone || "N/A",
       branch:
         delivery.branch?.branchName ?? "N/A",
+      pickupSource,
       deliveryAddress:
         customerAddress?.fullAddress ?? "N/A",
       // Order model ->
