@@ -66,11 +66,22 @@ export function SignInForm() {
         {errors.password && <p className="text-sm text-red-500">{errors.password.message}</p>}
       </div>
 
-      <div className="text-right">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <input
+            id="remember"
+            type="checkbox"
+            className="h-4 w-4 rounded border-gray-300"
+          />
+          <Label htmlFor="remember" className="text-sm font-normal">
+            Remember this device
+          </Label>
+        </div>
+
         <button
           type="button"
           onClick={() => router.push("/forgot-password")}
-          className="text-sm text-indigo-600 hover:underline"
+          className="text-sm font-medium text-blue-600 hover:underline"
         >
           Forgot password?
         </button>
@@ -80,22 +91,26 @@ export function SignInForm() {
         {isLoading ? "Signing in..." : "Sign In"}
       </Button>
 
-      <div className="relative my-4">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t border-slate-200" />
+      <div className="mt-6">
+        <div className="relative mb-6 flex items-center">
+          <div className="flex-1 border-t"></div>
+
+          <span className="mx-4 text-sm text-gray-400">
+            or continue with
+          </span>
+
+          <div className="flex-1 border-t"></div>
         </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-white/80 px-2 text-slate-500 rounded-full">Or continue with</span>
-        </div>
+
+
       </div>
 
       <SocialLogin />
 
-      <div className="text-center text-sm text-slate-500 mt-4">
-        Don&apos;t have an account?{" "}
-        <button type="button" onClick={() => router.push("/register")} className="text-indigo-600 hover:underline font-medium">
-          Sign up
-        </button>
+      <div className="mt-8 flex justify-between text-sm text-gray-400">
+        <span>Privacy Policy</span>
+        <span>Terms of Service</span>
+        <span>Support</span>
       </div>
     </form>
   );

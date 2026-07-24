@@ -6,6 +6,8 @@ import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import FacebookLogin from "@greatsumini/react-facebook-login";
 import { useAppDispatch } from "@/store/store";
 import { socialLoginThunk } from "@/store/slices/authSlice";
+import { FcGoogle } from "react-icons/fc";
+import { FaFacebookF } from "react-icons/fa6";
 
 export default function SocialLogin() {
   const dispatch = useAppDispatch();
@@ -63,9 +65,14 @@ export default function SocialLogin() {
           </div>
         </GoogleOAuthProvider>
       ) : (
-        <p className="text-xs text-center text-amber-600 bg-amber-50 rounded-md p-2">
-          Add <code>NEXT_PUBLIC_GOOGLE_CLIENT_ID</code> to enable Google login
-        </p>
+        <button
+          type="button"
+          disabled
+          className="w-full h-12 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 flex items-center justify-center gap-3 font-medium text-slate-700 transition disabled:cursor-not-allowed"
+        >
+          <FcGoogle className="text-xl" />
+          Continue with Google
+        </button>
       )}
 
       {/* ── Facebook ───────────────────────────────────────────────────────── */}
@@ -91,9 +98,14 @@ export default function SocialLogin() {
           )}
         />
       ) : (
-        <p className="text-xs text-center text-amber-600 bg-amber-50 rounded-md p-2">
-          Add <code>NEXT_PUBLIC_FACEBOOK_APP_ID</code> to enable Facebook login
-        </p>
+        <button
+          type="button"
+          disabled
+          className="w-full h-12 rounded-xl bg-[#1877F2] hover:bg-[#166FE5] text-white flex items-center justify-center gap-3 font-medium transition disabled:cursor-not-allowed"
+        >
+          <FaFacebookF className="text-lg" />
+          Continue with Facebook
+        </button>
       )}
     </div>
   );
