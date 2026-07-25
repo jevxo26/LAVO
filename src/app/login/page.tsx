@@ -5,9 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 
 import { SignInForm } from "@/components/auth/signin";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-    UserKey,
     Activity,
     ShieldCheck,
     Building2,
@@ -39,7 +37,11 @@ function LoginContent() {
         target += target.includes("?") ? `&status=${statusParam}` : `?status=${statusParam}`;
       }
 
-    return (
+      router.replace(target);
+    }
+  }, [searchParams, router]);
+
+  return (
         <div className="min-h-screen bg-white">
             <motion.div
                 initial={{ opacity: 0, y: 25 }}
@@ -186,8 +188,6 @@ function LoginContent() {
                 </div>
             </motion.div>
         </div>
-      </motion.div>
-    </div>
   );
 }
 
