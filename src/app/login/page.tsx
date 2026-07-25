@@ -1,6 +1,7 @@
 "use client";
 
-
+import { useEffect, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 
 import { SignInForm } from "@/components/auth/signin";
@@ -18,8 +19,25 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-export default function LoginPage() {
+function LoginContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const token = localStorage.getItem("laundrix_token");
+
+    if (token) {
+      // Sync cookie for Next.js middleware
+      document.cookie = `laundrix_token=${token}; path=/; max-age=${30 * 24 * 60 * 60}; SameSite=Lax`;
+
+      const redirectParam = searchParams.get("redirect");
+      const statusParam = searchParams.get("status");
+
+      let target = redirectParam || "/dashboard";
+      if (statusParam && !target.includes("status=")) {
+        target += target.includes("?") ? `&status=${statusParam}` : `?status=${statusParam}`;
+      }
 
     return (
         <div className="min-h-screen bg-white">
@@ -168,7 +186,17 @@ export default function LoginPage() {
                 </div>
             </motion.div>
         </div>
-    );
+      </motion.div>
+    </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginContent />
+    </Suspense>
+  );
 }
 
 

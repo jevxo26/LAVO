@@ -26,31 +26,32 @@ function SimulatedPaymentContent() {
   const [processing, setProcessing] = useState(false);
   const [status, setStatus] = useState<"idle" | "success" | "fail" | "cancel">("idle");
 
-  const postToCallback = async (endpoint: string) => {
+  const postToCallback = (endpoint: string) => {
     setProcessing(true);
-    try {
-      await fetch(`/api/payments/sslcommerz/${endpoint}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tran_id: sessionId,
-          val_id: "SIMULATED_VAL_ID",
-          amount,
-          ref,
-        }),
-      });
+    if (endpoint === "success") setStatus("success");
+    else if (endpoint === "cancel") setStatus("cancel");
+    else setStatus("fail");
 
-      const dest =
-        type === "wallet"
-          ? `/dashboard/wallet?status=${endpoint}`
-          : `/dashboard/my-orders?status=${endpoint}`;
+    const form = document.createElement("form");
+    form.method = "POST";
+    form.action = `/api/payments/sslcommerz/${endpoint}`;
 
-      setStatus(endpoint as any);
-      setTimeout(() => router.push(dest), 600);
-    } catch {
-      setStatus("fail");
-      setProcessing(false);
-    }
+    const tranInput = document.createElement("input");
+    tranInput.type = "hidden";
+    tranInput.name = "tran_id";
+    tranInput.value = sessionId;
+    form.appendChild(tranInput);
+
+    const amountInput = document.createElement("input");
+    amountInput.type = "hidden";
+    amountInput.name = "amount";
+    amountInput.value = amount;
+    form.appendChild(amountInput);
+
+    document.body.appendChild(form);
+    setTimeout(() => {
+      form.submit();
+    }, 400);
   };
 
   const typeLabel = type === "wallet" ? "Wallet Top-up" : "Order Payment";

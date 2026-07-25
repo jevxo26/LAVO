@@ -6,7 +6,7 @@ export function SummarySkeletons() {
   return (
     <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
       {[0, 1, 2, 3].map((i) => (
-        <div key={i} className="rounded-2xl border border-slate-100 bg-white p-5 flex items-center gap-4">
+        <div key={i} className="rounded-2xl border border-slate-100 bg-white p-5 flex items-center gap-4 shadow-sm">
           <Sk className="h-12 w-12 rounded-2xl shrink-0" />
           <div className="space-y-2 flex-1">
             <Sk className="h-6 w-10" />

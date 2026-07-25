@@ -62,8 +62,8 @@ app.prepare().then(async () => {
 
   server.use(cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin, 'null' origin (payment redirects/gateways), or allowed origins
-      if (!origin || origin === 'null' || allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
+      // Allow requests with no origin, 'null' origin (form POST redirects), SSLCommerz gateways, or configured allowed origins
+      if (!origin || origin === 'null' || allowedOrigins.includes(origin) || origin.includes('sslcommerz.com') || process.env.NODE_ENV !== 'production') {
         callback(null, true);
       } else {
         callback(null, true);
@@ -71,11 +71,13 @@ app.prepare().then(async () => {
     },
     credentials: true,
   }));
+
   server.use(helmet({ contentSecurityPolicy: false })); // Disable CSP in dev if needed, or configure properly
   server.use(morgan('[:date[iso]] :method :url :status :response-time ms - :res[content-length]', {
     skip: (req) => req.url.startsWith('/_next/') || req.url.includes('favicon.ico')
   }));
   server.use(express.json());
+  server.use(express.urlencoded({ extended: true }));
   server.use(cookieParser());
 
   // Database Connection using Prisma

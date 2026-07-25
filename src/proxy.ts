@@ -59,7 +59,8 @@ export function proxy(req: NextRequest) {
   if ((isDashboard || isScanner) && !token && !isPaymentReturn) {
     const loginUrl = req.nextUrl.clone();
     loginUrl.pathname = "/login";
-    loginUrl.searchParams.set("redirect", pathname);
+    const fullRedirectPath = pathname + req.nextUrl.search;
+    loginUrl.searchParams.set("redirect", fullRedirectPath);
     return NextResponse.redirect(loginUrl);
   }
 
