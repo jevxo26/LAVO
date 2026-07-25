@@ -1,6 +1,7 @@
 import { Server as HttpServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import { PrismaClient } from '@prisma/client';
+import { DeliveryAssignmentService } from './services/deleveryAgent/deliveryAssignmentService';
 
 const prisma = new PrismaClient();
 let io: Server;
@@ -185,7 +186,6 @@ export const initSocket = (server: HttpServer) => {
               // When all garments are READY_FOR_DELIVERY, auto-assign DROP_OFF agent
               if (data.status === 'READY_FOR_DELIVERY') {
                 try {
-                  const { DeliveryAssignmentService } = await import('./services/deleveryAgent/deliveryAssignmentService');
                   await DeliveryAssignmentService.autoAssignDropoffDelivery(order.id);
                 } catch (e) {
                   console.error('Auto-assign dropoff failed:', e);
