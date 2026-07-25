@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { getIO } from '../../socket';
 
 const prisma = new PrismaClient();
 
@@ -149,7 +150,6 @@ console.log("NOW:", new Date());
     });
 
     try {
-      const { getIO } = await import('../../socket');
       const order = await prisma.order.findUnique({
         where: { id: delivery.orderId },
         include: { customer: true },
@@ -179,7 +179,6 @@ console.log("NOW:", new Date());
     });
 
     try {
-      const { getIO } = await import('../../socket');
       const order = await prisma.order.findUnique({
         where: { id: delivery.orderId },
         include: { customer: true },

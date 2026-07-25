@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { io, Socket } from "socket.io-client";
+import { useAuth } from "@/hooks/useAuth";
 import {
   ShoppingBag,
   Search,
@@ -127,6 +129,39 @@ export default function MyOrdersPage() {
 
   // Reset page when filters change
   useEffect(() => { setPage(1); }, [activeTab, searchQuery]);
+
+  // ── Real-time socket: auto-refresh when order status changes ────────────────
+  const socketRef = useRef<Socket | null>(null);
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const socketUrl =
+      typeof window !== "undefined"
+        ? process.env.NEXT_PUBLIC_API_URL?.startsWith("http")
+          ? process.env.NEXT_PUBLIC_API_URL.replace("/api", "")
+          : window.location.origin
+        : "";
+
+    const socket = io(socketUrl, {
+      auth: { token: localStorage.getItem("laundrix_token") },
+      transports: ["websocket", "polling"],
+    });
+    socketRef.current = socket;
+
+    socket.on("connect", () => {
+      socket.emit("joinCustomer", user.id);
+    });
+
+    socket.on("orderStatusUpdated", () => {
+      // Re-fetch all orders silently so the list reflects new status
+      loadOrders();
+    });
+
+    return () => { socket.disconnect(); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   // ── Actions ─────────────────────────────────────────────────────────────────
 

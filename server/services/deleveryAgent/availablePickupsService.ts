@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { SMSService } from "../smsService";
+import { getIO } from '../../socket';
 
 const prisma = new PrismaClient();
 
@@ -201,7 +202,6 @@ export const acceptPickup = async (
 
         // Broadcast real-time Socket event to Customer Dashboard & Order Tracker
         try {
-            const { getIO } = await import("../../socket");
             if (customerInfo?.userId) {
                 getIO().to(`customer_${customerInfo.userId}`).emit("orderStatusUpdated", {
                     orderId: delivery.orderId,
