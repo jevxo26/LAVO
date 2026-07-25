@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { SMSService } from "../smsService";
-import { getIO } from '../../socket';
+import { getIO } from '../../socketInstance';
 
 const prisma = new PrismaClient();
 
