@@ -1,71 +1,111 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { 
-  ShoppingBag, 
-  Calendar, 
-  Clock, 
-  MapPin, 
-  DollarSign,
-  ChevronDown, 
-  ChevronUp,
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import {
+  ShoppingBag,
   Search,
-  Package,
-  CreditCard,
-  CheckCircle,
-  AlertTriangle,
-  Loader2,
-  X
+  RotateCcw,
+  Filter,
+  AlertCircle,
+  Inbox,
+  PackageCheck,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  ChevronLeft,
+  ChevronRight,
+  Sparkles,
 } from "lucide-react";
 import { authFetch } from "@/lib/api";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { toast } from "@/lib/toast";
+import { Button } from "@/components/ui/button";
 
-interface OrderItem {
-  id: string;
-  quantity: number;
-  unitPrice: number;
-  totalPrice: number;
-  service: {
-    serviceName: string;
-  };
+import {
+  OrderRecord,
+  StatusTab,
+  STATUS_TABS,
+  PROCESSING_STATUSES,
+  PAGE_SIZE,
+  buildPages,
+} from "@/components/orders/types";
+import { OrderCard } from "@/components/orders/OrderCard";
+import { OrderSummarySkeletons, OrderCardSkeletons } from "@/components/orders/OrderSkeletons";
+
+// ─── Stat card ────────────────────────────────────────────────────────────────
+
+function StatCard({
+  label,
+  sub,
+  value,
+  Icon,
+  iconBg,
+  iconColor,
+  ringColor,
+}: {
+  label: string;
+  sub: string;
+  value: string | number;
+  Icon: React.ElementType;
+  iconBg: string;
+  iconColor: string;
+  ringColor: string;
+}) {
+  return (
+    <div className="flex items-center gap-4 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+      <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ring-4 ${iconBg} ${iconColor} ${ringColor}`}>
+        <Icon size={22} />
+      </div>
+      <div className="min-w-0">
+        <p className="text-2xl font-extrabold text-slate-900 leading-none">{value}</p>
+        <p className="mt-0.5 text-[12px] font-semibold text-slate-700 leading-tight">{label}</p>
+        <p className="text-[11px] text-slate-400 leading-tight">{sub}</p>
+      </div>
+    </div>
+  );
 }
 
-interface OrderRecord {
-  id: string;
-  orderNumber: string;
-  totalGarments: number;
-  subtotal: number;
-  discount: number;
-  deliveryCharge: number;
-  tax: number;
-  grandTotal: number;
-  paymentStatus: string;
-  orderStatus: string;
-  pickupAddressId: string;
-  estimatedPickupTime: string;
-  createdAt: string;
-  items: OrderItem[];
+// ─── Tab button ───────────────────────────────────────────────────────────────
+
+const TAB_META: Record<string, { label: string; color: string; activeColor: string }> = {
+  ALL:        { label: "All Orders",  color: "bg-slate-100 text-slate-600 hover:bg-slate-200",                 activeColor: "bg-indigo-600 text-white shadow-md shadow-indigo-200"  },
+  PENDING:    { label: "Pending",     color: "bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200",   activeColor: "bg-amber-500 text-white shadow-md shadow-amber-200"    },
+  PROCESSING: { label: "Processing",  color: "bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200", activeColor: "bg-indigo-500 text-white shadow-md shadow-indigo-200" },
+  COMPLETED:  { label: "Completed",   color: "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200", activeColor: "bg-emerald-500 text-white shadow-md shadow-emerald-200"},
+  CANCELLED:  { label: "Cancelled",   color: "bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200",        activeColor: "bg-rose-500 text-white shadow-md shadow-rose-200"      },
+};
+
+function tabCount(orders: OrderRecord[], tab: string): number {
+  if (tab === "ALL") return orders.length;
+  if (tab === "PROCESSING")
+    return orders.filter((o) => PROCESSING_STATUSES.includes(o.orderStatus.toUpperCase())).length;
+  return orders.filter((o) => o.orderStatus.toUpperCase() === tab).length;
 }
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function MyOrdersPage() {
-  const [orders, setOrders] = useState<OrderRecord[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<string>("ALL");
-  const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+  const [orders, setOrders]           = useState<OrderRecord[]>([]);
+  const [loading, setLoading]         = useState(true);
+  const [error, setError]             = useState(false);
+  const [activeTab, setActiveTab]     = useState<StatusTab>("ALL");
+  const [expandedId, setExpandedId]   = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [page, setPage]               = useState(1);
+
+  // ── Data loading ────────────────────────────────────────────────────────────
 
   const loadOrders = async () => {
+    setError(false);
     try {
-      const res = await authFetch("/customer/orders");
+      const res  = await authFetch("/customer/orders");
       const data = await res.json();
-      if (data.success) {
-        setOrders(data.data);
-      }
+      if (data.success) setOrders(data.data);
+      else setError(true);
     } catch (err) {
       console.error("Error loading orders:", err);
+      setError(true);
       toast.error("Failed to load your orders");
     } finally {
       setLoading(false);
@@ -75,12 +115,20 @@ export default function MyOrdersPage() {
   useEffect(() => {
     const init = async () => {
       try {
-        await authFetch("/payments/verify-order-payment", { method: "POST", body: JSON.stringify({}) });
+        await authFetch("/payments/verify-order-payment", {
+          method: "POST",
+          body: JSON.stringify({}),
+        });
       } catch {}
       await loadOrders();
     };
     init();
   }, []);
+
+  // Reset page when filters change
+  useEffect(() => { setPage(1); }, [activeTab, searchQuery]);
+
+  // ── Actions ─────────────────────────────────────────────────────────────────
 
   const handleCancelOrder = async (order: OrderRecord) => {
     const confirmed = window.confirm(
@@ -90,9 +138,7 @@ export default function MyOrdersPage() {
 
     setCancellingId(order.id);
     try {
-      const res = await authFetch(`/customer/orders/${order.id}/cancel`, {
-        method: "DELETE",
-      });
+      const res  = await authFetch(`/customer/orders/${order.id}/cancel`, { method: "DELETE" });
       const data = await res.json();
       if (data.success) {
         toast.success("Order cancelled successfully");
@@ -110,14 +156,14 @@ export default function MyOrdersPage() {
   const handlePayNow = async (order: OrderRecord) => {
     try {
       toast.info("Initializing payment gateway...");
-      const payRes = await authFetch("/payments/sslcommerz/initiate", {
+      const res  = await authFetch("/payments/sslcommerz/initiate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ orderId: order.id }),
       });
-      const payData = await payRes.json();
-      if (payData.success && payData.data?.gatewayUrl) {
-        window.location.href = payData.data.gatewayUrl;
+      const data = await res.json();
+      if (data.success && data.data?.gatewayUrl) {
+        window.location.href = data.data.gatewayUrl;
       } else {
         toast.error("Payment failed to initialize");
       }
@@ -126,272 +172,246 @@ export default function MyOrdersPage() {
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status.toUpperCase()) {
-      case "PENDING":
-        return "bg-amber-50 text-amber-700 border-amber-200";
-      case "CONFIRMED":
-        return "bg-blue-50 text-blue-700 border-blue-200";
-      case "PROCESSING":
-      case "WASHING":
-      case "PICKUP":
-        return "bg-indigo-50 text-indigo-700 border-indigo-200";
-      case "DELIVERY":
-        return "bg-purple-50 text-purple-700 border-purple-200";
-      case "COMPLETED":
-        return "bg-emerald-50 text-emerald-700 border-emerald-200";
-      case "CANCELLED":
-        return "bg-rose-50 text-rose-700 border-rose-200";
-      default:
-        return "bg-slate-50 text-slate-700 border-slate-200";
-    }
-  };
+  // ── Derived state ────────────────────────────────────────────────────────────
 
-  const tabs = ["ALL", "PENDING", "PROCESSING", "COMPLETED", "CANCELLED"];
+  const stats = useMemo(() => ({
+    total:     orders.length,
+    active:    orders.filter((o) => PROCESSING_STATUSES.includes(o.orderStatus.toUpperCase())).length,
+    completed: orders.filter((o) => o.orderStatus.toUpperCase() === "COMPLETED").length,
+    cancelled: orders.filter((o) => o.orderStatus.toUpperCase() === "CANCELLED").length,
+  }), [orders]);
 
-  // Filter orders by status and search
-  const filteredOrders = orders.filter((order) => {
-    const matchesSearch = order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    if (activeTab === "ALL") return matchesSearch;
-    if (activeTab === "PROCESSING") {
-      return matchesSearch && ["CONFIRMED", "PROCESSING", "PICKUP", "WASHING", "DELIVERY"].includes(order.orderStatus.toUpperCase());
-    }
-    return matchesSearch && order.orderStatus.toUpperCase() === activeTab;
-  });
+  const filtered = useMemo(() => {
+    return orders.filter((o) => {
+      const matchesSearch = o.orderNumber.toLowerCase().includes(searchQuery.toLowerCase());
+      if (!matchesSearch) return false;
+      if (activeTab === "ALL")        return true;
+      if (activeTab === "PROCESSING") return PROCESSING_STATUSES.includes(o.orderStatus.toUpperCase());
+      return o.orderStatus.toUpperCase() === activeTab;
+    });
+  }, [orders, activeTab, searchQuery]);
 
-  if (loading) {
-    return (
-      <div className="flex h-[60vh] flex-col items-center justify-center">
-        <Loader2 size={36} className="text-indigo-600 animate-spin mb-4" />
-        <p className="text-slate-600 font-medium">Loading your orders...</p>
-      </div>
-    );
-  }
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const safePage   = Math.min(page, totalPages);
+  const displayed  = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+  const pages      = buildPages(safePage, totalPages);
+
+  const hasSearch = searchQuery.trim().length > 0;
+
+  // ── Render ───────────────────────────────────────────────────────────────────
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">My Orders</h1>
-        <p className="text-slate-500">Track current garment laundry steps and look up past invoices.</p>
+    <div className="space-y-7">
+
+      {/* ── Hero Header ────────────────────────────────────────────────────── */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-700 px-7 py-8">
+        {/* decorative blobs */}
+        <div className="pointer-events-none absolute inset-0 opacity-10">
+          <div className="absolute -top-12 -right-12 h-56 w-56 rounded-full bg-white" />
+          <div className="absolute -bottom-10 -left-8 h-40 w-40 rounded-full bg-white" />
+        </div>
+
+        <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="flex items-center gap-2 mb-1.5">
+              <Sparkles size={14} className="text-indigo-200" />
+              <span className="text-indigo-200 text-[11px] font-semibold uppercase tracking-widest">
+                Laundry Dashboard
+              </span>
+            </div>
+            <h1 className="text-2xl font-extrabold tracking-tight text-white">My Orders</h1>
+            <p className="mt-1 text-sm text-indigo-200">
+              Track current garment laundry steps and look up past invoices.
+            </p>
+          </div>
+
+          {!loading && !error && (
+            <div className="flex items-center gap-3">
+              <div className="rounded-xl bg-white/10 border border-white/20 backdrop-blur-sm px-4 py-3 text-center">
+                <p className="text-indigo-200 text-[10px] font-semibold uppercase tracking-wider">Total Orders</p>
+                <p className="text-white font-extrabold text-xl leading-tight">{stats.total}</p>
+              </div>
+              {stats.active > 0 && (
+                <div className="rounded-xl bg-white/10 border border-white/20 backdrop-blur-sm px-4 py-3 text-center">
+                  <p className="text-indigo-200 text-[10px] font-semibold uppercase tracking-wider">Active</p>
+                  <p className="text-white font-extrabold text-xl leading-tight">{stats.active}</p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Tabs and Search */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between border-b border-slate-100 pb-4">
-        <div className="flex flex-wrap gap-2">
-          {tabs.map((tab) => (
-            <button
-              key={tab}
-              onClick={() => {
-                setActiveTab(tab);
-                setExpandedOrderId(null);
-              }}
-              className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${
-                activeTab === tab
-                  ? "bg-indigo-600 text-white shadow-sm"
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-              }`}
-            >
-              {tab.charAt(0) + tab.slice(1).toLowerCase()}
-            </button>
-          ))}
+      {/* ── Summary Stat Cards ──────────────────────────────────────────────── */}
+      {loading ? <OrderSummarySkeletons /> : !error && (
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <StatCard label="Total Orders"  sub="All time orders placed"    value={stats.total}
+            Icon={ShoppingBag}  iconBg="bg-indigo-50"  iconColor="text-indigo-600" ringColor="ring-indigo-100" />
+          <StatCard label="Active Orders" sub="Currently in progress"     value={stats.active}
+            Icon={Clock}        iconBg="bg-amber-50"   iconColor="text-amber-600"  ringColor="ring-amber-100"  />
+          <StatCard label="Completed"     sub="Successfully delivered"    value={stats.completed}
+            Icon={CheckCircle2} iconBg="bg-emerald-50" iconColor="text-emerald-600" ringColor="ring-emerald-100"/>
+          <StatCard label="Cancelled"     sub="Orders you've cancelled"   value={stats.cancelled}
+            Icon={XCircle}      iconBg="bg-rose-50"    iconColor="text-rose-500"   ringColor="ring-rose-100"   />
         </div>
-        
-        <div className="relative w-full sm:w-64">
-          <Search className="absolute left-2.5 top-2.5 text-slate-400" size={15} />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search order number..."
-            className="w-full pl-9 h-9 text-xs border rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-white"
-          />
-        </div>
-      </div>
+      )}
 
-      {/* Orders List */}
-      {filteredOrders.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 border border-dashed rounded-2xl bg-slate-50/50">
-          <ShoppingBag size={48} className="text-slate-300 mb-4" />
-          <h3 className="font-bold text-slate-800">No orders found</h3>
-          <p className="text-slate-500 text-xs mt-1">There are no orders matching your current filters.</p>
+      {/* ── Toolbar: Tabs + Search ──────────────────────────────────────────── */}
+      {!loading && !error && (
+        <div className="rounded-2xl border border-slate-100 bg-white px-5 py-4 shadow-sm space-y-3">
+          {/* Tabs */}
+          <div className="flex flex-wrap gap-2">
+            {STATUS_TABS.map((tab) => {
+              const meta  = TAB_META[tab];
+              const count = tabCount(orders, tab);
+              const active = activeTab === tab;
+              return (
+                <button
+                  key={tab}
+                  onClick={() => { setActiveTab(tab); setExpandedId(null); }}
+                  className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-bold transition-all duration-150
+                    ${active ? meta.activeColor : meta.color}`}
+                >
+                  {meta.label}
+                  <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-extrabold
+                    ${active ? "bg-white/25 text-white" : "bg-white/70 text-current border border-current/20"}`}>
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Search */}
+          <div className="flex items-center gap-3">
+            <div className="relative flex-1 max-w-sm">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={13} />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search by order number…"
+                className="w-full h-9 pl-9 pr-3 rounded-xl border border-slate-200 bg-slate-50 text-xs font-medium text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:bg-white transition"
+              />
+            </div>
+
+            {hasSearch && (
+              <Button size="sm" variant="ghost" onClick={() => setSearchQuery("")}
+                className="h-9 rounded-xl text-xs font-bold text-slate-500 hover:text-rose-600 hover:bg-rose-50 px-3 gap-1.5">
+                <RotateCcw size={12} /> Clear
+              </Button>
+            )}
+
+            {!loading && filtered.length > 0 && (
+              <p className="text-[11px] text-slate-400 ml-auto">
+                Showing <span className="font-semibold text-slate-600">{displayed.length}</span> of{" "}
+                <span className="font-semibold text-slate-600">{filtered.length}</span> orders
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Content ─────────────────────────────────────────────────────────── */}
+      {loading ? (
+        <OrderCardSkeletons />
+      ) : error ? (
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white py-20 text-center">
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-50">
+            <AlertCircle size={26} className="text-rose-400" />
+          </div>
+          <p className="text-sm font-semibold text-slate-700">Could not load your orders</p>
+          <p className="mt-1 text-xs text-slate-400">Check your connection and try again.</p>
+          <Button size="sm" variant="outline" onClick={loadOrders}
+            className="mt-4 rounded-xl border-slate-200 text-xs font-bold">
+            Retry
+          </Button>
+        </div>
+      ) : orders.length === 0 ? (
+        /* Completely empty account */
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white py-24 text-center">
+          <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-indigo-50">
+            <Inbox size={38} className="text-indigo-400" />
+          </div>
+          <p className="text-base font-bold text-slate-800">No orders yet</p>
+          <p className="mt-2 max-w-xs text-sm text-slate-400">
+            You haven&apos;t placed any laundry orders. Book a service to get started!
+          </p>
+          <Link href="/dashboard/book">
+            <Button className="mt-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-xs font-bold text-white gap-2">
+              <ShoppingBag size={14} /> Book a Service
+            </Button>
+          </Link>
+        </div>
+      ) : displayed.length === 0 ? (
+        /* Filtered — no results */
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white py-20 text-center">
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100">
+            <Filter size={24} className="text-slate-400" />
+          </div>
+          <p className="text-sm font-semibold text-slate-700">No orders match your filters</p>
+          <p className="mt-1 text-xs text-slate-400">Try a different tab or clear your search.</p>
+          <Button size="sm" variant="outline"
+            onClick={() => { setActiveTab("ALL"); setSearchQuery(""); }}
+            className="mt-4 rounded-xl border-slate-200 text-xs font-bold gap-1.5">
+            <RotateCcw size={12} /> Clear Filters
+          </Button>
         </div>
       ) : (
-        <div className="space-y-4">
-          {filteredOrders.map((order) => {
-            const isExpanded = expandedOrderId === order.id;
-            return (
-              <Card key={order.id} className="border border-slate-100 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
-                {/* Header row */}
-                <div 
-                  onClick={() => setExpandedOrderId(isExpanded ? null : order.id)}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between p-4 cursor-pointer hover:bg-slate-50/20 gap-4"
-                >
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2.5">
-                      <span className="font-bold text-slate-900">{order.orderNumber}</span>
-                      <span className={`text-[10px] px-2.5 py-0.5 rounded-full border font-bold ${getStatusColor(order.orderStatus)}`}>
-                        {order.orderStatus}
-                      </span>
-                      <span className={`text-[10px] px-2.5 py-0.5 rounded-full border font-bold ${
-                        order.paymentStatus === 'PAID'
-                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                          : "bg-rose-50 text-rose-700 border-rose-200"
-                      }`}>
-                        {order.paymentStatus}
-                      </span>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
-                      <span className="flex items-center gap-1">
-                        <Calendar size={12} /> {new Date(order.createdAt).toLocaleDateString()}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Package size={12} /> {order.totalGarments} items
-                      </span>
-                    </div>
-                  </div>
+        <>
+          {/* ── Order Cards ───────────────────────────────────────────────── */}
+          <div className="space-y-4">
+            {displayed.map((order) => (
+              <OrderCard
+                key={order.id}
+                order={order}
+                isExpanded={expandedId === order.id}
+                onToggle={() => setExpandedId(expandedId === order.id ? null : order.id)}
+                onPayNow={handlePayNow}
+                onCancel={handleCancelOrder}
+                cancellingId={cancellingId}
+              />
+            ))}
+          </div>
 
-                  <div className="flex items-center justify-between sm:justify-end gap-6">
-                    <div className="text-right sm:space-y-0.5">
-                      <p className="text-xs text-slate-400">Total Price</p>
-                      <p className="font-extrabold text-slate-900">৳{order.grandTotal.toFixed(2)}</p>
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      {order.paymentStatus === 'UNPAID' && order.orderStatus !== 'CANCELLED' && (
-                        <Button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handlePayNow(order);
-                          }}
-                          size="sm" 
-                          className="rounded-full text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-bold"
-                        >
-                          Pay Now
-                        </Button>
-                      )}
+          {/* ── Pagination ────────────────────────────────────────────────── */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-1.5 pt-2">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={safePage === 1}
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+              >
+                <ChevronLeft size={14} />
+              </button>
 
-                      {/* Cancel button — only for PENDING or CONFIRMED orders */}
-                      {['PENDING', 'CONFIRMED'].includes(order.orderStatus.toUpperCase()) && (
-                        <Button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleCancelOrder(order);
-                          }}
-                          disabled={cancellingId === order.id}
-                          size="sm"
-                          variant="outline"
-                          className="rounded-full text-xs border-rose-200 text-rose-600 hover:bg-rose-50 hover:border-rose-300 font-bold"
-                        >
-                          {cancellingId === order.id ? (
-                            <Loader2 size={12} className="animate-spin mr-1" />
-                          ) : (
-                            <X size={12} className="mr-1" />
-                          )}
-                          Cancel
-                        </Button>
-                      )}
-                      
-                      <div className="p-1 text-slate-400">
-                        {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              {pages.map((p, i) =>
+                p === "…" ? (
+                  <span key={`ellipsis-${i}`} className="px-1 text-sm text-slate-400">…</span>
+                ) : (
+                  <button
+                    key={p}
+                    onClick={() => setPage(p as number)}
+                    className={`h-8 min-w-[2rem] rounded-lg border text-xs font-bold transition-all px-2
+                      ${safePage === p
+                        ? "border-indigo-500 bg-indigo-600 text-white shadow-sm shadow-indigo-200"
+                        : "border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300"}`}
+                  >
+                    {p}
+                  </button>
+                )
+              )}
 
-                {/* Expanded Details */}
-                {isExpanded && (
-                  <div className="border-t border-slate-100 p-6 bg-slate-50/30 space-y-6">
-                    {/* Items table */}
-                    <div className="space-y-2">
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">Garment Items</h4>
-                      <div className="border rounded-xl bg-white overflow-hidden">
-                        <table className="w-full text-xs text-left">
-                          <thead className="bg-slate-50 border-b text-slate-600 font-bold">
-                            <tr>
-                              <th className="p-3">Service & Item</th>
-                              <th className="p-3 text-center">Qty</th>
-                              <th className="p-3 text-right">Unit Price</th>
-                              <th className="p-3 text-right">Total</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y text-slate-700">
-                            {order.items.map((item) => (
-                              <tr key={item.id}>
-                                <td className="p-3 font-semibold text-slate-900">{item.service.serviceName}</td>
-                                <td className="p-3 text-center">{item.quantity}</td>
-                                <td className="p-3 text-right">৳{item.unitPrice.toFixed(2)}</td>
-                                <td className="p-3 text-right font-bold text-slate-900">৳{item.totalPrice.toFixed(2)}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-
-                    {/* Schedule / Delivery and Payment Information */}
-                    <div className="grid gap-6 sm:grid-cols-2">
-                      <div className="space-y-2.5">
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">Schedule & Logistics</h4>
-                        <div className="p-4 rounded-xl border bg-white text-xs space-y-2.5">
-                          <div className="flex items-start gap-2.5">
-                            <Clock size={14} className="text-slate-400 mt-0.5" />
-                            <div>
-                              <p className="font-semibold text-slate-800">Estimated Pickup</p>
-                              <p className="text-slate-500">{new Date(order.estimatedPickupTime).toLocaleString()}</p>
-                            </div>
-                          </div>
-                          
-                          <div className="flex items-start gap-2.5 border-t border-slate-50 pt-2.5">
-                            <MapPin size={14} className="text-slate-400 mt-0.5" />
-                            <div>
-                              <p className="font-semibold text-slate-800">Pickup Address</p>
-                              <p className="text-slate-500">Delivery address linked to profile</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="space-y-2.5">
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">Payment invoice</h4>
-                        <div className="p-4 rounded-xl border bg-white text-xs space-y-2 text-slate-600">
-                          <div className="flex justify-between">
-                            <span>Subtotal</span>
-                            <span className="font-bold text-slate-800">৳{order.subtotal.toFixed(2)}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>VAT / Service Tax (5%)</span>
-                            <span className="font-bold text-slate-800">৳{order.tax.toFixed(2)}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Delivery fee</span>
-                            <span className="font-bold text-slate-800">
-                              {order.deliveryCharge === 0 ? "FREE" : `৳${order.deliveryCharge.toFixed(2)}`}
-                            </span>
-                          </div>
-                          <div className="flex justify-between text-slate-900 font-extrabold border-t border-slate-50 pt-2 text-sm">
-                            <span>Grand Total</span>
-                            <span className="text-indigo-600">৳{order.grandTotal.toFixed(2)}</span>
-                          </div>
-                          <div className="flex justify-between items-center pt-2.5 border-t border-slate-50">
-                            <span className="font-semibold">Payment Status:</span>
-                            <span className={`px-2.5 py-0.5 rounded-full border text-[10px] font-bold ${
-                              order.paymentStatus === 'PAID'
-                                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                : "bg-rose-50 text-rose-700 border-rose-200"
-                            }`}>
-                              {order.paymentStatus}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </Card>
-            );
-          })}
-        </div>
+              <button
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={safePage === totalPages}
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+              >
+                <ChevronRight size={14} />
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
