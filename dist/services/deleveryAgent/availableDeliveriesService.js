@@ -1,4 +1,37 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.acceptDelivery = exports.getAvailableDeliveries = void 0;
 const client_1 = require("@prisma/client");
@@ -57,43 +90,65 @@ const getAvailableDeliveries = async (userId) => {
                 },
             },
             branch: true,
-            order: true,
+            order: {
+                include: {
+                    vendor: true,
+                },
+            },
         },
         orderBy: {
             createdAt: "desc",
         },
     });
-    // console.log("Total deliveries:", deliveries.length);
-    // console.log(deliveries);
     return deliveries.map((delivery) => {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s;
-        const customerAddress = delivery.customer.addresses.find((addr) => addr.isDefault) || delivery.customer.addresses[0];
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1;
+        const targetAddressId = delivery.deliveryAddressId || ((_a = delivery.order) === null || _a === void 0 ? void 0 : _a.deliveryAddressId);
+        const customerAddress = ((_b = delivery.customer) === null || _b === void 0 ? void 0 : _b.addresses.find((addr) => addr.id === targetAddressId)) ||
+            ((_c = delivery.customer) === null || _c === void 0 ? void 0 : _c.addresses.find((addr) => addr.isDefault)) || ((_d = delivery.customer) === null || _d === void 0 ? void 0 : _d.addresses[0]);
+        const assignedVendor = (_e = delivery.order) === null || _e === void 0 ? void 0 : _e.vendor;
+        const pickupSource = assignedVendor
+            ? {
+                isVendor: true,
+                type: "VENDOR",
+                name: assignedVendor.businessName,
+                code: assignedVendor.vendorCode,
+                phone: assignedVendor.phone || "N/A",
+            }
+            : {
+                isVendor: false,
+                type: "BRANCH",
+                name: ((_f = delivery.branch) === null || _f === void 0 ? void 0 : _f.branchName) || "Main Branch Hub",
+                code: ((_g = delivery.branch) === null || _g === void 0 ? void 0 : _g.branchCode) || "BRANCH",
+                phone: ((_h = delivery.branch) === null || _h === void 0 ? void 0 : _h.phone) || "N/A",
+            };
         let distance = null;
-        if (((_a = delivery.branch) === null || _a === void 0 ? void 0 : _a.latitude) &&
-            ((_b = delivery.branch) === null || _b === void 0 ? void 0 : _b.longitude) &&
+        if (((_j = delivery.branch) === null || _j === void 0 ? void 0 : _j.latitude) &&
+            ((_k = delivery.branch) === null || _k === void 0 ? void 0 : _k.longitude) &&
             (customerAddress === null || customerAddress === void 0 ? void 0 : customerAddress.latitude) &&
             (customerAddress === null || customerAddress === void 0 ? void 0 : customerAddress.longitude)) {
             distance = calculateDistance(delivery.branch.latitude, delivery.branch.longitude, customerAddress.latitude, customerAddress.longitude);
         }
         return {
             id: delivery.id,
-            orderId: delivery.orderId,
-            customerName: ((_d = (_c = delivery.customer) === null || _c === void 0 ? void 0 : _c.user) === null || _d === void 0 ? void 0 : _d.fullName) || (customerAddress === null || customerAddress === void 0 ? void 0 : customerAddress.receiverName) || "N/A",
-            customerPhone: ((_f = (_e = delivery.customer) === null || _e === void 0 ? void 0 : _e.user) === null || _f === void 0 ? void 0 : _f.phone) || (customerAddress === null || customerAddress === void 0 ? void 0 : customerAddress.receiverPhone) || "N/A",
-            branch: (_h = (_g = delivery.branch) === null || _g === void 0 ? void 0 : _g.branchName) !== null && _h !== void 0 ? _h : "N/A",
-            deliveryAddress: (_j = customerAddress === null || customerAddress === void 0 ? void 0 : customerAddress.fullAddress) !== null && _j !== void 0 ? _j : "N/A",
+            orderId: ((_l = delivery.order) === null || _l === void 0 ? void 0 : _l.orderNumber) || delivery.orderId,
+            rawOrderId: delivery.orderId,
+            customerName: (customerAddress === null || customerAddress === void 0 ? void 0 : customerAddress.receiverName) || ((_o = (_m = delivery.customer) === null || _m === void 0 ? void 0 : _m.user) === null || _o === void 0 ? void 0 : _o.fullName) || "N/A",
+            customerPhone: (customerAddress === null || customerAddress === void 0 ? void 0 : customerAddress.receiverPhone) || ((_q = (_p = delivery.customer) === null || _p === void 0 ? void 0 : _p.user) === null || _q === void 0 ? void 0 : _q.phone) || "N/A",
+            branch: (_s = (_r = delivery.branch) === null || _r === void 0 ? void 0 : _r.branchName) !== null && _s !== void 0 ? _s : "N/A",
+            pickupSource,
+            deliveryAddress: (_t = customerAddress === null || customerAddress === void 0 ? void 0 : customerAddress.fullAddress) !== null && _t !== void 0 ? _t : "N/A",
             // Order model ->
-            parcelType: (_l = (_k = delivery.order) === null || _k === void 0 ? void 0 : _k.orderType) !== null && _l !== void 0 ? _l : "N/A",
-            paymentType: (_o = (_m = delivery.order) === null || _m === void 0 ? void 0 : _m.paymentStatus) !== null && _o !== void 0 ? _o : "N/A",
+            parcelType: (_v = (_u = delivery.order) === null || _u === void 0 ? void 0 : _u.orderType) !== null && _v !== void 0 ? _v : "N/A",
+            paymentType: (_x = (_w = delivery.order) === null || _w === void 0 ? void 0 : _w.paymentStatus) !== null && _x !== void 0 ? _x : "N/A",
             //  schema-N/A
             weight: "N/A",
             // COD amount = grandTotal
-            codAmount: (_q = (_p = delivery.order) === null || _p === void 0 ? void 0 : _p.grandTotal) !== null && _q !== void 0 ? _q : 0,
+            codAmount: (_z = (_y = delivery.order) === null || _y === void 0 ? void 0 : _y.grandTotal) !== null && _z !== void 0 ? _z : 0,
             distance: distance
                 ? `${distance} KM`
                 : "N/A",
             priority: "NORMAL",
-            totalGarments: (_s = (_r = delivery.order) === null || _r === void 0 ? void 0 : _r.totalGarments) !== null && _s !== void 0 ? _s : 0,
+            totalGarments: (_1 = (_0 = delivery.order) === null || _0 === void 0 ? void 0 : _0.totalGarments) !== null && _1 !== void 0 ? _1 : 0,
             status: delivery.deliveryStatus,
             createdAt: delivery.createdAt,
         };
@@ -105,6 +160,9 @@ const acceptDelivery = async (userId, deliveryId) => {
         where: {
             userId,
         },
+        include: {
+            user: { select: { phone: true, fullName: true } }
+        }
     });
     if (!agent) {
         throw new Error("Delivery agent not found");
@@ -141,7 +199,7 @@ const acceptDelivery = async (userId, deliveryId) => {
         ? await prisma.customerAddress.findUnique({ where: { id: orderInfo.deliveryAddressId } })
         : null;
     const updatedDelivery = await prisma.$transaction(async (tx) => {
-        var _a, _b, _c, _d, _e, _f;
+        var _a, _b, _c, _d, _e, _f, _g;
         const updated = await tx.delivery.update({
             where: {
                 id: deliveryId,
@@ -163,6 +221,20 @@ const acceptDelivery = async (userId, deliveryId) => {
                 description: "Your clean laundry is out for delivery and on the way to you!",
             }
         });
+        // Broadcast real-time Socket event to Customer Dashboard & Order Tracker
+        try {
+            const { getIO } = await Promise.resolve().then(() => __importStar(require("../../socket")));
+            if (customerInfo === null || customerInfo === void 0 ? void 0 : customerInfo.userId) {
+                getIO().to(`customer_${customerInfo.userId}`).emit("orderStatusUpdated", {
+                    orderId: delivery.orderId,
+                    orderStatus: "DELIVERY",
+                });
+                console.log(`📢 [Socket] Broadcasted orderStatusUpdated (DELIVERY) to customer_${customerInfo.userId}`);
+            }
+        }
+        catch (err) {
+            console.error("Socket broadcast failed in acceptDelivery:", err);
+        }
         const existingOtp = await tx.deliveryOTP.findFirst({
             where: {
                 deliveryId: delivery.id,
@@ -188,10 +260,11 @@ const acceptDelivery = async (userId, deliveryId) => {
         // Trigger Delivery OTP SMS to Customer (Priority: specificAddress.receiverPhone -> user.phone -> addresses[0].receiverPhone)
         const customerPhone = (specificAddress === null || specificAddress === void 0 ? void 0 : specificAddress.receiverPhone) || ((_a = customerInfo === null || customerInfo === void 0 ? void 0 : customerInfo.user) === null || _a === void 0 ? void 0 : _a.phone) || ((_c = (_b = customerInfo === null || customerInfo === void 0 ? void 0 : customerInfo.addresses) === null || _b === void 0 ? void 0 : _b[0]) === null || _c === void 0 ? void 0 : _c.receiverPhone);
         const customerName = (specificAddress === null || specificAddress === void 0 ? void 0 : specificAddress.receiverName) || ((_d = customerInfo === null || customerInfo === void 0 ? void 0 : customerInfo.user) === null || _d === void 0 ? void 0 : _d.fullName) || ((_f = (_e = customerInfo === null || customerInfo === void 0 ? void 0 : customerInfo.addresses) === null || _e === void 0 ? void 0 : _e[0]) === null || _f === void 0 ? void 0 : _f.receiverName);
+        const agentPhone = ((_g = agent.user) === null || _g === void 0 ? void 0 : _g.phone) || agent.phone;
         const orderNum = (orderInfo === null || orderInfo === void 0 ? void 0 : orderInfo.orderNumber) || delivery.orderId;
         if (customerPhone && otpToSend) {
-            console.log(`📱 [Delivery OTP SMS] Sending OTP ${otpToSend} to customer phone: ${customerPhone} for Order ${orderNum}`);
-            smsService_1.SMSService.sendDeliveryOTP(customerPhone, otpToSend, orderNum, customerName).catch((err) => {
+            console.log(`📱 [Delivery OTP SMS] Sending OTP ${otpToSend} with agent phone ${agentPhone} to customer phone: ${customerPhone} for Order ${orderNum}`);
+            smsService_1.SMSService.sendDeliveryOTP(customerPhone, otpToSend, orderNum, customerName, agentPhone).catch((err) => {
                 console.error("[Delivery SMS Error]:", err);
             });
         }

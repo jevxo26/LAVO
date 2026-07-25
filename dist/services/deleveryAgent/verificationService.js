@@ -1,4 +1,37 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.verifyDeliveryOTP = exports.getVerificationList = void 0;
 const client_1 = require("@prisma/client");
@@ -31,15 +64,17 @@ const getVerificationList = async (userId) => {
         },
     });
     return deliveries.map((delivery) => {
-        var _a, _b, _c, _d, _e, _f;
-        const address = (_a = delivery.customer.addresses.find((a) => a.isDefault)) !== null && _a !== void 0 ? _a : delivery.customer.addresses[0];
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o;
+        const targetAddressId = delivery.deliveryAddressId || (delivery.deliveryType === 'PICKUP' ? (_a = delivery.order) === null || _a === void 0 ? void 0 : _a.pickupAddressId : (_b = delivery.order) === null || _b === void 0 ? void 0 : _b.deliveryAddressId);
+        const address = (_f = (_d = (_c = delivery.customer) === null || _c === void 0 ? void 0 : _c.addresses.find((a) => a.id === targetAddressId)) !== null && _d !== void 0 ? _d : (_e = delivery.customer) === null || _e === void 0 ? void 0 : _e.addresses.find((a) => a.isDefault)) !== null && _f !== void 0 ? _f : (_g = delivery.customer) === null || _g === void 0 ? void 0 : _g.addresses[0];
         return {
             deliveryId: delivery.id,
-            orderId: delivery.orderId,
+            orderId: ((_h = delivery.order) === null || _h === void 0 ? void 0 : _h.orderNumber) || delivery.orderId,
+            rawOrderId: delivery.orderId,
             deliveryType: delivery.deliveryType,
-            customerName: ((_c = (_b = delivery.customer) === null || _b === void 0 ? void 0 : _b.user) === null || _c === void 0 ? void 0 : _c.fullName) || (address === null || address === void 0 ? void 0 : address.receiverName) || "N/A",
-            customerPhone: ((_e = (_d = delivery.customer) === null || _d === void 0 ? void 0 : _d.user) === null || _e === void 0 ? void 0 : _e.phone) || (address === null || address === void 0 ? void 0 : address.receiverPhone) || "N/A",
-            deliveryAddress: (_f = address === null || address === void 0 ? void 0 : address.fullAddress) !== null && _f !== void 0 ? _f : "N/A",
+            customerName: (address === null || address === void 0 ? void 0 : address.receiverName) || ((_k = (_j = delivery.customer) === null || _j === void 0 ? void 0 : _j.user) === null || _k === void 0 ? void 0 : _k.fullName) || "N/A",
+            customerPhone: (address === null || address === void 0 ? void 0 : address.receiverPhone) || ((_m = (_l = delivery.customer) === null || _l === void 0 ? void 0 : _l.user) === null || _m === void 0 ? void 0 : _m.phone) || "N/A",
+            deliveryAddress: (_o = address === null || address === void 0 ? void 0 : address.fullAddress) !== null && _o !== void 0 ? _o : "N/A",
             deliveryStatus: delivery.deliveryStatus,
             verificationStatus: delivery.verifications.length > 0 &&
                 delivery.verifications[0].verifiedAt
@@ -50,6 +85,7 @@ const getVerificationList = async (userId) => {
 };
 exports.getVerificationList = getVerificationList;
 const verifyDeliveryOTP = async (userId, deliveryId, otp) => {
+    var _a, _b;
     const agent = await prisma.deliveryAgent.findUnique({
         where: {
             userId,
@@ -119,6 +155,23 @@ const verifyDeliveryOTP = async (userId, deliveryId, otp) => {
                 description: 'Your clean laundry has been successfully delivered. Thank you!',
             }
         });
+        try {
+            const { getIO } = await Promise.resolve().then(() => __importStar(require('../../socket')));
+            const order = await prisma.order.findUnique({
+                where: { id: delivery.orderId },
+                include: { customer: true },
+            });
+            if ((_a = order === null || order === void 0 ? void 0 : order.customer) === null || _a === void 0 ? void 0 : _a.userId) {
+                getIO().to(`customer_${order.customer.userId}`).emit('orderStatusUpdated', {
+                    orderId: delivery.orderId,
+                    orderStatus: 'COMPLETED',
+                });
+                console.log(`📢 [Socket] Broadcasted orderStatusUpdated (COMPLETED) to customer_${order.customer.userId}`);
+            }
+        }
+        catch (err) {
+            console.error('Socket broadcast failed in verifyOTP:', err);
+        }
     }
     else if (delivery.deliveryType === 'PICKUP') {
         // Pickup verified = garments collected, now being taken to the branch
@@ -133,6 +186,23 @@ const verifyDeliveryOTP = async (userId, deliveryId, otp) => {
                 description: 'Your garments have been collected and are on their way to the laundry hub.',
             }
         });
+        try {
+            const { getIO } = await Promise.resolve().then(() => __importStar(require('../../socket')));
+            const order = await prisma.order.findUnique({
+                where: { id: delivery.orderId },
+                include: { customer: true },
+            });
+            if ((_b = order === null || order === void 0 ? void 0 : order.customer) === null || _b === void 0 ? void 0 : _b.userId) {
+                getIO().to(`customer_${order.customer.userId}`).emit('orderStatusUpdated', {
+                    orderId: delivery.orderId,
+                    orderStatus: 'PICKUP',
+                });
+                console.log(`📢 [Socket] Broadcasted orderStatusUpdated (PICKUP) to customer_${order.customer.userId}`);
+            }
+        }
+        catch (err) {
+            console.error('Socket broadcast failed in verifyOTP:', err);
+        }
     }
     await prisma.deliveryVerification.create({
         data: {

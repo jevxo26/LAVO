@@ -4,6 +4,17 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PaymentCallbackController = void 0;
 const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
+function getFrontendUrl(req) {
+    const referer = req.get("referer") || req.get("origin");
+    if (referer) {
+        try {
+            const u = new URL(referer);
+            return u.origin;
+        }
+        catch (_b) { }
+    }
+    return process.env.FRONTEND_URL || "http://localhost:3000";
+}
 class PaymentCallbackController {
     static async verifySSLCommerz(val_id) {
         const storeId = process.env.SSLCOMMERZ_STORE_ID;
@@ -32,7 +43,8 @@ PaymentCallbackController.handleSuccess = async (req, res) => {
         const ref = (body.ref || query.ref || body.orderId || query.orderId || "");
         const isVerified = await _a.verifySSLCommerz(val_id);
         if (!isVerified) {
-            res.redirect("/dashboard/my-orders?status=fail&msg=Payment%20verification%20failed");
+            const frontendUrl = getFrontendUrl(req);
+            res.redirect(`${frontendUrl}/dashboard/my-orders?status=fail&msg=Payment%20verification%20failed`);
             return;
         }
         // 1. Reconstruct full UUID from tran_id if ref is missing
@@ -98,15 +110,19 @@ PaymentCallbackController.handleSuccess = async (req, res) => {
                 }
             });
         }
-        res.redirect("/dashboard/my-orders?status=success");
+        const frontendUrl = getFrontendUrl(req);
+        res.redirect(`${frontendUrl}/dashboard/my-orders?status=success`);
     }
     catch (_b) {
-        res.redirect("/dashboard/my-orders?status=success");
+        const frontendUrl = getFrontendUrl(req);
+        res.redirect(`${frontendUrl}/dashboard/my-orders?status=success`);
     }
 };
 PaymentCallbackController.handleFail = async (req, res) => {
-    res.redirect("/dashboard/my-orders?status=fail");
+    const frontendUrl = getFrontendUrl(req);
+    res.redirect(`${frontendUrl}/dashboard/my-orders?status=fail`);
 };
 PaymentCallbackController.handleCancel = async (req, res) => {
-    res.redirect("/dashboard/my-orders?status=cancel");
+    const frontendUrl = getFrontendUrl(req);
+    res.redirect(`${frontendUrl}/dashboard/my-orders?status=cancel`);
 };

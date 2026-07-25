@@ -19,7 +19,7 @@ BranchVendorController.getBranchVendors = (0, catchAsync_1.catchAsync)(async (re
     const search = req.query.search || '';
     // 1. Fetch vendors linked to this branch
     const vendors = (await prisma.vendor.findMany({
-        where: Object.assign({ status: 'ACTIVE' }, (search
+        where: Object.assign({ branchId, status: 'ACTIVE' }, (search
             ? {
                 OR: [
                     { businessName: { contains: search, mode: 'insensitive' } },
@@ -126,7 +126,7 @@ BranchVendorController.assignOrderToVendor = (0, catchAsync_1.catchAsync)(async 
     }
     // 2. Verify Vendor belongs to branch and has available capacity
     const vendor = (await prisma.vendor.findFirst({
-        where: { id: vendorId, status: 'ACTIVE' },
+        where: { id: vendorId, branchId, status: 'ACTIVE' },
         include: { capacity: true },
     }));
     if (!vendor) {

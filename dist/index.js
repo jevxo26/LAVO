@@ -45,7 +45,7 @@ const auditMiddleware_1 = require("./middlewares/auditMiddleware");
 const socket_1 = require("./socket");
 const prisma = new client_1.PrismaClient();
 const dev = process.env.NODE_ENV !== 'production';
-const app = (0, next_1.default)({ dev });
+const app = (0, next_1.default)({ dev, dir: process.cwd() });
 const handle = app.getRequestHandler();
 const port = process.env.PORT || 3000;
 app.prepare().then(async () => {
@@ -59,8 +59,8 @@ app.prepare().then(async () => {
     ].filter(Boolean);
     server.use((0, cors_1.default)({
         origin: (origin, callback) => {
-            // Allow requests with no origin, 'null' origin (payment redirects/gateways), or allowed origins
-            if (!origin || origin === 'null' || allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
+            // Allow requests with no origin, 'null' origin (form POST redirects), SSLCommerz gateways, or configured allowed origins
+            if (!origin || origin === 'null' || allowedOrigins.includes(origin) || origin.includes('sslcommerz.com') || process.env.NODE_ENV !== 'production') {
                 callback(null, true);
             }
             else {
@@ -74,6 +74,7 @@ app.prepare().then(async () => {
         skip: (req) => req.url.startsWith('/_next/') || req.url.includes('favicon.ico')
     }));
     server.use(express_1.default.json());
+    server.use(express_1.default.urlencoded({ extended: true }));
     server.use((0, cookie_parser_1.default)());
     // Database Connection using Prisma
     try {

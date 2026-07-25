@@ -425,8 +425,14 @@ CustomerService.getTransactions = (0, catchServiceAsync_1.catchServiceAsync)(asy
     });
 });
 CustomerService.placeOrder = (0, catchServiceAsync_1.catchServiceAsync)(async (userId, orderData) => {
-    var _b, _c, _d, _e, _f, _g;
+    var _b, _c, _d, _e, _f, _g, _h;
     const customer = await _a.getOrCreateCustomer(userId);
+    if (!orderData.pickupAddress || !orderData.pickupAddress.trim()) {
+        throw new Error('Pickup address is required to place an order.');
+    }
+    if (!orderData.receiverPhone || !orderData.receiverPhone.trim()) {
+        throw new Error('Receiver phone number is required to place an order.');
+    }
     // 1. Calculate order prices
     let subtotal = 0.0;
     const orderItemsToCreate = [];
@@ -467,12 +473,12 @@ CustomerService.placeOrder = (0, catchServiceAsync_1.catchServiceAsync)(async (u
     const address = await prisma.customerAddress.create({
         data: {
             customerId: customer.id,
-            receiverName: orderData.receiverName || customer.user.fullName,
-            receiverPhone: orderData.receiverPhone || customer.user.phone || '000000',
-            fullAddress: orderData.pickupAddress,
+            receiverName: ((_b = orderData.receiverName) === null || _b === void 0 ? void 0 : _b.trim()) || customer.user.fullName || 'Customer',
+            receiverPhone: orderData.receiverPhone.trim(),
+            fullAddress: orderData.pickupAddress.trim(),
             city: 'Dhaka',
-            latitude: (_b = orderData.latitude) !== null && _b !== void 0 ? _b : null,
-            longitude: (_c = orderData.longitude) !== null && _c !== void 0 ? _c : null,
+            latitude: (_c = orderData.latitude) !== null && _c !== void 0 ? _c : null,
+            longitude: (_d = orderData.longitude) !== null && _d !== void 0 ? _d : null,
         },
     });
     // Also update the customer user phone if a new phone number was provided at checkout
@@ -487,8 +493,8 @@ CustomerService.placeOrder = (0, catchServiceAsync_1.catchServiceAsync)(async (u
     // Date parsing
     const estimatedPickupTime = new Date(`${orderData.pickupDate}T${orderData.pickupTimeSlot.split(' - ')[0]}:00`);
     // Route order to the nearest active branch and find a local delivery agent
-    const customerLat = (_e = (_d = orderData.latitude) !== null && _d !== void 0 ? _d : address.latitude) !== null && _e !== void 0 ? _e : null;
-    const customerLon = (_g = (_f = orderData.longitude) !== null && _f !== void 0 ? _f : address.longitude) !== null && _g !== void 0 ? _g : null;
+    const customerLat = (_f = (_e = orderData.latitude) !== null && _e !== void 0 ? _e : address.latitude) !== null && _f !== void 0 ? _f : null;
+    const customerLon = (_h = (_g = orderData.longitude) !== null && _g !== void 0 ? _g : address.longitude) !== null && _h !== void 0 ? _h : null;
     const { branchId, agentId } = await _a.routeOrderToBranch(customerLat, customerLon);
     // 3. Create the Order inside transaction
     const result = await prisma.$transaction(async (tx) => {
