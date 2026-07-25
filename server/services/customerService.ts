@@ -563,27 +563,9 @@ export class CustomerService {
         },
       });
 
-      // Also update the customer user phone if a new phone number was provided at checkout
-      // Only update if phone is not already taken by another user
-      if (orderData.receiverPhone && orderData.receiverPhone !== customer.user.phone) {
-        const phoneAlreadyTaken = await prisma.user.findFirst({
-          where: {
-            phone: orderData.receiverPhone,
-            NOT: { id: userId }
-          }
-        });
-        if (!phoneAlreadyTaken) {
-          await prisma.user.update({
-            where: { id: userId },
-            data: { phone: orderData.receiverPhone },
-          });
-        } else {
-          console.log(`[Order] Phone ${orderData.receiverPhone} already in use by another user — skipping user profile phone update. Address receiverPhone still saved.`);
-        }
-      }
-
 
       // Generate unique order number
+
       const orderNumber = `ORD-${Date.now()}`;
 
       // Date parsing
