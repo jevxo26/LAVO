@@ -1,8 +1,10 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
-  // Expose env vars to the browser (NEXT_PUBLIC_* are auto-exposed,
-  // but listing them here ensures they are inlined at build time too)
+  turbopack: {
+    root: path.resolve(__dirname),
+  },
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL ?? "/api",
   },

@@ -33,19 +33,23 @@ const getDeliveryHistory = async (userId) => {
         },
     });
     return deliveries.map((delivery) => {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
-        return ({
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o;
+        const targetAddressId = delivery.deliveryAddressId || ((_a = delivery.order) === null || _a === void 0 ? void 0 : _a.deliveryAddressId);
+        const address = (_e = (_c = (_b = delivery.customer) === null || _b === void 0 ? void 0 : _b.addresses.find((a) => a.id === targetAddressId)) !== null && _c !== void 0 ? _c : (_d = delivery.customer) === null || _d === void 0 ? void 0 : _d.addresses.find((a) => a.isDefault)) !== null && _e !== void 0 ? _e : (_f = delivery.customer) === null || _f === void 0 ? void 0 : _f.addresses[0];
+        return {
             deliveryId: delivery.id,
-            orderId: delivery.orderId,
-            customerName: ((_b = (_a = delivery.customer) === null || _a === void 0 ? void 0 : _a.user) === null || _b === void 0 ? void 0 : _b.fullName) || ((_e = (_d = (_c = delivery.customer) === null || _c === void 0 ? void 0 : _c.addresses) === null || _d === void 0 ? void 0 : _d[0]) === null || _e === void 0 ? void 0 : _e.receiverName) || "N/A",
-            customerPhone: ((_g = (_f = delivery.customer) === null || _f === void 0 ? void 0 : _f.user) === null || _g === void 0 ? void 0 : _g.phone) || ((_k = (_j = (_h = delivery.customer) === null || _h === void 0 ? void 0 : _h.addresses) === null || _j === void 0 ? void 0 : _j[0]) === null || _k === void 0 ? void 0 : _k.receiverPhone) || "N/A",
+            orderId: ((_g = delivery.order) === null || _g === void 0 ? void 0 : _g.orderNumber) || delivery.orderId,
+            rawOrderId: delivery.orderId,
+            customerName: (address === null || address === void 0 ? void 0 : address.receiverName) || ((_j = (_h = delivery.customer) === null || _h === void 0 ? void 0 : _h.user) === null || _j === void 0 ? void 0 : _j.fullName) || "N/A",
+            customerPhone: (address === null || address === void 0 ? void 0 : address.receiverPhone) || ((_l = (_k = delivery.customer) === null || _k === void 0 ? void 0 : _k.user) === null || _l === void 0 ? void 0 : _l.phone) || "N/A",
+            customerAddress: (address === null || address === void 0 ? void 0 : address.fullAddress) || "N/A",
             serviceType: delivery.order.orderType,
-            branch: (_m = (_l = delivery.branch) === null || _l === void 0 ? void 0 : _l.branchName) !== null && _m !== void 0 ? _m : "N/A",
+            branch: (_o = (_m = delivery.branch) === null || _m === void 0 ? void 0 : _m.branchName) !== null && _o !== void 0 ? _o : "N/A",
             amount: delivery.order.grandTotal,
             paymentStatus: delivery.order.paymentStatus,
             status: delivery.deliveryStatus,
             completedAt: delivery.completedAt,
-        });
+        };
     });
 };
 exports.getDeliveryHistory = getDeliveryHistory;

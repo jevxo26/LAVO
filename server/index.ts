@@ -44,7 +44,7 @@ import { initSocket } from './socket';
 const prisma = new PrismaClient();
 
 const dev = process.env.NODE_ENV !== 'production';
-const app = next({ dev });
+const app = next({ dev, dir: process.cwd() });
 const handle = app.getRequestHandler();
 
 const port = process.env.PORT || 3000;

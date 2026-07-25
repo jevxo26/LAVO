@@ -39,7 +39,11 @@ function LoginContent() {
         target += target.includes("?") ? `&status=${statusParam}` : `?status=${statusParam}`;
       }
 
-    return (
+      router.push(target);
+    }
+  }, [router, searchParams]);
+
+  return (
         <div className="min-h-screen bg-white">
             <motion.div
                 initial={{ opacity: 0, y: 25 }}
@@ -186,8 +190,6 @@ function LoginContent() {
                 </div>
             </motion.div>
         </div>
-      </motion.div>
-    </div>
   );
 }
 
