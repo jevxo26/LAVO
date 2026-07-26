@@ -115,3 +115,43 @@ export const deleteReview = async (id: string) => {
     where: { id },
   });
 };
+
+// ─── Public: published reviews for homepage testimonials ─────────────────────
+
+export const getPublishedReviews = async (limit: number = 8) => {
+  const reviews = await prisma.review.findMany({
+    where: { status: 'PUBLISHED' },
+    take: limit,
+    include: {
+      customer: { include: { user: true } },
+      order: {
+        include: {
+          items: {
+            take: 1,
+            include: { service: { select: { serviceName: true } } },
+          },
+        },
+      },
+    },
+    orderBy: [
+      { rating: 'desc' },
+      { createdAt: 'desc' },
+    ],
+  });
+
+  return reviews.map((r) => ({
+    id:           r.id,
+    customerName: r.customer?.user?.fullName || 'Customer',
+    initials:     (r.customer?.user?.fullName || 'CU')
+                    .split(' ')
+                    .map((w) => w[0])
+                    .slice(0, 2)
+                    .join('')
+                    .toUpperCase(),
+    rating:       r.rating,
+    comment:      r.review,
+    title:        (r as any).title || null,
+    serviceName:  r.order?.items?.[0]?.service?.serviceName || 'Laundry Service',
+    createdAt:    r.createdAt,
+  }));
+};

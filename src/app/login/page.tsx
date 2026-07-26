@@ -5,9 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 
 import { SignInForm } from "@/components/auth/signin";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-    UserKey,
     Activity,
     ShieldCheck,
     Building2,
@@ -39,9 +37,9 @@ function LoginContent() {
         target += target.includes("?") ? `&status=${statusParam}` : `?status=${statusParam}`;
       }
 
-      router.push(target);
+      router.replace(target);
     }
-  }, [router, searchParams]);
+  }, [searchParams, router]);
 
   return (
         <div className="min-h-screen bg-white">

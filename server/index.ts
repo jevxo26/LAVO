@@ -93,6 +93,19 @@ app.prepare().then(async () => {
     res.json({ status: 'ok', timestamp: new Date() });
   });
 
+  // Public: published customer reviews used as homepage testimonials (no auth required)
+  server.get('/api/public/reviews', async (req: Request, res: Response) => {
+    try {
+      const { getPublishedReviews } = await import('./services/support/reviewService');
+      const limit = Math.min(Number(req.query.limit) || 8, 20);
+      const data  = await getPublishedReviews(limit);
+      res.json({ success: true, data });
+    } catch (err) {
+      console.error('[public/reviews]', err);
+      res.status(500).json({ success: false, data: [] });
+    }
+  });
+
   server.use(auditLogger);
   server.use('/api/users', userRoutes);
   server.use('/api/auth', authRoutes);
