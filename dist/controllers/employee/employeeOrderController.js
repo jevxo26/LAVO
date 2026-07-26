@@ -30,7 +30,7 @@ exports.getPickupOrders = (0, catchServiceAsync_1.catchServiceAsync)(async (req,
             customer: {
                 include: {
                     user: { select: { fullName: true, phone: true } },
-                    addresses: { select: { receiverName: true, receiverPhone: true } }
+                    addresses: { select: { id: true, receiverName: true, receiverPhone: true, fullAddress: true } }
                 }
             },
             items: {
@@ -46,16 +46,18 @@ exports.getPickupOrders = (0, catchServiceAsync_1.catchServiceAsync)(async (req,
         orderBy: { createdAt: 'asc' }
     });
     const formatted = orders.map((order) => {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j;
         const totalGarments = order.items.reduce((sum, item) => sum + item.garmentItems.length, 0);
         const qrGenerated = order.items.reduce((sum, item) => sum + item.garmentItems.filter((g) => g.qrCodeRecord).length, 0);
+        const addr = ((_b = (_a = order.customer) === null || _a === void 0 ? void 0 : _a.addresses) === null || _b === void 0 ? void 0 : _b.find((a) => a.id === order.pickupAddressId)) || ((_d = (_c = order.customer) === null || _c === void 0 ? void 0 : _c.addresses) === null || _d === void 0 ? void 0 : _d[0]);
         return {
             id: order.id,
             orderNumber: order.orderNumber,
             orderStatus: order.orderStatus,
-            customerName: ((_b = (_a = order.customer) === null || _a === void 0 ? void 0 : _a.user) === null || _b === void 0 ? void 0 : _b.fullName) || ((_e = (_d = (_c = order.customer) === null || _c === void 0 ? void 0 : _c.addresses) === null || _d === void 0 ? void 0 : _d[0]) === null || _e === void 0 ? void 0 : _e.receiverName) || 'N/A',
-            customerPhone: ((_g = (_f = order.customer) === null || _f === void 0 ? void 0 : _f.user) === null || _g === void 0 ? void 0 : _g.phone) || ((_k = (_j = (_h = order.customer) === null || _h === void 0 ? void 0 : _h.addresses) === null || _j === void 0 ? void 0 : _j[0]) === null || _k === void 0 ? void 0 : _k.receiverPhone) || 'N/A',
-            branch: ((_l = order.branch) === null || _l === void 0 ? void 0 : _l.branchName) || 'N/A',
+            customerName: (addr === null || addr === void 0 ? void 0 : addr.receiverName) || ((_f = (_e = order.customer) === null || _e === void 0 ? void 0 : _e.user) === null || _f === void 0 ? void 0 : _f.fullName) || 'N/A',
+            customerPhone: (addr === null || addr === void 0 ? void 0 : addr.receiverPhone) || ((_h = (_g = order.customer) === null || _g === void 0 ? void 0 : _g.user) === null || _h === void 0 ? void 0 : _h.phone) || 'N/A',
+            customerAddress: (addr === null || addr === void 0 ? void 0 : addr.fullAddress) || 'N/A',
+            branch: ((_j = order.branch) === null || _j === void 0 ? void 0 : _j.branchName) || 'N/A',
             totalGarments,
             qrGenerated,
             allQrDone: totalGarments > 0 && qrGenerated === totalGarments,

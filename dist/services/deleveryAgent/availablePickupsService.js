@@ -1,4 +1,37 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getPickupQRCodes = exports.acceptPickup = exports.getAvailablePickups = void 0;
 const client_1 = require("@prisma/client");
@@ -38,7 +71,11 @@ const getAvailablePickups = async (userId) => {
             ]
         },
         include: {
-            order: true,
+            order: {
+                include: {
+                    vendor: true
+                }
+            },
             customer: {
                 include: {
                     user: true,
@@ -51,36 +88,47 @@ const getAvailablePickups = async (userId) => {
             createdAt: "desc"
         }
     });
-    // console.log("Agent ID:", agent.id);
-    // console.log(
-    //     "Assigned Deliveries:",
-    //     deliveries.map(d => ({
-    //         id: d.id,
-    //         type: d.deliveryType,
-    //         status: d.deliveryStatus
-    //     }))
-    // );
     return deliveries.map((delivery) => {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o;
-        const customerAddress = ((_a = delivery.customer) === null || _a === void 0 ? void 0 : _a.addresses.find(addr => addr.isDefault)) || ((_b = delivery.customer) === null || _b === void 0 ? void 0 : _b.addresses[0]);
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v;
+        const targetAddressId = delivery.deliveryAddressId || ((_a = delivery.order) === null || _a === void 0 ? void 0 : _a.pickupAddressId);
+        const customerAddress = ((_b = delivery.customer) === null || _b === void 0 ? void 0 : _b.addresses.find(addr => addr.id === targetAddressId)) ||
+            ((_c = delivery.customer) === null || _c === void 0 ? void 0 : _c.addresses.find(addr => addr.isDefault)) || ((_d = delivery.customer) === null || _d === void 0 ? void 0 : _d.addresses[0]);
+        const assignedVendor = (_e = delivery.order) === null || _e === void 0 ? void 0 : _e.vendor;
+        const dropoffDestination = assignedVendor
+            ? {
+                isVendor: true,
+                type: "VENDOR",
+                name: assignedVendor.businessName,
+                code: assignedVendor.vendorCode,
+                phone: assignedVendor.phone || "N/A",
+            }
+            : {
+                isVendor: false,
+                type: "BRANCH",
+                name: ((_f = delivery.branch) === null || _f === void 0 ? void 0 : _f.branchName) || "Main Branch Hub",
+                code: ((_g = delivery.branch) === null || _g === void 0 ? void 0 : _g.branchCode) || "BRANCH",
+                phone: ((_h = delivery.branch) === null || _h === void 0 ? void 0 : _h.phone) || "N/A",
+            };
         let distance = null;
-        if (((_c = delivery.branch) === null || _c === void 0 ? void 0 : _c.latitude) &&
-            ((_d = delivery.branch) === null || _d === void 0 ? void 0 : _d.longitude) &&
+        if (((_j = delivery.branch) === null || _j === void 0 ? void 0 : _j.latitude) &&
+            ((_k = delivery.branch) === null || _k === void 0 ? void 0 : _k.longitude) &&
             (customerAddress === null || customerAddress === void 0 ? void 0 : customerAddress.latitude) &&
             (customerAddress === null || customerAddress === void 0 ? void 0 : customerAddress.longitude)) {
             distance = (0, geoUtils_1.calculateDistance)(delivery.branch.latitude, delivery.branch.longitude, customerAddress.latitude, customerAddress.longitude);
         }
         return {
             id: delivery.id,
-            orderId: delivery.orderId,
+            orderId: ((_l = delivery.order) === null || _l === void 0 ? void 0 : _l.orderNumber) || delivery.orderId,
+            rawOrderId: delivery.orderId,
             deliveryType: delivery.deliveryType,
-            customerName: ((_f = (_e = delivery.customer) === null || _e === void 0 ? void 0 : _e.user) === null || _f === void 0 ? void 0 : _f.fullName) || (customerAddress === null || customerAddress === void 0 ? void 0 : customerAddress.receiverName) || "N/A",
-            customerPhone: ((_h = (_g = delivery.customer) === null || _g === void 0 ? void 0 : _g.user) === null || _h === void 0 ? void 0 : _h.phone) || (customerAddress === null || customerAddress === void 0 ? void 0 : customerAddress.receiverPhone) || "N/A",
-            branch: (_k = (_j = delivery.branch) === null || _j === void 0 ? void 0 : _j.branchName) !== null && _k !== void 0 ? _k : "N/A",
-            pickupAddress: (_l = customerAddress === null || customerAddress === void 0 ? void 0 : customerAddress.fullAddress) !== null && _l !== void 0 ? _l : "N/A",
+            customerName: (customerAddress === null || customerAddress === void 0 ? void 0 : customerAddress.receiverName) || ((_o = (_m = delivery.customer) === null || _m === void 0 ? void 0 : _m.user) === null || _o === void 0 ? void 0 : _o.fullName) || "N/A",
+            customerPhone: (customerAddress === null || customerAddress === void 0 ? void 0 : customerAddress.receiverPhone) || ((_q = (_p = delivery.customer) === null || _p === void 0 ? void 0 : _p.user) === null || _q === void 0 ? void 0 : _q.phone) || "N/A",
+            branch: (_s = (_r = delivery.branch) === null || _r === void 0 ? void 0 : _r.branchName) !== null && _s !== void 0 ? _s : "N/A",
+            dropoffDestination,
+            pickupAddress: (_t = customerAddress === null || customerAddress === void 0 ? void 0 : customerAddress.fullAddress) !== null && _t !== void 0 ? _t : "N/A",
             distance: distance ? `${distance} KM` : "N/A",
             priority: "NORMAL",
-            totalGarments: (_o = (_m = delivery.order) === null || _m === void 0 ? void 0 : _m.totalGarments) !== null && _o !== void 0 ? _o : 0,
+            totalGarments: (_v = (_u = delivery.order) === null || _u === void 0 ? void 0 : _u.totalGarments) !== null && _v !== void 0 ? _v : 0,
             status: delivery.deliveryStatus,
             createdAt: delivery.createdAt
         };
@@ -91,6 +139,9 @@ const acceptPickup = async (userId, deliveryId) => {
     const agent = await prisma.deliveryAgent.findUnique({
         where: {
             userId
+        },
+        include: {
+            user: { select: { phone: true, fullName: true } }
         }
     });
     if (!agent) {
@@ -121,7 +172,7 @@ const acceptPickup = async (userId, deliveryId) => {
         ? await prisma.customerAddress.findUnique({ where: { id: orderInfo.pickupAddressId } })
         : null;
     const updatedDelivery = await prisma.$transaction(async (tx) => {
-        var _a, _b, _c, _d, _e, _f;
+        var _a, _b, _c, _d, _e, _f, _g;
         // 1. Mark delivery as ACCEPTED
         const updated = await tx.delivery.update({
             where: { id: deliveryId },
@@ -143,6 +194,20 @@ const acceptPickup = async (userId, deliveryId) => {
                 description: "A pickup agent is on the way to collect your garments.",
             }
         });
+        // Broadcast real-time Socket event to Customer Dashboard & Order Tracker
+        try {
+            const { getIO } = await Promise.resolve().then(() => __importStar(require("../../socket")));
+            if (customerInfo === null || customerInfo === void 0 ? void 0 : customerInfo.userId) {
+                getIO().to(`customer_${customerInfo.userId}`).emit("orderStatusUpdated", {
+                    orderId: delivery.orderId,
+                    orderStatus: "CONFIRMED",
+                });
+                console.log(`📢 [Socket] Broadcasted orderStatusUpdated (CONFIRMED) to customer_${customerInfo.userId}`);
+            }
+        }
+        catch (err) {
+            console.error("Socket broadcast failed in acceptPickup:", err);
+        }
         // 4. Generate a pickup verification OTP (agent presents to customer at pickup)
         const existingOtp = await tx.deliveryOTP.findFirst({
             where: {
@@ -166,10 +231,11 @@ const acceptPickup = async (userId, deliveryId) => {
         // Trigger Pickup OTP SMS to Customer (Priority: specificAddress.receiverPhone -> user.phone -> addresses[0].receiverPhone)
         const customerPhone = (specificAddress === null || specificAddress === void 0 ? void 0 : specificAddress.receiverPhone) || ((_a = customerInfo === null || customerInfo === void 0 ? void 0 : customerInfo.user) === null || _a === void 0 ? void 0 : _a.phone) || ((_c = (_b = customerInfo === null || customerInfo === void 0 ? void 0 : customerInfo.addresses) === null || _b === void 0 ? void 0 : _b[0]) === null || _c === void 0 ? void 0 : _c.receiverPhone);
         const customerName = (specificAddress === null || specificAddress === void 0 ? void 0 : specificAddress.receiverName) || ((_d = customerInfo === null || customerInfo === void 0 ? void 0 : customerInfo.user) === null || _d === void 0 ? void 0 : _d.fullName) || ((_f = (_e = customerInfo === null || customerInfo === void 0 ? void 0 : customerInfo.addresses) === null || _e === void 0 ? void 0 : _e[0]) === null || _f === void 0 ? void 0 : _f.receiverName);
+        const agentPhone = ((_g = agent.user) === null || _g === void 0 ? void 0 : _g.phone) || agent.phone;
         const orderNum = (orderInfo === null || orderInfo === void 0 ? void 0 : orderInfo.orderNumber) || delivery.orderId;
         if (customerPhone && otpToSend) {
-            console.log(`📱 [Pickup OTP SMS] Sending OTP ${otpToSend} to customer phone: ${customerPhone} for Order ${orderNum}`);
-            smsService_1.SMSService.sendPickupOTP(customerPhone, otpToSend, orderNum, customerName).catch((err) => {
+            console.log(`📱 [Pickup OTP SMS] Sending OTP ${otpToSend} with agent phone ${agentPhone} to customer phone: ${customerPhone} for Order ${orderNum}`);
+            smsService_1.SMSService.sendPickupOTP(customerPhone, otpToSend, orderNum, customerName, agentPhone).catch((err) => {
                 console.error("[Pickup SMS Error]:", err);
             });
         }
