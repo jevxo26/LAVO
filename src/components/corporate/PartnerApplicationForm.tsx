@@ -1,6 +1,89 @@
-import {ArrowRight} from "lucide-react";
+"use client";
+
+import { useState } from "react";
+import { ArrowRight } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useAppSelector } from "@/store/store";
+import { toast } from "sonner";
 
 const PartnerApplicationForm = () => {
+  const router = useRouter();
+
+  const isAuthenticated = useAppSelector(
+    (state) => state.auth.isAuthenticated
+  );
+
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    targetCity: "",
+    experience: "",
+    reason: "",
+  });
+
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  }
+
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!isAuthenticated) {
+      toast.error("Please login to submit a partner application.");
+      router.push("/login");
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("laundrix_token");
+
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/partner-applications`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(formData),
+        }
+      );
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        toast.success(
+          data.message || "Partner application submitted successfully!"
+        );
+
+        // Form reset
+        setFormData({
+          fullName: "",
+          email: "",
+          phone: "",
+          targetCity: "",
+          experience: "",
+          reason: "",
+        });
+
+        return;
+      }
+
+      // API returned an error
+      toast.error(data.message || "Failed to submit partner application.");
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong. Please try again.");
+    }
+  };
   return (
     <div>
       {/* partner application */}
@@ -20,7 +103,7 @@ const PartnerApplicationForm = () => {
             </div>
 
             {/* Form */}
-            <form className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
 
               {/* Row 1 */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -30,6 +113,9 @@ const PartnerApplicationForm = () => {
                   </label>
 
                   <input
+                    name="fullName"
+                    value={formData.fullName}
+                    onChange={handleChange}
                     type="text"
                     placeholder="John Smith"
                     className="w-full rounded-xl border border-slate-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary"
@@ -42,6 +128,9 @@ const PartnerApplicationForm = () => {
                   </label>
 
                   <input
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
                     type="email"
                     placeholder="john@example.com"
                     className="w-full rounded-xl border border-slate-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary"
@@ -57,7 +146,9 @@ const PartnerApplicationForm = () => {
                   </label>
 
                   <input
-                    type="text"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
                     placeholder="+880 1700-123456"
                     className="w-full rounded-xl border border-slate-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary"
                   />
@@ -69,6 +160,9 @@ const PartnerApplicationForm = () => {
                   </label>
 
                   <input
+                    name="targetCity"
+                    value={formData.targetCity}
+                    onChange={handleChange}
                     type="text"
                     placeholder="Dhaka"
                     className="w-full rounded-xl border border-slate-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary"
@@ -83,6 +177,9 @@ const PartnerApplicationForm = () => {
                 </label>
 
                 <input
+                  name="experience"
+                  value={formData.experience}
+                  onChange={handleChange}
                   type="text"
                   placeholder="Laundry business, retail management, operations..."
                   className="w-full rounded-xl border border-slate-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary"
@@ -96,6 +193,9 @@ const PartnerApplicationForm = () => {
                 </label>
 
                 <textarea
+                  name="reason"
+                  value={formData.reason}
+                  onChange={handleChange}
                   rows={5}
                   placeholder="Tell us why you want to become a LAUNDRIX partner..."
                   className="w-full rounded-xl border border-slate-200 px-4 py-3 resize-none focus:outline-none focus:ring-2 focus:ring-primary"

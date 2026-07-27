@@ -44,6 +44,10 @@ model User {
   pickupAgent          PickupAgent?
   deliveryAgent        DeliveryAgent?
   adminPermission      AdminPermission?
+
+  // Partner Applications
+  partnerApplications PartnerApplication[] @relation("PartnerApplicationOwner")
+  reviewedPartnerApplications PartnerApplication[] @relation("PartnerApplicationReviewer")
 }
 
 model UserProfile {
@@ -2124,32 +2128,32 @@ model DashboardWidget {
 }
 
 model ChatSession {
-  id              String        @id @default(uuid())
-  customerId      String
+  id            String   @id @default(uuid())
+  customerId    String
   // Relation implicitly mapped in Prisma if Customer model exists in same namespace.
   // We'll rely on the schema to resolve it. If there's issues, we use String fields without strict Prisma relations across files if not supported, but LAVO merges schemas.
-  customerName    String?
-  targetRole      String        // "ADMIN" or "BRANCH_MANAGER"
-  branchId        String?
-  assignedToId    String?       // ID of Admin or Branch Manager
-  status          String        @default("OPEN") // OPEN, CLOSED
-  lastMessage     String?
-  lastMessageAt   DateTime      @default(now())
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  customerName  String?
+  targetRole    String // "ADMIN" or "BRANCH_MANAGER"
+  branchId      String?
+  assignedToId  String? // ID of Admin or Branch Manager
+  status        String   @default("OPEN") // OPEN, CLOSED
+  lastMessage   String?
+  lastMessageAt DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  messages        ChatMessage[]
+  messages ChatMessage[]
 }
 
 model ChatMessage {
-  id          String      @id @default(uuid())
-  sessionId   String
-  session     ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  senderId    String
-  senderRole  String      // "CUSTOMER", "ADMIN", "BRANCH_MANAGER"
-  content     String
-  isRead      Boolean     @default(false)
-  createdAt   DateTime    @default(now())
+  id         String      @id @default(uuid())
+  sessionId  String
+  session    ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  senderId   String
+  senderRole String // "CUSTOMER", "ADMIN", "BRANCH_MANAGER"
+  content    String
+  isRead     Boolean     @default(false)
+  createdAt  DateTime    @default(now())
 }
 
 model AuditLog {
@@ -2181,9 +2185,9 @@ model Ticket {
   title       String
   description String
   priority    String              @default("NORMAL") // LOW, NORMAL, HIGH, URGENT
-  assignedTo  String?             // User ID (Admin or Branch Manager)
+  assignedTo  String? // User ID (Admin or Branch Manager)
   status      String              @default("pendingReview") // pendingReview, enabled-live-chat, solved
-  customerId  String              // User ID (Customer)
+  customerId  String // User ID (Customer)
   createdAt   DateTime            @default(now())
   updatedAt   DateTime            @updatedAt
   messages    TicketChatMessage[]
@@ -2193,8 +2197,8 @@ model TicketChatMessage {
   id         String   @id @default(uuid())
   ticketId   String
   ticket     Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  senderId   String   // User ID
-  senderRole String   // CUSTOMER, ADMIN, BRANCH_MANAGER
+  senderId   String // User ID
+  senderRole String // CUSTOMER, ADMIN, BRANCH_MANAGER
   content    String
   createdAt  DateTime @default(now())
 }
@@ -2804,35 +2808,65 @@ model CmsPage {
 }
 
 model CmsSection {
-  id          String           @id @default(uuid())
-  pageId      String
-  page        CmsPage          @relation(fields: [pageId], references: [id], onDelete: Cascade)
-  sectionKey  String           // e.g., "hero", "process", "features"
-  title       String?
-  subtitle    String?
-  content     String?          @db.Text
-  image       String?
-  displayOrder Int             @default(0)
-  items       CmsContentItem[]
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
+  id           String           @id @default(uuid())
+  pageId       String
+  page         CmsPage          @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  sectionKey   String // e.g., "hero", "process", "features"
+  title        String?
+  subtitle     String?
+  content      String?          @db.Text
+  image        String?
+  displayOrder Int              @default(0)
+  items        CmsContentItem[]
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
 
   @@unique([pageId, sectionKey])
 }
 
 model CmsContentItem {
-  id          String     @id @default(uuid())
-  sectionId   String
-  section     CmsSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
-  title       String?
-  subtitle    String?
-  content     String?    @db.Text
-  icon        String?
-  image       String?
-  linkUrl     String?
-  linkText    String?
-  displayOrder Int       @default(0)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id           String     @id @default(uuid())
+  sectionId    String
+  section      CmsSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  title        String?
+  subtitle     String?
+  content      String?    @db.Text
+  icon         String?
+  image        String?
+  linkUrl      String?
+  linkText     String?
+  displayOrder Int        @default(0)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 }
 
+enum PartnerApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model PartnerApplication {
+  id            String   @id @default(uuid())
+
+  // Customer who applied
+  userId        String
+  user          User     @relation("PartnerApplicationOwner", fields: [userId], references: [id], onDelete: Cascade)
+
+  phone         String
+  targetCity    String
+  experience    String?
+  reason        String
+
+  status        PartnerApplicationStatus @default(PENDING)
+
+  // Admin/Super Admin who reviewed
+  reviewedById  String?
+  reviewedBy    User?    @relation("PartnerApplicationReviewer", fields: [reviewedById], references: [id])
+
+  reviewedAt    DateTime?
+  remarks       String?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
