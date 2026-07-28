@@ -1,45 +1,45 @@
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 dotenv.config();
 
-import express, { Request, Response } from 'express';
-import next from 'next';
-import cors from 'cors';
-import helmet from 'helmet';
-import morgan from 'morgan';
-import cookieParser from 'cookie-parser';
-import { PrismaClient } from '@prisma/client';
-import path from 'path';
-import authRoutes from './routes/authRoutes';
-import userRoutes from './routes/userRoutes';
-import uploadRoutes from './routes/uploadRoutes';
-import branchRoutes from './routes/branchRoutes';
-import settingRoutes from './routes/settingRoutes';
-import vendorRoutes from './routes/vendorRoutes';
-import serviceRoutes from './routes/serviceRoutes';
-import logisticsRoutes from './routes/logisticsRoutes';
-import supportRoutes from './routes/supportRoutes';
-import financeRoutes from './routes/financeRoutes';
-import branchDashboardRoutes from './routes/branchDashboardRoutes';
-import deliveryAgentRoutes from './routes/deliveryAgentRoutes'
-import customerRoutes from './routes/customerRoutes';
-import employeeRoutes from './routes/employeeRoutes';
-import paymentRoutes from './routes/paymentRoutes';
-import chatRoutes from './routes/chatRoutes';
-import cmsRoutes from './routes/cmsRoutes';
-import ticketRoutes from './routes/ticketRoutes';
-import roleRoutes from './routes/roleRoutes';
-import featureFlagRoutes from './routes/featureFlagRoutes';
-import auditLogRoutes from './routes/auditLogRoutes';
-import analyticsRoutes from './routes/analyticsRoutes';
-import adminVendorRoutes from './routes/adminVendorRoutes';
-import adminSupportRoutes from './routes/adminSupportRoutes';
-import vendorDashboardRoutes from './routes/vendorDashboardRoutes';
-import adminUserRoutes from './routes/adminUserRoutes';
-import adminPermissionRoutes from './routes/adminPermissionRoutes';
-import adminOverviewRoutes from './routes/adminOverviewRoutes';
-import { auditLogger } from './middlewares/auditMiddleware';
-import partnerApplicationRoutes from './routes/partnerApplicationRoute';
-import { initSocket } from './socket';
+import express, { Request, Response } from "express";
+import next from "next";
+import cors from "cors";
+import helmet from "helmet";
+import morgan from "morgan";
+import cookieParser from "cookie-parser";
+import { PrismaClient } from "@prisma/client";
+import path from "path";
+import authRoutes from "./routes/auth/authRoutes";
+import userRoutes from "./routes/shared/userRoutes";
+import uploadRoutes from "./routes/shared/uploadRoutes";
+import branchRoutes from "./routes/super-admin/branchRoutes";
+import settingRoutes from "./routes/shared/settingRoutes";
+import vendorRoutes from "./routes/super-admin/vendorRoutes";
+import serviceRoutes from "./routes/shared/serviceRoutes";
+import logisticsRoutes from "./routes/agent/logisticsRoutes";
+import supportRoutes from "./routes/customer/supportRoutes";
+import financeRoutes from "./routes/super-admin/financeRoutes";
+import branchDashboardRoutes from "./routes/branch-manager/branchDashboardRoutes";
+import deliveryAgentRoutes from "./routes/agent/deliveryAgentRoutes"
+import customerRoutes from "./routes/customer/customerRoutes";
+import employeeRoutes from "./routes/employee/employeeRoutes";
+import paymentRoutes from "./routes/customer/paymentRoutes";
+import chatRoutes from "./routes/customer/chatRoutes";
+import cmsRoutes from "./routes/super-admin/cmsRoutes";
+import ticketRoutes from "./routes/customer/ticketRoutes";
+import roleRoutes from "./routes/super-admin/roleRoutes";
+import featureFlagRoutes from "./routes/shared/featureFlagRoutes";
+import auditLogRoutes from "./routes/admin/auditLogRoutes";
+import analyticsRoutes from "./routes/admin/analyticsRoutes";
+import adminVendorRoutes from "./routes/admin/adminVendorRoutes";
+import adminSupportRoutes from "./routes/admin/adminSupportRoutes";
+import vendorDashboardRoutes from "./routes/vendor/vendorDashboardRoutes";
+import adminUserRoutes from "./routes/admin/adminUserRoutes";
+import adminPermissionRoutes from "./routes/admin/adminPermissionRoutes";
+import adminOverviewRoutes from "./routes/admin/adminOverviewRoutes";
+import { auditLogger } from "./middlewares/auditMiddleware";
+import partnerApplicationRoutes from "./routes/super-admin/partnerApplicationRoute";
+import { initSocket } from "./sockets/socket";
 
 const prisma = new PrismaClient();
 
@@ -98,7 +98,7 @@ app.prepare().then(async () => {
   // Public: published customer reviews used as homepage testimonials (no auth required)
   server.get('/api/public/reviews', async (req: Request, res: Response) => {
     try {
-      const { getPublishedReviews } = await import('./services/support/reviewService');
+      const { getPublishedReviews } = await import('./services/customer/reviewService');
       const limit = Math.min(Number(req.query.limit) || 8, 20);
       const data  = await getPublishedReviews(limit);
       res.json({ success: true, data });

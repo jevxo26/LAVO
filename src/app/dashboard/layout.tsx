@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Sidebar } from "@/components/dashboard/sidebar";
-import { Navbar } from "@/components/dashboard/navbar";
+import { Sidebar } from "@/components/dashboard/layout/sidebar";
+import { Navbar } from "@/components/dashboard/layout/navbar";
 import { useAppSelector } from "@/store/store";
 import { toast } from "sonner";
 

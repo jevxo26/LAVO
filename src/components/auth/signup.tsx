@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import SocialLogin from "../SocialLogin";
+import SocialLogin from "../layout/SocialLogin";
 import { API_BASE } from "@/lib/api";
 import { ArrowLeft, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";

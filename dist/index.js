@@ -1,4 +1,37 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -13,36 +46,37 @@ const morgan_1 = __importDefault(require("morgan"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const client_1 = require("@prisma/client");
 const path_1 = __importDefault(require("path"));
-const authRoutes_1 = __importDefault(require("./routes/authRoutes"));
-const userRoutes_1 = __importDefault(require("./routes/userRoutes"));
-const uploadRoutes_1 = __importDefault(require("./routes/uploadRoutes"));
-const branchRoutes_1 = __importDefault(require("./routes/branchRoutes"));
-const settingRoutes_1 = __importDefault(require("./routes/settingRoutes"));
-const vendorRoutes_1 = __importDefault(require("./routes/vendorRoutes"));
-const serviceRoutes_1 = __importDefault(require("./routes/serviceRoutes"));
-const logisticsRoutes_1 = __importDefault(require("./routes/logisticsRoutes"));
-const supportRoutes_1 = __importDefault(require("./routes/supportRoutes"));
-const financeRoutes_1 = __importDefault(require("./routes/financeRoutes"));
-const branchDashboardRoutes_1 = __importDefault(require("./routes/branchDashboardRoutes"));
-const deliveryAgentRoutes_1 = __importDefault(require("./routes/deliveryAgentRoutes"));
-const customerRoutes_1 = __importDefault(require("./routes/customerRoutes"));
-const employeeRoutes_1 = __importDefault(require("./routes/employeeRoutes"));
-const paymentRoutes_1 = __importDefault(require("./routes/paymentRoutes"));
-const chatRoutes_1 = __importDefault(require("./routes/chatRoutes"));
-const cmsRoutes_1 = __importDefault(require("./routes/cmsRoutes"));
-const ticketRoutes_1 = __importDefault(require("./routes/ticketRoutes"));
-const roleRoutes_1 = __importDefault(require("./routes/roleRoutes"));
-const featureFlagRoutes_1 = __importDefault(require("./routes/featureFlagRoutes"));
-const auditLogRoutes_1 = __importDefault(require("./routes/auditLogRoutes"));
-const analyticsRoutes_1 = __importDefault(require("./routes/analyticsRoutes"));
-const adminVendorRoutes_1 = __importDefault(require("./routes/adminVendorRoutes"));
-const adminSupportRoutes_1 = __importDefault(require("./routes/adminSupportRoutes"));
-const vendorDashboardRoutes_1 = __importDefault(require("./routes/vendorDashboardRoutes"));
-const adminUserRoutes_1 = __importDefault(require("./routes/adminUserRoutes"));
-const adminPermissionRoutes_1 = __importDefault(require("./routes/adminPermissionRoutes"));
-const adminOverviewRoutes_1 = __importDefault(require("./routes/adminOverviewRoutes"));
+const authRoutes_1 = __importDefault(require("./routes/auth/authRoutes"));
+const userRoutes_1 = __importDefault(require("./routes/shared/userRoutes"));
+const uploadRoutes_1 = __importDefault(require("./routes/shared/uploadRoutes"));
+const branchRoutes_1 = __importDefault(require("./routes/super-admin/branchRoutes"));
+const settingRoutes_1 = __importDefault(require("./routes/shared/settingRoutes"));
+const vendorRoutes_1 = __importDefault(require("./routes/super-admin/vendorRoutes"));
+const serviceRoutes_1 = __importDefault(require("./routes/shared/serviceRoutes"));
+const logisticsRoutes_1 = __importDefault(require("./routes/agent/logisticsRoutes"));
+const supportRoutes_1 = __importDefault(require("./routes/customer/supportRoutes"));
+const financeRoutes_1 = __importDefault(require("./routes/super-admin/financeRoutes"));
+const branchDashboardRoutes_1 = __importDefault(require("./routes/branch-manager/branchDashboardRoutes"));
+const deliveryAgentRoutes_1 = __importDefault(require("./routes/agent/deliveryAgentRoutes"));
+const customerRoutes_1 = __importDefault(require("./routes/customer/customerRoutes"));
+const employeeRoutes_1 = __importDefault(require("./routes/employee/employeeRoutes"));
+const paymentRoutes_1 = __importDefault(require("./routes/customer/paymentRoutes"));
+const chatRoutes_1 = __importDefault(require("./routes/customer/chatRoutes"));
+const cmsRoutes_1 = __importDefault(require("./routes/super-admin/cmsRoutes"));
+const ticketRoutes_1 = __importDefault(require("./routes/customer/ticketRoutes"));
+const roleRoutes_1 = __importDefault(require("./routes/super-admin/roleRoutes"));
+const featureFlagRoutes_1 = __importDefault(require("./routes/shared/featureFlagRoutes"));
+const auditLogRoutes_1 = __importDefault(require("./routes/admin/auditLogRoutes"));
+const analyticsRoutes_1 = __importDefault(require("./routes/admin/analyticsRoutes"));
+const adminVendorRoutes_1 = __importDefault(require("./routes/admin/adminVendorRoutes"));
+const adminSupportRoutes_1 = __importDefault(require("./routes/admin/adminSupportRoutes"));
+const vendorDashboardRoutes_1 = __importDefault(require("./routes/vendor/vendorDashboardRoutes"));
+const adminUserRoutes_1 = __importDefault(require("./routes/admin/adminUserRoutes"));
+const adminPermissionRoutes_1 = __importDefault(require("./routes/admin/adminPermissionRoutes"));
+const adminOverviewRoutes_1 = __importDefault(require("./routes/admin/adminOverviewRoutes"));
 const auditMiddleware_1 = require("./middlewares/auditMiddleware");
-const socket_1 = require("./socket");
+const partnerApplicationRoute_1 = __importDefault(require("./routes/super-admin/partnerApplicationRoute"));
+const socket_1 = require("./sockets/socket");
 const prisma = new client_1.PrismaClient();
 const dev = process.env.NODE_ENV !== 'production';
 const app = (0, next_1.default)({ dev, dir: process.cwd() });
@@ -88,6 +122,19 @@ app.prepare().then(async () => {
     server.get('/api/health', (req, res) => {
         res.json({ status: 'ok', timestamp: new Date() });
     });
+    // Public: published customer reviews used as homepage testimonials (no auth required)
+    server.get('/api/public/reviews', async (req, res) => {
+        try {
+            const { getPublishedReviews } = await Promise.resolve().then(() => __importStar(require('./services/customer/reviewService')));
+            const limit = Math.min(Number(req.query.limit) || 8, 20);
+            const data = await getPublishedReviews(limit);
+            res.json({ success: true, data });
+        }
+        catch (err) {
+            console.error('[public/reviews]', err);
+            res.status(500).json({ success: false, data: [] });
+        }
+    });
     server.use(auditMiddleware_1.auditLogger);
     server.use('/api/users', userRoutes_1.default);
     server.use('/api/auth', authRoutes_1.default);
@@ -117,6 +164,7 @@ app.prepare().then(async () => {
     server.use('/api/admin/permissions', adminPermissionRoutes_1.default);
     server.use('/api/admin/overview', adminOverviewRoutes_1.default);
     server.use('/api/vendor-dashboard', vendorDashboardRoutes_1.default);
+    server.use('/api/partner-applications', partnerApplicationRoute_1.default);
     // Serve uploaded files statically
     server.use('/uploads', express_1.default.static(path_1.default.join(process.cwd(), 'public', 'uploads')));
     // Let Next.js handle all other routes

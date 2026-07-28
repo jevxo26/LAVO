@@ -1,5 +1,5 @@
-import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+import { Request, Response, NextFunction } from "express";
+import jwt from "jsonwebtoken";
 
 // Extend Express Request interface to include the user payload
 export interface AuthRequest extends Request {
@@ -29,3 +29,5 @@ export const verifyToken = (req: AuthRequest, res: Response, next: NextFunction)
     res.status(403).json({ error: 'Invalid token.' });
   }
 };
+
+export const requireAuth = verifyToken;

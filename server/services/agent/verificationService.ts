@@ -1,0 +1,213 @@
+import { PrismaClient } from "@prisma/client";
+import { getIO } from "../../config/socketInstance";
+
+const prisma = new PrismaClient();
+
+export const getVerificationList = async (userId: string) => {
+  // console.log("USER ID:", userId);
+  const agent = await prisma.deliveryAgent.findUnique({
+    where: {
+      userId,
+    },
+  });
+  // console.log("AGENT:", agent);
+
+  if (!agent) {
+    throw new Error("Delivery agent not found");
+  }
+
+  const deliveries = await prisma.delivery.findMany({
+    where: {
+      assignedAgentId: agent.id,
+      deliveryStatus: "IN_PROGRESS",
+    },
+    include: {
+      customer: {
+        include: {
+          user: true,
+          addresses: true,
+        },
+      },
+      order: true,
+      verifications: true,
+    },
+  });
+
+  return deliveries.map((delivery) => {
+    const targetAddressId = delivery.deliveryAddressId || (delivery.deliveryType === 'PICKUP' ? delivery.order?.pickupAddressId : delivery.order?.deliveryAddressId);
+    const address =
+      delivery.customer?.addresses.find((a) => a.id === targetAddressId) ??
+      delivery.customer?.addresses.find((a) => a.isDefault) ??
+      delivery.customer?.addresses[0];
+
+    return {
+      deliveryId: delivery.id,
+      orderId: delivery.order?.orderNumber || delivery.orderId,
+      rawOrderId: delivery.orderId,
+      deliveryType: delivery.deliveryType,
+      customerName: address?.receiverName || delivery.customer?.user?.fullName || "N/A",
+      customerPhone: address?.receiverPhone || delivery.customer?.user?.phone || "N/A",
+      deliveryAddress: address?.fullAddress ?? "N/A",
+      deliveryStatus: delivery.deliveryStatus,
+      verificationStatus:
+        delivery.verifications.length > 0 &&
+          delivery.verifications[0].verifiedAt
+          ? "VERIFIED"
+          : "PENDING",
+    };
+  });
+};
+
+export const verifyDeliveryOTP = async (
+  userId: string,
+  deliveryId: string,
+  otp: string
+) => {
+  const agent = await prisma.deliveryAgent.findUnique({
+    where: {
+      userId,
+    },
+  });
+
+  if (!agent) {
+    throw new Error("Delivery agent not found");
+  }
+
+  const delivery = await prisma.delivery.findUnique({
+    where: {
+      id: deliveryId,
+    },
+  });
+
+  if (!delivery) {
+    throw new Error("Delivery not found");
+  }
+
+  if (delivery.assignedAgentId !== agent.id) {
+    throw new Error("Unauthorized delivery");
+  }
+
+  const deliveryOtp =
+    await prisma.deliveryOTP.findFirst({
+      where: {
+        deliveryId,
+        otpCode: otp,
+        isUsed: false,
+      },
+    });
+
+    
+
+  if (!deliveryOtp) {
+    throw new Error("Invalid OTP");
+  }
+
+console.log("OTP FROM DB:", deliveryOtp);
+console.log("EXPIRES AT:", deliveryOtp.expiresAt);
+console.log("NOW:", new Date());
+  
+
+  if (deliveryOtp.expiresAt < new Date()) {
+    throw new Error("OTP expired");
+  }
+
+  await prisma.deliveryOTP.update({
+    where: {
+      id: deliveryOtp.id,
+    },
+    data: {
+      isUsed: true,
+    },
+  });
+
+  // Determine new status based on delivery type BEFORE updating
+  const isPickup = delivery.deliveryType === 'PICKUP';
+  const newDeliveryStatus = isPickup ? 'COLLECTED' : 'DELIVERED';
+
+  await prisma.delivery.update({
+    where: {
+      id: deliveryId,
+    },
+    data: {
+      deliveryStatus: newDeliveryStatus,
+      completedAt: new Date(),
+    },
+  });
+
+  // Advance order status based on delivery type
+  if (delivery.deliveryType === 'DROP_OFF') {
+    // Drop-off verified = order fully COMPLETED
+    await prisma.order.update({
+      where: { id: delivery.orderId },
+      data: { orderStatus: 'COMPLETED', completedAt: new Date() }
+    });
+    await prisma.orderTimeline.create({
+      data: {
+        orderId: delivery.orderId,
+        status: 'COMPLETED',
+        description: 'Your clean laundry has been successfully delivered. Thank you!',
+      }
+    });
+
+    try {
+      const order = await prisma.order.findUnique({
+        where: { id: delivery.orderId },
+        include: { customer: true },
+      });
+      if (order?.customer?.userId) {
+        getIO().to(`customer_${order.customer.userId}`).emit('orderStatusUpdated', {
+          orderId: delivery.orderId,
+          orderStatus: 'COMPLETED',
+        });
+        console.log(`📢 [Socket] Broadcasted orderStatusUpdated (COMPLETED) to customer_${order.customer.userId}`);
+      }
+    } catch (err) {
+      console.error('Socket broadcast failed in verifyOTP:', err);
+    }
+  } else if (delivery.deliveryType === 'PICKUP') {
+    // Pickup verified = garments collected, now being taken to the branch
+    await prisma.order.update({
+      where: { id: delivery.orderId },
+      data: { orderStatus: 'PICKUP' }
+    });
+    await prisma.orderTimeline.create({
+      data: {
+        orderId: delivery.orderId,
+        status: 'PICKUP',
+        description: 'Your garments have been collected and are on their way to the laundry hub.',
+      }
+    });
+
+    try {
+      const order = await prisma.order.findUnique({
+        where: { id: delivery.orderId },
+        include: { customer: true },
+      });
+      if (order?.customer?.userId) {
+        getIO().to(`customer_${order.customer.userId}`).emit('orderStatusUpdated', {
+          orderId: delivery.orderId,
+          orderStatus: 'PICKUP',
+        });
+        console.log(`📢 [Socket] Broadcasted orderStatusUpdated (PICKUP) to customer_${order.customer.userId}`);
+      }
+    } catch (err) {
+      console.error('Socket broadcast failed in verifyOTP:', err);
+    }
+  }
+
+  await prisma.deliveryVerification.create({
+    data: {
+      deliveryId,
+      verificationMethod: "OTP",
+      verificationCode: otp,
+      verifiedBy: agent.id,
+      verifiedAt: new Date(),
+    },
+  });
+
+  return {
+    message: isPickup
+      ? "Pickup verified successfully — garments collected!"
+      : "Delivery verified successfully — order completed!",
+  };
+};

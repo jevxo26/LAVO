@@ -2,9 +2,9 @@
 
 import React from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { CustomerOverview } from "@/components/dashboard/CustomerOverview";
-import { SuperAdminOverview } from "@/components/dashboard/overview/SuperAdminOverview";
-import { NormalAdminOverview } from "@/components/dashboard/overview/NormalAdminOverview";
+import { CustomerOverview } from "@/components/dashboard/(customer)/overview/CustomerOverview";
+import { SuperAdminOverview } from "@/components/dashboard/shared/overview/SuperAdminOverview";
+import { NormalAdminOverview } from "@/components/dashboard/shared/overview/NormalAdminOverview";
 import { Download, ShieldCheck, UserCheck, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 

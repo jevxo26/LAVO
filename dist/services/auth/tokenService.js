@@ -10,7 +10,7 @@ const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const crypto_1 = __importDefault(require("crypto"));
 const catchServiceAsync_1 = require("../../utils/catchServiceAsync");
-const emailService_1 = require("../emailService");
+const emailService_1 = require("../shared/emailService");
 const prisma = new client_1.PrismaClient();
 class TokenService {
 }
