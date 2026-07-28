@@ -31,6 +31,10 @@ model User {
   pickupAgent          PickupAgent?
   deliveryAgent        DeliveryAgent?
   adminPermission      AdminPermission?
+
+  // Partner Applications
+  partnerApplications PartnerApplication[] @relation("PartnerApplicationOwner")
+  reviewedPartnerApplications PartnerApplication[] @relation("PartnerApplicationReviewer")
 }
 
 model UserProfile {

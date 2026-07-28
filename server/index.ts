@@ -38,7 +38,7 @@ import adminUserRoutes from './routes/adminUserRoutes';
 import adminPermissionRoutes from './routes/adminPermissionRoutes';
 import adminOverviewRoutes from './routes/adminOverviewRoutes';
 import { auditLogger } from './middlewares/auditMiddleware';
-
+import partnerApplicationRoutes from './routes/partnerApplicationRoute';
 import { initSocket } from './socket';
 
 const prisma = new PrismaClient();
@@ -48,6 +48,8 @@ const app = next({ dev, dir: process.cwd() });
 const handle = app.getRequestHandler();
 
 const port = process.env.PORT || 3000;
+
+
 
 app.prepare().then(async () => {
   const server = express();
@@ -135,6 +137,7 @@ app.prepare().then(async () => {
   server.use('/api/admin/permissions', adminPermissionRoutes);
   server.use('/api/admin/overview', adminOverviewRoutes);
   server.use('/api/vendor-dashboard', vendorDashboardRoutes);
+  server.use('/api/partner-applications', partnerApplicationRoutes);
   // Serve uploaded files statically
   server.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));
 

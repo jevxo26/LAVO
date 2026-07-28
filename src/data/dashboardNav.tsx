@@ -20,6 +20,7 @@ import {
   Gauge,
   TrendingUp,
   Banknote,
+  FileCheck,
 } from "lucide-react";
 
 export interface NavItem {
@@ -154,6 +155,12 @@ export const dashboardNavItems: NavItem[] = [
     href: "/dashboard/vendors",
     icon: PackageCheck,
     roles: ["SUPER_ADMIN", "ADMIN"],
+  },
+  {
+    name: "Partner Applications",
+    href: "/dashboard/partner-applications",
+    icon: FileCheck,
+    roles: ["SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER"],
   },
   {
     name: "Laundry Services",
