@@ -181,7 +181,7 @@ export default function RouteMap({ routes, agentLocation }: RouteMapProps) {
         <DirectionsRenderer
           directions={directions}
           options={{
-            suppressMarkers: false,
+            suppressMarkers: true,
             polylineOptions: {
               strokeColor: "#2563eb",
               strokeWeight: 5,
