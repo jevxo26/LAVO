@@ -52,8 +52,8 @@ export function PickupForm({
 
     autocompleteRef.current = new window.google.maps.places.Autocomplete(inputRef.current, {
       componentRestrictions: { country: "bd" },
-      fields: ["formatted_address", "geometry", "name"],
-      types: ["geocode", "establishment"],
+      fields: ["formatted_address", "geometry", "name", "address_components"],
+      types: ["address"],
     });
 
     autocompleteRef.current.addListener("place_changed", () => {
@@ -62,13 +62,23 @@ export function PickupForm({
 
       const lat = place.geometry.location.lat();
       const lng = place.geometry.location.lng();
-      const address = place.formatted_address || place.name || "";
 
-      onPickupAddressChange(address);
+      // Build a clean readable address from components, fallback to formatted_address
+      const components = place.address_components || [];
+      const street = components.find(c => c.types.includes("route"))?.long_name || "";
+      const area = components.find(c => c.types.includes("sublocality") || c.types.includes("neighborhood"))?.long_name || "";
+      const city = components.find(c => c.types.includes("locality") || c.types.includes("administrative_area_level_2"))?.long_name || "";
+
+      const cleanAddress = [street, area, city]
+        .filter(Boolean)
+        .join(", ") || place.formatted_address || place.name || "";
+
+      onPickupAddressChange(cleanAddress);
       onPickupLatChange(lat);
       onPickupLonChange(lng);
       setLocationConfirmed(true);
     });
+
   }, [isLoaded]);
 
 
