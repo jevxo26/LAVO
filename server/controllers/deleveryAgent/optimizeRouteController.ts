@@ -7,11 +7,16 @@ import * as optimizeRouteService from "../../services/deleveryAgent/optimizeRout
 export const getOptimizedRoutes = catchAsync(
   async (req: AuthRequest, res: Response) => {
     const userId = req.user!.userId;
+    const agentLat = req.query.lat ? parseFloat(req.query.lat as string) : undefined;
+    const agentLon = req.query.lon ? parseFloat(req.query.lon as string) : undefined;
 
     const result =
       await optimizeRouteService.getOptimizedRoutes(
-        userId
+        userId,
+        agentLat,
+        agentLon
       );
+
 
     sendResponse(res, {
       statusCode: 200,

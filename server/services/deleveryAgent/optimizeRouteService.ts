@@ -3,7 +3,7 @@ import { calculateDistance } from "../../utils/geoUtils";
 
 const prisma = new PrismaClient();
 
-export const getOptimizedRoutes = async (userId: string) => {
+export const getOptimizedRoutes = async (userId: string, startLat?: number, startLon?: number) => {
   const agent = await prisma.deliveryAgent.findUnique({
     where: { userId },
     include: { branch: true },
@@ -63,9 +63,10 @@ export const getOptimizedRoutes = async (userId: string) => {
 
   const optimizedSequence = [];
   
-  // 3. Start from the Branch coordinates
-  let currentLat = agent.branch?.latitude ?? 23.8103; // Default to Dhaka if missing
-  let currentLon = agent.branch?.longitude ?? 90.4125;
+  // 3. Start from Agent Live Location if available, else Branch coordinates
+  let currentLat = startLat ?? agent.branch?.latitude ?? 23.8103; // Default to Dhaka if missing
+  let currentLon = startLon ?? agent.branch?.longitude ?? 90.4125;
+
   let accumulatedDistance = 0;
 
   // 4. Nearest-Neighbor Algorithm
