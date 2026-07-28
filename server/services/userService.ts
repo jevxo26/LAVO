@@ -79,10 +79,21 @@ export class UserService {
       dataToUpdate.password = await bcrypt.hash(data.password, 10);
     }
 
+    // If phone is being changed, ensure it's not already taken by another user
+    if (dataToUpdate.phone) {
+      const phoneInUse = await prisma.user.findFirst({
+        where: { phone: dataToUpdate.phone, NOT: { id } }
+      });
+      if (phoneInUse) {
+        throw new Error('This phone number is already registered to another account.');
+      }
+    }
+
     const updatedUser = await prisma.user.update({
       where: { id },
       data: dataToUpdate,
     });
+
 
     if (updatedUser.userType === "DELIVERY_AGENT") {
 

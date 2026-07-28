@@ -563,15 +563,9 @@ export class CustomerService {
         },
       });
 
-      // Also update the customer user phone if a new phone number was provided at checkout
-      if (orderData.receiverPhone && orderData.receiverPhone !== customer.user.phone) {
-        await prisma.user.update({
-          where: { id: userId },
-          data: { phone: orderData.receiverPhone },
-        });
-      }
 
       // Generate unique order number
+
       const orderNumber = `ORD-${Date.now()}`;
 
       // Date parsing
