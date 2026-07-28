@@ -1,8 +1,9 @@
 "use client";
 
-import { MapPin, Calendar as CalendarIcon, Clock } from "lucide-react";
+import { MapPin, Calendar as CalendarIcon, Clock, CheckCircle2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useEffect, useRef, useState } from "react";
 
 interface PickupFormProps {
   receiverName: string;
@@ -13,6 +14,8 @@ interface PickupFormProps {
   onReceiverNameChange: (v: string) => void;
   onReceiverPhoneChange: (v: string) => void;
   onPickupAddressChange: (v: string) => void;
+  onPickupLatChange: (v: number | null) => void;
+  onPickupLonChange: (v: number | null) => void;
   onPickupDateChange: (v: string) => void;
   onPickupTimeSlotChange: (v: string) => void;
 }
@@ -26,9 +29,65 @@ export function PickupForm({
   onReceiverNameChange,
   onReceiverPhoneChange,
   onPickupAddressChange,
+  onPickupLatChange,
+  onPickupLonChange,
   onPickupDateChange,
   onPickupTimeSlotChange,
 }: PickupFormProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+  const [locationConfirmed, setLocationConfirmed] = useState(false);
+
+  useEffect(() => {
+    // Wait for Google Maps script to load
+    const initAutocomplete = () => {
+      if (!inputRef.current || !window.google?.maps?.places) return;
+
+      autocompleteRef.current = new window.google.maps.places.Autocomplete(inputRef.current, {
+        // Bias toward Bangladesh
+        componentRestrictions: { country: "bd" },
+        fields: ["formatted_address", "geometry", "name"],
+        types: ["geocode", "establishment"],
+      });
+
+      autocompleteRef.current.addListener("place_changed", () => {
+        const place = autocompleteRef.current?.getPlace();
+        if (!place || !place.geometry?.location) return;
+
+        const lat = place.geometry.location.lat();
+        const lng = place.geometry.location.lng();
+        const address = place.formatted_address || place.name || "";
+
+        onPickupAddressChange(address);
+        onPickupLatChange(lat);
+        onPickupLonChange(lng);
+        setLocationConfirmed(true);
+      });
+    };
+
+    // If google is already loaded
+    if (window.google?.maps?.places) {
+      initAutocomplete();
+    } else {
+      // Poll until google maps is ready
+      const interval = setInterval(() => {
+        if (window.google?.maps?.places) {
+          clearInterval(interval);
+          initAutocomplete();
+        }
+      }, 300);
+      return () => clearInterval(interval);
+    }
+  }, []);
+
+  const handleManualAddressChange = (v: string) => {
+    onPickupAddressChange(v);
+    // If user manually types (not from autocomplete), clear coordinates
+    setLocationConfirmed(false);
+    onPickupLatChange(null);
+    onPickupLonChange(null);
+  };
+
   return (
     <>
       {/* Pickup Address */}
@@ -60,19 +119,43 @@ export function PickupForm({
             />
           </div>
         </div>
+
+        {/* Google Places Autocomplete Address Input */}
         <div className="space-y-1">
-          <Label htmlFor="pickupAddress" className="text-xs font-semibold text-slate-600">Full Address</Label>
+          <Label htmlFor="pickupAddress" className="text-xs font-semibold text-slate-600 flex items-center gap-1.5">
+            Full Address
+            {locationConfirmed && (
+              <span className="inline-flex items-center gap-1 text-emerald-600 text-[10px] font-normal">
+                <CheckCircle2 size={10} />
+                Location confirmed
+              </span>
+            )}
+          </Label>
           <div className="relative">
-            <MapPin className="absolute left-3 top-2.5 text-slate-300 pointer-events-none" size={13} />
-            <Input
+            <MapPin className="absolute left-3 top-2.5 text-slate-300 pointer-events-none z-10" size={13} />
+            <input
+              ref={inputRef}
               id="pickupAddress"
               value={pickupAddress}
-              onChange={(e) => onPickupAddressChange(e.target.value)}
-              placeholder="House No, Road, Area Name"
+              onChange={(e) => handleManualAddressChange(e.target.value)}
+              placeholder="Type your address to search..."
               required
-              className="pl-9 h-9 text-xs rounded-xl border-slate-200 focus:border-indigo-300"
+              autoComplete="off"
+              className="w-full pl-9 pr-9 h-9 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-400 focus:border-indigo-300 text-slate-700"
             />
+            {locationConfirmed && (
+              <div className="absolute right-3 top-2.5">
+                <div className="w-4 h-4 rounded-full bg-emerald-500 flex items-center justify-center">
+                  <CheckCircle2 size={10} className="text-white" />
+                </div>
+              </div>
+            )}
           </div>
+          {!locationConfirmed && pickupAddress && (
+            <p className="text-[10px] text-amber-600 flex items-center gap-1">
+              ⚠️ Select an address from the dropdown for precise GPS location
+            </p>
+          )}
         </div>
       </div>
 

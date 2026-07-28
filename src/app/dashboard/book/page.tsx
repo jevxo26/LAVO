@@ -5,6 +5,7 @@ import { useBooking } from "./_hooks/useBooking";
 import { ServiceCard } from "./_components/ServiceCard";
 import { CartSummary } from "./_components/CartSummary";
 import { PickupForm } from "./_components/PickupForm";
+import Script from "next/script";
 
 export default function BookLaundryPage() {
   const {
@@ -20,6 +21,8 @@ export default function BookLaundryPage() {
     paymentMethod, setPaymentMethod,
     subtotal, deliveryCharge, tax, grandTotal,
     submitting, handleSubmit,
+    pickupLat, setPickupLat,
+    pickupLon, setPickupLon,
   } = useBooking();
 
   const filteredServices = services.filter((s) => s.category === activeCategory);
@@ -38,7 +41,13 @@ export default function BookLaundryPage() {
 
   return (
     <div className="space-y-0">
+      {/* Load Google Maps Places API for address autocomplete */}
+      <Script
+        src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`}
+        strategy="afterInteractive"
+      />
       {/* Hero Header */}
+
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-700 px-8 py-10 mb-8">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-white transform translate-x-16 -translate-y-16" />
@@ -140,6 +149,8 @@ export default function BookLaundryPage() {
                   onReceiverNameChange={setReceiverName}
                   onReceiverPhoneChange={setReceiverPhone}
                   onPickupAddressChange={setPickupAddress}
+                  onPickupLatChange={setPickupLat}
+                  onPickupLonChange={setPickupLon}
                   onPickupDateChange={setPickupDate}
                   onPickupTimeSlotChange={setPickupTimeSlot}
                 />
