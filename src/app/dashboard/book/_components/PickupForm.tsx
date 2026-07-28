@@ -4,6 +4,9 @@ import { MapPin, Calendar as CalendarIcon, Clock, CheckCircle2 } from "lucide-re
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useEffect, useRef, useState } from "react";
+import { useJsApiLoader } from "@react-google-maps/api";
+
+const GOOGLE_LIBRARIES: ("places" | "geometry")[] = ["places"];
 
 interface PickupFormProps {
   receiverName: string;
@@ -38,47 +41,36 @@ export function PickupForm({
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   const [locationConfirmed, setLocationConfirmed] = useState(false);
 
+  const { isLoaded } = useJsApiLoader({
+    id: "google-map-script",
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
+    libraries: GOOGLE_LIBRARIES,
+  });
+
   useEffect(() => {
-    // Wait for Google Maps script to load
-    const initAutocomplete = () => {
-      if (!inputRef.current || !window.google?.maps?.places) return;
+    if (!isLoaded || !inputRef.current) return;
 
-      autocompleteRef.current = new window.google.maps.places.Autocomplete(inputRef.current, {
-        // Bias toward Bangladesh
-        componentRestrictions: { country: "bd" },
-        fields: ["formatted_address", "geometry", "name"],
-        types: ["geocode", "establishment"],
-      });
+    autocompleteRef.current = new window.google.maps.places.Autocomplete(inputRef.current, {
+      componentRestrictions: { country: "bd" },
+      fields: ["formatted_address", "geometry", "name"],
+      types: ["geocode", "establishment"],
+    });
 
-      autocompleteRef.current.addListener("place_changed", () => {
-        const place = autocompleteRef.current?.getPlace();
-        if (!place || !place.geometry?.location) return;
+    autocompleteRef.current.addListener("place_changed", () => {
+      const place = autocompleteRef.current?.getPlace();
+      if (!place || !place.geometry?.location) return;
 
-        const lat = place.geometry.location.lat();
-        const lng = place.geometry.location.lng();
-        const address = place.formatted_address || place.name || "";
+      const lat = place.geometry.location.lat();
+      const lng = place.geometry.location.lng();
+      const address = place.formatted_address || place.name || "";
 
-        onPickupAddressChange(address);
-        onPickupLatChange(lat);
-        onPickupLonChange(lng);
-        setLocationConfirmed(true);
-      });
-    };
+      onPickupAddressChange(address);
+      onPickupLatChange(lat);
+      onPickupLonChange(lng);
+      setLocationConfirmed(true);
+    });
+  }, [isLoaded]);
 
-    // If google is already loaded
-    if (window.google?.maps?.places) {
-      initAutocomplete();
-    } else {
-      // Poll until google maps is ready
-      const interval = setInterval(() => {
-        if (window.google?.maps?.places) {
-          clearInterval(interval);
-          initAutocomplete();
-        }
-      }, 300);
-      return () => clearInterval(interval);
-    }
-  }, []);
 
   const handleManualAddressChange = (v: string) => {
     onPickupAddressChange(v);
