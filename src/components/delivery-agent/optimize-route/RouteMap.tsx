@@ -237,6 +237,16 @@ export default function RouteMap({ routes, agentLocation }: RouteMapProps) {
               </span>
               <span className="text-slate-500 font-medium">{selectedMarker.estimatedTime}</span>
             </div>
+            {selectedMarker.latitude && selectedMarker.longitude && (
+              <a
+                href={`https://www.google.com/maps/dir/?api=1&destination=${selectedMarker.latitude},${selectedMarker.longitude}&travelmode=driving`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-semibold"
+              >
+                🧭 Open in Google Maps
+              </a>
+            )}
           </div>
         </InfoWindowF>
       )}
