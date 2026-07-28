@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import { FeatureFlagTab } from "@/components/dashboard/settings/FeatureFlagTab";
-import { FinanceTab } from "@/components/dashboard/settings/FinanceTab";
-import { AuditLogTab } from "@/components/dashboard/settings/AuditLogTab";
+import { FeatureFlagTab } from "@/components/dashboard/shared/settings/FeatureFlagTab";
+import { FinanceTab } from "@/components/dashboard/shared/settings/FinanceTab";
+import { AuditLogTab } from "@/components/dashboard/shared/settings/AuditLogTab";
 import { ShieldCheck, ToggleRight, DollarSign, ListFilter } from "lucide-react";
 
 export default function SettingsPage() {

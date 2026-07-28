@@ -1,7 +1,7 @@
-import { Response } from 'express';
-import { catchServiceAsync } from '../../utils/catchServiceAsync';
-import { sendResponse } from '../../utils/sendResponse';
-import { PrismaClient } from '@prisma/client';
+import { Response } from "express";
+import { catchServiceAsync } from "../../utils/catchServiceAsync";
+import { sendResponse } from "../../utils/sendResponse";
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 

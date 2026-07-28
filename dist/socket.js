@@ -1,45 +1,14 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getIO = exports.initSocket = void 0;
+exports.initSocket = exports.getIO = void 0;
 const socket_io_1 = require("socket.io");
 const client_1 = require("@prisma/client");
+const deliveryAssignmentService_1 = require("./services/deleveryAgent/deliveryAssignmentService");
+const socketInstance_1 = require("./socketInstance");
+Object.defineProperty(exports, "getIO", { enumerable: true, get: function () { return socketInstance_1.getIO; } });
 const prisma = new client_1.PrismaClient();
-let io;
 const initSocket = (server) => {
-    io = new socket_io_1.Server(server, {
+    const io = new socket_io_1.Server(server, {
         cors: {
             origin: [
                 'http://localhost:3000',
@@ -50,6 +19,7 @@ const initSocket = (server) => {
             credentials: true
         }
     });
+    (0, socketInstance_1.setIO)(io);
     io.on('connection', (socket) => {
         console.log('A client connected:', socket.id);
         socket.on('joinBranch', (branchId) => {
@@ -191,8 +161,7 @@ const initSocket = (server) => {
                             // When all garments are READY_FOR_DELIVERY, auto-assign DROP_OFF agent
                             if (data.status === 'READY_FOR_DELIVERY') {
                                 try {
-                                    const { DeliveryAssignmentService } = await Promise.resolve().then(() => __importStar(require('./services/deleveryAgent/deliveryAssignmentService')));
-                                    await DeliveryAssignmentService.autoAssignDropoffDelivery(order.id);
+                                    await deliveryAssignmentService_1.DeliveryAssignmentService.autoAssignDropoffDelivery(order.id);
                                 }
                                 catch (e) {
                                     console.error('Auto-assign dropoff failed:', e);
@@ -297,9 +266,3 @@ const initSocket = (server) => {
     return io;
 };
 exports.initSocket = initSocket;
-const getIO = () => {
-    if (!io)
-        throw new Error('Socket.io not initialized!');
-    return io;
-};
-exports.getIO = getIO;

@@ -1,6 +1,6 @@
-import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcrypt';
-import { catchServiceAsync } from '../../utils/catchServiceAsync';
+import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcrypt";
+import { catchServiceAsync } from "../../utils/catchServiceAsync";
 
 const prisma = new PrismaClient();
 

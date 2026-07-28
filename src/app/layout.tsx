@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Bai_Jamjuree } from "next/font/google";
 import "./globals.css";
-import { ReduxProvider } from "@/components/ReduxProvider";
+import { ReduxProvider } from "@/components/shared/ReduxProvider";
 import { Toaster } from "sonner";
 
 const baiJamjuree = Bai_Jamjuree({

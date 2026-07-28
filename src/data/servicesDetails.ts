@@ -119,5 +119,97 @@ export const serviceDetails = {
     faqs: [
       { question: "Can I get my clothes on hangers?", answer: "Yes, you can request hanger delivery during checkout for a small additional fee." }
     ]
+  },
+  "stain-removal": {
+    id: "stain-removal",
+    title: "Stain Removal",
+    isPremium: true,
+    description: "Advanced spot treatment for stubborn stains such as oil, ink, wine, and grease without harming fabric integrity.",
+    startingPrice: "৳100/item",
+    turnaround: "24-48 hours",
+    coverage: "All Branches",
+    imageUrl: "https://images.unsplash.com/photo-1584992236310-6edddc08acff?q=80&w=2070&auto=format&fit=crop",
+    includes: ["Oil Stains", "Ink & Dyes", "Food & Wine", "Grease & Dirt", "Delicate Fabrics"],
+    process: [
+      { step: 1, title: "Analysis", description: "Identifying stain type and fabric sensitivity." },
+      { step: 2, title: "Targeted Spotting", description: "Applying specialized chemical spotting agents." },
+      { step: 3, title: "Deep Wash", description: "Neutralizing wash to safely remove all residues." }
+    ],
+    faqs: [
+      { question: "Can all stains be removed?", answer: "While we achieve a 95%+ success rate, some old or heat-set stains may be permanent. We perform a thorough test first." }
+    ]
+  },
+  "commercial-laundry": {
+    id: "commercial-laundry",
+    title: "Commercial Laundry",
+    isPremium: true,
+    description: "High-capacity, industrial laundry services for hotels, hospitals, restaurants, and corporate clients with custom SLAs.",
+    startingPrice: "Custom quote",
+    turnaround: "24-48 hours",
+    coverage: "All Major Cities",
+    imageUrl: "https://images.unsplash.com/photo-1545173168-9f1947eebb7f?q=80&w=2071&auto=format&fit=crop",
+    includes: ["Linens & Bedding", "Uniforms & Aprons", "Towels & Napkins", "Bulk Garments"],
+    process: [
+      { step: 1, title: "Bulk Pickup", description: "Scheduled logistics pickup from your facility." },
+      { step: 2, title: "Industrial Wash", description: "High-temp thermal disinfection and heavy-duty washing." },
+      { step: 3, title: "Batch Delivery", description: "Packed in sanitized hampers and delivered on time." }
+    ],
+    faqs: [
+      { question: "Do you offer contract pricing?", answer: "Yes, we offer tailored monthly contracts and volume discounts for commercial partners." }
+    ]
+  },
+  "express-laundry": {
+    id: "express-laundry",
+    title: "Express Laundry",
+    isPremium: true,
+    description: "Ultra-fast wash, dry, and iron turnaround for urgent travel, events, or busy schedules within 6 to 12 hours.",
+    startingPrice: "৳80/kg",
+    turnaround: "6-12 hours",
+    coverage: "Dhaka & Major Hubs",
+    imageUrl: "https://images.unsplash.com/photo-1604335399105-a0c585fd81a1?q=80&w=2070&auto=format&fit=crop",
+    includes: ["Express Wash & Fold", "Express Pressing", "Emergency Pickup"],
+    process: [
+      { step: 1, title: "Priority Pickup", description: "Rider dispatched within 30 minutes of booking." },
+      { step: 2, title: "Express Cycle", description: "Dedicated machine cycle with rapid low-heat drying." },
+      { step: 3, title: "Same-Day Delivery", description: "Handed back to you on the same day." }
+    ],
+    faqs: [
+      { question: "What is the cutoff time for same-day delivery?", answer: "Bookings placed before 11:00 AM are eligible for 6-12 hour express same-day delivery." }
+    ]
   }
 };
+
+export function getServiceDetails(slug: string) {
+  if (!slug) return null;
+  const normalizedSlug = slug.toLowerCase();
+  
+  if (serviceDetails[normalizedSlug as keyof typeof serviceDetails]) {
+    return serviceDetails[normalizedSlug as keyof typeof serviceDetails];
+  }
+
+  // Dynamic fallback for custom slugs or DB IDs
+  const formattedTitle = normalizedSlug
+    .replace(/[-_]+/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+
+  return {
+    id: slug,
+    title: formattedTitle || "Laundry Service",
+    isPremium: false,
+    description: "Professional cleaning, garment care, and pressing tailored to your daily laundry needs.",
+    startingPrice: "৳50/item",
+    turnaround: "24-48 hours",
+    coverage: "All Branches",
+    imageUrl: "https://images.unsplash.com/photo-1582735689141-c11bb356c6d5?q=80&w=2070&auto=format&fit=crop",
+    includes: ["General Garments", "Shirts & Pants", "Household Linen", "Gentle Wash"],
+    process: [
+      { step: 1, title: "Inspection & Sorting", description: "Carefully checking care labels and fabrics." },
+      { step: 2, title: "Quality Wash", description: "Washed with eco-safe detergents at optimal heat." },
+      { step: 3, title: "Finishing & Delivery", description: "Neatly pressed or folded and delivered to your doorstep." }
+    ],
+    faqs: [
+      { question: "How can I book this service?", answer: "Click 'Book Service' or schedule a pickup directly through our web portal or mobile app." }
+    ]
+  };
+}
+
