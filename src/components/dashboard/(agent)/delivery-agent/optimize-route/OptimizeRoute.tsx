@@ -1,16 +1,18 @@
 "use client";
 
-import { PageHeader } from "@/components/shared/PageHeader";
-import RouteTable from "./RouteTable";
-import RouteToolbar from "./RouteToolbar";
 import { useEffect, useState } from "react";
-import dynamic from "next/dynamic";
 import axios from "axios";
+import dynamic from "next/dynamic";
+import { Route, MapPin, Sparkles, Navigation, Search, RotateCcw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import RouteTable from "./RouteTable";
+import { OptimizedRoute } from "../types";
 
-const RouteMap = dynamic(
-  () => import("./RouteMap"),
-  { ssr: false }
-);
+const RouteMap = dynamic(() => import("./RouteMap"), { ssr: false });
+
+function Sk({ className }: { className?: string }) {
+  return <div className={`animate-pulse rounded-md bg-slate-100 ${className ?? ""}`} />;
+}
 
 const OptimizeRoute = () => {
   const [search, setSearch] = useState("");
@@ -60,9 +62,10 @@ const OptimizeRoute = () => {
         setRoutes(res.data.data);
       } catch (error) {
         console.error(error);
+      } finally {
+        setLoading(false);
       }
     };
-
     fetchRoutes();
   }, [agentLocation?.lat, agentLocation?.lng]);
 
@@ -79,6 +82,10 @@ const OptimizeRoute = () => {
       })
     );
   };
+
+  const totalStops    = routes.reduce((s, r) => s + (r.totalStops ?? 0), 0);
+  const totalPickups  = routes.reduce((s, r) => s + (r.pickups ?? 0), 0);
+  const totalDeliveries = routes.reduce((s, r) => s + (r.deliveries ?? 0), 0);
 
   return (
     <div className="space-y-6">
