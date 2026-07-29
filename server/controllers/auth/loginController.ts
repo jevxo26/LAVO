@@ -1,8 +1,8 @@
-import { Request, Response } from 'express';
-import { LoginService } from '../../services/auth/loginService';
-import { TokenService } from '../../services/auth/tokenService';
-import { catchAsync } from '../../utils/catchAsync';
-import { sendResponse } from '../../utils/sendResponse';
+import { Request, Response } from "express";
+import { LoginService } from "../../services/auth/loginService";
+import { TokenService } from "../../services/auth/tokenService";
+import { catchAsync } from "../../utils/catchAsync";
+import { sendResponse } from "../../utils/sendResponse";
 
 export class LoginController {
   static login = catchAsync(async (req: Request, res: Response) => {

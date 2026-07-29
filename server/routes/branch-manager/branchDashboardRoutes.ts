@@ -1,0 +1,45 @@
+import express from "express";
+
+import { verifyToken } from "../../middlewares/authMiddleware";
+import { restrictTo } from "../../middlewares/roleMiddleware";
+import * as overviewController from "../../controllers/branch-manager/overviewController";
+import * as orderController from "../../controllers/branch-manager/orderController";
+import * as employeeController from "../../controllers/branch-manager/employeeController";
+import * as inventoryController from "../../controllers/branch-manager/inventoryController";
+import * as agentController from "../../controllers/branch-manager/agentController";
+import * as qrOrderController from "../../controllers/branch-manager/qrOrderController";
+import { BranchVendorController } from "../../controllers/branch-manager/branchVendorController";
+
+const router = express.Router();
+
+// Only allow Branch Managers and Admins to access these routes
+router.use(verifyToken);
+router.use(restrictTo('BRANCH_MANAGER', 'Branch Manager', 'ADMIN', 'Admin', 'SUPER_ADMIN'));
+
+router.get('/overview', overviewController.getOverview);
+router.get('/orders', orderController.getOrders);
+router.get('/orders/:orderId/dev-otp', orderController.getDevOTP);
+router.put('/orders/:orderId/ready-for-delivery', orderController.markOrderReadyForDelivery);
+router.post('/orders/assign-agent', qrOrderController.assignAgentToOrder);
+router.get('/orders/:orderId/qr-codes', qrOrderController.getOrderQrCodes);
+router.post('/garment-items/:garmentItemId/generate-qr', qrOrderController.generateQrCode);
+router.get('/employees', employeeController.getEmployees);
+router.post('/employees', employeeController.createEmployee);
+router.patch('/employees/:id', employeeController.updateEmployee);
+router.delete('/employees/:id', employeeController.deleteEmployee);
+
+router.get('/inventory', inventoryController.getInventory);
+router.post('/inventory', inventoryController.createInventory);
+router.patch('/inventory/:id', inventoryController.updateInventory);
+router.delete('/inventory/:id', inventoryController.deleteInventory);
+
+router.get('/delivery-agents', agentController.getDeliveryAgents);
+router.post('/delivery-agents', agentController.createDeliveryAgent);
+router.patch('/delivery-agents/:id', agentController.updateDeliveryAgent);
+router.delete('/delivery-agents/:id', agentController.deleteDeliveryAgent);
+router.get('/analytics', overviewController.getAnalytics);
+
+router.get('/vendors', BranchVendorController.getBranchVendors);
+router.post('/vendors/assign-order', BranchVendorController.assignOrderToVendor);
+
+export default router;

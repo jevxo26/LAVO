@@ -1,7 +1,7 @@
-import { Request, Response } from 'express';
-import { RegisterService } from '../../services/auth/registerService';
-import { catchAsync } from '../../utils/catchAsync';
-import { sendResponse } from '../../utils/sendResponse';
+import { Request, Response } from "express";
+import { RegisterService } from "../../services/auth/registerService";
+import { catchAsync } from "../../utils/catchAsync";
+import { sendResponse } from "../../utils/sendResponse";
 
 export class RegisterController {
   static register = catchAsync(async (req: Request, res: Response) => {
