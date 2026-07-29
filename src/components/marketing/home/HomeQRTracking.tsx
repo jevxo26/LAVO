@@ -18,7 +18,7 @@ export function HomeQRTracking({ data }: { data?: any }) {
   ];
 
   return (
-    <section className="bg-navy-dark py-24 border-t border-slate-800">
+    <section className="bg-navy-dark py-12 md:py-16 lg:py-20 border-t border-slate-800">
       <div className="max-w-7xl mx-auto px-4 md:px-6">
         <div className="flex flex-col lg:flex-row items-center gap-16">
           <motion.div 
@@ -34,7 +34,7 @@ export function HomeQRTracking({ data }: { data?: any }) {
               </span>
             </div>
             
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-6">
               {title}
             </h2>
             
@@ -69,7 +69,7 @@ export function HomeQRTracking({ data }: { data?: any }) {
               </li>
             </ul>
 
-            <button className="flex items-center justify-center gap-2 bg-brand-sky hover:bg-brand-sky-hover text-white px-8 py-3.5 rounded-full font-bold transition-colors w-full sm:w-auto shadow-lg">
+            <button className="flex items-center justify-center gap-2 bg-brand-blue hover:bg-brand-sky-hover text-white px-8 py-3.5 rounded-md font-bold transition-colors w-full sm:w-auto shadow-lg">
               Track Your Order
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
             </button>

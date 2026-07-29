@@ -28,7 +28,7 @@ export function HomeCorporate({ data }: { data?: any }) {
       ];
 
   return (
-    <section className="bg-navy-dark py-24">
+    <section className="bg-navy-dark py-12 md:py-16 lg:py-20">
       <div className="max-w-7xl mx-auto px-4 md:px-6">
         <div className="flex flex-col lg:flex-row gap-16">
           <motion.div 
@@ -45,7 +45,7 @@ export function HomeCorporate({ data }: { data?: any }) {
               </span>
             </div>
             
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-6">
               {title}
             </h2>
             

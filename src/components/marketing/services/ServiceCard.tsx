@@ -2,11 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Clock } from "lucide-react";
+import { ArrowRight, Clock, type LucideIcon } from "lucide-react";
 
 interface ServiceCardProps {
   id?: string;
   title: string;
+  icon?: LucideIcon;
   price: string;
   unit: string;
   time: string;
@@ -17,6 +18,7 @@ interface ServiceCardProps {
 export function ServiceCard({
   id = "dry-cleaning",
   title,
+  icon: Icon,
   price,
   unit,
   time,
@@ -44,9 +46,16 @@ export function ServiceCard({
       {/* Content Section */}
       <div className="flex flex-col flex-grow p-6">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-lg font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
-            {title}
-          </h3>
+          <div className="flex items-center gap-2">
+            {Icon && (
+              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-blue-50 text-blue-600">
+                <Icon size={16} />
+              </div>
+            )}
+            <h3 className="text-lg font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+              {title}
+            </h3>
+          </div>
           <span className="text-primary font-bold">
             {price}
             <span className="text-sm font-medium">/{unit}</span>
@@ -61,7 +70,7 @@ export function ServiceCard({
         <p className="text-sm text-slate-600 mb-6 flex-grow">{description}</p>
 
         {/* Action Button */}
-        <div className="flex items-center justify-between w-full px-6 py-3.5 bg-gradient-to-l from-blue-400 to-blue-500 text-white rounded-2xl font-semibold text-sm mt-auto shadow-md shadow-blue-500/20 transition-all duration-500 ease-out group-hover:shadow-lg group-hover:shadow-blue-500/40 group-hover:bg-gradient-to-r from-blue-400 to-blue-500 group-hover:-translate-y-0.5">
+        <div className="flex items-center justify-between w-full px-6 py-3.5 bg-gradient-to-l from-blue-400 to-blue-500 text-white rounded-xl font-semibold text-sm mt-auto shadow-md shadow-blue-500/20 transition-all duration-500 ease-out group-hover:shadow-lg group-hover:shadow-blue-500/40 group-hover:bg-gradient-to-r from-blue-400 to-blue-500 group-hover:-translate-y-0.5">
           <span>View Details</span>
           <div className="w-6 h-6 rounded-full bg-white text-blue-600 flex items-center justify-center shadow-sm transition-all duration-500 ease-out group-hover:scale-110">
             <ArrowRight

@@ -33,7 +33,7 @@ export function HomeWhyLaundrix({ data }: { data?: any }) {
   ];
 
   return (
-    <section className="py-24 bg-white">
+    <section className="py-12 md:py-16 lg:py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 md:px-6">
         <div className="flex flex-col lg:flex-row gap-16 items-center">
           
@@ -51,7 +51,7 @@ export function HomeWhyLaundrix({ data }: { data?: any }) {
               </span>
             </div>
             
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mb-6 leading-tight">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-slate-800 mb-6 leading-tight">
               {title}
             </h2>
             
@@ -86,7 +86,7 @@ export function HomeWhyLaundrix({ data }: { data?: any }) {
           >
             <div className="relative rounded-3xl overflow-hidden shadow-2xl h-[600px] w-full bg-slate-100">
               <Image 
-                src="https://images.unsplash.com/photo-1545173168-9f1947eebb7f?auto=format&fit=crop&q=80&w=1200" 
+                src="/images/home/whyLaundrix.jpg" 
                 alt="LAUNDRIX Facility"
                 fill
                 className="object-cover"
