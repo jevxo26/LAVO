@@ -43,6 +43,7 @@ export const dashboardNavItems: NavItem[] = [
       "EMPLOYEE",
       "DELIVERY_AGENT",
       "CUSTOMER",
+      "VENDOR",
     ],
   },
   {
@@ -50,12 +51,6 @@ export const dashboardNavItems: NavItem[] = [
     href: "/dashboard/analytics",
     icon: CircleDollarSign,
     roles: ["SUPER_ADMIN", "ADMIN"],
-  },
-  {
-    name: "Dashboard",
-    href: "/dashboard/vendor/dashboard",
-    icon: LayoutDashboard,
-    roles: ["VENDOR"],
   },
 
   // =========================
@@ -168,54 +163,42 @@ export const dashboardNavItems: NavItem[] = [
     icon: Shirt,
     roles: ["SUPER_ADMIN", "ADMIN"],
   },
+  // Branch Manager Operations (Flat)
   {
-    name: "Branch Operations",
+    name: "Orders",
+    href: "/dashboard/branch-orders",
+    icon: ClipboardList,
+    roles: ["SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER"],
+  },
+  {
+    name: "Employees",
+    href: "/dashboard/branch-employees",
+    icon: UsersRound,
+    roles: ["SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER"],
+  },
+  {
+    name: "Partner Vendors",
+    href: "/dashboard/partner-vendors",
     icon: Store,
     roles: ["SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER"],
-    children: [
-      {
-        name: "Overview",
-        href: "/dashboard/branch-overview",
-        icon: LayoutDashboard,
-        roles: ["SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER"],
-      },
-      {
-        name: "Orders",
-        href: "/dashboard/branch-orders",
-        icon: ClipboardList,
-        roles: ["SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER"],
-      },
-      {
-        name: "Employees",
-        href: "/dashboard/branch-employees",
-        icon: UsersRound,
-        roles: ["SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER"],
-      },
-      {
-        name: "Partner Vendors",
-        href: "/dashboard/partner-vendors",
-        icon: Store,
-        roles: ["SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER"],
-      },
-      {
-        name: "Inventory",
-        href: "/dashboard/inventory",
-        icon: Boxes,
-        roles: ["SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER"],
-      },
-      {
-        name: "Delivery Agents",
-        href: "/dashboard/branch-delivery",
-        icon: Truck,
-        roles: ["SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER"],
-      },
-      {
-        name: "Analytics",
-        href: "/dashboard/branch-analytics",
-        icon: CircleDollarSign,
-        roles: ["SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER"],
-      },
-    ],
+  },
+  {
+    name: "Inventory",
+    href: "/dashboard/inventory",
+    icon: Boxes,
+    roles: ["SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER"],
+  },
+  {
+    name: "Delivery Agents",
+    href: "/dashboard/branch-delivery",
+    icon: Truck,
+    roles: ["SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER"],
+  },
+  {
+    name: "Analytics",
+    href: "/dashboard/branch-analytics",
+    icon: CircleDollarSign,
+    roles: ["SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER"],
   },
   {
     name: "Delivery Logistics",
@@ -259,62 +242,55 @@ export const dashboardNavItems: NavItem[] = [
   // =========================
   {
     name: "QR Scanner",
-    href: "/scanner",
+    href: "/dashboard/scanner",
     icon: QrCode,
-    roles: ["SUPER_ADMIN", "EMPLOYEE", "BRANCH_MANAGER"],
+    roles: ["SUPER_ADMIN", "EMPLOYEE"],
   },
 
   // =========================
-  // Vendor Menu
+  // Vendor Menu (Flat)
   // =========================
   {
-    name: "Vendor Operations",
-    icon: Store,
+    name: "Orders",
+    href: "/dashboard/vendor-orders",
+    icon: ClipboardList,
     roles: ["VENDOR"],
-    children: [
-      {
-        name: "Orders",
-        href: "/dashboard/vendor-orders",
-        icon: ClipboardList,
-        roles: ["VENDOR"],
-      },
-      {
-        name: "Services",
-        href: "/dashboard/vendor-services",
-        icon: Shirt,
-        roles: ["VENDOR"],
-      },
-      {
-        name: "Capacity",
-        href: "/dashboard/capacity",
-        icon: Gauge,
-        roles: ["VENDOR"],
-      },
-      {
-        name: "Employees",
-        href: "/dashboard/vendor-employees",
-        icon: UsersRound,
-        roles: ["VENDOR"],
-      },
-      {
-        name: "Wallet",
-        href: "/dashboard/vendor-wallet",
-        icon: Wallet,
-        roles: ["VENDOR"],
-      },
-      {
-        name: "Payouts",
-        href: "/dashboard/payouts",
-        icon: Banknote,
-        roles: ["VENDOR"],
-      },
-      {
-        name: "Performance",
-        href: "/dashboard/performance",
-        icon: TrendingUp,
-        roles: ["VENDOR"],
-      },
-    ],
+  },
+  {
+    name: "Services",
+    href: "/dashboard/vendor-services",
+    icon: Shirt,
+    roles: ["VENDOR"],
+  },
+  {
+    name: "Capacity",
+    href: "/dashboard/vendor-capacity",
+    icon: Gauge,
+    roles: ["VENDOR"],
+  },
+  {
+    name: "Employees",
+    href: "/dashboard/vendor-employees",
+    icon: UsersRound,
+    roles: ["VENDOR"],
+  },
+  {
+    name: "Wallet",
+    href: "/dashboard/vendor-wallet",
+    icon: Wallet,
+    roles: ["VENDOR"],
+  },
+  {
+    name: "Payouts",
+    href: "/dashboard/payouts",
+    icon: Banknote,
+    roles: ["VENDOR"],
+  },
+  {
+    name: "Performance",
+    href: "/dashboard/performance",
+    icon: TrendingUp,
+    roles: ["VENDOR"],
   },
 
   // =========================
@@ -330,12 +306,6 @@ export const dashboardNavItems: NavItem[] = [
   // =========================
   // Delivery Agent Menu
   // =========================
-  {
-    name: "Overview",
-    href: "/dashboard/agent/overview",
-    icon: LayoutDashboard,
-    roles: ["DELIVERY_AGENT"],
-  },
   {
     name: "Available Pickups",
     href: "/dashboard/pickups",
