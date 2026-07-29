@@ -44,7 +44,8 @@ export function useBooking() {
         if (profileData.success) {
           setWalletBalance(profileData.data.walletBalance);
           setReceiverName(profileData.data.fullName);
-          setReceiverPhone(profileData.data.phone || "");
+          // Keep receiverPhone empty so testing number can be typed freely per order
+          setReceiverPhone("");
         }
       } catch (err) {
         console.error("Error loading booking data:", err);
