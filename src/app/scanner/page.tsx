@@ -4,12 +4,12 @@ import { useAuth } from "@/hooks/useAuth";
 import { ScannerLogin } from "@/components/shared/scanner/ScannerLogin";
 import { ScannerView } from "@/components/shared/scanner/ScannerPage";
 
-export default function ScannerRoute() {
+export default function StandaloneScannerPage() {
   const { user, token } = useAuth();
 
-  // If user is already logged in via the main dashboard, go straight to the scanner
+  // If user is logged in, show the full-screen standalone scanner
   if (token && user) return <ScannerView user={user} />;
 
-  // Otherwise show the scanner-specific login form
+  // Otherwise show the scanner login form
   return <ScannerLogin onLogin={(_, u) => {}} />;
 }

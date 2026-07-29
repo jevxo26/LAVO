@@ -16,17 +16,50 @@ function Sk({ className }: { className?: string }) {
 
 const OptimizeRoute = () => {
   const [search, setSearch] = useState("");
-  const [routes, setRoutes] = useState<OptimizedRoute[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [routes, setRoutes] = useState([]);
+  const [agentLocation, setAgentLocation] = useState<{ lat: number; lng: number } | null>(null);
 
+  // Watch Agent Live Location
+  useEffect(() => {
+    if (typeof window !== "undefined" && "geolocation" in navigator) {
+      const watchId = navigator.geolocation.watchPosition(
+        (pos) => {
+          setAgentLocation({
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+          });
+        },
+        (err) => console.warn("Agent Geolocation warning:", err?.message),
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+      );
+
+      return () => navigator.geolocation.clearWatch(watchId);
+    }
+  }, []);
+
+  // Fetch routes (with optional agent position)
   useEffect(() => {
     const fetchRoutes = async () => {
       try {
         const token = localStorage.getItem("laundrix_token");
-        const res = await axios.get("/api/delivery-agent/optimized-routes", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setRoutes(res.data.data ?? []);
+        const params: Record<string, number> = {};
+
+        if (agentLocation) {
+          params.lat = agentLocation.lat;
+          params.lon = agentLocation.lng;
+        }
+
+        const res = await axios.get(
+          "/api/delivery-agent/optimized-routes",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            params,
+          }
+        );
+
+        setRoutes(res.data.data);
       } catch (error) {
         console.error(error);
       } finally {
@@ -34,129 +67,64 @@ const OptimizeRoute = () => {
       }
     };
     fetchRoutes();
-  }, []);
+  }, [agentLocation?.lat, agentLocation?.lng]);
+
+  const handleDirectionsCalculated = (legs: { distance: string; duration: string }[]) => {
+    setRoutes((prevRoutes: any[]) =>
+      prevRoutes.map((route, idx) => {
+        const leg = legs[idx];
+        if (!leg) return route;
+        return {
+          ...route,
+          totalDistance: leg.distance,
+          estimatedTime: leg.duration,
+        };
+      })
+    );
+  };
 
   const totalStops    = routes.reduce((s, r) => s + (r.totalStops ?? 0), 0);
   const totalPickups  = routes.reduce((s, r) => s + (r.pickups ?? 0), 0);
   const totalDeliveries = routes.reduce((s, r) => s + (r.deliveries ?? 0), 0);
 
   return (
-    <div className="space-y-7">
+    <div className="space-y-6">
+      <PageHeader
+        title="Optimized Route"
+        description="System generated route plan using real-time GPS navigation to complete pickups and deliveries efficiently."
+      />
 
-      {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-sky-600 via-blue-700 to-indigo-700 px-7 py-8">
-        <div className="pointer-events-none absolute inset-0 opacity-10">
-          <div className="absolute -top-12 -right-12 h-56 w-56 rounded-full bg-white" />
-          <div className="absolute -bottom-10 -left-8 h-40 w-40 rounded-full bg-white" />
-        </div>
-        <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div className="flex items-center gap-2 mb-1.5">
-              <Sparkles size={13} className="text-sky-200" />
-              <span className="text-sky-200 text-[11px] font-semibold uppercase tracking-widest">Delivery Agent Portal</span>
-            </div>
-            <h1 className="text-2xl font-extrabold tracking-tight text-white">Optimized Routes</h1>
-            <p className="mt-1 text-sm text-sky-100">System-generated route plan for efficient pickups and deliveries.</p>
-          </div>
-          {!loading && routes.length > 0 && (
-            <div className="flex items-center gap-3 shrink-0">
-              <div className="rounded-xl bg-white/10 border border-white/20 backdrop-blur-sm px-4 py-3 text-center">
-                <p className="text-sky-200 text-[10px] font-semibold uppercase tracking-wider">Routes</p>
-                <p className="text-white font-extrabold text-xl leading-tight">{routes.length}</p>
-              </div>
-              <div className="rounded-xl bg-white/10 border border-white/20 backdrop-blur-sm px-4 py-3 text-center">
-                <p className="text-sky-200 text-[10px] font-semibold uppercase tracking-wider">Total Stops</p>
-                <p className="text-white font-extrabold text-xl leading-tight">{totalStops}</p>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* ── Stat chips ────────────────────────────────────────────────────── */}
-      {!loading && routes.length > 0 && (
-        <div className="grid grid-cols-3 gap-4">
-          {[
-            { label: "Total Routes",   sub: "Active today",     value: routes.length,    Icon: Route,    iconBg: "bg-sky-50",     iconColor: "text-sky-600",     ringColor: "ring-sky-100"     },
-            { label: "Pickups",        sub: "To collect",       value: totalPickups,     Icon: MapPin,   iconBg: "bg-amber-50",   iconColor: "text-amber-600",   ringColor: "ring-amber-100"   },
-            { label: "Deliveries",     sub: "To drop off",      value: totalDeliveries,  Icon: Navigation, iconBg: "bg-emerald-50", iconColor: "text-emerald-600", ringColor: "ring-emerald-100" },
-          ].map(({ label, sub, value, Icon, iconBg, iconColor, ringColor }) => (
-            <div key={label} className="flex items-center gap-4 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
-              <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ring-4 ${iconBg} ${iconColor} ${ringColor}`}>
-                <Icon size={22} />
-              </div>
-              <div className="min-w-0">
-                <p className="text-2xl font-extrabold text-slate-900 leading-none">{value}</p>
-                <p className="mt-0.5 text-[12px] font-semibold text-slate-700 leading-tight">{label}</p>
-                <p className="text-[11px] text-slate-400 leading-tight">{sub}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* ── Map ───────────────────────────────────────────────────────────── */}
-      <div className="rounded-2xl border border-slate-100 bg-white shadow-sm overflow-hidden">
-        <div className="flex items-center gap-3 border-b border-slate-100 px-6 py-4">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-50">
-            <MapPin size={14} className="text-sky-500" />
-          </div>
-          <div>
-            <h2 className="text-sm font-extrabold text-slate-900">Route Map</h2>
-            <p className="text-[11px] text-slate-400">Live route visualization · LAVO Branch → Customer stops</p>
-          </div>
-          {!loading && (
-            <span className="ml-auto flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> LIVE
+      <div className="rounded-xl border bg-white p-5 shadow-sm">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
+            📍 Real-Time Navigation Map
+          </h2>
+          {agentLocation && (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              Live GPS Active
             </span>
           )}
         </div>
-        <div className="p-4">
-          {loading ? (
-            <Sk className="h-[400px] w-full rounded-xl" />
-          ) : (
-            <div className="rounded-xl overflow-hidden ring-1 ring-slate-100">
-              <RouteMap routes={routes} />
-            </div>
-          )}
+
+        <div className="rounded-lg overflow-hidden border">
+          <RouteMap
+            routes={routes}
+            agentLocation={agentLocation}
+            onDirectionsCalculated={handleDirectionsCalculated}
+          />
         </div>
       </div>
 
-      {/* ── Route table ───────────────────────────────────────────────────── */}
-      <div className="rounded-2xl border border-slate-100 bg-white shadow-sm overflow-hidden">
-        <div className="flex items-center gap-3 border-b border-slate-100 px-6 py-4">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50">
-            <Route size={14} className="text-indigo-500" />
-          </div>
-          <div>
-            <h2 className="text-sm font-extrabold text-slate-900">Route Details</h2>
-            <p className="text-[11px] text-slate-400">All stops, distances, and estimated times</p>
-          </div>
-        </div>
-        <div className="px-5 py-4 space-y-4">
-          {/* Search */}
-          <div className="flex items-center gap-3">
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={13} />
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search by route name or location…"
-                className="w-full h-9 pl-9 pr-3 rounded-xl border border-slate-200 bg-slate-50 text-xs font-medium text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:bg-white transition"
-              />
-            </div>
-            {search && (
-              <Button size="sm" variant="ghost" onClick={() => setSearch("")}
-                className="h-9 rounded-xl text-xs font-bold text-slate-500 hover:text-rose-600 hover:bg-rose-50 px-3 gap-1.5">
-                <RotateCcw size={12} /> Clear
-              </Button>
-            )}
-          </div>
-          <RouteTable search={search} routes={routes} />
-        </div>
-      </div>
 
+      <RouteToolbar
+        search={search}
+        setSearch={setSearch}
+      />
+      <RouteTable
+        search={search}
+        routes={routes}
+      />
     </div>
   );
 };

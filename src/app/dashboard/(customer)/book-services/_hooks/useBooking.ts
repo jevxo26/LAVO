@@ -19,6 +19,8 @@ export function useBooking() {
   const [receiverName, setReceiverName] = useState("");
   const [receiverPhone, setReceiverPhone] = useState("");
   const [pickupAddress, setPickupAddress] = useState("");
+  const [pickupLat, setPickupLat] = useState<number | null>(null);
+  const [pickupLon, setPickupLon] = useState<number | null>(null);
   const [pickupDate, setPickupDate] = useState("");
   const [pickupTimeSlot, setPickupTimeSlot] = useState("09:00 - 12:00");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("ONLINE");
@@ -42,7 +44,8 @@ export function useBooking() {
         if (profileData.success) {
           setWalletBalance(profileData.data.walletBalance);
           setReceiverName(profileData.data.fullName);
-          setReceiverPhone(profileData.data.phone || "");
+          // Keep receiverPhone empty so testing number can be typed freely per order
+          setReceiverPhone("");
         }
       } catch (err) {
         console.error("Error loading booking data:", err);
@@ -152,6 +155,8 @@ export function useBooking() {
           pickupDate,
           pickupTimeSlot,
           paymentMethod,
+          latitude: pickupLat,
+          longitude: pickupLon,
         }),
       });
 
@@ -192,6 +197,8 @@ export function useBooking() {
     receiverName, setReceiverName,
     receiverPhone, setReceiverPhone,
     pickupAddress, setPickupAddress,
+    pickupLat, setPickupLat,
+    pickupLon, setPickupLon,
     pickupDate, setPickupDate,
     pickupTimeSlot, setPickupTimeSlot,
     paymentMethod, setPaymentMethod,

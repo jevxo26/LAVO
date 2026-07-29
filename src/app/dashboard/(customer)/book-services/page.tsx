@@ -20,6 +20,8 @@ export default function BookLaundryPage() {
     paymentMethod, setPaymentMethod,
     subtotal, deliveryCharge, tax, grandTotal,
     submitting, handleSubmit,
+    pickupLat, setPickupLat,
+    pickupLon, setPickupLon,
   } = useBooking();
 
   const filteredServices = services.filter((s) => s.category === activeCategory);
@@ -140,6 +142,8 @@ export default function BookLaundryPage() {
                   onReceiverNameChange={setReceiverName}
                   onReceiverPhoneChange={setReceiverPhone}
                   onPickupAddressChange={setPickupAddress}
+                  onPickupLatChange={setPickupLat}
+                  onPickupLonChange={setPickupLon}
                   onPickupDateChange={setPickupDate}
                   onPickupTimeSlotChange={setPickupTimeSlot}
                 />

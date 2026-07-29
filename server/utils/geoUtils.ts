@@ -33,5 +33,9 @@ export const calculateDistance = (
             Math.sqrt(1 - a)
         );
 
-    return Number((R * c).toFixed(2));
+    // Multiply by 1.25 urban road factor for realistic driving distance estimation
+    const straightDistance = R * c;
+    const roadDistance = straightDistance * 1.25;
+
+    return Number(roadDistance.toFixed(2));
 };
