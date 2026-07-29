@@ -66,6 +66,20 @@ const OptimizeRoute = () => {
     fetchRoutes();
   }, [agentLocation?.lat, agentLocation?.lng]);
 
+  const handleDirectionsCalculated = (legs: { distance: string; duration: string }[]) => {
+    setRoutes((prevRoutes: any[]) =>
+      prevRoutes.map((route, idx) => {
+        const leg = legs[idx];
+        if (!leg) return route;
+        return {
+          ...route,
+          totalDistance: leg.distance,
+          estimatedTime: leg.duration,
+        };
+      })
+    );
+  };
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -87,9 +101,14 @@ const OptimizeRoute = () => {
         </div>
 
         <div className="rounded-lg overflow-hidden border">
-          <RouteMap routes={routes} agentLocation={agentLocation} />
+          <RouteMap
+            routes={routes}
+            agentLocation={agentLocation}
+            onDirectionsCalculated={handleDirectionsCalculated}
+          />
         </div>
       </div>
+
 
       <RouteToolbar
         search={search}

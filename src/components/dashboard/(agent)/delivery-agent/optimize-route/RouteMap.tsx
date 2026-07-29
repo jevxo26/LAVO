@@ -13,6 +13,7 @@ import { OptimizedRoute } from "../types";
 type RouteMapProps = {
   routes: OptimizedRoute[];
   agentLocation?: { lat: number; lng: number } | null;
+  onDirectionsCalculated?: (drivingLegs: { distance: string; duration: string }[]) => void;
 };
 
 const mapContainerStyle = {
@@ -28,7 +29,7 @@ const defaultCenter = {
 
 const libraries: ("places" | "geometry" | "drawing" | "visualization")[] = ["places"];
 
-export default function RouteMap({ routes, agentLocation }: RouteMapProps) {
+export default function RouteMap({ routes, agentLocation, onDirectionsCalculated }: RouteMapProps) {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
 
   const { isLoaded, loadError } = useJsApiLoader({
@@ -94,12 +95,21 @@ export default function RouteMap({ routes, agentLocation }: RouteMapProps) {
       (result, status) => {
         if (status === google.maps.DirectionsStatus.OK && result) {
           setDirections(result);
+
+          if (result.routes[0]?.legs && onDirectionsCalculated) {
+            const legs = result.routes[0].legs.map((leg) => ({
+              distance: leg.distance?.text || "N/A",
+              duration: leg.duration?.text || "N/A",
+            }));
+            onDirectionsCalculated(legs);
+          }
         } else {
           console.warn("Google Directions request failed:", status);
         }
       }
     );
   }, [isLoaded, validStops.length, agentLocation?.lat, agentLocation?.lng]);
+
 
   // Center map dynamically to fit bounds
   useEffect(() => {
