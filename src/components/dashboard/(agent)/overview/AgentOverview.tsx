@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { authFetch } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
+import { Truck } from "lucide-react";
 import { AgentHeroBanner }    from "./AgentHeroBanner";
 import { AgentStatCards }     from "./AgentStatCards";
 import { AgentActivityPanel } from "./AgentActivityPanel";
@@ -56,6 +57,14 @@ export function AgentOverview() {
   const completionPct = totalDeliveries > 0
     ? Math.round((completedToday / totalDeliveries) * 100) : 0;
 
+  // no data at all → show empty state
+  const hasNoData = !data || (
+    availablePickups === 0 &&
+    activeDeliveries === 0 &&
+    completedToday   === 0 &&
+    totalDeliveries  === 0
+  );
+
   return (
     <div className="space-y-6">
       <AgentHeroBanner
@@ -65,27 +74,53 @@ export function AgentOverview() {
         activeDeliveries={activeDeliveries}
         completedToday={completedToday}
       />
-      <AgentStatCards
-        availablePickups={availablePickups}
-        activeDeliveries={activeDeliveries}
-        completedToday={completedToday}
-        assignedRoutes={assignedRoutes}
-        totalDeliveries={totalDeliveries}
-      />
-      <div className="grid gap-6 lg:grid-cols-3 items-start">
-        <AgentActivityPanel
-          availablePickups={availablePickups}
-          activeDeliveries={activeDeliveries}
-          completedToday={completedToday}
-          assignedRoutes={assignedRoutes}
-          totalDeliveries={totalDeliveries}
-          completionPct={completionPct}
-        />
-        <AgentQuickActions
-          availablePickups={availablePickups}
-          activeDeliveries={activeDeliveries}
-        />
-      </div>
+
+      {hasNoData ? (
+        /* ── No assignments yet ─────────────────────────────────────────── */
+        <>
+          <AgentStatCards
+            availablePickups={0}
+            activeDeliveries={0}
+            completedToday={0}
+            assignedRoutes={0}
+            totalDeliveries={0}
+          />
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white py-24 text-center shadow-sm">
+            <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-indigo-50">
+              <Truck size={38} className="text-indigo-300" />
+            </div>
+            <p className="text-base font-bold text-slate-800">No tasks assigned yet</p>
+            <p className="mt-2 max-w-xs text-sm text-slate-400">
+              Once an administrator assigns pickups or deliveries, your dashboard will update automatically.
+            </p>
+          </div>
+        </>
+      ) : (
+        /* ── Normal dashboard ───────────────────────────────────────────── */
+        <>
+          <AgentStatCards
+            availablePickups={availablePickups}
+            activeDeliveries={activeDeliveries}
+            completedToday={completedToday}
+            assignedRoutes={assignedRoutes}
+            totalDeliveries={totalDeliveries}
+          />
+          <div className="grid gap-6 lg:grid-cols-3 items-start">
+            <AgentActivityPanel
+              availablePickups={availablePickups}
+              activeDeliveries={activeDeliveries}
+              completedToday={completedToday}
+              assignedRoutes={assignedRoutes}
+              totalDeliveries={totalDeliveries}
+              completionPct={completionPct}
+            />
+            <AgentQuickActions
+              availablePickups={availablePickups}
+              activeDeliveries={activeDeliveries}
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 }

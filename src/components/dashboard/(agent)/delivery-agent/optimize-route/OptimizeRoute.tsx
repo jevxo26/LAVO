@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import dynamic from "next/dynamic";
-import { Route, MapPin, Sparkles, Navigation } from "lucide-react";
-import RouteToolbar from "./RouteToolbar";
+import { Route, MapPin, Sparkles, Navigation, Search, RotateCcw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import RouteTable from "./RouteTable";
 import { OptimizedRoute } from "../types";
 
@@ -133,8 +133,26 @@ const OptimizeRoute = () => {
             <p className="text-[11px] text-slate-400">All stops, distances, and estimated times</p>
           </div>
         </div>
-        <div className="p-4 space-y-4">
-          <RouteToolbar search={search} setSearch={setSearch} />
+        <div className="px-5 py-4 space-y-4">
+          {/* Search */}
+          <div className="flex items-center gap-3">
+            <div className="relative flex-1 max-w-sm">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={13} />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search by route name or location…"
+                className="w-full h-9 pl-9 pr-3 rounded-xl border border-slate-200 bg-slate-50 text-xs font-medium text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:bg-white transition"
+              />
+            </div>
+            {search && (
+              <Button size="sm" variant="ghost" onClick={() => setSearch("")}
+                className="h-9 rounded-xl text-xs font-bold text-slate-500 hover:text-rose-600 hover:bg-rose-50 px-3 gap-1.5">
+                <RotateCcw size={12} /> Clear
+              </Button>
+            )}
+          </div>
           <RouteTable search={search} routes={routes} />
         </div>
       </div>

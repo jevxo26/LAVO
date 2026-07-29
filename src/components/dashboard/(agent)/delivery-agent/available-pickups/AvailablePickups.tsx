@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { PackageCheck, Sparkles } from "lucide-react";
-import PickupToolbar from "./PickupToolbar";
+import { useMemo, useState } from "react";
+import { Sparkles, Search, RotateCcw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import PickupTable from "./PickupTable";
 
 const AvailablePickups = () => {
@@ -20,19 +20,40 @@ const AvailablePickups = () => {
         <div className="relative z-10">
           <div className="flex items-center gap-2 mb-1.5">
             <Sparkles size={13} className="text-amber-200" />
-            <span className="text-amber-200 text-[11px] font-semibold uppercase tracking-widest">Delivery Agent Portal</span>
+            <span className="text-amber-200 text-[11px] font-semibold uppercase tracking-widest">
+              Delivery Agent Portal
+            </span>
           </div>
           <h1 className="text-2xl font-extrabold tracking-tight text-white">Available Pickups</h1>
-          <p className="mt-1 text-sm text-amber-100">View and accept all pending pickup requests assigned to your zone.</p>
+          <p className="mt-1 text-sm text-amber-100">
+            View and accept all pending pickup requests assigned to your zone.
+          </p>
         </div>
       </div>
 
-      {/* ── Toolbar ───────────────────────────────────────────────────────── */}
+      {/* ── Search toolbar ────────────────────────────────────────────────── */}
       <div className="rounded-2xl border border-slate-100 bg-white px-5 py-4 shadow-sm">
-        <PickupToolbar search={search} setSearch={setSearch} />
+        <div className="flex items-center gap-3">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={13} />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by order ID or customer…"
+              className="w-full h-9 pl-9 pr-3 rounded-xl border border-slate-200 bg-slate-50 text-xs font-medium text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:bg-white transition"
+            />
+          </div>
+          {search && (
+            <Button size="sm" variant="ghost" onClick={() => setSearch("")}
+              className="h-9 rounded-xl text-xs font-bold text-slate-500 hover:text-rose-600 hover:bg-rose-50 px-3 gap-1.5">
+              <RotateCcw size={12} /> Clear
+            </Button>
+          )}
+        </div>
       </div>
 
-      {/* ── Table ─────────────────────────────────────────────────────────── */}
+      {/* ── Cards ─────────────────────────────────────────────────────────── */}
       <PickupTable search={search} />
 
     </div>
