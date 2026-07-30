@@ -24,31 +24,31 @@ export function HomeProcess({ data }: { data?: any }) {
     { icon: "Package", title: "Delivery", desc: "Clean clothes returned to your door.", num: "06" }
   ];
 
-  const bottomCards = [
-    {
-      icon: Calendar,
-      title: "Book & Pay",
-      desc: "Select service, garments, and slot. Pay instantly via bKash, card, or wallet."
-    },
-    {
-      icon: QrCode,
-      title: "Pickup & QR Tag",
-      desc: "Agent collects your laundry. Every garment tagged with a unique trackable QR code."
-    },
-    {
-      icon: Sparkles, // placeholder for refresh icon
-      title: "Process & Inspect",
-      desc: "Vendor processes garments. Quality check at every stage. Zero tolerance for errors."
-    },
-    {
-      icon: Truck, // placeholder for delivery truck
-      title: "Pack & Deliver",
-      desc: "Packaged securely and delivered on schedule. Rate your experience in-app."
-    }
-  ];
+  // const bottomCards = [
+  //   {
+  //     icon: Calendar,
+  //     title: "Book & Pay",
+  //     desc: "Select service, garments, and slot. Pay instantly via bKash, card, or wallet."
+  //   },
+  //   {
+  //     icon: QrCode,
+  //     title: "Pickup & QR Tag",
+  //     desc: "Agent collects your laundry. Every garment tagged with a unique trackable QR code."
+  //   },
+  //   {
+  //     icon: Sparkles, // placeholder for refresh icon
+  //     title: "Process & Inspect",
+  //     desc: "Vendor processes garments. Quality check at every stage. Zero tolerance for errors."
+  //   },
+  //   {
+  //     icon: Truck, // placeholder for delivery truck
+  //     title: "Pack & Deliver",
+  //     desc: "Packaged securely and delivered on schedule. Rate your experience in-app."
+  //   }
+  // ];
 
   return (
-    <section className="py-24 bg-white border-t border-slate-100">
+    <section className="py-12 md:py-16 lg:py-20 bg-white border-t border-slate-100">
       <div className="max-w-7xl mx-auto px-4 md:px-6">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
@@ -62,10 +62,10 @@ export function HomeProcess({ data }: { data?: any }) {
               The Process
             </span>
           </div>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mb-6">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-slate-800 mb-6">
             {title}
           </h2>
-          <p className="text-slate-500 max-w-2xl mx-auto">
+          <p className="text-slate-500 max-w-2xl mx-auto w-[560px]">
             {subtitle}
           </p>
         </motion.div>
@@ -99,7 +99,7 @@ export function HomeProcess({ data }: { data?: any }) {
         </div>
 
         {/* Bottom 4 Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {bottomCards.map((card, idx) => (
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
@@ -121,7 +121,7 @@ export function HomeProcess({ data }: { data?: any }) {
               </p>
             </motion.div>
           ))}
-        </div>
+        </div> */}
       </div>
     </section>
   );

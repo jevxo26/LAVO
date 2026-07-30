@@ -60,7 +60,7 @@ const Mission = () => {
                             <div className="relative h-[520px] rounded-[32px] overflow-hidden">
 
                                 <Image
-                                    src="https://images.unsplash.com/photo-1517677208171-0bc6725a3e60"
+                                    src="/images/routes/story.jpg"
                                     alt="Our Mission"
                                     fill
                                     className="object-cover"

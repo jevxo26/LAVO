@@ -28,7 +28,7 @@ export function HomeCorporate({ data }: { data?: any }) {
       ];
 
   return (
-    <section className="bg-navy-dark py-24">
+    <section className="bg-navy-dark py-12 md:py-16 lg:py-20">
       <div className="max-w-7xl mx-auto px-4 md:px-6">
         <div className="flex flex-col lg:flex-row gap-16">
           <motion.div 
@@ -45,7 +45,7 @@ export function HomeCorporate({ data }: { data?: any }) {
               </span>
             </div>
             
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-6">
               {title}
             </h2>
             
@@ -65,7 +65,7 @@ export function HomeCorporate({ data }: { data?: any }) {
               })}
             </div>
 
-            <button className="flex items-center justify-center gap-2 bg-brand-sky hover:bg-brand-sky-hover text-white px-6 py-3.5 rounded-full font-bold transition-colors w-full sm:w-auto shadow-lg">
+            <button className="flex items-center justify-center gap-2 bg-brand-blue hover:bg-brand-blue-hover text-white px-6 py-3.5 rounded-md font-bold transition-colors w-full sm:w-auto shadow-lg">
               Corporate Laundry
               <ArrowRight size={18} />
             </button>
@@ -79,15 +79,15 @@ export function HomeCorporate({ data }: { data?: any }) {
             className="lg:w-1/2 flex flex-col gap-4"
           >
             <div className="bg-slate-800/40 border border-slate-800 rounded-2xl p-8">
-              <h3 className="text-brand-sky text-5xl font-bold mb-2">2,000+</h3>
+              <h3 className="text-brand-blue text-2xl md:text-3xl lg:text-4xl font-bold mb-2">2,000+</h3>
               <p className="text-slate-400">Items processed weekly for enterprise clients</p>
             </div>
             <div className="bg-slate-800/40 border border-slate-800 rounded-2xl p-8">
-              <h3 className="text-brand-sky text-5xl font-bold mb-2">48 hr</h3>
+              <h3 className="text-brand-blue text-2xl md:text-3xl lg:text-4xl font-bold mb-2">48 hr</h3>
               <p className="text-slate-400">Standard enterprise turnaround guarantee</p>
             </div>
             <div className="bg-slate-800/40 border border-slate-800 rounded-2xl p-8">
-              <h3 className="text-brand-sky text-5xl font-bold mb-2">100%</h3>
+              <h3 className="text-brand-blue text-2xl md:text-3xl lg:text-4xl font-bold mb-2">100%</h3>
               <p className="text-slate-400">Digital invoicing and order management</p>
             </div>
           </motion.div>

@@ -38,7 +38,7 @@ export function HomeFAQ({ data }: { data?: any }) {
   ];
 
   return (
-    <section className="py-24 bg-surface-light">
+    <section className="py-12 md:py-16 lg:pb-12 bg-surface-light">
       <div className="max-w-7xl mx-auto px-4 md:px-6">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
@@ -52,7 +52,7 @@ export function HomeFAQ({ data }: { data?: any }) {
               FAQ
             </span>
           </div>
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-slate-900 mb-4">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-slate-800 mb-4">
             {title}
           </h2>
           <p className="text-slate-500">
@@ -60,7 +60,7 @@ export function HomeFAQ({ data }: { data?: any }) {
           </p>
         </motion.div>
 
-        <div className="space-y-4">
+        <div className="space-y-4 w-4xl mx-auto">
           {faqs.map((faq: any, index: number) => (
             <motion.div 
               initial={{ opacity: 0, y: 10 }}

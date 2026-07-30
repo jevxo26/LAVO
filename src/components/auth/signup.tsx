@@ -139,14 +139,14 @@ export function SignUpForm() {
         {errors.confirmPassword && <p className="text-sm text-red-500">{errors.confirmPassword.message}</p>}
       </div>
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
+        <div className="flex  items-center space-x-2">
           <input
             id="remember"
             type="checkbox"
             required
             className="h-4 w-4 rounded border-gray-300"
           />
-          <Label htmlFor="remember" className="text-sm font-normal">
+          <Label htmlFor="remember" className="text-sm flex flex-wrap font-normal">
             I agree to LAUNDRIX's <span className="text-blue-500 font-semibold">Terms of Service</span> and <span className="text-blue-500 font-semibold">Privacy Policy</span>
           </Label>
         </div>

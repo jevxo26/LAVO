@@ -160,14 +160,14 @@ function LoginContent() {
                 </div>
 
                 {/* Right Side */}
-                <div className="flex items-center justify-center p-8 lg:p-14">
+                <div className="flex items-start justify-center p-8 lg:p-10">
                     <div className="w-full text-left max-w-md">
                         <div className="mb-8 text-left">
                             <div className=" mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50">
                                 <Lock className="h-8 w-8 text-blue-600" />
                             </div>
 
-                            <h2 className="text-4xl font-bold text-slate-900">
+                            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-slate-800">
                                 Sign in to LAUNDRIX
                             </h2>
 

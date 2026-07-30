@@ -1,64 +1,10 @@
 "use client";
 
+import { RefreshCw, Shield, Shirt, Sparkles, Zap, ZapIcon } from "lucide-react";
 import { ServiceCard } from "./ServiceCard";
 import { motion } from "framer-motion";
+import { serviceDetails } from "@/data/servicesDetails";
 
-const services = [
-  {
-    id: "wash-fold",
-    title: "Wash & Fold",
-    price: "৳45",
-    unit: "kg",
-    time: "12-24 hrs",
-    description: "Professional washing with precision folding for everyday garments.",
-    imageUrl: "https://images.unsplash.com/photo-1582735689141-c11bb356c6d5?auto=format&fit=crop&q=80&w=800",
-  },
-  {
-    id: "dry-cleaning",
-    title: "Dry Cleaning",
-    price: "৳150",
-    unit: "pc",
-    time: "12-24 hrs",
-    description: "Expert solvent cleaning for delicate, formal, and specialty garments.",
-    imageUrl: "https://images.unsplash.com/photo-1610557892470-55d9e80c0bce?auto=format&fit=crop&q=80&w=800",
-  },
-  {
-    id: "wash-iron",
-    title: "Ironing & Press",
-    price: "৳30",
-    unit: "pc",
-    time: "12-24 hrs",
-    description: "Crisp, wrinkle-free garments finished to a professional standard.",
-    imageUrl: "https://images.unsplash.com/photo-1517677208171-0bc6725a3e60?auto=format&fit=crop&q=80&w=800",
-  },
-  {
-    id: "stain-removal",
-    title: "Stain Removal",
-    price: "৳100",
-    unit: "pc",
-    time: "24-48 hrs",
-    description: "Advanced treatment for stubborn stains without damaging the fabric.",
-    imageUrl: "https://images.unsplash.com/photo-1584992236310-6edddc08acff?auto=format&fit=crop&q=80&w=800",
-  },
-  {
-    id: "commercial-laundry",
-    title: "Commercial Laundry",
-    price: "Custom",
-    unit: "order",
-    time: "24-48 hrs",
-    description: "Bulk laundry solutions tailored for hotels, hospitals, and businesses.",
-    imageUrl: "https://images.unsplash.com/photo-1545173168-9f1947eebb7f?auto=format&fit=crop&q=80&w=800",
-  },
-  {
-    id: "express-laundry",
-    title: "Express Laundry",
-    price: "৳80",
-    unit: "kg",
-    time: "6-12 hrs",
-    description: "Fast-tracked washing and folding services for your urgent requirements.",
-    imageUrl: "https://images.unsplash.com/photo-1604335399105-a0c585fd81a1?auto=format&fit=crop&q=80&w=800",
-  },
-];
 
 export function ServicesGrid({ data }: { data?: any }) {
   const container = {
@@ -76,31 +22,61 @@ export function ServicesGrid({ data }: { data?: any }) {
     show: { opacity: 1, y: 0, transition: { duration: 0.5 } }
   };
 
-  const displayServices = (data?.items?.length ?? 0) > 0 
-    ? data.items.map((item: any) => {
-        const [price, unit, time] = (item.subtitle || "").split("|").map((s: string) => s.trim());
-        const serviceSlug = item.link?.replace(/^\/services\//, "") || item.title?.toLowerCase().replace(/[^a-z0-9]+/g, "-") || item.id;
+
+  const services = Object.values(serviceDetails).map((service) => {
+    const [price, unit] = service.startingPrice.split("/");
+
+    return {
+      ...service,
+      price,
+      unit: unit || "",
+      time: service.turnaround,
+    };
+  });
+
+  const displayServices =
+    (data?.items?.length ?? 0) > 0
+      ? data.items.map((item: any) => {
+        // console.log(data.items);
+        const slug =
+          item.link?.replace(/^\/services\//, "") ||
+          item.title?.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+
+        const service = services.find((s) => s.id === slug);
+
+        // console.log(slug, service, "-> grid");
+        // console.log(Object.keys(serviceDetails));
         return {
-          id: serviceSlug,
-          title: item.title,
-          price: price || "",
-          unit: unit || "",
-          time: time || "",
-          description: item.content,
-          imageUrl: item.image || "https://images.unsplash.com/photo-1582735689141-c11bb356c6d5?auto=format&fit=crop&q=80&w=800"
+          ...service,
+          id: slug,
+          title: item.title || service?.title,
+          description:
+            item.content || service?.description,
+          imageUrl:
+            service?.imageUrl ||
+            item.image,
+          price:
+            service?.price || "",
+
+          unit:
+            service?.unit || "",
+
+          time:
+            service?.time || "",
         };
       })
-    : services;
+      : services;
+  // console.log(displayServices);
 
   return (
     <section className="w-full py-12 md:py-16 lg:py-20 bg-surface-light">
       <div className="max-w-7xl mx-auto px-4 md:px-6">
-        <motion.div 
+        <motion.div
           variants={container}
           initial="hidden"
           whileInView="show"
           viewport={{ once: true, margin: "-100px" }}
-          className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
         >
           {displayServices.map((service: any) => (
             <motion.div key={service.id} variants={itemAnim}>

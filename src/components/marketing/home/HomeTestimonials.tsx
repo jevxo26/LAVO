@@ -231,7 +231,7 @@ export function HomeTestimonials({ data, reviews }: HomeTestimonialsProps) {
     reviews && reviews.length > 0 ? reviews : FALLBACK;
 
   return (
-    <section className="relative py-24 overflow-hidden">
+    <section className="relative py-12 md:py-16 lg:py-20 overflow-hidden">
       {/* ── Decorative background ─────────────────────────────────────────── */}
       {/* Soft base */}
       <div className="absolute inset-0 bg-gradient-to-b from-slate-50/80 via-white to-slate-50/80" />
@@ -259,7 +259,7 @@ export function HomeTestimonials({ data, reviews }: HomeTestimonialsProps) {
               Customer Reviews
             </span>
           </div>
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-slate-900">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-slate-800">
             {title}
           </h2>
           <p className="mt-3 text-slate-400 text-sm max-w-xl mx-auto leading-relaxed">

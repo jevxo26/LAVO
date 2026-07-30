@@ -1,13 +1,54 @@
+import {
+  Shirt,
+  Sparkles,
+  ZapIcon,
+  RefreshCw,
+  Shield,
+  Zap,
+} from "lucide-react";
+// console.log("THIS IS THE FILE I'M EDITING");
 export const serviceDetails = {
+  "wash-fold": {
+    id: "wash-fold",
+    title: "Wash & Fold",
+    icon: Shirt,
+    isPremium: false,
+    description: "Everyday laundry washed, dried, and neatly folded. Perfect for your daily wear, bed sheets, and towels. Priced by weight for ultimate convenience.",
+    startingPrice: "৳80/kg",
+    turnaround: "24 hours",
+    coverage: "All Branches",
+    imageUrl: "/images/home/service/servie1.png",
+    includes: [
+      "T-Shirts & Polos",
+      "Jeans & Casual Pants",
+      "Undergarments",
+      "Socks",
+      "Towels",
+      "Bedsheets",
+      "Pillowcases",
+      "Pajamas"
+    ],
+    process: [
+      { step: 1, title: "Sorting", description: "Lights and darks are separated to prevent color bleeding." },
+      { step: 2, title: "Washing", description: "Washed with premium detergents at the optimal temperature." },
+      { step: 3, title: "Drying", description: "Tumble dried at low heat to protect fibers and prevent shrinkage." },
+      { step: 4, title: "Folding", description: "Neatly folded and packed in protective bags for delivery." }
+    ],
+    faqs: [
+      { question: "Is there a minimum weight?", answer: "Yes, our minimum order weight for Wash & Fold is 3 kg." },
+      { question: "Do you iron the clothes?", answer: "No, this service only includes washing, drying, and folding. For ironing, select our Wash & Iron service." }
+    ]
+  },
   "dry-cleaning": {
     id: "dry-cleaning",
     title: "Dry Cleaning",
+    icon: Sparkles,
     isPremium: true,
     description: "Professional solvent cleaning for delicate, formal, and specialty garments. We restore original lustre and protect fabric integrity using Hydrocarbon solvents approved for all textile types.",
     startingPrice: "৳100/item",
     turnaround: "48 hours",
     coverage: "All Branches",
-    imageUrl: "https://images.unsplash.com/photo-1545173168-9f1947eebb7f?q=80&w=2071&auto=format&fit=crop",
+    imageUrl: "/images/home/service/servie2.png",
     includes: [
       "Suits & Blazers",
       "Dresses & Gowns",
@@ -63,45 +104,16 @@ export const serviceDetails = {
       }
     ]
   },
-  "wash-fold": {
-    id: "wash-fold",
-    title: "Wash & Fold",
-    isPremium: false,
-    description: "Everyday laundry washed, dried, and neatly folded. Perfect for your daily wear, bed sheets, and towels. Priced by weight for ultimate convenience.",
-    startingPrice: "৳80/kg",
-    turnaround: "24 hours",
-    coverage: "All Branches",
-    imageUrl: "https://images.unsplash.com/photo-1582735689369-4fe89db7114c?q=80&w=2070&auto=format&fit=crop",
-    includes: [
-      "T-Shirts & Polos",
-      "Jeans & Casual Pants",
-      "Undergarments",
-      "Socks",
-      "Towels",
-      "Bedsheets",
-      "Pillowcases",
-      "Pajamas"
-    ],
-    process: [
-      { step: 1, title: "Sorting", description: "Lights and darks are separated to prevent color bleeding." },
-      { step: 2, title: "Washing", description: "Washed with premium detergents at the optimal temperature." },
-      { step: 3, title: "Drying", description: "Tumble dried at low heat to protect fibers and prevent shrinkage." },
-      { step: 4, title: "Folding", description: "Neatly folded and packed in protective bags for delivery." }
-    ],
-    faqs: [
-      { question: "Is there a minimum weight?", answer: "Yes, our minimum order weight for Wash & Fold is 3 kg." },
-      { question: "Do you iron the clothes?", answer: "No, this service only includes washing, drying, and folding. For ironing, select our Wash & Iron service." }
-    ]
-  },
-  "wash-iron": {
-    id: "wash-iron",
-    title: "Wash & Iron",
+  "ironing-press": {
+    id: "ironing-press",
+    title: "Ironing & Pressing",
+    icon: RefreshCw,
     isPremium: false,
     description: "Complete care for your everyday clothes. Crisp, clean, and perfectly ironed so you are always ready to go.",
     startingPrice: "৳40/item",
     turnaround: "48 hours",
     coverage: "All Branches",
-    imageUrl: "https://images.unsplash.com/photo-1610557892470-55d9e80c0bce?q=80&w=2024&auto=format&fit=crop",
+    imageUrl: "/images/home/service/servie3.png",
     includes: [
       "Formal Shirts",
       "Formal Pants",
@@ -120,34 +132,16 @@ export const serviceDetails = {
       { question: "Can I get my clothes on hangers?", answer: "Yes, you can request hanger delivery during checkout for a small additional fee." }
     ]
   },
-  "stain-removal": {
-    id: "stain-removal",
-    title: "Stain Removal",
-    isPremium: true,
-    description: "Advanced spot treatment for stubborn stains such as oil, ink, wine, and grease without harming fabric integrity.",
-    startingPrice: "৳100/item",
-    turnaround: "24-48 hours",
-    coverage: "All Branches",
-    imageUrl: "https://images.unsplash.com/photo-1584992236310-6edddc08acff?q=80&w=2070&auto=format&fit=crop",
-    includes: ["Oil Stains", "Ink & Dyes", "Food & Wine", "Grease & Dirt", "Delicate Fabrics"],
-    process: [
-      { step: 1, title: "Analysis", description: "Identifying stain type and fabric sensitivity." },
-      { step: 2, title: "Targeted Spotting", description: "Applying specialized chemical spotting agents." },
-      { step: 3, title: "Deep Wash", description: "Neutralizing wash to safely remove all residues." }
-    ],
-    faqs: [
-      { question: "Can all stains be removed?", answer: "While we achieve a 95%+ success rate, some old or heat-set stains may be permanent. We perform a thorough test first." }
-    ]
-  },
-  "commercial-laundry": {
-    id: "commercial-laundry",
-    title: "Commercial Laundry",
+  "wash-iron": {
+    id: "wash-iron",
+    title: "Wash & Iron",
+    icon:RefreshCw,
     isPremium: true,
     description: "High-capacity, industrial laundry services for hotels, hospitals, restaurants, and corporate clients with custom SLAs.",
-    startingPrice: "Custom quote",
+    startingPrice: "৳45/kg",
     turnaround: "24-48 hours",
     coverage: "All Major Cities",
-    imageUrl: "https://images.unsplash.com/photo-1545173168-9f1947eebb7f?q=80&w=2071&auto=format&fit=crop",
+    imageUrl:"/images/home/service/servie4.png",
     includes: ["Linens & Bedding", "Uniforms & Aprons", "Towels & Napkins", "Bulk Garments"],
     process: [
       { step: 1, title: "Bulk Pickup", description: "Scheduled logistics pickup from your facility." },
@@ -158,15 +152,36 @@ export const serviceDetails = {
       { question: "Do you offer contract pricing?", answer: "Yes, we offer tailored monthly contracts and volume discounts for commercial partners." }
     ]
   },
+  "stain-removal": {
+    id: "stain-removal",
+    title: "Stain Removal",
+    icon:Shield,
+    isPremium: true,
+    description: "Advanced spot treatment for stubborn stains such as oil, ink, wine, and grease without harming fabric integrity.",
+    startingPrice: "৳100/item",
+    turnaround: "24-48 hours",
+    coverage: "All Branches",
+    imageUrl:"/images/home/service/servie5.png",
+    includes: ["Oil Stains", "Ink & Dyes", "Food & Wine", "Grease & Dirt", "Delicate Fabrics"],
+    process: [
+      { step: 1, title: "Analysis", description: "Identifying stain type and fabric sensitivity." },
+      { step: 2, title: "Targeted Spotting", description: "Applying specialized chemical spotting agents." },
+      { step: 3, title: "Deep Wash", description: "Neutralizing wash to safely remove all residues." }
+    ],
+    faqs: [
+      { question: "Can all stains be removed?", answer: "While we achieve a 95%+ success rate, some old or heat-set stains may be permanent. We perform a thorough test first." }
+    ]
+  },
   "express-laundry": {
     id: "express-laundry",
     title: "Express Laundry",
+    icon:Zap,
     isPremium: true,
     description: "Ultra-fast wash, dry, and iron turnaround for urgent travel, events, or busy schedules within 6 to 12 hours.",
     startingPrice: "৳80/kg",
     turnaround: "6-12 hours",
     coverage: "Dhaka & Major Hubs",
-    imageUrl: "https://images.unsplash.com/photo-1604335399105-a0c585fd81a1?q=80&w=2070&auto=format&fit=crop",
+    imageUrl:"/images/home/service/servie6.jpg",
     includes: ["Express Wash & Fold", "Express Pressing", "Emergency Pickup"],
     process: [
       { step: 1, title: "Priority Pickup", description: "Rider dispatched within 30 minutes of booking." },

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { ArrowRight, Shield, Check } from "lucide-react";
+import { ArrowRight, Shield, Check, Zap } from "lucide-react";
 import { motion } from "framer-motion";
 
 export function HomeCTA({ data }: { data?: any }) {
@@ -9,14 +9,14 @@ export function HomeCTA({ data }: { data?: any }) {
   const subtitle = data?.subtitle || "Join 12,000+ customers who trust LAUNDRIX for premium garment care.";
 
   return (
-    <section className="bg-blue-700 py-24 border-t border-blue-600">
+    <section className="bg-navy-dark py-12 md:py-16 lg:py-20 mb-12">
       <div className="max-w-7xl mx-auto px-4 md:px-6 text-center">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-4">
             {title}
           </h2>
           <p className="text-blue-200 mb-10">
@@ -31,7 +31,7 @@ export function HomeCTA({ data }: { data?: any }) {
           transition={{ delay: 0.1 }}
           className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10"
         >
-          <button className="flex items-center justify-center gap-2 bg-brand-sky hover:bg-brand-sky-hover text-white px-8 py-3.5 rounded-full font-bold transition-colors w-full sm:w-auto shadow-lg">
+          <button className="flex items-center justify-center gap-2 bg-brand-blue hover:bg-brand-blue-hover text-white px-8 py-3.5 rounded-full font-bold transition-colors w-full sm:w-auto shadow-lg">
             Schedule Pickup
             <ArrowRight size={18} />
           </button>
@@ -48,15 +48,15 @@ export function HomeCTA({ data }: { data?: any }) {
           className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 text-blue-200 text-sm"
         >
           <div className="flex items-center gap-2">
-            <Shield size={16} className="text-blue-300" />
+            <Shield size={16} className="text-blue-400" />
             <span>No setup fee</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-blue-300 font-bold">⚡</span>
+            <Zap size={16} className="text-blue-400"/>
             <span>Live in 24 hours</span>
           </div>
           <div className="flex items-center gap-2">
-            <Check size={16} className="text-blue-300" />
+            <Check size={16} className="text-blue-400" />
             <span>30-day free trial</span>
           </div>
         </motion.div>
