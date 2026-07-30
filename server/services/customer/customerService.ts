@@ -24,40 +24,59 @@ export class CustomerService {
       // Generate customer code
       const customerCode = `CUST-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
 
-      customer = await prisma.customer.create({
-        data: {
-          userId,
-          customerCode,
-          status: 'ACTIVE',
-          customerProfile: {
-            create: {
-              fullName: user.fullName,
-              email: user.email,
-              phone: user.phone || `01700${Math.floor(100000 + Math.random() * 900000)}`,
+      try {
+        customer = await prisma.customer.create({
+          data: {
+            userId,
+            customerCode,
+            status: 'ACTIVE',
+            customerProfile: {
+              create: {
+                fullName: user.fullName,
+                email: user.email,
+                phone: user.phone || `01700${Math.floor(100000 + Math.random() * 900000)}`,
+              },
+            },
+            wallets: {
+              create: {
+                balance: 0.0,
+                currency: 'BDT',
+                status: 'ACTIVE',
+              },
+            },
+            loyaltyPointRecord: {
+              create: {
+                earnedPoints: 0,
+                redeemedPoints: 0,
+                availablePoints: 0,
+                expiredPoints: 0,
+              },
             },
           },
-          wallets: {
-            create: {
-              balance: 0.0,
-              currency: 'BDT',
-              status: 'ACTIVE',
-            },
+          include: {
+            user: true,
+            wallets: true,
+            loyaltyPointRecord: true,
           },
-          loyaltyPointRecord: {
-            create: {
-              earnedPoints: 0,
-              redeemedPoints: 0,
-              availablePoints: 0,
-              expiredPoints: 0,
+        });
+      } catch (createErr: any) {
+        if (createErr?.code === 'P2002') {
+          customer = await prisma.customer.findUnique({
+            where: { userId },
+            include: {
+              user: true,
+              wallets: true,
+              loyaltyPointRecord: true,
             },
-          },
-        },
-        include: {
-          user: true,
-          wallets: true,
-          loyaltyPointRecord: true,
-        },
-      });
+          });
+        } else {
+          throw createErr;
+        }
+      }
+    }
+
+    if (!customer) {
+      throw new Error("Failed to get or create customer record");
     }
 
     return customer;
