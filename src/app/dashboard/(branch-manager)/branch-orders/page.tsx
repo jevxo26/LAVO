@@ -1,81 +1,78 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import {
-  Package, AlertTriangle, ArrowRight, RefreshCw,
-  Sparkles, Search, RotateCcw, Inbox,
-  User, Calendar, Banknote, Store,
-} from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { useEffect, useMemo, useState } from "react";
+import { AlertTriangle, ArrowRight, RefreshCw, Sparkles, Inbox, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import io from "socket.io-client";
-import { OrderActions } from "./OrderActions";
 
-// ─── Status pill ──────────────────────────────────────────────────────────────
+import { OrderStatCards }           from "./OrderStatCards";
+import { OrderToolbar, OrderTab }   from "./OrderToolbar";
+import { OrderCard }                from "./OrderCard";
 
-const STATUS_META: Record<string, { cls: string; dot: string }> = {
-  PENDING:              { cls: "bg-amber-50   text-amber-700   border-amber-200",   dot: "bg-amber-400"   },
-  CONFIRMED:            { cls: "bg-blue-50    text-blue-700    border-blue-200",    dot: "bg-blue-500"    },
-  PROCESSING:           { cls: "bg-indigo-50  text-indigo-700  border-indigo-200",  dot: "bg-indigo-500"  },
-  WASHING:              { cls: "bg-cyan-50    text-cyan-700    border-cyan-200",    dot: "bg-cyan-500"    },
-  READY_FOR_DELIVERY:   { cls: "bg-emerald-50 text-emerald-700 border-emerald-200", dot: "bg-emerald-500" },
-  COMPLETED:            { cls: "bg-emerald-50 text-emerald-700 border-emerald-200", dot: "bg-emerald-500" },
-  CANCELLED:            { cls: "bg-rose-50    text-rose-700    border-rose-200",    dot: "bg-rose-400"    },
-};
-
-function StatusPill({ status }: { status: string }) {
-  const s = STATUS_META[status?.toUpperCase()] ?? { cls: "bg-slate-50 text-slate-600 border-slate-200", dot: "bg-slate-400" };
-  return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-bold ${s.cls}`}>
-      <span className={`h-1.5 w-1.5 rounded-full ${s.dot}`} />
-      {status.replace(/_/g, " ")}
-    </span>
-  );
-}
-
-// ─── Skeleton ─────────────────────────────────────────────────────────────────
+const PROCESSING = ["CONFIRMED", "PROCESSING", "WASHING", "IRONING"];
 
 function Sk({ className }: { className?: string }) {
   return <div className={`animate-pulse rounded-2xl bg-slate-100 ${className ?? ""}`} />;
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
-
 export default function BranchOrders() {
-  const [orders, setOrders]   = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch]   = useState("");
+  const [orders, setOrders]       = useState<any[]>([]);
+  const [loading, setLoading]     = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [search, setSearch]       = useState("");
+  const [activeTab, setActiveTab] = useState<OrderTab>("ALL");
 
-  const fetchOrders = () => {
+  const fetchOrders = (isRefresh = false) => {
+    if (isRefresh) setRefreshing(true);
     fetch("/api/branch-dashboard/orders", {
       headers: { Authorization: `Bearer ${localStorage.getItem("laundrix_token")}` },
     })
-      .then((res) => res.json())
-      .then((res) => { setOrders(res.data || []); setLoading(false); })
-      .catch(() => setLoading(false));
+      .then((r) => r.json())
+      .then((r) => { setOrders(r.data || []); setLoading(false); setRefreshing(false); })
+      .catch(() => { setLoading(false); setRefreshing(false); });
   };
 
   useEffect(() => {
     fetchOrders();
     const socket = io(process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000");
     socket.emit("joinBranch", "current_branch_id_mock");
-    socket.on("garmentStatusUpdated", fetchOrders);
-    socket.on("orderStatusUpdated", fetchOrders);
+    socket.on("garmentStatusUpdated", () => fetchOrders());
+    socket.on("orderStatusUpdated",   () => fetchOrders());
     return () => { socket.disconnect(); };
   }, []);
 
-  const filtered = orders.filter((o) =>
-    o.orderNumber?.toLowerCase().includes(search.toLowerCase()) ||
-    o.customer?.user?.fullName?.toLowerCase().includes(search.toLowerCase())
-  );
+  const stats = useMemo(() => ({
+    total:      orders.length,
+    pending:    orders.filter((o) => o.orderStatus === "PENDING").length,
+    processing: orders.filter((o) => PROCESSING.includes(o.orderStatus)).length,
+    ready:      orders.filter((o) => o.orderStatus === "READY_FOR_DELIVERY").length,
+    completed:  orders.filter((o) => o.orderStatus === "COMPLETED").length,
+  }), [orders]);
 
-  const isOverflow = orders.length > 5;
+  const tabCounts: Record<OrderTab, number> = {
+    ALL: stats.total, PENDING: stats.pending,
+    PROCESSING: stats.processing, READY: stats.ready, COMPLETED: stats.completed,
+  };
+
+  const filtered = useMemo(() => orders.filter((o) => {
+    const q = search.toLowerCase();
+    const matchSearch = !q ||
+      o.orderNumber?.toLowerCase().includes(q) ||
+      o.customer?.user?.fullName?.toLowerCase().includes(q);
+    if (!matchSearch) return false;
+    if (activeTab === "ALL")        return true;
+    if (activeTab === "PROCESSING") return PROCESSING.includes(o.orderStatus);
+    if (activeTab === "PENDING")    return o.orderStatus === "PENDING";
+    if (activeTab === "READY")      return o.orderStatus === "READY_FOR_DELIVERY";
+    if (activeTab === "COMPLETED")  return o.orderStatus === "COMPLETED";
+    return true;
+  }), [orders, search, activeTab]);
 
   return (
     <div className="space-y-7">
 
-      {/* ── Hero ──────────────────────────────────────────────────────────── */}
+      {/* Hero */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-700 px-7 py-8">
         <div className="pointer-events-none absolute inset-0 opacity-10">
           <div className="absolute -top-12 -right-12 h-56 w-56 rounded-full bg-white" />
@@ -91,20 +88,26 @@ export default function BranchOrders() {
             <p className="mt-1 text-sm text-indigo-200">Manage laundry orders currently in the facility.</p>
           </div>
           <div className="flex items-center gap-3 shrink-0">
-            <div className="rounded-xl bg-white/10 border border-white/20 backdrop-blur-sm px-4 py-3 text-center">
-              <p className="text-indigo-200 text-[10px] font-semibold uppercase tracking-wider">Total</p>
-              <p className="text-white font-extrabold text-xl leading-tight">{orders.length}</p>
-            </div>
-            <Button onClick={fetchOrders}
+            {[
+              { label: "Total",   value: stats.total   },
+              { label: "Pending", value: stats.pending  },
+              { label: "Ready",   value: stats.ready    },
+            ].map(({ label, value }) => (
+              <div key={label} className="rounded-xl bg-white/10 border border-white/20 backdrop-blur-sm px-4 py-3 text-center">
+                <p className="text-indigo-200 text-[10px] font-semibold uppercase tracking-wider">{label}</p>
+                <p className="text-white font-extrabold text-xl leading-tight">{value}</p>
+              </div>
+            ))}
+            <Button onClick={() => fetchOrders(true)}
               className="h-10 rounded-xl bg-white text-indigo-700 hover:bg-indigo-50 font-bold text-sm px-4 shadow-sm gap-1.5">
-              <RefreshCw size={14} /> Refresh
+              <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} /> Refresh
             </Button>
           </div>
         </div>
       </div>
 
-      {/* ── Overflow alert ──────────────────────────────────────────────── */}
-      {isOverflow && (
+      {/* Overflow alert */}
+      {orders.length > 5 && (
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-2xl border border-amber-200 bg-amber-50 px-6 py-4 shadow-sm">
           <div className="flex items-start gap-3">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
@@ -112,7 +115,7 @@ export default function BranchOrders() {
             </div>
             <div>
               <p className="text-sm font-bold text-amber-900">High Order Volume — {orders.length} Active Orders</p>
-              <p className="text-xs text-amber-700 mt-0.5">Branch threshold of 5 orders exceeded. Delegate overflow to partner vendors.</p>
+              <p className="text-xs text-amber-700 mt-0.5">Branch threshold of 5 exceeded. Delegate overflow to partner vendors.</p>
             </div>
           </div>
           <Link href="/dashboard/partner-vendors">
@@ -123,28 +126,24 @@ export default function BranchOrders() {
         </div>
       )}
 
-      {/* ── Search toolbar ────────────────────────────────────────────────── */}
-      <div className="rounded-2xl border border-slate-100 bg-white px-5 py-4 shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={13} />
-            <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by order # or customer…"
-              className="w-full h-9 pl-9 pr-3 rounded-xl border border-slate-200 bg-slate-50 text-xs font-medium text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:bg-white transition" />
-          </div>
-          {search && (
-            <Button size="sm" variant="ghost" onClick={() => setSearch("")}
-              className="h-9 rounded-xl text-xs font-bold text-slate-500 hover:text-rose-600 hover:bg-rose-50 px-3 gap-1.5">
-              <RotateCcw size={12} /> Clear
-            </Button>
-          )}
-          <p className="ml-auto text-[11px] text-slate-400">
-            <span className="font-semibold text-slate-600">{filtered.length}</span> orders
-          </p>
-        </div>
-      </div>
+      {/* Stat cards */}
+      {!loading && (
+        <OrderStatCards
+          total={stats.total} pending={stats.pending}
+          processing={stats.processing} ready={stats.ready}
+        />
+      )}
 
-      {/* ── Order list ────────────────────────────────────────────────────── */}
+      {/* Toolbar */}
+      {!loading && (
+        <OrderToolbar
+          activeTab={activeTab} onTabChange={setActiveTab}
+          tabCounts={tabCounts} search={search}
+          onSearchChange={setSearch} totalFiltered={filtered.length}
+        />
+      )}
+
+      {/* Order list */}
       {loading ? (
         <div className="space-y-3">{[0,1,2,3].map((i) => <Sk key={i} className="h-24" />)}</div>
       ) : filtered.length === 0 ? (
@@ -160,44 +159,7 @@ export default function BranchOrders() {
       ) : (
         <div className="space-y-3">
           {filtered.map((order) => (
-            <div key={order.id}
-              className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm hover:border-indigo-100 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
-              {/* Left */}
-              <div className="flex items-start gap-4 min-w-0">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-indigo-50">
-                  <Package size={20} className="text-indigo-500" />
-                </div>
-                <div className="space-y-1.5 min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-[13px] font-bold text-slate-900 font-mono">#{order.orderNumber}</span>
-                    <StatusPill status={order.orderStatus} />
-                    {order.vendor && (
-                      <span className="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-700">
-                        <Store size={9} /> {order.vendor.businessName}
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-slate-400">
-                    <span className="flex items-center gap-1">
-                      <User size={11} />
-                      <span className="font-semibold text-slate-700">{order.customer?.user?.fullName || "Unknown"}</span>
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Banknote size={11} />
-                      <span className="font-semibold text-slate-700">৳{order.grandTotal}</span>
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Calendar size={11} />
-                      {new Date(order.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              {/* Right: actions */}
-              <div className="shrink-0 self-start sm:self-center">
-                <OrderActions order={order} onUpdate={fetchOrders} />
-              </div>
-            </div>
+            <OrderCard key={order.id} order={order} onUpdate={() => fetchOrders()} />
           ))}
         </div>
       )}

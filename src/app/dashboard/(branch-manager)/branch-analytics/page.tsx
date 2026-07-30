@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
-  Tooltip as RechartsTooltip, ResponsiveContainer, Legend,
+  Tooltip as RechartsTooltip, ResponsiveContainer,
 } from "recharts";
 import {
   CircleDollarSign, TrendingUp, BarChart3,

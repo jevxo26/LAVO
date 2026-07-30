@@ -138,9 +138,9 @@ export function BranchManagerOverview() {
           </div>
           <div className="flex items-center gap-3 shrink-0">
             {[
-              { label: "Capacity",  value: `${capacityPct}%`              },
-              { label: "Active",    value: data?.activeOrders    ?? 0     },
-              { label: "Vendors",   value: data?.vendorDelegated ?? "—"   },
+              { label: "Capacity",  value: `${capacityPct}%`                        },
+              { label: "Active",    value: data?.activeOrders          ?? 0          },
+              { label: "Vendors",   value: data?.vendorDelegatedOrders ?? "—"        },
             ].map(({ label, value }) => (
               <div key={label} className="rounded-xl bg-white/10 border border-white/20 backdrop-blur-sm px-4 py-3 text-center">
                 <p className="text-indigo-200 text-[10px] font-semibold uppercase tracking-wider">{label}</p>
