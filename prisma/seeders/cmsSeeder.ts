@@ -151,12 +151,12 @@ export async function runCmsSeeder() {
           content: "",
           order: 2,
           items: [
-            { title: "Wash & Fold", subtitle: "৳45 | kg | 12-24 hrs", content: "Professional washing with precision folding for everyday garments.", image: "https://images.unsplash.com/photo-1582735689141-c11bb356c6d5?auto=format&fit=crop&q=80&w=800" },
-            { title: "Dry Cleaning", subtitle: "৳150 | pc | 12-24 hrs", content: "Expert solvent cleaning for delicate, formal, and specialty garments.", image: "https://images.unsplash.com/photo-1610557892470-55d9e80c0bce?auto=format&fit=crop&q=80&w=800" },
-            { title: "Ironing & Press", subtitle: "৳30 | pc | 12-24 hrs", content: "Crisp, wrinkle-free garments finished to a professional standard.", image: "https://images.unsplash.com/photo-1517677208171-0bc6725a3e60?auto=format&fit=crop&q=80&w=800" },
-            { title: "Stain Removal", subtitle: "৳100 | pc | 24-48 hrs", content: "Advanced treatment for stubborn stains without damaging the fabric.", image: "https://images.unsplash.com/photo-1584992236310-6edddc08acff?auto=format&fit=crop&q=80&w=800" },
-            { title: "Commercial Laundry", subtitle: "Custom | order | 24-48 hrs", content: "Bulk laundry solutions tailored for hotels, hospitals, and businesses.", image: "https://images.unsplash.com/photo-1545173168-9f1947eebb7f?auto=format&fit=crop&q=80&w=800" },
-            { title: "Express Laundry", subtitle: "৳80 | kg | 6-12 hrs", content: "Fast-tracked washing and folding services for your urgent requirements.", image: "https://images.unsplash.com/photo-1604335399105-a0c585fd81a1?auto=format&fit=crop&q=80&w=800" },
+            { title: "Wash & Fold", subtitle: "৳45 | kg | 12-24 hrs", content: "Professional washing with precision folding for everyday garments.", image: "/images/home/service/servie1.png" },
+            { title: "Dry Cleaning", subtitle: "৳150 | pc | 12-24 hrs", content: "Expert solvent cleaning for delicate, formal, and specialty garments.", image: "/images/home/service/servie2.png" },
+            { title: "Ironing & Press", subtitle: "৳30 | pc | 12-24 hrs", content: "Crisp, wrinkle-free garments finished to a professional standard.", image: "/images/home/service/servie3.png" },
+            { title: "Wash & Iron", subtitle: "৳80 | kg | 24-48 hrs", content: "Bulk laundry solutions tailored for hotels, hospitals, and businesses.", image: "/images/home/service/servie4.png" },
+            { title: "Stain Removal", subtitle: "৳100 | pc | 24-48 hrs", content: "Advanced treatment for stubborn stains without damaging the fabric.", image: "/images/home/service/servie5.png" },
+            { title: "Express Laundry", subtitle: "৳80 | kg | 6-12 hrs", content: "Fast-tracked washing and folding services for your urgent requirements.", image: "/images/home/service/servie6.jpg" },
           ]
         },
         {

@@ -14,6 +14,7 @@ import { HomeTestimonials } from "@/components/marketing/home/HomeTestimonials";
 import { HomeFAQ } from "@/components/marketing/home/HomeFAQ";
 import { HomeCTA } from "@/components/marketing/home/HomeCTA";
 import prisma from "@/lib/prisma";
+import HomePricing from "@/components/marketing/home/HomePricing";
 
 export const revalidate = 0; // Always fetch latest CMS + review data
 
@@ -80,16 +81,16 @@ export default async function Home() {
     <div className="flex flex-col min-h-screen bg-white font-sans overflow-x-hidden">
       <Navbar />
 
-      <main className="flex-1 relative z-10 pt-16">
+      <main className="flex-1 relative z-10 pt-16 bg-surface-light">
         <HomeHero data={getSection("hero")} />
         <HomeServices data={getSection("services")} />
         <HomeProcess data={getSection("process")} />
         <HomeWhyLaundrix data={getSection("why-laundrix")} />
         <HomeQRTracking data={getSection("qr-tracking")} />
         <HomeCoverage data={getSection("coverage")} />
+        <HomePricing data={getSection("pricing")} />
         <HomeCorporate data={getSection("corporate")} />
         <HomePartnership data={getSection("partnership")} />
-        <HomeBranches data={getSection("branches")} />
         <HomeMobileApp data={getSection("mobile-app")} />
         <HomeTestimonials
           data={getSection("testimonials")}

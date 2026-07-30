@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { MapPin, Bell, Clock, QrCode, Wallet, Star } from "lucide-react";
+import { MapPin, Bell, Clock, QrCode, Wallet, Star, Play } from "lucide-react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 
@@ -9,7 +9,26 @@ export function HomeMobileApp({ data }: { data?: any }) {
   const title = data?.title || "Laundry management in your pocket";
   const subtitle = data?.subtitle || "Book pickups, track every garment with QR, make payments, and manage your entire laundry life from our beautifully designed mobile app.";
   
-  const features = data?.items?.length ? data.items : [
+  const features = data?.items?.length
+  ? data.items.map((item: any) => ({
+      ...item,
+      icon:
+        item.title === "Live Tracking"
+          ? MapPin
+          : item.title === "QR Scanner"
+          ? QrCode
+          : item.title === "Notifications"
+          ? Bell
+          : item.title === "Wallet"
+          ? Wallet
+          : item.title === "Order History"
+          ? Clock
+          : item.title === "Reviews"
+          ? Star
+          : MapPin,
+      desc: item.content,
+    }))
+  : [
     {
       icon: MapPin,
       title: "Live Tracking",
@@ -43,7 +62,7 @@ export function HomeMobileApp({ data }: { data?: any }) {
   ];
 
   return (
-    <section className="bg-navy-dark py-24 border-t-4 border-blue-600 overflow-hidden">
+    <section className="bg-navy-dark py-12 md:py-16 lg:py-20 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 md:px-6">
         <div className="flex flex-col lg:flex-row items-center justify-between gap-16">
           <motion.div 
@@ -59,7 +78,7 @@ export function HomeMobileApp({ data }: { data?: any }) {
               </span>
             </div>
             
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-6">
               {title}
             </h2>
             
@@ -86,7 +105,7 @@ export function HomeMobileApp({ data }: { data?: any }) {
 
             <div className="flex flex-col sm:flex-row items-center gap-4">
               <button className="flex items-center justify-center gap-3 bg-slate-800 hover:bg-slate-700 text-white px-6 py-3.5 rounded-xl font-medium transition-colors w-full sm:w-auto">
-                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.98.54-2.06.81-3.28.81-1.22 0-2.3-.27-3.28-.81-1.39-.75-2.28-1.51-2.65-2.26-.26-.51-.39-1.12-.39-1.84 0-.82.16-1.56.49-2.21.32-.65.73-1.17 1.23-1.55.5-.38 1.07-.63 1.7-.75.63-.12 1.3-.12 2 0 .7.12 1.34.37 1.9.75.56.38.99.9 1.29 1.55.3.65.45 1.39.45 2.21 0 .72-.13 1.33-.39 1.84-.37.75-1.26 1.51-2.65 2.26z"/></svg>
+                <Play size={20} />
                 <div className="text-left flex flex-col">
                   <span className="text-[10px] leading-tight text-slate-400">Download on</span>
                   <span className="text-sm font-bold leading-tight">App Store</span>

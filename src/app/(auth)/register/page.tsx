@@ -7,7 +7,7 @@ import { SignUpForm } from "@/components/auth/signup";
 
 export default function RegisterPage() {
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-screen bg-white ">
             <motion.div
                 initial={{ opacity: 0, y: 25 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -125,14 +125,14 @@ export default function RegisterPage() {
                 </div>
 
                 {/* RIGHT SIDE */}
-                <div className="flex items-center justify-center p-8 lg:p-14">
+                <div className="flex items-start justify-center p-8 lg:p-8">
                     <div className="w-full max-w-md text-left">
                         <div className="mb-8">
                             <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-green-50">
                                 <UserPlus className="h-8 w-8 text-green-600" />
                             </div>
 
-                            <h2 className="text-4xl font-bold text-slate-900">
+                            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-slate-800">
                                 Sign up to LAUNDRIX
                             </h2>
 
@@ -147,7 +147,7 @@ export default function RegisterPage() {
                         </div>
 
                         {/* Account Type */}
-                        <div className="mb-6">
+                        {/* <div className="mb-6">
                             <label className="mb-3 block text-sm font-medium text-slate-700">
                                 Account Type
                             </label>
@@ -181,10 +181,13 @@ export default function RegisterPage() {
                                     Vendor Partner
                                 </button>
                             </div>
-                        </div>
+                        </div> */}
 
                         {/* Existing Form */}
-                        <SignUpForm />
+                        <div className="flex items-start justify-center overflow-y-auto">
+
+                            <SignUpForm />
+                        </div>
                     </div>
                 </div>
             </motion.div>

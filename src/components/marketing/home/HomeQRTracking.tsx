@@ -69,7 +69,7 @@ export function HomeQRTracking({ data }: { data?: any }) {
               </li>
             </ul>
 
-            <button className="flex items-center justify-center gap-2 bg-brand-blue hover:bg-brand-sky-hover text-white px-8 py-3.5 rounded-md font-bold transition-colors w-full sm:w-auto shadow-lg">
+            <button className="flex items-center justify-center gap-2 bg-brand-blue hover:bg-brand-blue-hover text-white px-8 py-3.5 rounded-md font-bold transition-colors w-full sm:w-auto shadow-lg">
               Track Your Order
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
             </button>

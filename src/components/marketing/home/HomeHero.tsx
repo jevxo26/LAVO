@@ -45,7 +45,7 @@ export function HomeHero({ data }: { data?: any }) {
                 <span>Serving 8 Cities • 24 Branches</span>
               </div>
 
-              <h1 className="text-5xl md:text-6xl xl:text-7xl leading-[0.95] font-bold text-slate-900 mb-6 tracking-[-0.04em]">
+              <h1 className="text-5xl md:text-6xl xl:text-7xl leading-[0.95] font-bold text-slate-800 mb-6 tracking-[-0.04em]">
                 {titleParts[0]}{titleParts.length > 1 ? "," : ""} <br />
                 {titleParts.length > 1 && (
                   <span className="text-brand-blue">{titleParts.slice(1).join(", ")}</span>

@@ -30,9 +30,10 @@ export async function generateMetadata({ params }: PageProps) {
 }
 
 export default async function ServiceDetailsPage({ params }: PageProps) {
+  console.log("params =", params);
   const { slug } = await params;
   const service = getServiceDetails(slug);
-
+console.log("slug =", slug);
   if (!service) {
     notFound();
   }

@@ -3,6 +3,7 @@
 import React from "react";
 import { MapPin, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 
 export function HomeBranches({ data }: { data?: any }) {
   const title = data?.title || "Find a Branch Near You";
@@ -31,7 +32,7 @@ export function HomeBranches({ data }: { data?: any }) {
   ];
 
   return (
-    <section className="py-24 bg-surface-light">
+    <section className="pt-12 md:pt-16 lg:pt-20 ">
       <div className="max-w-7xl mx-auto px-4 md:px-6">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
@@ -44,7 +45,7 @@ export function HomeBranches({ data }: { data?: any }) {
               BRANCHES
             </span>
           </div>
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-slate-900">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-slate-800">
             {title}
           </h2>
         </motion.div>
@@ -57,9 +58,9 @@ export function HomeBranches({ data }: { data?: any }) {
               viewport={{ once: true }}
               transition={{ delay: idx * 0.1 }}
               key={idx} 
-              className="bg-white rounded-2xl p-8 shadow-sm border border-slate-100 hover:shadow-md transition-shadow"
+              className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 hover:shadow-md transition-shadow"
             >
-              <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 mb-6">
+              <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 mb-2">
                 <MapPin size={20} />
               </div>
               <h3 className="font-bold text-slate-900 text-lg mb-2">{branch.name}</h3>
@@ -73,10 +74,12 @@ export function HomeBranches({ data }: { data?: any }) {
         </div>
 
         <div className="mt-12 flex justify-center">
-          <button className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 text-slate-900 font-semibold rounded-full hover:bg-slate-50 transition-colors shadow-sm">
-            View All Branches
-            <ArrowRight size={16} />
-          </button>
+          <Link href="/branches">
+            <button className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 text-slate-900 font-semibold rounded-full hover:bg-slate-50 transition-colors shadow-sm">
+              View All Branches
+              <ArrowRight size={16} />
+            </button>
+          </Link>
         </div>
       </div>
     </section>

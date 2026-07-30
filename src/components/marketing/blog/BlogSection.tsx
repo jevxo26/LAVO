@@ -11,7 +11,7 @@ const blogs = [
     author: "LAUNDRIX Editorial",
     date: "Jan 12, 2025",
     image:
-      "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?w=900&q=80",
+      "/images/routes/insight/insight1.jpg",
   },
   {
     category: "Technology",
@@ -22,7 +22,7 @@ const blogs = [
     author: "Tech Team",
     date: "Dec 28, 2024",
     image:
-      "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=900&q=80",
+      "/images/routes/insight/insight2.jpg",
   },
   {
     category: "Industry",
@@ -33,7 +33,7 @@ const blogs = [
     author: "Business Team",
     date: "Dec 15, 2024",
     image:
-      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=900&q=80",
+      "/images/routes/insight/insight3.jpg",
   },
 ];
 
