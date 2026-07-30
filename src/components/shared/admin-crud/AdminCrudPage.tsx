@@ -38,6 +38,7 @@ import { useAppSelector } from "@/store/store"
 
 type AdminCrudPageProps<TRecord extends AdminRecord> = {
   config: CrudModuleConfig<TRecord>
+  hideHeader?: boolean
 }
 
 function getErrorMessage(error: unknown, fallback: string) {
@@ -50,6 +51,7 @@ function getErrorMessage(error: unknown, fallback: string) {
 
 export function AdminCrudPage<TRecord extends AdminRecord>({
   config,
+  hideHeader = false,
 }: AdminCrudPageProps<TRecord>) {
   const [records, setRecords] = React.useState<TRecord[]>(config.data || [])
   const [search, setSearch] = React.useState("")
@@ -211,13 +213,15 @@ export function AdminCrudPage<TRecord extends AdminRecord>({
 
   return (
     <div className="space-y-5">
-      <PageHeader
-        title={config.title}
-        description={config.description}
-        actionLabel={!isReadOnlyView ? config.createLabel : undefined}
-        actionIcon={Plus}
-        onAction={() => setCreateOpen(true)}
-      />
+      {!hideHeader && (
+        <PageHeader
+          title={config.title}
+          description={config.description}
+          actionLabel={!isReadOnlyView ? config.createLabel : undefined}
+          actionIcon={Plus}
+          onAction={() => setCreateOpen(true)}
+        />
+      )}
 
       <div className="space-y-4">
         <Card className="rounded-lg border border-slate-200 bg-white shadow-sm ring-0">
@@ -228,10 +232,18 @@ export function AdminCrudPage<TRecord extends AdminRecord>({
                 onChange={setSearch}
                 placeholder={config.searchPlaceholder}
               />
-              <Button type="button" variant="outline">
-                <ListFilter className="size-4" />
-                Filter
-              </Button>
+              <div className="flex items-center gap-2">
+                {hideHeader && !isReadOnlyView && (
+                  <Button type="button" onClick={() => setCreateOpen(true)}>
+                    <Plus className="size-4 mr-1" />
+                    {config.createLabel}
+                  </Button>
+                )}
+                <Button type="button" variant="outline">
+                  <ListFilter className="size-4" />
+                  Filter
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
