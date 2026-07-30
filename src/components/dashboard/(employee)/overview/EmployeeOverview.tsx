@@ -16,10 +16,12 @@ export function EmployeeOverview() {
     async function loadData() {
       try {
         const res = await authFetch("/employee-dashboard/overview");
-        const json = await res.json();
-        if (json.success) setData(json.data);
+        if (res.ok && res.headers.get("content-type")?.includes("application/json")) {
+          const json = await res.json();
+          if (json.success) setData(json.data);
+        }
       } catch (e) {
-        console.error("Failed to load employee overview:", e);
+        console.warn("Could not load employee overview stats:", e);
       } finally {
         setLoading(false);
       }
@@ -57,7 +59,7 @@ export function EmployeeOverview() {
           </div>
 
           <Link
-            href="/dashboard/scanner"
+            href="/scanner"
             className="px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold text-xs flex items-center gap-2 shadow-sm shadow-purple-500/20 transition-all"
           >
             <QrCode size={16} />
@@ -136,7 +138,7 @@ export function EmployeeOverview() {
         </div>
 
         <Link
-          href="/dashboard/scanner"
+          href="/scanner"
           className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs flex items-center gap-2 shadow-sm shadow-indigo-500/20 transition-all"
         >
           <QrCode size={16} />
