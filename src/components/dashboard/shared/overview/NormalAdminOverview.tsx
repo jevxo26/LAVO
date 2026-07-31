@@ -222,7 +222,7 @@ export function NormalAdminOverview() {
                       {act.entity}
                     </td>
                     <td className="py-3.5 px-4 text-foreground hidden lg:table-cell whitespace-nowrap">
-                      {act.user}
+                      {typeof act.user === "string" ? act.user : act.user?.fullName || act.user?.email || "System"}
                     </td>
                     <td className="py-3.5 px-4">
                       <StatusPill status={act.status || "new"} />

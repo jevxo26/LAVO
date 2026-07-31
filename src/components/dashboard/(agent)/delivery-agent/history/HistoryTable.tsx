@@ -89,7 +89,7 @@ function HistoryCard({ item }: { item: History }) {
             {item.branch && (
               <span className="flex items-center gap-1">
                 <Building2 size={11} />
-                {item.branch}
+                {typeof item.branch === "string" ? item.branch : ((item.branch as any)?.branchName || (item.branch as any)?.name || "")}
               </span>
             )}
             {item.serviceType && (

@@ -272,7 +272,7 @@ export default function EmployeeOrdersPage() {
                 <div className="mt-2 flex items-center gap-4 text-[11px] text-slate-400">
                   <span className="flex items-center gap-1"><Shirt size={11} /> {order.totalGarments} garments</span>
                   <span className="flex items-center gap-1"><Tag size={11} /> {order.qrGenerated} tagged</span>
-                  <span className="flex items-center gap-1"><Package size={11} /> {order.branch}</span>
+                  <span className="flex items-center gap-1"><Package size={11} /> {typeof order.branch === "string" ? order.branch : ((order.branch as any)?.branchName || (order.branch as any)?.name || "")}</span>
                 </div>
               </button>
             ))
