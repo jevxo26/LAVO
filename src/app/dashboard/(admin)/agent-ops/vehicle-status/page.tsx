@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { authFetch } from "@/lib/api";
 import { ShieldAlert, RefreshCw, Truck } from "lucide-react";
 
 export default function AgentVehicleStatusPage() {
@@ -11,8 +11,8 @@ export default function AgentVehicleStatusPage() {
   const fetchVehicles = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("/api/agent-ops/vehicle-status");
-      setVehicles(res.data.data);
+      const res = await authFetch("/agent-ops/vehicle-status").then(r => r.json());
+      setVehicles(res.data);
     } catch (err) {
       console.error(err);
     } finally {

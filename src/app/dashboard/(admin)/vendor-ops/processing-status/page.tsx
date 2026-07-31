@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { authFetch } from "@/lib/api";
 import { PackageCheck, RefreshCw, AlertTriangle, Clock } from "lucide-react";
 
 export default function VendorProcessingStatusPage() {
@@ -11,8 +11,8 @@ export default function VendorProcessingStatusPage() {
   const fetchBatches = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("/api/vendor-ops/processing-status");
-      setBatches(res.data.data);
+      const res = await authFetch("/vendor-ops/processing-status").then(r => r.json());
+      setBatches(res.data);
     } catch (err) {
       console.error(err);
     } finally {

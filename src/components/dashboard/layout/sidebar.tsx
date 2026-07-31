@@ -20,8 +20,18 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
 
   const userRole = React.useMemo(() => {
     if (!user) return "";
-    const rawRole = (user as any).role || user.userType || "";
-    return rawRole.toUpperCase().replace(/\s+/g, "_");
+    const rawRole = ((user as any).role || user.userType || "")
+      .toString()
+      .toUpperCase()
+      .trim()
+      .replace(/\s+/g, "_");
+
+    if (rawRole === "AGENT" || rawRole === "DELIVERYAGENT") return "DELIVERY_AGENT";
+    if (rawRole === "MANAGER" || rawRole === "BRANCHMANAGER") return "BRANCH_MANAGER";
+    if (rawRole === "BRANCH_EMPLOYEE" || rawRole === "STAFF") return "EMPLOYEE";
+    if (rawRole === "VENDOR_OWNER" || rawRole === "VENDOR_STAFF") return "VENDOR";
+
+    return rawRole;
   }, [user]);
 
   React.useEffect(() => {
@@ -72,11 +82,17 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
 
       <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
         {dashboardNavItems
-          .filter(
-            (item) =>
-              !item.roles ||
-              (userRole && item.roles.includes(userRole))
-          )
+          .filter((item) => {
+            if (!item.roles || item.roles.length === 0) return true;
+            if (!userRole) return false;
+
+            const hasDirectRole = item.roles.includes(userRole);
+            const hasChildRole = item.children?.some(
+              (child) => !child.roles || child.roles.includes(userRole)
+            );
+
+            return hasDirectRole || hasChildRole;
+          })
           .map((item) => {
             const hasChildren = item.children && item.children.length > 0;
             const isParentActive =

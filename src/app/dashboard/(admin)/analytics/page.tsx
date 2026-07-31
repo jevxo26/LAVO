@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import { authFetch } from "@/lib/api";
 import { Download, TrendingUp } from "lucide-react";
 import { StatsGrid } from "@/components/dashboard/(admin)/analytics/StatsGrid";
 import { ChartsSection } from "@/components/dashboard/(admin)/analytics/ChartsSection";
@@ -15,11 +15,11 @@ export default function AnalyticsPage() {
     const fetchAnalytics = async () => {
       try {
         const [statsRes, chartRes] = await Promise.all([
-          axios.get("/api/analytics/overview"),
-          axios.get("/api/analytics/charts"),
+          authFetch("/analytics/overview").then(r => r.json()),
+          authFetch("/analytics/charts").then(r => r.json()),
         ]);
-        setStats(statsRes.data.data);
-        setChartData(chartRes.data.data);
+        setStats(statsRes.data);
+        setChartData(chartRes.data);
       } catch (err) {
         console.error("Failed to load analytics dashboard data", err);
       } finally {

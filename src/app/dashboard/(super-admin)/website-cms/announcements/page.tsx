@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { authFetch } from "@/lib/api";
 import { Megaphone, Plus, RefreshCw, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -12,8 +12,8 @@ export default function AnnouncementsCMSPage() {
   const fetchAnnouncements = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("/api/website-cms/announcements");
-      setAnnouncements(res.data.data);
+      const res = await authFetch("/website-cms/announcements").then(r => r.json());
+      setAnnouncements(res.data);
     } catch (err) {
       console.error(err);
     } finally {

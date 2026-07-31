@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { authFetch } from "@/lib/api";
 import { Building2, Gauge, RefreshCw, AlertTriangle } from "lucide-react";
 
 export default function BranchCapacityMonitorPage() {
@@ -11,8 +11,8 @@ export default function BranchCapacityMonitorPage() {
   const fetchCapacity = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("/api/branch-ops/capacity-monitor");
-      setBranches(res.data.data);
+      const res = await authFetch("/branch-ops/capacity-monitor").then(r => r.json());
+      setBranches(res.data);
     } catch (err) {
       console.error(err);
     } finally {

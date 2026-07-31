@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { authFetch } from "@/lib/api";
 import { Truck, RefreshCw, Navigation, BatteryCharging, Phone } from "lucide-react";
 
 export default function AgentLiveTrackingPage() {
@@ -11,8 +11,8 @@ export default function AgentLiveTrackingPage() {
   const fetchAgents = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("/api/agent-ops/live-tracking");
-      setAgents(res.data.data);
+      const res = await authFetch("/agent-ops/live-tracking").then(r => r.json());
+      setAgents(res.data);
     } catch (err) {
       console.error(err);
     } finally {

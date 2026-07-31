@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { authFetch } from "@/lib/api";
 import { Wallet, RefreshCw, ArrowUpRight, ArrowDownLeft, ShieldCheck } from "lucide-react";
 
 export default function WalletTransactionsPage() {
@@ -11,8 +11,8 @@ export default function WalletTransactionsPage() {
   const fetchTxs = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("/api/customer-ops/wallet-transactions");
-      setTxs(res.data.data);
+      const res = await authFetch("/customer-ops/wallet-transactions").then(r => r.json());
+      setTxs(res.data);
     } catch (err) {
       console.error(err);
     } finally {

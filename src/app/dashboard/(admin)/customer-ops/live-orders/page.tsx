@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { authFetch } from "@/lib/api";
 import { ClipboardList, RefreshCw, Search, Clock } from "lucide-react";
 
 export default function LiveOrdersPage() {
@@ -11,8 +11,8 @@ export default function LiveOrdersPage() {
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("/api/customer-ops/live-orders");
-      setOrders(res.data.data);
+      const res = await authFetch("/customer-ops/live-orders").then(r => r.json());
+      setOrders(res.data);
     } catch (err) {
       console.error(err);
     } finally {

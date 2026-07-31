@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { authFetch } from "@/lib/api";
 import { Activity, RefreshCw, ShieldAlert, Lock, Search } from "lucide-react";
 
 export default function AuditLogsPage() {
@@ -11,8 +11,8 @@ export default function AuditLogsPage() {
   const fetchLogs = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("/api/audit-logs");
-      setLogs(res.data.data);
+      const res = await authFetch("/audit-logs").then(r => r.json());
+      setLogs(res.data);
     } catch (err) {
       console.error(err);
     } finally {

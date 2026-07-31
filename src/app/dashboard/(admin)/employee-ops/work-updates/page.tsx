@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { authFetch } from "@/lib/api";
 import { FileCheck, RefreshCw, Clock, CheckCircle2 } from "lucide-react";
 
 export default function EmployeeWorkUpdatesPage() {
@@ -11,8 +11,8 @@ export default function EmployeeWorkUpdatesPage() {
   const fetchUpdates = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("/api/employee-ops/work-updates");
-      setUpdates(res.data.data);
+      const res = await authFetch("/employee-ops/work-updates").then(r => r.json());
+      setUpdates(res.data);
     } catch (err) {
       console.error(err);
     } finally {

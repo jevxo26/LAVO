@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { authFetch } from "@/lib/api";
 import { Banknote, CheckCircle, XCircle, RefreshCw, Lock } from "lucide-react";
 import { toast } from "sonner";
 
@@ -12,8 +12,8 @@ export default function PayoutApprovalsPage() {
   const fetchPayouts = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("/api/payout-approvals");
-      setPayouts(res.data.data);
+      const res = await authFetch("/payout-approvals").then(r => r.json());
+      setPayouts(res.data);
     } catch (err) {
       console.error(err);
     } finally {
@@ -27,7 +27,7 @@ export default function PayoutApprovalsPage() {
 
   const handleAction = async (payoutId: string, action: "APPROVE" | "REJECT") => {
     try {
-      await axios.post("/api/payout-approvals", { payoutId, action });
+      await authFetch("/payout-approvals", { method: "POST", body: JSON.stringify({ payoutId, action }) }).then(r => r.json());
       toast.success(`Payout ${payoutId} ${action === "APPROVE" ? "Approved" : "Rejected"}`);
       fetchPayouts();
     } catch (err) {

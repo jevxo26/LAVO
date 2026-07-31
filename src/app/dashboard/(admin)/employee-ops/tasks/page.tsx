@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { authFetch } from "@/lib/api";
 import { ClipboardList, RefreshCw, AlertCircle, CheckCircle2, Clock } from "lucide-react";
 
 export default function EmployeeTasksPage() {
@@ -11,8 +11,8 @@ export default function EmployeeTasksPage() {
   const fetchTasks = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("/api/employee-ops/tasks");
-      setTasks(res.data.data);
+      const res = await authFetch("/employee-ops/tasks").then(r => r.json());
+      setTasks(res.data);
     } catch (err) {
       console.error(err);
     } finally {
