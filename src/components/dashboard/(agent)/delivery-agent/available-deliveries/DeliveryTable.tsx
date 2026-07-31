@@ -188,7 +188,7 @@ function DeliveryCard({ delivery, onStart }: {
                   ? "bg-violet-50 text-violet-700 border-violet-200"
                   : "bg-sky-50 text-sky-700 border-sky-200"}`}>
                 {src.isVendor ? <Store size={10} /> : <Building2 size={10} />}
-                {src.isVendor ? `From Vendor: ${src.name}` : `From Hub: ${src.name || delivery.branch}`}
+                {src.isVendor ? `From Vendor: ${src.name}` : `From Hub: ${src.name || (typeof delivery.branch === "string" ? delivery.branch : ((delivery.branch as any)?.branchName || (delivery.branch as any)?.name || ""))}`}
               </span>
             )}
             {delivery.parcelType && (

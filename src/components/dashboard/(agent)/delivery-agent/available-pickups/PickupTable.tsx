@@ -191,7 +191,7 @@ function PickupCard({
                   ? "bg-violet-50 text-violet-700 border-violet-200"
                   : "bg-sky-50 text-sky-700 border-sky-200"}`}>
                 {dest.isVendor ? <Store size={10} /> : <Building2 size={10} />}
-                {dest.isVendor ? `Vendor: ${dest.name}` : `Hub: ${dest.name || pickup.branch}`}
+                {dest.isVendor ? `Vendor: ${dest.name}` : `Hub: ${dest.name || (typeof pickup.branch === "string" ? pickup.branch : ((pickup.branch as any)?.branchName || (pickup.branch as any)?.name || ""))}`}
               </span>
             )}
           </div>

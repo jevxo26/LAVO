@@ -3,26 +3,91 @@ import { NextRequest, NextResponse } from "next/server";
 const TOKEN_KEY = "laundrix_token";
 
 const ROLE_ROUTES: { prefix: string; allowed: string[] }[] = [
-  { prefix: "/dashboard/users",    allowed: ["SUPER_ADMIN", "ADMIN"] },
-  { prefix: "/dashboard/branches", allowed: ["SUPER_ADMIN", "ADMIN"] },
-  { prefix: "/dashboard/vendors",  allowed: ["SUPER_ADMIN", "ADMIN", "VENDOR"] },
-  { prefix: "/dashboard/services", allowed: ["SUPER_ADMIN", "ADMIN"] },
-  { prefix: "/dashboard/finance",  allowed: ["SUPER_ADMIN", "ADMIN"] },
-  { prefix: "/dashboard/support",  allowed: ["SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER"] },
-  { prefix: "/dashboard/settings", allowed: ["SUPER_ADMIN", "ADMIN"] },
-  { prefix: "/dashboard/logistics",allowed: ["SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER"] },
-  { prefix: "/dashboard/branch",   allowed: ["SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER"] },
-  { prefix: "/dashboard/delivery-agent", allowed: ["SUPER_ADMIN", "ADMIN", "DELIVERY_AGENT"] },
-  { prefix: "/dashboard/employee",       allowed: ["SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER", "EMPLOYEE"] },
-  { prefix: "/dashboard/book-services",     allowed: ["CUSTOMER"] },
-  { prefix: "/dashboard/my-orders",allowed: ["CUSTOMER"] },
-  { prefix: "/dashboard/track-orders", allowed: ["CUSTOMER"] },
-  { prefix: "/dashboard/wishlist", allowed: ["CUSTOMER"] },
-  { prefix: "/dashboard/wallet",   allowed: ["CUSTOMER"] },
-  { prefix: "/dashboard/help-desk",allowed: ["CUSTOMER"] },
+  // =========================
+  // Super Admin Exclusive Routes
+  // =========================
+  { prefix: "/dashboard/audit-logs",            allowed: ["SUPER_ADMIN"] },
+  { prefix: "/dashboard/payout-approvals",       allowed: ["SUPER_ADMIN"] },
+  { prefix: "/dashboard/website-cms",           allowed: ["SUPER_ADMIN"] },
+  { prefix: "/dashboard/system-settings",       allowed: ["SUPER_ADMIN"] },
+  { prefix: "/dashboard/role-management",       allowed: ["SUPER_ADMIN"] },
+
+  // =========================
+  // Admin & Super Admin Shared Routes
+  // =========================
+  { prefix: "/dashboard/overview",              allowed: ["SUPER_ADMIN", "ADMIN"] },
+  { prefix: "/dashboard/financial-analytics",   allowed: ["SUPER_ADMIN", "ADMIN"] },
+  { prefix: "/dashboard/customer-ops",          allowed: ["SUPER_ADMIN", "ADMIN"] },
+  { prefix: "/dashboard/branch-ops",            allowed: ["SUPER_ADMIN", "ADMIN"] },
+  { prefix: "/dashboard/vendor-ops",            allowed: ["SUPER_ADMIN", "ADMIN"] },
+  { prefix: "/dashboard/agent-ops",             allowed: ["SUPER_ADMIN", "ADMIN"] },
+  { prefix: "/dashboard/employee-ops",          allowed: ["SUPER_ADMIN", "ADMIN"] },
+  { prefix: "/dashboard/user-management",       allowed: ["SUPER_ADMIN", "ADMIN"] },
+  { prefix: "/dashboard/analytics",            allowed: ["SUPER_ADMIN", "ADMIN"] },
+
+  // =========================
+  // Vendor Specific Routes
+  // =========================
+  { prefix: "/dashboard/vendor-orders",         allowed: ["SUPER_ADMIN", "ADMIN", "VENDOR"] },
+  { prefix: "/dashboard/vendor-services",       allowed: ["SUPER_ADMIN", "ADMIN", "VENDOR"] },
+  { prefix: "/dashboard/vendor-capacity",       allowed: ["SUPER_ADMIN", "ADMIN", "VENDOR"] },
+  { prefix: "/dashboard/vendor-employees",      allowed: ["SUPER_ADMIN", "ADMIN", "VENDOR"] },
+  { prefix: "/dashboard/vendor-wallet",         allowed: ["SUPER_ADMIN", "ADMIN", "VENDOR"] },
+  { prefix: "/dashboard/payouts",               allowed: ["SUPER_ADMIN", "ADMIN", "VENDOR"] },
+  { prefix: "/dashboard/performance",           allowed: ["SUPER_ADMIN", "ADMIN", "VENDOR"] },
+
+  // =========================
+  // Branch Manager Routes
+  // =========================
+  { prefix: "/dashboard/branch-overview",       allowed: ["SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER"] },
+  { prefix: "/dashboard/branch-orders",         allowed: ["SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER"] },
+  { prefix: "/dashboard/branch-analytics",      allowed: ["SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER"] },
+  { prefix: "/dashboard/branch-delivery",       allowed: ["SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER"] },
+  { prefix: "/dashboard/branch-employees",      allowed: ["SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER"] },
+  { prefix: "/dashboard/inventory",             allowed: ["SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER"] },
+  { prefix: "/dashboard/partner-applications",  allowed: ["SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER"] },
+  { prefix: "/dashboard/partner-vendors",       allowed: ["SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER"] },
+
+  // =========================
+  // Employee Routes
+  // =========================
+  { prefix: "/dashboard/intake-orders",         allowed: ["SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER", "EMPLOYEE"] },
+
+  // =========================
+  // Delivery Agent Routes
+  // =========================
+  { prefix: "/dashboard/pickups",               allowed: ["SUPER_ADMIN", "ADMIN", "DELIVERY_AGENT"] },
+  { prefix: "/dashboard/deliveries",            allowed: ["SUPER_ADMIN", "ADMIN", "DELIVERY_AGENT"] },
+  { prefix: "/dashboard/agent-routes",          allowed: ["SUPER_ADMIN", "ADMIN", "DELIVERY_AGENT"] },
+  { prefix: "/dashboard/verification text",          allowed: ["SUPER_ADMIN", "ADMIN", "DELIVERY_AGENT"] },
+  { prefix: "/dashboard/verification",          allowed: ["SUPER_ADMIN", "ADMIN", "DELIVERY_AGENT"] },
+  { prefix: "/dashboard/history",               allowed: ["SUPER_ADMIN", "ADMIN", "DELIVERY_AGENT"] },
+
+  // =========================
+  // Customer Routes
+  // =========================
+  { prefix: "/dashboard/book-services",         allowed: ["CUSTOMER", "SUPER_ADMIN"] },
+  { prefix: "/dashboard/my-orders",             allowed: ["CUSTOMER", "SUPER_ADMIN"] },
+  { prefix: "/dashboard/track-orders",          allowed: ["CUSTOMER", "SUPER_ADMIN"] },
+  { prefix: "/dashboard/wishlist",              allowed: ["CUSTOMER", "SUPER_ADMIN"] },
+  { prefix: "/dashboard/wallet",                allowed: ["CUSTOMER", "SUPER_ADMIN"] },
+  { prefix: "/dashboard/my-reviews",            allowed: ["CUSTOMER", "SUPER_ADMIN"] },
+  { prefix: "/dashboard/help-desk",             allowed: ["CUSTOMER", "SUPER_ADMIN"] },
+
+  // =========================
+  // Shared / Legacy Base Routes
+  // =========================
+  { prefix: "/dashboard/users",                 allowed: ["SUPER_ADMIN", "ADMIN"] },
+  { prefix: "/dashboard/branches",              allowed: ["SUPER_ADMIN", "ADMIN"] },
+  { prefix: "/dashboard/vendors",               allowed: ["SUPER_ADMIN", "ADMIN", "VENDOR"] },
+  { prefix: "/dashboard/services",              allowed: ["SUPER_ADMIN", "ADMIN"] },
+  { prefix: "/dashboard/finance",               allowed: ["SUPER_ADMIN", "ADMIN"] },
+  { prefix: "/dashboard/support",               allowed: ["SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER"] },
+  { prefix: "/dashboard/settings",              allowed: ["SUPER_ADMIN", "ADMIN"] },
+  { prefix: "/dashboard/logistics",             allowed: ["SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER"] },
 ];
 
-const GUEST_ONLY = ['/login', '/register'];
+const GUEST_ONLY = ["/login", "/register"];
 
 function decodeJwtPayload(token: string): Record<string, unknown> | null {
   try {
@@ -52,7 +117,7 @@ export function proxy(req: NextRequest) {
 
   if (isGuestOnly && token) {
     const dashUrl = req.nextUrl.clone();
-    dashUrl.pathname = '/dashboard';
+    dashUrl.pathname = "/dashboard";
     return NextResponse.redirect(dashUrl);
   }
 
@@ -77,7 +142,7 @@ export function proxy(req: NextRequest) {
       return response;
     }
 
-    const role = rawRole.toUpperCase().replace(' ', '_');
+    const role = rawRole.toUpperCase().replace(/\s+/g, "_");
 
     if (typeof payload.exp === "number" && payload.exp * 1000 < Date.now()) {
       const loginUrl = req.nextUrl.clone();
@@ -88,15 +153,18 @@ export function proxy(req: NextRequest) {
       return response;
     }
 
-    for (const { prefix, allowed } of ROLE_ROUTES) {
-      if (pathname.startsWith(prefix)) {
-        if (!allowed.includes(role)) {
-          const dashboardUrl = req.nextUrl.clone();
-          dashboardUrl.pathname = "/dashboard";
-          dashboardUrl.searchParams.set("unauthorized", "1");
-          return NextResponse.redirect(dashboardUrl);
+    // Check path permissions ONLY if accessing a specific sub-route under /dashboard
+    if (pathname !== "/dashboard" && pathname !== "/dashboard/") {
+      for (const { prefix, allowed } of ROLE_ROUTES) {
+        if (pathname.startsWith(prefix)) {
+          if (!allowed.includes(role)) {
+            const dashboardUrl = req.nextUrl.clone();
+            dashboardUrl.pathname = "/dashboard";
+            dashboardUrl.searchParams.set("unauthorized", "1");
+            return NextResponse.redirect(dashboardUrl);
+          }
+          break;
         }
-        break;
       }
     }
 
