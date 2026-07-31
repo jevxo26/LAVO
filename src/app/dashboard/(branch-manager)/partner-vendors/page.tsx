@@ -2,89 +2,57 @@
 
 import { useEffect, useState, useCallback } from "react";
 import {
-  Store,
-  Gauge,
-  AlertTriangle,
-  CheckCircle2,
-  Package,
-  ArrowUpRight,
-  Search,
-  RefreshCw,
-  UserCheck,
-  Building2,
-  Clock,
+  Store, Gauge, AlertTriangle, Package,
+  ArrowUpRight, Search, RefreshCw, UserCheck,
+  Building2, Sparkles, RotateCcw, Inbox,
+  Phone, Mail, Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
+  Dialog, DialogContent, DialogHeader,
+  DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
 import { authFetch } from "@/lib/api";
+import Link from "next/link";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface Vendor {
-  id: string;
-  vendorCode: string;
-  businessName: string;
-  ownerName: string;
-  email: string;
-  phone: string;
-  status: string;
-  dailyCapacity: number;
-  currentOrders: number;
-  availableCapacity: number;
-  maximumCapacity: number;
-  isFull: boolean;
-  activeOrders: Array<{
-    id: string;
-    orderNumber: string;
-    totalGarments: number;
-    grandTotal: number;
-    createdAt: string;
-  }>;
+  id: string; vendorCode: string; businessName: string;
+  ownerName: string; email: string; phone: string; status: string;
+  dailyCapacity: number; currentOrders: number;
+  availableCapacity: number; maximumCapacity: number; isFull: boolean;
+  activeOrders: Array<{ id: string; orderNumber: string; totalGarments: number; grandTotal: number; createdAt: string; }>;
+}
+interface BranchStats { branchTotalOrders: number; unassignedOrdersCount: number; overflowThreshold: number; isOverflow: boolean; }
+interface UnassignedOrder { id: string; orderNumber: string; totalGarments: number; grandTotal: number; orderStatus: string; createdAt: string; }
+
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
+
+function Sk({ className }: { className?: string }) {
+  return <div className={`animate-pulse rounded-2xl bg-slate-100 ${className ?? ""}`} />;
 }
 
-interface BranchStats {
-  branchTotalOrders: number;
-  unassignedOrdersCount: number;
-  overflowThreshold: number;
-  isOverflow: boolean;
-}
-
-interface UnassignedOrder {
-  id: string;
-  orderNumber: string;
-  totalGarments: number;
-  grandTotal: number;
-  orderStatus: string;
-  createdAt: string;
-}
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function BranchVendorsPage() {
-  const [vendors, setVendors] = useState<Vendor[]>([]);
-  const [stats, setStats] = useState<BranchStats | null>(null);
+  const [vendors, setVendors]                 = useState<Vendor[]>([]);
+  const [stats, setStats]                     = useState<BranchStats | null>(null);
   const [unassignedOrders, setUnassignedOrders] = useState<UnassignedOrder[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
-
-  // Assign Order Dialog State
+  const [loading, setLoading]                 = useState(true);
+  const [search, setSearch]                   = useState("");
   const [assignDialogOpen, setAssignDialogOpen] = useState(false);
-  const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
-  const [selectedOrderId, setSelectedOrderId] = useState<string>("");
-  const [assigning, setAssigning] = useState(false);
+  const [selectedVendor, setSelectedVendor]   = useState<Vendor | null>(null);
+  const [selectedOrderId, setSelectedOrderId] = useState("");
+  const [assigning, setAssigning]             = useState(false);
 
   const fetchBranchVendors = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await authFetch(`/branch-dashboard/vendors?search=${encodeURIComponent(search)}`);
+      const res  = await authFetch(`/branch-dashboard/vendors?search=${encodeURIComponent(search)}`);
       const data = await res.json();
       if (data.success) {
         setVendors(data.data.vendors);
@@ -94,337 +62,275 @@ export default function BranchVendorsPage() {
         toast.error(data.message || "Failed to load branch vendors");
       }
     } catch {
-      toast.error("Error fetching branch vendor capacity data");
+      toast.error("Error fetching vendor capacity data");
     } finally {
       setLoading(false);
     }
   }, [search]);
 
-  useEffect(() => {
-    fetchBranchVendors();
-  }, [fetchBranchVendors]);
+  useEffect(() => { fetchBranchVendors(); }, [fetchBranchVendors]);
 
-  const handleOpenAssignModal = (vendor: Vendor) => {
+  const handleOpenAssign = (vendor: Vendor) => {
     setSelectedVendor(vendor);
-    if (unassignedOrders.length > 0) {
-      setSelectedOrderId(unassignedOrders[0].id);
-    } else {
-      setSelectedOrderId("");
-    }
+    setSelectedOrderId(unassignedOrders[0]?.id ?? "");
     setAssignDialogOpen(true);
   };
 
   const handleConfirmAssignment = async () => {
-    if (!selectedVendor || !selectedOrderId) {
-      toast.error("Please select an order to assign");
-      return;
-    }
-
+    if (!selectedVendor || !selectedOrderId) { toast.error("Please select an order"); return; }
     setAssigning(true);
     try {
-      const res = await authFetch("/branch-dashboard/vendors/assign-order", {
+      const res  = await authFetch("/branch-dashboard/vendors/assign-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          orderId: selectedOrderId,
-          vendorId: selectedVendor.id,
-        }),
+        body: JSON.stringify({ orderId: selectedOrderId, vendorId: selectedVendor.id }),
       });
-
       const data = await res.json();
       if (data.success) {
-        toast.success(data.message || "Order successfully assigned to vendor!");
+        toast.success(data.message || "Order assigned successfully!");
         setAssignDialogOpen(false);
         fetchBranchVendors();
-      } else {
-        toast.error(data.message || "Failed to assign order");
-      }
-    } catch {
-      toast.error("An error occurred while assigning the order.");
-    } finally {
-      setAssigning(false);
-    }
+      } else { toast.error(data.message || "Failed to assign order"); }
+    } catch { toast.error("An error occurred"); }
+    finally { setAssigning(false); }
   };
 
-  const totalCapacity = vendors.reduce((sum, v) => sum + v.dailyCapacity, 0);
-  const totalAssigned = vendors.reduce((sum, v) => sum + v.currentOrders, 0);
-  const totalAvailable = vendors.reduce((sum, v) => sum + v.availableCapacity, 0);
+  const totalCapacity  = vendors.reduce((s, v) => s + v.dailyCapacity, 0);
+  const totalAssigned  = vendors.reduce((s, v) => s + v.currentOrders, 0);
+  const totalAvailable = vendors.reduce((s, v) => s + v.availableCapacity, 0);
 
   return (
-    <div className="space-y-6 p-4 md:p-8 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2.5">
-            <Store className="h-7 w-7 text-indigo-600" />
-            Branch Partner Vendors
-          </h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Manage your branch&apos;s 3 dedicated partner vendors, monitor live capacities, and delegate order overflow.
-          </p>
-        </div>
+    <div className="space-y-7">
 
-        <Button
-          onClick={fetchBranchVendors}
-          variant="outline"
-          className="self-start md:self-auto rounded-xl border-slate-200 hover:bg-slate-50"
-        >
-          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
-          Refresh Capacity
-        </Button>
+      {/* ── Hero ──────────────────────────────────────────────────────────── */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-violet-600 via-violet-700 to-purple-700 px-7 py-8">
+        <div className="pointer-events-none absolute inset-0 opacity-10">
+          <div className="absolute -top-12 -right-12 h-56 w-56 rounded-full bg-white" />
+          <div className="absolute -bottom-10 -left-8 h-40 w-40 rounded-full bg-white" />
+        </div>
+        <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="flex items-center gap-2 mb-1.5">
+              <Sparkles className="h-3.5 w-3.5 text-violet-200" />
+              <span className="text-violet-200 text-[11px] font-semibold uppercase tracking-widest">Branch Manager Portal</span>
+            </div>
+            <h1 className="text-2xl font-extrabold tracking-tight text-white">Branch Partner Vendors</h1>
+            <p className="mt-1 text-sm text-violet-100">Monitor live capacities and delegate order overflow to dedicated partner vendors.</p>
+          </div>
+          <div className="flex items-center gap-3 shrink-0">
+            {[
+              { label: "Vendors",   value: `${vendors.length} Active`  },
+              { label: "Available", value: `${totalAvailable} slots`   },
+            ].map(({ label, value }) => (
+              <div key={label} className="rounded-xl bg-white/10 border border-white/20 backdrop-blur-sm px-4 py-3 text-center">
+                <p className="text-violet-200 text-[10px] font-semibold uppercase tracking-wider">{label}</p>
+                <p className="text-white font-extrabold text-xl leading-tight">{value}</p>
+              </div>
+            ))}
+            <Button onClick={fetchBranchVendors}
+              className="h-10 rounded-xl bg-white text-violet-700 hover:bg-violet-50 font-bold text-sm px-4 shadow-sm gap-1.5">
+              <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} /> Refresh
+            </Button>
+          </div>
+        </div>
       </div>
 
-      {/* Overflow Alert Banner (> 5 orders limit) */}
+      {/* ── Overflow alert ────────────────────────────────────────────────── */}
       {stats?.isOverflow && (
-        <Card className="border-amber-300 bg-amber-50/80 shadow-sm animate-pulse">
-          <CardContent className="p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <div className="flex items-start gap-3">
-              <div className="p-2 rounded-lg bg-amber-200/60 text-amber-800 shrink-0 mt-0.5">
-                <AlertTriangle className="h-5 w-5" />
-              </div>
-              <div>
-                <h4 className="font-bold text-amber-900 text-sm">
-                  High Branch Order Volume Alert ({stats.branchTotalOrders} Active Orders)
-                </h4>
-                <p className="text-xs text-amber-800 mt-0.5 max-w-2xl">
-                  Branch threshold limit of <strong>5 orders</strong> has been reached. Please delegate pending orders to your 3 branch partner vendors below based on their available daily capacity.
-                </p>
-              </div>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-2xl border border-amber-200 bg-amber-50 px-6 py-4 shadow-sm">
+          <div className="flex items-start gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700 mt-0.5">
+              <AlertTriangle size={16} />
             </div>
-
-            <Badge variant="outline" className="bg-amber-100 text-amber-900 border-amber-300 font-mono text-xs px-3 py-1 font-bold whitespace-nowrap">
-              Threshold Limit: 5 Orders
-            </Badge>
-          </CardContent>
-        </Card>
+            <div>
+              <p className="text-sm font-bold text-amber-900">
+                High Branch Volume — {stats.branchTotalOrders} Active Orders
+              </p>
+              <p className="text-xs text-amber-700 mt-0.5">
+                Branch threshold of <strong>5 orders</strong> exceeded. Delegate overflow to partner vendors below.
+              </p>
+            </div>
+          </div>
+          <Badge variant="outline"
+            className="bg-amber-100 text-amber-900 border-amber-300 font-bold text-xs px-3 py-1 whitespace-nowrap shrink-0">
+            Threshold: 5 Orders
+          </Badge>
+        </div>
       )}
 
-      {/* Stat Cards */}
+      {/* ── Stat cards ────────────────────────────────────────────────────── */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card className="border-slate-100 shadow-sm">
-          <CardContent className="p-5 flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-slate-500">Partner Vendors</p>
-              <h3 className="text-2xl font-bold text-slate-900 mt-1">{vendors.length} Active</h3>
-              <p className="text-[11px] text-slate-400 mt-0.5">3 Vendors per Branch</p>
+        {[
+          { label: "Partner Vendors",    sub: "3 vendors per branch",  value: `${vendors.length} Active`,   Icon: Building2, iconBg: "bg-indigo-50",  iconColor: "text-indigo-600",  ringColor: "ring-indigo-100",  vColor: ""                  },
+          { label: "Total Capacity",     sub: "Combined daily limit",  value: `${totalCapacity}/day`,        Icon: Gauge,     iconBg: "bg-emerald-50", iconColor: "text-emerald-600", ringColor: "ring-emerald-100", vColor: ""                  },
+          { label: "Currently Assigned", sub: "Active processing",     value: `${totalAssigned} orders`,     Icon: Package,   iconBg: "bg-blue-50",    iconColor: "text-blue-600",    ringColor: "ring-blue-100",    vColor: ""                  },
+          { label: "Available Capacity", sub: "Ready for delegation",  value: `${totalAvailable} slots`,     Icon: UserCheck, iconBg: "bg-violet-50",  iconColor: "text-violet-600",  ringColor: "ring-violet-100", vColor: "text-violet-600"   },
+        ].map(({ label, sub, value, Icon, iconBg, iconColor, ringColor, vColor }) => (
+          <div key={label}
+            className="flex items-center gap-4 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-200">
+            <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ring-4 ${iconBg} ${iconColor} ${ringColor}`}>
+              <Icon className="h-5 w-5" />
             </div>
-            <div className="p-3 rounded-2xl bg-indigo-50 text-indigo-600">
-              <Building2 className="h-6 w-6" />
+            <div className="min-w-0">
+              <p className={`text-2xl font-extrabold leading-none ${vColor || "text-slate-900"}`}>{value}</p>
+              <p className="mt-0.5 text-[12px] font-semibold text-slate-700 leading-tight">{label}</p>
+              <p className="text-[11px] text-slate-400 leading-tight">{sub}</p>
             </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-slate-100 shadow-sm">
-          <CardContent className="p-5 flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-slate-500">Total Vendor Capacity</p>
-              <h3 className="text-2xl font-bold text-slate-900 mt-1">{totalCapacity} Orders/Day</h3>
-              <p className="text-[11px] text-slate-400 mt-0.5">Combined Daily Limit</p>
-            </div>
-            <div className="p-3 rounded-2xl bg-emerald-50 text-emerald-600">
-              <Gauge className="h-6 w-6" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-slate-100 shadow-sm">
-          <CardContent className="p-5 flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-slate-500">Currently Assigned</p>
-              <h3 className="text-2xl font-bold text-slate-900 mt-1">{totalAssigned} Orders</h3>
-              <p className="text-[11px] text-slate-400 mt-0.5">Active Processing</p>
-            </div>
-            <div className="p-3 rounded-2xl bg-blue-50 text-blue-600">
-              <Package className="h-6 w-6" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-slate-100 shadow-sm">
-          <CardContent className="p-5 flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-slate-500">Available Capacity</p>
-              <h3 className="text-2xl font-bold text-indigo-600 mt-1">{totalAvailable} Slots</h3>
-              <p className="text-[11px] text-slate-400 mt-0.5">Ready for Delegation</p>
-            </div>
-            <div className="p-3 rounded-2xl bg-indigo-50 text-indigo-600">
-              <UserCheck className="h-6 w-6" />
-            </div>
-          </CardContent>
-        </Card>
+          </div>
+        ))}
       </div>
 
-      {/* Main Vendor List & Capacity Table */}
-      <Card className="border-slate-100 shadow-sm">
-        <CardHeader className="p-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <CardTitle className="text-base font-bold text-slate-900">Branch Vendors & Capacity</CardTitle>
-            <CardDescription className="text-xs">
-              Live capacity breakdown for vendors linked to your branch.
-            </CardDescription>
+      {/* ── Search toolbar ────────────────────────────────────────────────── */}
+      <div className="rounded-2xl border border-slate-100 bg-white px-5 py-4 shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={13} />
+            <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search vendor code or name…"
+              className="w-full h-9 pl-9 pr-3 rounded-xl border border-slate-200 bg-slate-50 text-xs font-medium text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:bg-white transition" />
           </div>
-
-          <div className="relative w-full md:w-64">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-            <Input
-              placeholder="Search vendor code or name..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 h-9 text-xs rounded-xl"
-            />
-          </div>
-        </CardHeader>
-
-        <CardContent className="p-0 overflow-x-auto">
-          {loading ? (
-            <div className="p-12 text-center text-xs text-slate-500 flex flex-col items-center justify-center">
-              <RefreshCw className="h-6 w-6 text-indigo-600 animate-spin mb-2" />
-              Loading branch vendor capacities...
-            </div>
-          ) : vendors.length === 0 ? (
-            <div className="p-12 text-center text-xs text-slate-500">
-              No partner vendors found for this branch.
-            </div>
-          ) : (
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50/80 text-slate-600 font-semibold border-b border-slate-100">
-                <tr>
-                  <th className="p-4">Vendor Code</th>
-                  <th className="p-4">Business & Owner</th>
-                  <th className="p-4">Contact</th>
-                  <th className="p-4">Status</th>
-                  <th className="p-4 w-48">Daily Capacity Progress</th>
-                  <th className="p-4 text-center">Available</th>
-                  <th className="p-4 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-700">
-                {vendors.map((vendor) => {
-                  const usagePercent = Math.min(
-                    100,
-                    Math.round((vendor.currentOrders / vendor.dailyCapacity) * 100)
-                  );
-
-                  return (
-                    <tr key={vendor.id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="p-4 font-mono font-bold text-indigo-600">
-                        {vendor.vendorCode}
-                      </td>
-
-                      <td className="p-4">
-                        <div className="font-bold text-slate-900">{vendor.businessName}</div>
-                        <div className="text-[11px] text-slate-500">Owner: {vendor.ownerName}</div>
-                      </td>
-
-                      <td className="p-4 font-medium text-slate-600">
-                        <div>{vendor.phone}</div>
-                        <div className="text-[11px] text-slate-400">{vendor.email}</div>
-                      </td>
-
-                      <td className="p-4">
-                        <Badge
-                          variant="outline"
-                          className={`font-semibold text-[10px] px-2.5 py-0.5 rounded-full ${
-                            vendor.isFull
-                              ? "bg-rose-50 text-rose-700 border-rose-200"
-                              : "bg-emerald-50 text-emerald-700 border-emerald-200"
-                          }`}
-                        >
-                          {vendor.isFull ? "FULL CAPACITY" : "AVAILABLE"}
-                        </Badge>
-                      </td>
-
-                      <td className="p-4">
-                        <div className="space-y-1.5">
-                          <div className="flex justify-between text-[11px] font-semibold">
-                            <span className="text-slate-600">
-                              {vendor.currentOrders} / {vendor.dailyCapacity} Orders
-                            </span>
-                            <span className={usagePercent >= 80 ? "text-amber-600" : "text-slate-500"}>
-                              {usagePercent}%
-                            </span>
-                          </div>
-                          <Progress
-                            value={usagePercent}
-                            className={`h-2 rounded-full ${
-                              usagePercent >= 100
-                                ? "bg-rose-100 [&>div]:bg-rose-500"
-                                : usagePercent >= 75
-                                ? "bg-amber-100 [&>div]:bg-amber-500"
-                                : "bg-emerald-100 [&>div]:bg-emerald-500"
-                            }`}
-                          />
-                        </div>
-                      </td>
-
-                      <td className="p-4 text-center font-bold text-sm">
-                        <span className={vendor.availableCapacity > 0 ? "text-emerald-600" : "text-rose-500"}>
-                          {vendor.availableCapacity} slots
-                        </span>
-                      </td>
-
-                      <td className="p-4 text-right">
-                        <Button
-                          onClick={() => handleOpenAssignModal(vendor)}
-                          disabled={vendor.isFull || unassignedOrders.length === 0}
-                          size="sm"
-                          className="h-8 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs"
-                        >
-                          Assign Order
-                          <ArrowUpRight className="h-3.5 w-3.5 ml-1" />
-                        </Button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+          {search && (
+            <Button size="sm" variant="ghost" onClick={() => setSearch("")}
+              className="h-9 rounded-xl text-xs font-bold text-slate-500 hover:text-rose-600 hover:bg-rose-50 px-3 gap-1.5">
+              <RotateCcw size={12} /> Clear
+            </Button>
           )}
-        </CardContent>
-      </Card>
+          <p className="ml-auto text-[11px] text-slate-400">
+            <span className="font-semibold text-slate-600">{vendors.length}</span> vendors
+          </p>
+        </div>
+      </div>
 
-      {/* Assign Order Modal */}
+      {/* ── Vendor cards ──────────────────────────────────────────────────── */}
+      {loading ? (
+        <div className="space-y-3">{[0,1,2].map((i) => <Sk key={i} className="h-28" />)}</div>
+      ) : vendors.length === 0 ? (
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white py-24 text-center shadow-sm">
+          <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-violet-50">
+            <Inbox size={38} className="text-violet-300" />
+          </div>
+          <p className="text-base font-bold text-slate-800">No partner vendors found</p>
+          <p className="mt-2 max-w-xs text-sm text-slate-400">No vendors are linked to this branch yet.</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {vendors.map((vendor) => {
+            const usagePct = Math.min(100, Math.round((vendor.currentOrders / vendor.dailyCapacity) * 100));
+            return (
+              <div key={vendor.id}
+                className="rounded-2xl border border-slate-100 bg-white shadow-sm hover:border-violet-100 hover:shadow-md transition-all duration-200 overflow-hidden">
+                {/* Card header row */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5">
+                  <div className="flex items-start gap-4 min-w-0">
+                    {/* Icon */}
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-violet-50">
+                      <Store size={20} className="text-violet-500" />
+                    </div>
+                    {/* Info */}
+                    <div className="space-y-1.5 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-[13px] font-bold text-slate-900">{vendor.businessName}</span>
+                        <span className="font-mono text-[11px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-md px-2 py-0.5">
+                          {vendor.vendorCode}
+                        </span>
+                        <Badge variant="outline"
+                          className={`text-[10px] font-bold ${vendor.isFull
+                            ? "bg-rose-50 text-rose-700 border-rose-200"
+                            : "bg-emerald-50 text-emerald-700 border-emerald-200"}`}>
+                          {vendor.isFull ? "FULL" : "AVAILABLE"}
+                        </Badge>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-slate-400">
+                        <span className="font-semibold text-slate-600">{vendor.ownerName}</span>
+                        <span className="flex items-center gap-1"><Phone size={10} />{vendor.phone}</span>
+                        <span className="flex items-center gap-1"><Mail size={10} />{vendor.email}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Action */}
+                  <div className="shrink-0 self-start sm:self-center">
+                    <Button
+                      onClick={() => handleOpenAssign(vendor)}
+                      disabled={vendor.isFull || unassignedOrders.length === 0}
+                      size="sm"
+                      className="h-9 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs gap-1.5 px-4 shadow-sm shadow-indigo-200 disabled:opacity-50">
+                      Assign Order <ArrowUpRight size={13} />
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Capacity bar */}
+                <div className="border-t border-slate-50 px-5 py-4 bg-slate-50/40">
+                  <div className="flex items-center justify-between text-xs mb-2">
+                    <span className="font-semibold text-slate-700">
+                      {vendor.currentOrders} / {vendor.dailyCapacity} orders assigned
+                    </span>
+                    <div className="flex items-center gap-3">
+                      <span className={usagePct >= 80 ? "font-bold text-amber-600" : "text-slate-500"}>
+                        {usagePct}% used
+                      </span>
+                      <span className={`font-bold ${vendor.availableCapacity > 0 ? "text-emerald-600" : "text-rose-500"}`}>
+                        {vendor.availableCapacity} slots free
+                      </span>
+                    </div>
+                  </div>
+                  <Progress
+                    value={usagePct}
+                    className={`h-2 rounded-full ${
+                      usagePct >= 100 ? "bg-rose-100 [&>div]:bg-rose-500"
+                      : usagePct >= 75 ? "bg-amber-100 [&>div]:bg-amber-500"
+                      : "bg-emerald-100 [&>div]:bg-emerald-500"
+                    }`}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ── Assign dialog ─────────────────────────────────────────────────── */}
       <Dialog open={assignDialogOpen} onOpenChange={setAssignDialogOpen}>
         <DialogContent className="sm:max-w-md rounded-2xl">
           <DialogHeader>
-            <DialogTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <Package className="h-5 w-5 text-indigo-600" />
+            <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50">
+              <Package size={22} className="text-indigo-500" />
+            </div>
+            <DialogTitle className="text-center text-base font-extrabold text-slate-900">
               Assign Order to {selectedVendor?.businessName}
             </DialogTitle>
-            <DialogDescription className="text-xs">
+            <DialogDescription className="text-center text-xs text-slate-400">
               Select an unassigned branch order to delegate to this vendor.
             </DialogDescription>
           </DialogHeader>
 
           {selectedVendor && (
-            <div className="space-y-4 py-2 text-xs">
-              {/* Vendor Capacity Info */}
-              <div className="p-3 bg-slate-50 border border-slate-100 rounded-xl flex justify-between items-center">
+            <div className="space-y-4 pt-1">
+              {/* Vendor info */}
+              <div className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 flex justify-between items-center text-xs">
                 <div>
-                  <div className="font-bold text-slate-900">{selectedVendor.businessName}</div>
-                  <div className="text-[11px] text-slate-500">Code: {selectedVendor.vendorCode}</div>
+                  <p className="font-bold text-slate-900">{selectedVendor.businessName}</p>
+                  <p className="text-slate-400 mt-0.5">Code: {selectedVendor.vendorCode}</p>
                 </div>
                 <div className="text-right">
-                  <div className="font-bold text-emerald-600">{selectedVendor.availableCapacity} Slots Available</div>
-                  <div className="text-[11px] text-slate-500">Limit: {selectedVendor.dailyCapacity} Orders/Day</div>
+                  <p className="font-bold text-emerald-600">{selectedVendor.availableCapacity} slots available</p>
+                  <p className="text-slate-400 mt-0.5">Max: {selectedVendor.dailyCapacity} orders/day</p>
                 </div>
               </div>
 
-              {/* Order Selector */}
-              <div>
-                <label className="font-bold text-slate-700 block mb-1.5">
-                  Select Unassigned Branch Order ({unassignedOrders.length} Available)
+              {/* Order selector */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-700">
+                  Select Order ({unassignedOrders.length} unassigned)
                 </label>
                 {unassignedOrders.length === 0 ? (
-                  <p className="p-3 bg-amber-50 border border-amber-100 rounded-xl text-amber-800 text-[11px]">
-                    No unassigned orders found in your branch. All orders are currently processed or assigned.
-                  </p>
+                  <div className="rounded-xl border border-amber-100 bg-amber-50 px-4 py-3 text-xs text-amber-800">
+                    No unassigned orders. All orders are processed or assigned.
+                  </div>
                 ) : (
-                  <select
-                    value={selectedOrderId}
-                    onChange={(e) => setSelectedOrderId(e.target.value)}
-                    className="w-full h-10 px-3 border border-slate-200 rounded-xl bg-white focus:outline-none text-xs font-semibold text-slate-800"
-                  >
+                  <select value={selectedOrderId} onChange={(e) => setSelectedOrderId(e.target.value)}
+                    className="w-full h-10 px-3 border border-slate-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 text-xs font-semibold text-slate-800">
                     {unassignedOrders.map((o) => (
                       <option key={o.id} value={o.id}>
                         Order #{o.orderNumber} — {o.totalGarments} items (৳{o.grandTotal.toFixed(2)})
@@ -436,20 +342,16 @@ export default function BranchVendorsPage() {
             </div>
           )}
 
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button
-              variant="outline"
-              onClick={() => setAssignDialogOpen(false)}
-              className="rounded-xl text-xs"
-            >
+          <DialogFooter className="gap-2 sm:gap-2">
+            <Button variant="outline" onClick={() => setAssignDialogOpen(false)} className="flex-1 rounded-xl font-bold">
               Cancel
             </Button>
-            <Button
-              onClick={handleConfirmAssignment}
+            <Button onClick={handleConfirmAssignment}
               disabled={assigning || !selectedOrderId || unassignedOrders.length === 0}
-              className="rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs"
-            >
-              {assigning ? "Assigning..." : "Confirm Assignment"}
+              className="flex-1 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold gap-1.5">
+              {assigning
+                ? <><Loader2 size={14} className="animate-spin" /> Assigning…</>
+                : <><Package size={14} /> Confirm</>}
             </Button>
           </DialogFooter>
         </DialogContent>
