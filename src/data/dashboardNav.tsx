@@ -87,6 +87,12 @@ export const dashboardNavItems: NavItem[] = [
         roles: ["SUPER_ADMIN", "ADMIN"],
       },
       {
+        name: "Customer Reviews",
+        href: "/dashboard/customer-reviews",
+        icon: Star,
+        roles: ["SUPER_ADMIN", "ADMIN"],
+      },
+      {
         name: "Wallet Transactions",
         href: "/dashboard/customer-ops/wallet-transactions",
         icon: Wallet,
