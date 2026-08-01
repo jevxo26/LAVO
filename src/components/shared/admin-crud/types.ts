@@ -16,7 +16,7 @@ export type FormField<TRecord extends AdminRecord> = {
 export type CrudColumn<TRecord extends AdminRecord> = {
   accessorKey: keyof TRecord & string
   header: string
-  kind?: "status" | "currency" | "percent" | "rating" | "id"
+  kind?: "status" | "currency" | "percent" | "rating" | "id" | "date"
 }
 
 export type CrudModuleConfig<TRecord extends AdminRecord> = {
