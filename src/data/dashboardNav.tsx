@@ -82,7 +82,7 @@ export const dashboardNavItems: NavItem[] = [
       },
       {
         name: "Support Tickets",
-        href: "/dashboard/customer-ops/support-tickets",
+        href: "/dashboard/support",
         icon: Headphones,
         roles: ["SUPER_ADMIN", "ADMIN"],
       },
