@@ -34,8 +34,10 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
     if (["STAFF", "BRANCH_EMPLOYEE", "BRANCHEMPLOYEE", "EMPLOYEE"].includes(rawRole)) return "EMPLOYEE";
     // Vendor aliases
     if (["VENDOR_OWNER", "VENDOROWNER", "VENDOR_STAFF", "VENDORSTAFF", "VENDOR"].includes(rawRole)) return "VENDOR";
+    // Super Admin aliases
+    if (["SUPER_ADMIN", "SUPERADMIN", "SUPER_ADMINISTRATOR", "SUPERADMINISTRATOR"].includes(rawRole)) return "SUPER_ADMIN";
     // Admin aliases
-    if (["ADMIN", "SUPER_ADMIN", "SUPERADMIN"].includes(rawRole)) return rawRole === "SUPERADMIN" ? "SUPER_ADMIN" : rawRole;
+    if (["ADMIN", "ADMINISTRATOR", "NORMAL_ADMIN", "SYSTEM_ADMIN", "ADMIN_USER"].includes(rawRole)) return "ADMIN";
     // Customer aliases
     if (["CUSTOMER", "USER"].includes(rawRole)) return "CUSTOMER";
 

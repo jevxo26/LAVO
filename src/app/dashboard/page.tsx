@@ -18,9 +18,9 @@ function normalizeRole(raw: string): string {
   if (["MANAGER", "BRANCHMANAGER", "BRANCH_MANAGER"].includes(r)) return "BRANCH_MANAGER";
   if (["STAFF", "BRANCH_EMPLOYEE", "BRANCHEMPLOYEE", "EMPLOYEE"].includes(r)) return "EMPLOYEE";
   if (["VENDOR_OWNER", "VENDOROWNER", "VENDOR_STAFF", "VENDORSTAFF", "VENDOR"].includes(r)) return "VENDOR";
-  if (["SUPERADMIN", "SUPER_ADMIN"].includes(r)) return "SUPER_ADMIN";
+  if (["SUPER_ADMIN", "SUPERADMIN", "SUPER_ADMINISTRATOR", "SUPERADMINISTRATOR"].includes(r)) return "SUPER_ADMIN";
+  if (["ADMIN", "ADMINISTRATOR", "NORMAL_ADMIN", "SYSTEM_ADMIN", "ADMIN_USER"].includes(r)) return "ADMIN";
   if (["CUSTOMER", "USER"].includes(r)) return "CUSTOMER";
-  if (r === "ADMIN") return "ADMIN";
 
   return r;
 }
