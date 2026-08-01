@@ -20,16 +20,24 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
 
   const userRole = React.useMemo(() => {
     if (!user) return "";
-    const rawRole = ((user as any).role || user.userType || "")
+    const rawRole = ((user as any).role || (user as any).userType || "")
       .toString()
       .toUpperCase()
       .trim()
-      .replace(/\s+/g, "_");
+      .replace(/[\s-]+/g, "_");
 
-    if (rawRole === "AGENT" || rawRole === "DELIVERYAGENT") return "DELIVERY_AGENT";
-    if (rawRole === "MANAGER" || rawRole === "BRANCHMANAGER") return "BRANCH_MANAGER";
-    if (rawRole === "BRANCH_EMPLOYEE" || rawRole === "STAFF") return "EMPLOYEE";
-    if (rawRole === "VENDOR_OWNER" || rawRole === "VENDOR_STAFF") return "VENDOR";
+    // Delivery Agent aliases
+    if (["AGENT", "DELIVERYAGENT", "DELIVERY_AGENT"].includes(rawRole)) return "DELIVERY_AGENT";
+    // Branch Manager aliases
+    if (["MANAGER", "BRANCHMANAGER", "BRANCH_MANAGER"].includes(rawRole)) return "BRANCH_MANAGER";
+    // Employee aliases
+    if (["STAFF", "BRANCH_EMPLOYEE", "BRANCHEMPLOYEE", "EMPLOYEE"].includes(rawRole)) return "EMPLOYEE";
+    // Vendor aliases
+    if (["VENDOR_OWNER", "VENDOROWNER", "VENDOR_STAFF", "VENDORSTAFF", "VENDOR"].includes(rawRole)) return "VENDOR";
+    // Admin aliases
+    if (["ADMIN", "SUPER_ADMIN", "SUPERADMIN"].includes(rawRole)) return rawRole === "SUPERADMIN" ? "SUPER_ADMIN" : rawRole;
+    // Customer aliases
+    if (["CUSTOMER", "USER"].includes(rawRole)) return "CUSTOMER";
 
     return rawRole;
   }, [user]);
