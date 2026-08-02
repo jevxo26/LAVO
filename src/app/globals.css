@@ -10,6 +10,7 @@
   --font-sans: var(--font-bai-jamjuree);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-bai-jamjuree);
+
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -18,44 +19,50 @@
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar: var(--sidebar);
-  
-  /* Rich aesthetic colors */
+
+  /* Designer System Palette Tokens */
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-error: var(--error);
+  --color-error-foreground: var(--error-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
-  
+  --color-surface: var(--surface);
+  --color-surface-foreground: var(--surface-foreground);
+
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
-  
+
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
   --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
 
-  --color-brand-blue: var(--brand-blue);
-  --color-brand-sky: var(--brand-sky);
-  --color-brand-sky-hover: var(--brand-sky-hover);
-  --color-surface-light: var(--surface-light);
-  --color-navy-dark: var(--navy-dark);
-  --color-navy-card: var(--navy-card);
-  --color-navy-darker: var(--navy-darker);
-  --color-slate-card: var(--slate-card);
-  --color-amber-star: var(--amber-star);
-  --color-surface-muted: var(--surface-muted);
-  --color-border-soft: var(--border-soft);
+  /* Legacy & Marketing Aliases mapped to new Designer Palette */
+  --color-brand-blue: var(--primary);
+  --color-brand-sky: var(--secondary);
+  --color-brand-sky-hover: var(--secondary-hover);
+  --color-surface-light: var(--background);
+  --color-surface-muted: var(--muted);
+  --color-border-soft: var(--border);
+  --color-navy-dark: var(--foreground);
 
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
@@ -90,111 +97,127 @@
 }
 
 :root {
-  /* Beautiful Light Theme - Soft and Premium */
-  --background: oklch(0.99 0 0); /* Pure White mostly */
-  --foreground: oklch(0.145 0 0);
-  
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  
-  /* Vibrant Blue Primary from Figma */
-  --primary: oklch(0.55 0.22 260); 
-  --primary-foreground: oklch(0.985 0 0);
-  
-  --secondary: oklch(0.96 0.01 255);
-  --secondary-foreground: oklch(0.2 0.1 260);
-  
-  --muted: oklch(0.96 0.01 250);
-  --muted-foreground: oklch(0.55 0.02 250);
-  
-  --accent: oklch(0.95 0.02 280);
-  --accent-foreground: oklch(0.3 0.1 280);
-  
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.985 0 0);
-  
-  --border: oklch(0.92 0.01 250);
-  --input: oklch(0.92 0.01 250);
-  --ring: oklch(0.55 0.2 280);
-  
-  --radius: 0.75rem; /* Modern rounded corners */
-  
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.55 0.2 280);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.95 0.02 280);
-  --sidebar-accent-foreground: oklch(0.3 0.1 280);
-  --sidebar-border: oklch(0.92 0.01 250);
-  --sidebar-ring: oklch(0.55 0.2 280);
+  /* Designer Palette Tokens - Light Theme */
+  --primary: #2563EB;
+  --primary-foreground: #FFFFFF;
 
-  /* Centralized Brand & Layout Colors */
-  --brand-blue: #1f5df9;
-  --brand-sky: #0EA5E9;
-  --brand-sky-hover: #0284C7;
-  --surface-light: #F8FAFC;
-  --navy-dark: #0F172A;
-  --navy-card: #192135;
-  --navy-darker: #0B101E;
-  --slate-card: rgba(42, 49, 67, 0.5);
-  --amber-star: #FBBF24;
-  --surface-muted: #F1F5F9;
-  --border-soft: #E2E8F0;
+  --secondary: #06B6D4;
+  --secondary-hover: #0891B2;
+  --secondary-foreground: #FFFFFF;
+
+  --success: #22C55E;
+  --success-foreground: #FFFFFF;
+
+  --warning: #F59E0B;
+  --warning-foreground: #FFFFFF;
+
+  --error: #EF4444;
+  --error-foreground: #FFFFFF;
+
+  --destructive: #EF4444;
+  --destructive-foreground: #FFFFFF;
+
+  --background: #F8FAFC;
+  --foreground: #0F172A;
+
+  --surface: #FFFFFF;
+  --surface-foreground: #0F172A;
+
+  --card: #FFFFFF;
+  --card-foreground: #0F172A;
+
+  --popover: #FFFFFF;
+  --popover-foreground: #0F172A;
+
+  --muted: #F1F5F9;
+  --muted-foreground: #64748B;
+
+  --accent: #F1F5F9;
+  --accent-foreground: #0F172A;
+
+  --border: #E2E8F0;
+  --input: #E2E8F0;
+  --ring: #2563EB;
+
+  --radius: 0.75rem;
+
+  /* Sidebar Tokens */
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #0F172A;
+  --sidebar-primary: #2563EB;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #F1F5F9;
+  --sidebar-accent-foreground: #0F172A;
+  --sidebar-border: #E2E8F0;
+  --sidebar-ring: #2563EB;
+
+  /* Chart Tokens */
+  --chart-1: #2563EB;
+  --chart-2: #06B6D4;
+  --chart-3: #22C55E;
+  --chart-4: #F59E0B;
+  --chart-5: #EF4444;
 }
 
 .dark {
-  /* Sleek Dark Theme */
-  --background: oklch(0.15 0.02 260);
-  --foreground: oklch(0.985 0 0);
-  
-  --card: oklch(0.18 0.02 260);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.18 0.02 260);
-  --popover-foreground: oklch(0.985 0 0);
-  
-  /* Vibrant Blue Primary for Dark Mode */
-  --primary: oklch(0.60 0.20 260);
-  --primary-foreground: oklch(0.985 0 0);
-  
-  --secondary: oklch(0.25 0.05 260);
-  --secondary-foreground: oklch(0.985 0 0);
-  
-  --muted: oklch(0.2 0.03 260);
-  --muted-foreground: oklch(0.7 0.02 260);
-  
-  --accent: oklch(0.25 0.05 260);
-  --accent-foreground: oklch(0.985 0 0);
-  
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.985 0 0);
-  
-  --border: oklch(0.25 0.03 260);
-  --input: oklch(0.25 0.03 260);
-  --ring: oklch(0.65 0.2 280);
-  
-  --sidebar: oklch(0.15 0.02 260);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.65 0.2 280);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.25 0.05 260);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.25 0.03 260);
-  --sidebar-ring: oklch(0.65 0.2 280);
+  /* Designer Palette Tokens - Dark Theme */
+  --primary: #3B82F6;
+  --primary-foreground: #FFFFFF;
 
-  /* Centralized Brand & Layout Colors */
-  --brand-blue: #1f5df9;
-  --brand-sky: #0EA5E9;
-  --brand-sky-hover: #0284C7;
-  --surface-light: #F8FAFC;
-  --navy-dark: #0F172A;
-  --navy-card: #192135;
-  --navy-darker: #0B101E;
-  --slate-card: rgba(42, 49, 67, 0.5);
-  --amber-star: #FBBF24;
-  --surface-muted: #1e293b;
-  --border-soft: #334155;
+  --secondary: #22D3EE;
+  --secondary-hover: #06B6D4;
+  --secondary-foreground: #0F172A;
+
+  --success: #4ADE80;
+  --success-foreground: #0F172A;
+
+  --warning: #FBBF24;
+  --warning-foreground: #0F172A;
+
+  --error: #F87171;
+  --error-foreground: #0F172A;
+
+  --destructive: #F87171;
+  --destructive-foreground: #FFFFFF;
+
+  --background: #0F172A;
+  --foreground: #F8FAFC;
+
+  --surface: #1E293B;
+  --surface-foreground: #F8FAFC;
+
+  --card: #1E293B;
+  --card-foreground: #F8FAFC;
+
+  --popover: #1E293B;
+  --popover-foreground: #F8FAFC;
+
+  --muted: #334155;
+  --muted-foreground: #94A3B8;
+
+  --accent: #334155;
+  --accent-foreground: #F8FAFC;
+
+  --border: #334155;
+  --input: #334155;
+  --ring: #3B82F6;
+
+  /* Sidebar Tokens */
+  --sidebar: #0F172A;
+  --sidebar-foreground: #F8FAFC;
+  --sidebar-primary: #3B82F6;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #1E293B;
+  --sidebar-accent-foreground: #F8FAFC;
+  --sidebar-border: #334155;
+  --sidebar-ring: #3B82F6;
+
+  /* Chart Tokens */
+  --chart-1: #3B82F6;
+  --chart-2: #22D3EE;
+  --chart-3: #4ADE80;
+  --chart-4: #FBBF24;
+  --chart-5: #F87171;
 }
 
 @layer base {
@@ -221,4 +244,3 @@
     animation-delay: 2s;
   }
 }
-
