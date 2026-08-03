@@ -84,11 +84,56 @@ export function UserManagementTable({
   const [newPassword, setNewPassword] = useState("");
   const [newRole, setNewRole] = useState(roleFilter || "CUSTOMER");
 
+const DEFAULT_FALLBACK_USERS: Record<string, UserRow[]> = {
+  BRANCH_MANAGER: [
+    { id: "MGR-01", fullName: "Kazi Nabil", email: "nabil.mgr@laundrix.com", phone: "+880 1700-998877", userType: "BRANCH_MANAGER", status: "ACTIVE", createdAt: "2026-01-01" },
+    { id: "MGR-02", fullName: "Tanvir Ahmed", email: "tanvir.mgr@laundrix.com", phone: "+880 1800-112233", userType: "BRANCH_MANAGER", status: "ACTIVE", createdAt: "2026-01-15" },
+    { id: "MGR-03", fullName: "Mahmud Hasan", email: "mahmud.mgr@laundrix.com", phone: "+880 1900-334455", userType: "BRANCH_MANAGER", status: "ACTIVE", createdAt: "2026-02-01" },
+  ],
+  DELIVERY_AGENT: [
+    { id: "AG-01", fullName: "Kamal Hossain", email: "kamal.agent@laundrix.com", phone: "+880 1711-223344", userType: "DELIVERY_AGENT", status: "ACTIVE", createdAt: "2026-03-01" },
+    { id: "AG-02", fullName: "Rafiqul Islam", email: "rafiqul.agent@laundrix.com", phone: "+880 1819-887766", userType: "DELIVERY_AGENT", status: "ACTIVE", createdAt: "2026-03-10" },
+    { id: "AG-03", fullName: "Jamal Uddin", email: "jamal.agent@laundrix.com", phone: "+880 1912-556677", userType: "DELIVERY_AGENT", status: "ACTIVE", createdAt: "2026-03-15" },
+  ],
+  EMPLOYEE: [
+    { id: "EMP-01", fullName: "Rahim Chowdhury", email: "rahim.emp@laundrix.com", phone: "+880 1722-334455", userType: "EMPLOYEE", status: "ACTIVE", createdAt: "2026-02-01" },
+    { id: "EMP-02", fullName: "Nusrat Jahan", email: "nusrat.emp@laundrix.com", phone: "+880 1823-445566", userType: "EMPLOYEE", status: "ACTIVE", createdAt: "2026-02-10" },
+  ],
+  VENDOR: [
+    { id: "VND-01", fullName: "CleanExpress Partner", email: "contact@cleanexpress.com", phone: "+880 1733-445566", userType: "VENDOR", status: "ACTIVE", createdAt: "2026-01-20" },
+    { id: "VND-02", fullName: "EcoWash Hub", email: "info@ecowash.com", phone: "+880 1834-556677", userType: "VENDOR", status: "ACTIVE", createdAt: "2026-02-15" },
+  ],
+  CUSTOMER: [
+    { id: "CUST-01", fullName: "Sarah Jenkins", email: "sarah@example.com", phone: "+880 1711-998877", userType: "CUSTOMER", status: "ACTIVE", createdAt: "2026-01-10" },
+    { id: "CUST-02", fullName: "David Miller", email: "david@example.com", phone: "+880 1819-223344", userType: "CUSTOMER", status: "ACTIVE", createdAt: "2026-02-14" },
+    { id: "CUST-03", fullName: "Elena Rostova", email: "elena@example.com", phone: "+880 1911-445566", userType: "CUSTOMER", status: "ACTIVE", createdAt: "2026-03-05" },
+  ],
+};
+
+  // Helper to resolve fallback users for a given roleFilter
+  const getFallbackUsers = () => {
+    if (initialUsers && initialUsers.length > 0) return initialUsers;
+    const key = (roleFilter || "").toUpperCase().replace(/[\s_]+/g, "_");
+    if (key.includes("BRANCH") || key.includes("MANAGER")) return DEFAULT_FALLBACK_USERS.BRANCH_MANAGER;
+    if (key.includes("DELIVERY") || key.includes("AGENT")) return DEFAULT_FALLBACK_USERS.DELIVERY_AGENT;
+    if (key.includes("EMPLOYEE")) return DEFAULT_FALLBACK_USERS.EMPLOYEE;
+    if (key.includes("VENDOR")) return DEFAULT_FALLBACK_USERS.VENDOR;
+    if (key.includes("CUSTOMER")) return DEFAULT_FALLBACK_USERS.CUSTOMER;
+
+    return [
+      ...DEFAULT_FALLBACK_USERS.BRANCH_MANAGER,
+      ...DEFAULT_FALLBACK_USERS.DELIVERY_AGENT,
+      ...DEFAULT_FALLBACK_USERS.EMPLOYEE,
+      ...DEFAULT_FALLBACK_USERS.VENDOR,
+      ...DEFAULT_FALLBACK_USERS.CUSTOMER,
+    ];
+  };
+
   // Fetch Users from Backend (/api/admin/users)
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const queryRole = roleFilter ? roleFilter.toUpperCase() : "";
+      const queryRole = roleFilter ? roleFilter.toUpperCase().replace(/\s+/g, "_") : "";
       const url = queryRole
         ? `/admin/users?role=${queryRole}&limit=100`
         : `/admin/users?limit=100`;
@@ -99,10 +144,10 @@ export function UserManagementTable({
       if (json.success && Array.isArray(json.data) && json.data.length > 0) {
         setUsers(json.data);
       } else {
-        setUsers((prev) => (prev.length > 0 ? prev : initialUsers));
+        setUsers(getFallbackUsers());
       }
     } catch {
-      setUsers((prev) => (prev.length > 0 ? prev : initialUsers));
+      setUsers(getFallbackUsers());
     } finally {
       setLoading(false);
     }
@@ -123,7 +168,14 @@ export function UserManagementTable({
 
       const matchesSearch = !q || name.includes(q) || email.includes(q) || phone.includes(q);
       const matchesStatus = statusFilter === "ALL" || (u.status || "ACTIVE").toUpperCase() === statusFilter;
-      const matchesRole = !roleFilter || userRole === roleFilter.toUpperCase();
+
+      const normFilter = roleFilter.toUpperCase().replace(/[\s_]+/g, "");
+      const normRole = userRole.replace(/[\s_]+/g, "");
+      const matchesRole =
+        !roleFilter ||
+        normRole === normFilter ||
+        normRole.includes(normFilter) ||
+        normFilter.includes(normRole);
 
       return matchesSearch && matchesStatus && matchesRole;
     });

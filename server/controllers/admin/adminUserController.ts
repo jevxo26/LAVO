@@ -16,7 +16,19 @@ export class AdminUserController {
     const roleFilter = (req.query.role as string) || undefined;
     const skip = (page - 1) * limit;
 
-    const where = roleFilter ? { userType: roleFilter.toUpperCase() } : {};
+    let where: any = {};
+    if (roleFilter && roleFilter.trim() !== "") {
+      const raw = roleFilter.trim();
+      const upper = raw.toUpperCase();
+      const withUnderscore = upper.replace(/\s+/g, "_");
+      const withSpace = upper.replace(/_/g, " ");
+
+      where.OR = [
+        { userType: { equals: upper, mode: "insensitive" } },
+        { userType: { equals: withUnderscore, mode: "insensitive" } },
+        { userType: { equals: withSpace, mode: "insensitive" } },
+      ];
+    }
 
     const [users, total] = await Promise.all([
       prisma.user.findMany({
