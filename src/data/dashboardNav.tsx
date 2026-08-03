@@ -42,7 +42,7 @@ export const dashboardNavItems: NavItem[] = [
   // Primary Dashboard Overview (Available to ALL Roles)
   // =========================
   {
-    name: "Dashboard",
+    name: "Overview",
     href: "/dashboard",
     icon: LayoutDashboard,
     roles: [
