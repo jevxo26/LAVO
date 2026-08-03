@@ -4,78 +4,9 @@ import Link from "next/link";
 import { ServiceCard } from "@/components/marketing/services/ServiceCard";
 import { motion } from "framer-motion";
 import {
-  Shirt,
-  Sparkles,
   ArrowRight,
-  Zap,
-  ZapIcon,
-  RefreshCw,
-  Shield,
 } from "lucide-react";
 import { serviceDetails } from "@/data/servicesDetails";
-
-// const services = [
-//   {
-//     id: "wash-fold",
-//     title: "Wash & Fold",
-//     icon: Shirt,
-//     price: "৳45",
-//     unit: "kg",
-//     time: "12-24 hrs",
-//     description: "Professional washing and neat folding for everyday garments.",
-//     imageUrl: "/images/home/service/servie1.png",
-//   },
-//   {
-//     id: "dry-cleaning",
-//     title: "Dry Cleaning",
-//     icon: Sparkles,
-//     price: "৳150",
-//     unit: "pc",
-//     time: "12-24 hrs",
-//     description: "Expert solvent cleaning for delicate, formal, and specialty garments.",
-//     imageUrl: "/images/home/service/servie2.png",
-//   },
-//   {
-//     id: "wash-iron",
-//     title: "Ironing & Pressing",
-//     icon: ZapIcon,
-//     price: "৳150",
-//     unit: "pc",
-//     time: "12-24 hrs",
-//     description: "Expert solvent cleaning for delicate, formal, and specialty garments.",
-//     imageUrl: "/images/home/service/servie3.png",
-//   },
-//   {
-//     id: "stain-removal",
-//     title: "Stain Removal",
-//     icon: RefreshCw,
-//     price: "৳100",
-//     unit: "pc",
-//     time: "24-48 hrs",
-//     description: "Advanced treatment for stubborn stains without damaging the fabric.",
-//     imageUrl: "/images/home/service/servie4.png",
-//   },
-//   {
-//     id: "commercial-laundry",
-//     title: "Commercial Laundry",
-//     icon: Shield,
-//     price: "Custom",
-//     unit: "order",
-//     time: "24-48 hrs",
-//     description: "Bulk laundry solutions tailored for hotels, hospitals, and businesses.",
-//     imageUrl: "/images/home/service/servie5.png",
-//   },
-//   {
-//     id: "express-laundry",
-//     title: "Express Laundry",
-//     icon: Zap,
-//     price: "৳80",
-//     unit: "kg",
-//     time: "6-12 hrs",
-//     description: "Fast-tracked washing and folding services for your urgent requirements.",
-//     imageUrl: "/images/home/service/servie3.png",
-//   },
-// ];
 
 
 export function HomeServices({ data }: { data?: any }) {
@@ -87,7 +18,8 @@ export function HomeServices({ data }: { data?: any }) {
         staggerChildren: 0.1
       }
     }
-  }; const services = Object.values(serviceDetails).map((service) => {
+  };
+  const services = Object.values(serviceDetails).map((service) => {
     const [price, unit] = service.startingPrice.split("/");
 
     return {
