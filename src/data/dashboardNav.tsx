@@ -123,6 +123,12 @@ export const dashboardNavItems: NavItem[] = [
         icon: Boxes,
         roles: ["SUPER_ADMIN", "ADMIN"],
       },
+      {
+        name: "Partner Applications",
+        href: "/dashboard/partner-applications",
+        icon: FileCheck,
+        roles: ["SUPER_ADMIN", "ADMIN"],
+      },
     ],
   },
   {
@@ -394,7 +400,7 @@ export const dashboardNavItems: NavItem[] = [
     name: "Partner Applications",
     href: "/dashboard/partner-applications",
     icon: FileCheck,
-    roles: ["BRANCH_MANAGER"],
+    roles: ["SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER"],
   },
 
   // =========================
