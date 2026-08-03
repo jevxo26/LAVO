@@ -11,13 +11,13 @@ import {
   Filter,
   Shield,
   Eye,
-  Calendar,
   Globe,
-  Terminal,
-  ArrowRight,
-  Sparkles,
-  CheckCircle2,
   Sliders,
+  Sparkles,
+  ArrowRight,
+  FileText,
+  UserCheck,
+  Tag,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -92,6 +92,99 @@ const FALLBACK_AUDIT_LOGS: AuditLogItem[] = [
   },
 ];
 
+// Helper: Format raw module enum string to human-readable label
+function formatModuleLabel(moduleStr: string): string {
+  const map: Record<string, string> = {
+    PRICING_TAX: "Pricing & Tax",
+    PAYOUTS: "Payouts",
+    ROLE_MANAGEMENT: "Role Management",
+    FEATURE_FLAGS: "Feature Flags",
+    SYSTEM_SETTINGS: "System Settings",
+    USER_MANAGEMENT: "User Management",
+    BRANCH_OPS: "Branch Operations",
+    VENDOR_OPS: "Vendor Operations",
+    AUTH: "Authentication",
+  };
+  if (map[moduleStr.toUpperCase()]) return map[moduleStr.toUpperCase()];
+  return moduleStr
+    .toLowerCase()
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+// Helper: Format raw action enum string to human-readable phrase
+function formatActionLabel(actionStr: string): string {
+  const map: Record<string, string> = {
+    UPDATE_TAX_RATE: "Updated Tax Rate",
+    APPROVE_VENDOR_PAYOUT: "Approved Vendor Payout",
+    ELEVATE_USER_ROLE: "Elevated User Role",
+    TOGGLE_EXPRESS_DELIVERY: "Toggled Express Delivery",
+    UPDATE_DELIVERY_CHARGES: "Updated Delivery Charges",
+    CREATE_BRANCH: "Created Branch",
+    BLOCK_USER: "Blocked User",
+    UPDATE_SETTING: "Updated Setting",
+  };
+  if (map[actionStr.toUpperCase()]) return map[actionStr.toUpperCase()];
+  return actionStr
+    .toLowerCase()
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+// Helper: Format key-value label nicely
+function formatKeyLabel(key: string): string {
+  const map: Record<string, string> = {
+    vatPercentage: "VAT Percentage",
+    expressSurcharge: "Express Surcharge",
+    payoutId: "Payout Reference",
+    status: "Status",
+    amount: "Amount",
+    userId: "User Reference",
+    role: "Assigned Role",
+    feature: "Feature Name",
+    isEnabled: "Feature Status",
+    baseDeliveryFee: "Base Delivery Fee",
+    freeDeliveryMin: "Free Delivery Minimum",
+  };
+  if (map[key]) return map[key];
+  return key
+    .replace(/([A-Z])/g, " $1")
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+// Helper: Format value display
+function formatValueDisplay(key: string, val: any): string {
+  if (val === null || val === undefined) return "None";
+  if (typeof val === "boolean") return val ? "Enabled" : "Disabled";
+  if (key.toLowerCase().includes("vat") || key.toLowerCase().includes("percentage")) return `${val}%`;
+  if (
+    key.toLowerCase().includes("fee") ||
+    key.toLowerCase().includes("amount") ||
+    key.toLowerCase().includes("surcharge") ||
+    key.toLowerCase().includes("min")
+  ) {
+    if (typeof val === "number") return `৳${val.toLocaleString()}`;
+  }
+  return String(val);
+}
+
+// Helper: Parse JSON to structured Key-Value pairs
+function parseJsonToEntries(jsonStr?: string | null): { key: string; label: string; value: string }[] {
+  if (!jsonStr) return [];
+  try {
+    const obj = JSON.parse(jsonStr);
+    if (typeof obj !== "object" || obj === null) return [];
+    return Object.entries(obj).map(([k, v]) => ({
+      key: k,
+      label: formatKeyLabel(k),
+      value: formatValueDisplay(k, v),
+    }));
+  } catch {
+    return [{ key: "value", label: "Raw Value", value: String(jsonStr) }];
+  }
+}
+
 export default function AuditLogsPage() {
   const [logs, setLogs] = useState<AuditLogItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -124,15 +217,21 @@ export default function AuditLogsPage() {
   const filteredLogs = useMemo(() => {
     return logs.filter((log) => {
       const q = search.toLowerCase().trim();
+      const formattedAction = formatActionLabel(log.action).toLowerCase();
+      const formattedModule = formatModuleLabel(log.module).toLowerCase();
+
       const matchesSearch =
         !q ||
         log.id.toLowerCase().includes(q) ||
         log.action.toLowerCase().includes(q) ||
+        formattedAction.includes(q) ||
         log.module.toLowerCase().includes(q) ||
+        formattedModule.includes(q) ||
         log.performedBy.toLowerCase().includes(q) ||
         (log.ipAddress && log.ipAddress.toLowerCase().includes(q));
 
-      const matchesModule = moduleFilter === "ALL" || log.module.toUpperCase() === moduleFilter.toUpperCase();
+      const matchesModule =
+        moduleFilter === "ALL" || log.module.toUpperCase() === moduleFilter.toUpperCase();
 
       return matchesSearch && matchesModule;
     });
@@ -144,16 +243,15 @@ export default function AuditLogsPage() {
     return ["ALL", ...Array.from(mods)];
   }, [logs]);
 
-  // Format JSON diff safely
-  const formatJson = (val?: string | null) => {
-    if (!val) return "None";
-    try {
-      const parsed = JSON.parse(val);
-      return JSON.stringify(parsed, null, 2);
-    } catch {
-      return val;
-    }
-  };
+  // Modal Entries
+  const oldEntries = useMemo(
+    () => parseJsonToEntries(selectedLog?.oldValue),
+    [selectedLog?.oldValue]
+  );
+  const newEntries = useMemo(
+    () => parseJsonToEntries(selectedLog?.newValue),
+    [selectedLog?.newValue]
+  );
 
   return (
     <div className="space-y-7">
@@ -177,7 +275,7 @@ export default function AuditLogsPage() {
               System Audit Logs & Security History
             </h1>
             <p className="mt-1 text-sm text-purple-100 max-w-xl">
-              Cryptographically timestamped audit log of admin overrides, pricing changes, and security events.
+              Recorded timeline of admin overrides, pricing updates, role changes, and security events.
             </p>
           </div>
 
@@ -269,7 +367,7 @@ export default function AuditLogsPage() {
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                 }`}
               >
-                {mod}
+                {mod === "ALL" ? "All Modules" : formatModuleLabel(mod)}
               </button>
             ))}
           </div>
@@ -294,10 +392,10 @@ export default function AuditLogsPage() {
                 <tr className="bg-slate-50/80 border-b border-slate-100 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                   <th className="py-3.5 px-6">Event ID</th>
                   <th className="py-3.5 px-6">Performed By</th>
-                  <th className="py-3.5 px-6">Action & Module</th>
+                  <th className="py-3.5 px-6">Module & Action</th>
                   <th className="py-3.5 px-6">IP Address</th>
                   <th className="py-3.5 px-6">Timestamp</th>
-                  <th className="py-3.5 px-6 text-right">Details & Diff</th>
+                  <th className="py-3.5 px-6 text-right">Details</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -313,10 +411,10 @@ export default function AuditLogsPage() {
 
                     <td className="py-4 px-6 font-bold text-slate-800">
                       <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-purple-50 text-purple-700 border border-purple-200">
-                          {log.module}
+                        <span className="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-purple-50 text-purple-700 border border-purple-200">
+                          {formatModuleLabel(log.module)}
                         </span>
-                        <span>{log.action}</span>
+                        <span className="text-slate-800 font-bold">{formatActionLabel(log.action)}</span>
                       </div>
                     </td>
 
@@ -341,7 +439,7 @@ export default function AuditLogsPage() {
                         onClick={() => setSelectedLog(log)}
                         className="h-8 rounded-xl px-3 text-[11px] font-bold border-slate-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300 gap-1.5"
                       >
-                        <Eye size={13} /> View Diff
+                        <Eye size={13} /> View Details
                       </Button>
                     </td>
                   </tr>
@@ -352,22 +450,22 @@ export default function AuditLogsPage() {
         )}
       </div>
 
-      {/* Audit Log Diff Dialog */}
+      {/* Audit Log Detail Dialog */}
       <Dialog open={!!selectedLog} onOpenChange={(open) => !open && setSelectedLog(null)}>
         {selectedLog && (
           <DialogContent className="max-w-2xl rounded-2xl p-6">
             <DialogHeader className="border-b border-slate-100 pb-4">
               <div className="flex items-center justify-between">
                 <DialogTitle className="text-xl font-extrabold text-slate-900 flex items-center gap-2">
-                  <Terminal size={20} className="text-purple-600" />
-                  Audit Log Details — #{selectedLog.id.slice(-8)}
+                  <FileText size={20} className="text-purple-600" />
+                  Audit Event — #{selectedLog.id.slice(-8)}
                 </DialogTitle>
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-100 text-purple-800">
-                  {selectedLog.module}
+                <span className="px-3 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-800">
+                  {formatModuleLabel(selectedLog.module)}
                 </span>
               </div>
               <DialogDescription className="text-xs text-slate-500 mt-1">
-                Action: <strong className="text-slate-800">{selectedLog.action}</strong> • Recorded at{" "}
+                Action: <strong className="text-slate-800">{formatActionLabel(selectedLog.action)}</strong> • Recorded at{" "}
                 {new Date(selectedLog.createdAt).toLocaleString()}
               </DialogDescription>
             </DialogHeader>
@@ -385,26 +483,50 @@ export default function AuditLogsPage() {
                 </div>
               </div>
 
-              {/* JSON Diff View */}
+              {/* Clean Human-Readable State Comparison */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Old Value */}
-                <div>
-                  <p className="text-[11px] font-bold text-slate-500 uppercase mb-1.5 flex items-center gap-1">
-                    <span className="h-2 w-2 rounded-full bg-rose-500" /> Previous State (Old Value)
-                  </p>
-                  <pre className="rounded-xl border border-slate-200 bg-slate-900 text-rose-300 p-3 font-mono text-[11px] overflow-x-auto max-h-48">
-                    {formatJson(selectedLog.oldValue)}
-                  </pre>
+                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="h-2 w-2 rounded-full bg-rose-500" />
+                    <p className="text-[11px] font-extrabold text-slate-700 uppercase tracking-wider">
+                      Previous State (Old Values)
+                    </p>
+                  </div>
+                  {oldEntries.length === 0 ? (
+                    <p className="text-slate-400 italic text-xs">No previous state recorded.</p>
+                  ) : (
+                    <div className="space-y-2.5">
+                      {oldEntries.map((item) => (
+                        <div key={item.key} className="flex items-center justify-between border-b border-slate-100 pb-1.5">
+                          <span className="font-semibold text-slate-500">{item.label}</span>
+                          <span className="font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded text-xs">{item.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* New Value */}
-                <div>
-                  <p className="text-[11px] font-bold text-slate-500 uppercase mb-1.5 flex items-center gap-1">
-                    <span className="h-2 w-2 rounded-full bg-emerald-500" /> Updated State (New Value)
-                  </p>
-                  <pre className="rounded-xl border border-slate-200 bg-slate-900 text-emerald-300 p-3 font-mono text-[11px] overflow-x-auto max-h-48">
-                    {formatJson(selectedLog.newValue)}
-                  </pre>
+                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                    <p className="text-[11px] font-extrabold text-slate-700 uppercase tracking-wider">
+                      Updated State (New Values)
+                    </p>
+                  </div>
+                  {newEntries.length === 0 ? (
+                    <p className="text-slate-400 italic text-xs">No new state recorded.</p>
+                  ) : (
+                    <div className="space-y-2.5">
+                      {newEntries.map((item) => (
+                        <div key={item.key} className="flex items-center justify-between border-b border-slate-100 pb-1.5">
+                          <span className="font-semibold text-slate-500">{item.label}</span>
+                          <span className="font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded text-xs">{item.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
