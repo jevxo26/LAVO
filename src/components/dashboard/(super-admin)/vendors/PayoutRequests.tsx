@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import { authFetch } from "@/lib/api";
 import { toast } from "sonner";
 import { DollarSign, CheckCircle2, XCircle } from "lucide-react";
 
@@ -11,8 +11,11 @@ export function PayoutRequests() {
 
   const fetchPayouts = async () => {
     try {
-      const res = await axios.get("/api/admin/vendors/payouts");
-      setPayouts(res.data.data || []);
+      const res = await authFetch("/admin/vendors/payouts");
+      const json = await res.json();
+      if (json.success && Array.isArray(json.data)) {
+        setPayouts(json.data);
+      }
     } catch {
       toast.error("Failed to load payout requests");
     } finally {
@@ -26,9 +29,18 @@ export function PayoutRequests() {
 
   const handleProcess = async (id: string, status: "PAID" | "REJECTED") => {
     try {
-      await axios.put(`/api/admin/vendors/payouts/${id}/process`, { status });
-      toast.success(`Payout ${status.toLowerCase()} successfully`);
-      fetchPayouts();
+      const res = await authFetch(`/admin/vendors/payouts/${id}/process`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        toast.success(`Payout ${status.toLowerCase()} successfully`);
+        fetchPayouts();
+      } else {
+        toast.error(json.message || "Failed to process payout request");
+      }
     } catch {
       toast.error("Failed to process payout request");
     }
@@ -67,8 +79,8 @@ export function PayoutRequests() {
             {payouts.map((payout) => (
               <tr key={payout.id} className="text-sm text-slate-600 hover:bg-slate-50/50">
                 <td className="p-4 text-xs font-semibold text-slate-400">{new Date(payout.requestedAt).toLocaleDateString()}</td>
-                <td className="p-4 font-bold text-slate-700">{payout.vendor?.businessName}</td>
-                <td className="p-4 font-bold text-green-600">${payout.amount}</td>
+                <td className="p-4 font-bold text-slate-700">{payout.vendor?.businessName || payout.vendor?.user?.fullName}</td>
+                <td className="p-4 font-bold text-green-600">৳{payout.amount}</td>
                 <td className="p-4 font-semibold text-slate-500">{payout.paymentMethod}</td>
                 <td className="p-4">
                   <span className={`px-2.5 py-1 rounded-lg text-xs font-bold ${
