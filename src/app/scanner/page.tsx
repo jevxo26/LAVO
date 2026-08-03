@@ -1,15 +1,14 @@
 "use client";
 
-import { useAuth } from "@/hooks/useAuth";
-import { ScannerLogin } from "@/components/shared/scanner/ScannerLogin";
-import { ScannerView } from "@/components/shared/scanner/ScannerPage";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
-export default function StandaloneScannerPage() {
-  const { user, token } = useAuth();
+export default function LegacyScannerRedirectPage() {
+  const router = useRouter();
 
-  // If user is logged in, show the full-screen standalone scanner
-  if (token && user) return <ScannerView user={user} />;
+  useEffect(() => {
+    router.replace("/dashboard/scanner");
+  }, [router]);
 
-  // Otherwise show the scanner login form
-  return <ScannerLogin onLogin={(_, u) => {}} />;
+  return null;
 }
