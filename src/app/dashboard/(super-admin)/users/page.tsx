@@ -1,5 +1,14 @@
-import { UserTable } from "@/components/dashboard/(admin)/users/Table"
+"use client";
+
+import React from "react";
+import { UserManagementTable } from "@/components/dashboard/shared/UserManagementTable";
 
 export default function UsersPage() {
-  return <UserTable />
+  return (
+    <UserManagementTable
+      title="All System Users Directory"
+      description="Overview and governance of all user accounts across all platform roles."
+      roleFilter=""
+    />
+  );
 }

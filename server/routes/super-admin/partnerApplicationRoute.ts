@@ -19,13 +19,14 @@ router.post(
 router.get(
   "/",
   requireAuth,
-  restrictTo("ADMIN", "BRANCH_MANAGER"),
+  restrictTo("SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER"),
   getAllPartnerApplicationsController
 );
+
 router.patch(
   "/:id",
   requireAuth,
-  restrictTo("ADMIN"),
+  restrictTo("SUPER_ADMIN"),
   updatePartnerApplicationController
 );
 

@@ -4,7 +4,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import {
   Clock, ArrowRight, Inbox, Search,
-  RotateCcw, Filter, ChevronUp, ChevronDown,
+  RotateCcw, Filter, ChevronUp, ChevronDown, MessageSquare,
 } from "lucide-react";
 import { authFetch } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -330,14 +330,13 @@ export function SupportTicketsTab() {
                     </td>
 
                     {/* Action */}
-                    <td className="px-4 py-3.5 text-right">
+                    <td className="px-4 py-3.5 text-right whitespace-nowrap">
                       <Link href={`/dashboard/support/${t.id}`}>
                         <Button
                           size="sm"
-                          variant="ghost"
-                          className="h-8 rounded-xl px-3 text-[11px] font-bold text-indigo-600 hover:bg-indigo-100 hover:text-indigo-700 gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="h-8 rounded-xl px-3 text-[11px] font-extrabold bg-indigo-600 hover:bg-indigo-700 text-white gap-1.5 shadow-sm transition-all"
                         >
-                          Open <ArrowRight size={11} />
+                          <MessageSquare size={13} /> Respond & Chat
                         </Button>
                       </Link>
                     </td>
