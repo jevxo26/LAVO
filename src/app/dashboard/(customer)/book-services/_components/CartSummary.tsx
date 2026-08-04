@@ -1,9 +1,14 @@
 "use client";
 
 import React from "react";
-import { Trash2, Plus, Minus, ShoppingBag, CreditCard, Wallet, Sparkles, Loader2 } from "lucide-react";
+import {
+  Trash2, Plus, Minus, ShoppingBag, CreditCard, Wallet,
+  Sparkles, Loader2, ShieldCheck, AlertCircle, ArrowUpRight, Banknote
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { CartItem, PaymentMethod } from "../_types";
+import Link from "next/link";
+import { motion } from "framer-motion";
 
 interface CartSummaryProps {
   cart: CartItem[];
@@ -36,17 +41,19 @@ export function CartSummary({
   onPaymentMethodChange,
   children,
 }: CartSummaryProps) {
+  const isWalletInsufficient = paymentMethod === "WALLET" && walletBalance < grandTotal && grandTotal > 0;
+
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-100/60 overflow-hidden">
+    <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xl overflow-hidden dark:bg-slate-900 dark:border-slate-800">
       {/* Header */}
-      <div className="px-6 py-4 bg-gradient-to-r from-slate-900 to-slate-800 flex items-center justify-between">
+      <div className="px-6 py-5 bg-gradient-to-br from-indigo-950 via-indigo-900 to-slate-900 flex items-center justify-between text-white border-b border-indigo-800/40">
         <div>
-          <h2 className="text-white font-bold text-base">Booking Summary</h2>
-          <p className="text-slate-400 text-xs mt-0.5">Configure items &amp; schedule</p>
+          <h2 className="text-white font-black text-base tracking-tight">Booking Summary &amp; Checkout</h2>
+          <p className="text-indigo-200 text-xs mt-0.5 font-medium">Review garments, schedule, &amp; payment</p>
         </div>
-        <div className="bg-white/10 rounded-xl px-3 py-1.5 flex items-center gap-1.5">
-          <ShoppingBag size={13} className="text-slate-300" />
-          <span className="text-white text-xs font-bold">
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl px-3.5 py-1.5 flex items-center gap-2 border border-white/15">
+          <ShoppingBag size={14} className="text-indigo-200" />
+          <span className="text-white text-xs font-black">
             {cart.length} item{cart.length !== 1 ? "s" : ""}
           </span>
         </div>
@@ -56,56 +63,56 @@ export function CartSummary({
         {/* Cart Items */}
         {cart.length === 0 ? (
           <div className="text-center py-10">
-            <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
-              <ShoppingBag size={22} className="text-slate-300" />
+            <div className="w-16 h-16 bg-indigo-50 dark:bg-indigo-950/50 rounded-3xl flex items-center justify-center mx-auto mb-3 text-indigo-500">
+              <ShoppingBag size={26} />
             </div>
-            <p className="text-slate-400 text-sm font-medium">No items selected</p>
-            <p className="text-slate-300 text-xs mt-1">Pick services from the left</p>
+            <p className="text-slate-800 dark:text-slate-200 text-sm font-black">No services selected</p>
+            <p className="text-slate-400 text-xs mt-1 font-medium">Choose laundry items from the left menu to build your order.</p>
           </div>
         ) : (
           <div className="space-y-3">
             {cart.map((item) => (
-              <div key={item.service.id} className="bg-slate-50/60 rounded-xl p-3.5 border border-slate-100 space-y-3">
+              <div key={item.service.id} className="bg-slate-50/80 dark:bg-slate-800/60 rounded-2xl p-4 border border-slate-200/60 dark:border-slate-700/60 space-y-3">
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0 pr-2">
-                    <h4 className="text-sm font-bold text-slate-900 truncate">{item.service.serviceName}</h4>
-                    <p className="text-xs text-indigo-500 font-semibold mt-0.5">
-                      ৳{item.service.basePrice.toFixed(2)} / piece
+                    <h4 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white truncate">{item.service.serviceName}</h4>
+                    <p className="text-xs text-indigo-600 dark:text-indigo-400 font-extrabold mt-0.5">
+                      ৳{item.service.basePrice.toFixed(2)} / item
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="flex items-center bg-white border border-slate-200 rounded-lg overflow-hidden">
+                    <div className="flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-xs">
                       <button
                         type="button"
                         onClick={() => onUpdateQuantity(item.service.id, -1)}
-                        className="px-2 py-1.5 text-slate-500 hover:bg-slate-50 transition-colors"
+                        className="px-2.5 py-1.5 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                       >
-                        <Minus size={11} />
+                        <Minus size={12} />
                       </button>
-                      <span className="px-2.5 text-xs font-extrabold text-slate-800 min-w-[20px] text-center">
+                      <span className="px-3 text-xs font-black text-slate-900 dark:text-white min-w-[22px] text-center">
                         {item.quantity}
                       </span>
                       <button
                         type="button"
                         onClick={() => onUpdateQuantity(item.service.id, 1)}
-                        className="px-2 py-1.5 text-slate-500 hover:bg-slate-50 transition-colors"
+                        className="px-2.5 py-1.5 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                       >
-                        <Plus size={11} />
+                        <Plus size={12} />
                       </button>
                     </div>
                     <button
                       type="button"
                       onClick={() => onRemove(item.service.id)}
-                      className="p-1.5 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
+                      className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all dark:hover:bg-rose-950/40"
                     >
-                      <Trash2 size={13} />
+                      <Trash2 size={14} />
                     </button>
                   </div>
                 </div>
 
                 {item.service.addons.length > 0 && (
-                  <div className="space-y-2">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Add-ons</p>
+                  <div className="space-y-1.5 pt-1">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Garment Care Treatments</p>
                     <div className="flex flex-wrap gap-1.5">
                       {item.service.addons.map((addon) => {
                         const isChecked = item.selectedAddons.includes(addon.id);
@@ -114,14 +121,14 @@ export function CartSummary({
                             key={addon.id}
                             type="button"
                             onClick={() => onToggleAddon(item.service.id, addon.id)}
-                            className={`text-[10px] px-2.5 py-1.5 rounded-lg border font-semibold transition-all ${
+                            className={`text-[11px] px-3 py-1 rounded-xl border font-bold transition-all ${
                               isChecked
-                                ? "bg-indigo-600 border-indigo-600 text-white"
-                                : "bg-white border-slate-200 text-slate-500 hover:border-indigo-200 hover:text-indigo-600"
+                                ? "bg-indigo-600 border-indigo-600 text-white shadow-sm"
+                                : "bg-white border-slate-200 text-slate-600 hover:border-indigo-300 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300"
                             }`}
                           >
                             {addon.addonName}{" "}
-                            <span className="opacity-70">+৳{addon.price}</span>
+                            <span className="opacity-80 font-black">+৳{addon.price}</span>
                           </button>
                         );
                       })}
@@ -136,78 +143,136 @@ export function CartSummary({
         {/* PickupForm injected here */}
         {children}
 
-        {/* Payment Method */}
-        <div className="space-y-3 pt-2 border-t border-slate-100">
-          <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-widest">
-            Payment Method
-          </h3>
-          <div className="grid grid-cols-2 gap-2.5">
-            {(["ONLINE", "WALLET"] as PaymentMethod[]).map((method) => {
-              const isOnline = method === "ONLINE";
-              const isActive = paymentMethod === method;
-              return (
-                <button
-                  key={method}
-                  type="button"
-                  onClick={() => onPaymentMethodChange(method)}
-                  className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 font-bold transition-all gap-2 ${
-                    isActive
-                      ? "bg-indigo-50 border-indigo-500 text-indigo-600"
-                      : "bg-white border-slate-200 text-slate-500 hover:border-slate-300"
-                  }`}
-                >
-                  {isOnline ? <CreditCard size={20} /> : <Wallet size={20} />}
-                  <span className="text-[11px]">{isOnline ? "SSLCommerz" : "Wallet"}</span>
-                  <span className={`text-[9px] px-2 py-0.5 rounded-full ${
-                    isActive ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-500"
-                  }`}>
-                    {isOnline ? "Online" : `৳${walletBalance.toFixed(2)}`}
-                  </span>
-                </button>
-              );
-            })}
+        {/* ── Payment Section Overhaul ────────────────────────────────────────── */}
+        <div className="space-y-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+              <CreditCard size={13} /> Select Payment Method
+            </h3>
+            <span className="text-[10px] font-extrabold text-emerald-600 flex items-center gap-1">
+              <ShieldCheck size={11} /> 256-Bit SSL Encrypted
+            </span>
           </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* SSLCommerz Online Payment */}
+            <button
+              type="button"
+              onClick={() => onPaymentMethodChange("ONLINE")}
+              className={`relative flex flex-col items-start justify-between p-4 rounded-2xl border-2 transition-all duration-200 text-left ${
+                paymentMethod === "ONLINE"
+                  ? "bg-gradient-to-br from-indigo-50/90 via-white to-purple-50/90 border-indigo-600 text-indigo-900 shadow-md dark:bg-slate-800 dark:border-indigo-500 dark:text-white"
+                  : "bg-white border-slate-200 text-slate-700 hover:border-slate-300 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300"
+              }`}
+            >
+              <div className="flex items-center justify-between w-full">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-sm">
+                  <CreditCard size={18} />
+                </div>
+                <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full ${
+                  paymentMethod === "ONLINE"
+                    ? "bg-indigo-600 text-white"
+                    : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+                }`}>
+                  Cards / MFS
+                </span>
+              </div>
+
+              <div className="mt-3">
+                <p className="text-xs font-black text-slate-900 dark:text-white">SSLCommerz Online</p>
+                <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400 mt-0.5">
+                  bKash, Nagad, Rocket, Visa &amp; Mastercard
+                </p>
+              </div>
+            </button>
+
+            {/* LAVO Pay Wallet */}
+            <button
+              type="button"
+              onClick={() => onPaymentMethodChange("WALLET")}
+              className={`relative flex flex-col items-start justify-between p-4 rounded-2xl border-2 transition-all duration-200 text-left ${
+                paymentMethod === "WALLET"
+                  ? "bg-gradient-to-br from-indigo-50/90 via-white to-purple-50/90 border-indigo-600 text-indigo-900 shadow-md dark:bg-slate-800 dark:border-indigo-500 dark:text-white"
+                  : "bg-white border-slate-200 text-slate-700 hover:border-slate-300 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300"
+              }`}
+            >
+              <div className="flex items-center justify-between w-full">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-600 text-white shadow-sm">
+                  <Wallet size={18} />
+                </div>
+                <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full ${
+                  paymentMethod === "WALLET"
+                    ? "bg-purple-600 text-white"
+                    : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+                }`}>
+                  ৳{walletBalance.toFixed(2)}
+                </span>
+              </div>
+
+              <div className="mt-3">
+                <p className="text-xs font-black text-slate-900 dark:text-white">LAVO Pay Wallet</p>
+                <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400 mt-0.5">
+                  Instant 1-tap checkout with cashbacks
+                </p>
+              </div>
+            </button>
+          </div>
+
+          {/* Insufficient Wallet Warning Alert */}
+          {isWalletInsufficient && (
+            <div className="flex items-center justify-between p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 dark:bg-amber-950/40 dark:border-amber-900/60 dark:text-amber-300">
+              <div className="flex items-center gap-2.5">
+                <AlertCircle size={16} className="text-amber-600 shrink-0" />
+                <p className="text-xs font-extrabold">
+                  Insufficient Balance (Short ৳{(grandTotal - walletBalance).toFixed(2)})
+                </p>
+              </div>
+              <Link href="/dashboard/wallet" target="_blank" className="text-xs font-black text-indigo-600 underline flex items-center gap-1">
+                Top Up <ArrowUpRight size={12} />
+              </Link>
+            </div>
+          )}
         </div>
 
         {/* Price Breakdown */}
         {cart.length > 0 && (
-          <div className="bg-slate-50 rounded-xl p-4 space-y-2.5 border border-slate-100">
-            <div className="flex justify-between text-xs text-slate-500">
+          <div className="bg-slate-50 dark:bg-slate-800/60 rounded-2xl p-4.5 space-y-2.5 border border-slate-200/60 dark:border-slate-700/60">
+            <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 font-medium">
               <span>Items Subtotal</span>
-              <span className="font-semibold text-slate-700">৳{subtotal.toFixed(2)}</span>
+              <span className="font-black text-slate-900 dark:text-white">৳{subtotal.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between text-xs text-slate-500">
-              <span>Delivery Charge</span>
-              <span className={`font-semibold ${deliveryCharge === 0 ? "text-emerald-600" : "text-slate-700"}`}>
+            <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 font-medium">
+              <span>Express Delivery Charge</span>
+              <span className={`font-black ${deliveryCharge === 0 ? "text-emerald-600 dark:text-emerald-400" : "text-slate-900 dark:text-white"}`}>
                 {deliveryCharge === 0 ? "FREE" : `৳${deliveryCharge.toFixed(2)}`}
               </span>
             </div>
-            <div className="flex justify-between text-xs text-slate-500">
-              <span>VAT / Tax (5%)</span>
-              <span className="font-semibold text-slate-700">৳{tax.toFixed(2)}</span>
+            <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 font-medium">
+              <span>VAT / Service Tax (5%)</span>
+              <span className="font-black text-slate-900 dark:text-white">৳{tax.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between items-center pt-2.5 border-t border-slate-200">
-              <span className="text-sm font-extrabold text-slate-900">Grand Total</span>
-              <span className="text-lg font-extrabold text-indigo-600">৳{grandTotal.toFixed(2)}</span>
+            <div className="flex justify-between items-center pt-3 border-t border-slate-200 dark:border-slate-700">
+              <span className="text-sm font-black text-slate-900 dark:text-white">Grand Total</span>
+              <span className="text-xl font-black text-indigo-600 dark:text-indigo-400">৳{grandTotal.toFixed(2)}</span>
             </div>
           </div>
         )}
 
-        {/* Submit */}
+        {/* Submit Button */}
         <Button
           type="submit"
-          disabled={submitting || cart.length === 0}
-          className="w-full h-12 rounded-xl font-bold text-sm bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white shadow-lg shadow-indigo-200 transition-all disabled:opacity-50 disabled:shadow-none"
+          disabled={submitting || cart.length === 0 || isWalletInsufficient}
+          className="w-full h-12 rounded-2xl font-black text-xs bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30 transition-all hover:scale-[1.01] disabled:opacity-50 disabled:shadow-none gap-2"
         >
           {submitting ? (
             <span className="flex items-center gap-2">
               <Loader2 size={16} className="animate-spin" />
-              Placing Order...
+              Processing Booking Request...
             </span>
           ) : (
             <span className="flex items-center gap-2">
-              <Sparkles size={15} />
-              Place &amp; Confirm Order
+              <Sparkles size={16} />
+              Place &amp; Confirm Laundry Order
             </span>
           )}
         </Button>

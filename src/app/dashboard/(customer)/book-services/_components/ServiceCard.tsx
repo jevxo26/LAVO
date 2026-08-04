@@ -1,7 +1,8 @@
 "use client";
 
-import { Heart, Clock, Tag, Plus, ChevronRight } from "lucide-react";
+import { Heart, Clock, Tag, Plus, Check, Shirt } from "lucide-react";
 import type { Service } from "../_types";
+import { motion } from "framer-motion";
 
 interface ServiceCardProps {
   service: Service;
@@ -12,65 +13,69 @@ interface ServiceCardProps {
 
 export function ServiceCard({ service, inCart, onAdd, onToggleWishlist }: ServiceCardProps) {
   return (
-    <div
-      className={`relative bg-white rounded-2xl border transition-all duration-200 overflow-hidden ${
+    <motion.div
+      whileHover={{ y: -3 }}
+      className={`relative bg-white dark:bg-slate-900 rounded-3xl border transition-all duration-200 overflow-hidden ${
         inCart
-          ? "border-indigo-300 shadow-md shadow-indigo-50 ring-1 ring-indigo-200"
-          : "border-slate-100 shadow-sm hover:shadow-md hover:border-slate-200"
+          ? "border-indigo-500 shadow-md shadow-indigo-500/10 ring-1 ring-indigo-400"
+          : "border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-indigo-200"
       }`}
     >
       {inCart && (
-        <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-indigo-500 to-violet-500" />
+        <div className="absolute top-0 left-0 right-0 h-1 bg-indigo-600" />
       )}
-      <div className="p-5">
-        <div className="flex items-start justify-between mb-3">
+      
+      <div className="p-5 space-y-3.5">
+        <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0 pr-2">
-            <h3 className="font-bold text-slate-900 text-sm leading-tight">{service.serviceName}</h3>
-            <div className="flex items-center gap-2 mt-1.5">
-              <span className="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-medium">
+            <h3 className="font-black text-slate-900 dark:text-white text-sm leading-tight">{service.serviceName}</h3>
+            <div className="flex flex-wrap items-center gap-2 mt-1.5">
+              <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2.5 py-0.5 rounded-xl font-extrabold">
                 {service.garmentType}
               </span>
-              <span className="text-[10px] text-slate-400 flex items-center gap-1">
-                <Clock size={9} />
+              <span className="text-[10px] text-slate-400 font-bold flex items-center gap-1">
+                <Clock size={11} />
                 {service.estimatedTime}
               </span>
             </div>
           </div>
+
           <button
             onClick={() => onToggleWishlist(service)}
-            className={`p-2 rounded-xl border transition-all flex-shrink-0 ${
+            className={`p-2 rounded-2xl border transition-all flex-shrink-0 ${
               service.isWishlisted
-                ? "bg-rose-50 text-rose-500 border-rose-100"
-                : "bg-slate-50 text-slate-300 border-slate-100 hover:text-rose-400 hover:bg-rose-50 hover:border-rose-100"
+                ? "bg-rose-50 text-rose-500 border-rose-200 dark:bg-rose-950/40 dark:border-rose-900/60"
+                : "bg-slate-50 text-slate-300 border-slate-200 hover:text-rose-500 hover:bg-rose-50 dark:bg-slate-800 dark:border-slate-700"
             }`}
           >
-            <Heart size={13} fill={service.isWishlisted ? "currentColor" : "none"} />
+            <Heart size={14} fill={service.isWishlisted ? "currentColor" : "none"} />
           </button>
         </div>
 
-        <div className="flex items-center justify-between pt-3 border-t border-slate-50">
+        <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800">
           <div>
-            <span className="text-xl font-extrabold text-slate-900">৳{service.basePrice.toFixed(2)}</span>
+            <span className="text-xl font-black text-slate-900 dark:text-white">৳{service.basePrice.toFixed(2)}</span>
             {service.addons.length > 0 && (
-              <span className="text-[10px] text-slate-400 ml-1.5 inline-flex items-center gap-0.5">
-                <Tag size={8} />
-                {service.addons.length} add-ons
+              <span className="text-[10px] font-bold text-slate-400 ml-1.5 inline-flex items-center gap-0.5">
+                <Tag size={10} />
+                {service.addons.length} treatments
               </span>
             )}
           </div>
+
           <button
             onClick={() => onAdd(service)}
             disabled={inCart}
-            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-black transition-all ${
               inCart
-                ? "bg-indigo-600 text-white cursor-default"
-                : "bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white border border-indigo-100"
+                ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
+                : "bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white dark:bg-indigo-950/50 dark:text-indigo-300"
             }`}
           >
-            {inCart ? <><ChevronRight size={12} /> Added</> : <><Plus size={12} /> Add</>}
+            {inCart ? <><Check size={13} /> Added</> : <><Plus size={13} /> Add</>}
           </button>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
