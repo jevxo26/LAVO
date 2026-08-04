@@ -1,31 +1,92 @@
 "use client";
 
-import React from "react";
-import { Search, Bell, SearchIcon } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import React, { useEffect, useState } from "react";
+import { NavbarGreeting } from "./NavbarGreeting";
+import { NavbarSearch } from "./NavbarSearch";
+import { NavbarUserMenu } from "./NavbarUserMenu";
+import { useAppSelector } from "@/store/store";
 
 export function Navbar() {
+  const reduxUser = useAppSelector((s) => s.auth.user);
+
+  const [userInfo, setUserInfo] = useState({
+    fullName: reduxUser?.fullName || "User",
+    email: reduxUser?.email || "",
+    userRole: reduxUser?.userType || "CUSTOMER",
+    avatarUrl: reduxUser?.profileImage || "",
+  });
+
+  // Keep state synchronized with Redux user or fetch profile details
+  useEffect(() => {
+    if (reduxUser) {
+      setUserInfo({
+        fullName: reduxUser.fullName || "User",
+        email: reduxUser.email || "",
+        userRole: (reduxUser.userType || "CUSTOMER").toUpperCase().replace(/\s+/g, "_"),
+        avatarUrl: reduxUser.profileImage || "",
+      });
+      return;
+    }
+
+    // Fallback: Fetch user details from profile endpoint or token decode
+    const loadProfileFallback = async () => {
+      try {
+        const token = typeof window !== "undefined" ? localStorage.getItem("laundrix_token") : null;
+        if (!token) return;
+
+        // Decode JWT token for fast initial display
+        const parts = token.split(".");
+        if (parts.length === 3) {
+          const payload = JSON.parse(atob(parts[1].replace(/-/g, "+").replace(/_/g, "/")));
+          const rawRole = payload?.role || payload?.userType || "CUSTOMER";
+          setUserInfo((prev) => ({
+            ...prev,
+            email: payload?.email || prev.email,
+            userRole: rawRole.toUpperCase().replace(/\s+/g, "_"),
+          }));
+        }
+
+        // Fetch authoritative profile details
+        const res = await fetch("/api/profile/update", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const json = await res.json();
+        if (json.success && json.data) {
+          setUserInfo({
+            fullName: json.data.fullName || "User",
+            email: json.data.email || "",
+            userRole: (json.data.role || "CUSTOMER").toUpperCase().replace(/\s+/g, "_"),
+            avatarUrl: json.data.profileImage || "",
+          });
+        }
+      } catch {
+        // Fallback silently if unauthenticated
+      }
+    };
+
+    loadProfileFallback();
+  }, [reduxUser]);
+
   return (
-    <header className="h-16 flex items-center justify-between px-6 bg-white/40 backdrop-blur-md border-b border-white/20 sticky top-0 z-10 shadow-[0_4px_30px_rgba(0,0,0,0.02)]">
-      <div className="flex-1 max-w-xl">
-        <div className="relative group">
-          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400 group-focus-within:text-indigo-500 transition-colors">
-            <SearchIcon size={18} />
-          </div>
-          <Input
-            type="text"
-            placeholder="Search..."
-            className="w-full pl-10 pr-4 py-2 bg-white/50 border-white/30 focus-visible:ring-indigo-500/50 focus-visible:border-indigo-500 rounded-xl transition-all shadow-sm backdrop-blur-sm"
-          />
-        </div>
+    <header className="w-full bg-gradient-to-r from-blue-50/50 via-slate-50/80 to-indigo-50/40 backdrop-blur-xl border-b border-slate-200/50 px-4 sm:px-6 py-3 flex items-center justify-between gap-4 sticky top-0 z-30 shadow-2xs">
+      {/* Dynamic Greeting */}
+      <div className="shrink-0 max-w-[240px] sm:max-w-xs">
+        <NavbarGreeting fullName={userInfo.fullName} userRole={userInfo.userRole} />
       </div>
 
-      <div className="flex items-center space-x-4">
-        <button className="relative p-2 rounded-full hover:bg-white/50 transition-colors text-slate-600 hover:text-indigo-600">
-          <Bell size={20} />
-          <span className="absolute top-1.5 right-1.5 h-2.5 w-2.5 rounded-full bg-red-500 border-2 border-white"></span>
-        </button>
+      {/* Pill Search Bar */}
+      <div className="flex-1 max-w-md hidden md:block">
+        <NavbarSearch />
       </div>
+
+      {/* Right Notifications & Profile Menu */}
+      <NavbarUserMenu
+        fullName={userInfo.fullName}
+        email={userInfo.email}
+        userRole={userInfo.userRole}
+        avatarUrl={userInfo.avatarUrl}
+        unreadNotificationsCount={3}
+      />
     </header>
   );
 }

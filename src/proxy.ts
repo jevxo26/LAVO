@@ -52,6 +52,7 @@ const ROLE_ROUTES: { prefix: string; allowed: string[] }[] = [
   // Employee Routes
   // =========================
   { prefix: "/dashboard/intake-orders",         allowed: ["SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER", "EMPLOYEE"] },
+  { prefix: "/dashboard/scanner",               allowed: ["SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER", "EMPLOYEE"] },
 
   // =========================
   // Delivery Agent Routes
@@ -83,7 +84,8 @@ const ROLE_ROUTES: { prefix: string; allowed: string[] }[] = [
   { prefix: "/dashboard/services",              allowed: ["SUPER_ADMIN", "ADMIN"] },
   { prefix: "/dashboard/finance",               allowed: ["SUPER_ADMIN", "ADMIN"] },
   { prefix: "/dashboard/support",               allowed: ["SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER"] },
-  { prefix: "/dashboard/settings",              allowed: ["SUPER_ADMIN", "ADMIN"] },
+  { prefix: "/dashboard/profile",               allowed: ["SUPER_ADMIN", "ADMIN", "VENDOR", "BRANCH_MANAGER", "EMPLOYEE", "DELIVERY_AGENT", "PICKUP_AGENT", "CUSTOMER"] },
+  { prefix: "/dashboard/settings",              allowed: ["SUPER_ADMIN", "ADMIN", "VENDOR", "BRANCH_MANAGER", "EMPLOYEE", "DELIVERY_AGENT", "PICKUP_AGENT", "CUSTOMER"] },
   { prefix: "/dashboard/logistics",             allowed: ["SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER"] },
 ];
 

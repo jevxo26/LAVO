@@ -1,10 +1,13 @@
 "use client";
 
-import { Loader2, Sparkles } from "lucide-react";
+import React, { useState } from "react";
+import { Loader2, Sparkles, Shirt, Wallet, ShoppingBag, Search, RotateCcw } from "lucide-react";
 import { useBooking } from "./_hooks/useBooking";
 import { ServiceCard } from "./_components/ServiceCard";
 import { CartSummary } from "./_components/CartSummary";
 import { PickupForm } from "./_components/PickupForm";
+import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
 
 export default function BookLaundryPage() {
   const {
@@ -24,99 +27,154 @@ export default function BookLaundryPage() {
     pickupLon, setPickupLon,
   } = useBooking();
 
-  const filteredServices = services.filter((s) => s.category === activeCategory);
-  const countByCategory = (cat: string) => services.filter((s) => s.category === cat).length;
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredServices = services.filter((s) => {
+    const matchesCat = !activeCategory || activeCategory === "All" || s.category === activeCategory;
+    const matchesSearch = !searchQuery.trim() ||
+      s.serviceName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.garmentType.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.category.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCat && matchesSearch;
+  });
+
+  const allCategories = ["All", ...categories];
+  const countByCategory = (cat: string) =>
+    cat === "All" ? services.length : services.filter((s) => s.category === cat).length;
 
   if (loading) {
     return (
       <div className="flex h-[60vh] flex-col items-center justify-center gap-3">
-        <div className="w-16 h-16 rounded-full bg-indigo-50 flex items-center justify-center">
-          <Loader2 size={28} className="text-indigo-600 animate-spin" />
+        <div className="w-16 h-16 rounded-3xl bg-indigo-50 dark:bg-indigo-950/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+          <Loader2 size={28} className="animate-spin" />
         </div>
-        <p className="text-slate-500 font-medium text-sm">Loading services...</p>
+        <p className="text-slate-400 font-bold text-xs">Loading laundry services...</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-0">
-      {/* Hero Header */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-700 px-8 py-10 mb-8">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-white transform translate-x-16 -translate-y-16" />
-          <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full bg-white transform -translate-x-10 translate-y-10" />
+    <motion.div
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35 }}
+      className="space-y-7"
+    >
+      {/* ── 1. Executive Hero Header ───────────────────────────────────────── */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-950 via-indigo-900 to-slate-900 p-7 md:p-9 text-white shadow-2xl border border-indigo-800/40">
+        <div className="pointer-events-none absolute inset-0 opacity-20">
+          <div className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-indigo-500 blur-3xl" />
+          <div className="absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-purple-500 blur-3xl" />
         </div>
-        <div className="relative z-10 flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <Sparkles size={16} className="text-indigo-200" />
-              <span className="text-indigo-200 text-xs font-semibold uppercase tracking-widest">
-                Premium Service
+
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+          <div className="space-y-2 max-w-xl">
+            <div className="flex items-center gap-2">
+              <Sparkles size={14} className="text-indigo-300" />
+              <span className="text-indigo-200 text-xs font-black uppercase tracking-widest">
+                Express Laundry &amp; Dry Cleaning Booking
               </span>
             </div>
-            <h1 className="text-3xl font-extrabold text-white tracking-tight">
-              Book Laundry Services
+            <h1 className="text-3xl md:text-4xl font-black tracking-tight text-white leading-tight">
+              Book Laundry Service
             </h1>
-            <p className="text-indigo-200 mt-1.5 text-sm">
-              Pick your garments, add treatments, and schedule home collection.
+            <p className="text-indigo-100 text-xs md:text-sm leading-relaxed font-medium">
+              Select your garments, choose specialized care treatments, and schedule doorstep collection.
             </p>
           </div>
-          <div className="hidden md:flex items-center gap-3">
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3 text-center border border-white/20">
-              <p className="text-indigo-200 text-xs font-medium">Wallet Balance</p>
-              <p className="text-white font-extrabold text-lg">৳{walletBalance.toFixed(2)}</p>
+
+          <div className="flex items-center gap-3 shrink-0">
+            <div className="rounded-2xl bg-white/10 border border-white/15 backdrop-blur-xl px-5 py-3 text-center min-w-[110px] shadow-inner">
+              <p className="text-indigo-200 text-[10px] font-black uppercase tracking-wider">Wallet Credit</p>
+              <p className="text-white font-black text-xl leading-tight mt-0.5">৳{walletBalance.toFixed(2)}</p>
             </div>
             {cart.length > 0 && (
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3 text-center border border-white/20">
-                <p className="text-indigo-200 text-xs font-medium">Items in Cart</p>
-                <p className="text-white font-extrabold text-lg">{cart.length}</p>
+              <div className="rounded-2xl bg-white/10 border border-white/15 backdrop-blur-xl px-4 py-3 text-center min-w-[90px] shadow-inner">
+                <p className="text-indigo-200 text-[10px] font-black uppercase tracking-wider">Cart Items</p>
+                <p className="text-white font-black text-xl leading-tight mt-0.5">{cart.length}</p>
               </div>
             )}
           </div>
         </div>
       </div>
 
+      {/* ── 2. Balanced Dual-Wing Workspace Layout ───────────────────────────── */}
       <div className="grid gap-8 lg:grid-cols-12 items-start">
-        {/* Left: Services */}
-        <div className="lg:col-span-7 space-y-6">
-          {/* Category Tabs */}
-          <div className="flex flex-wrap gap-2">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold transition-all duration-200 ${
-                  activeCategory === cat
-                    ? "bg-indigo-600 text-white shadow-lg shadow-indigo-200"
-                    : "bg-white text-slate-600 border border-slate-200 hover:border-indigo-200 hover:text-indigo-600"
-                }`}
-              >
-                {cat}
-                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-extrabold ${
-                  activeCategory === cat ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500"
-                }`}>
-                  {countByCategory(cat)}
-                </span>
-              </button>
-            ))}
+        {/* Left Wing: Garment Catalog (6 Cols Wide) */}
+        <div className="lg:col-span-6 space-y-6">
+          <div className="space-y-4 rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800">
+            <div className="relative">
+              <Search className="absolute left-3.5 top-3 text-slate-400" size={15} />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search laundry services (e.g. Wash &amp; Iron, Suit, Dry Clean)..."
+                className="w-full h-10 rounded-2xl border border-slate-200 bg-slate-50/80 pl-10 pr-4 text-xs font-bold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+              />
+            </div>
+
+            {/* Category Pills */}
+            <div className="flex flex-wrap items-center gap-2">
+              {allCategories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setActiveCategory(cat === "All" ? "" : cat)}
+                  className={`flex items-center gap-2 px-3.5 py-2 rounded-2xl text-xs font-black transition-all duration-200 ${
+                    (!activeCategory && cat === "All") || activeCategory === cat
+                      ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
+                      : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300"
+                  }`}
+                >
+                  {cat}
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-black ${
+                    (!activeCategory && cat === "All") || activeCategory === cat
+                      ? "bg-white/25 text-white"
+                      : "bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200"
+                  }`}>
+                    {countByCategory(cat)}
+                  </span>
+                </button>
+              ))}
+
+              {searchQuery && (
+                <Button
+                  variant="ghost"
+                  onClick={() => { setSearchQuery(""); setActiveCategory(""); }}
+                  className="h-9 px-3 rounded-xl text-xs font-black text-slate-500 hover:text-rose-600 gap-1.5 ml-auto"
+                >
+                  <RotateCcw size={13} /> Clear
+                </Button>
+              )}
+            </div>
           </div>
 
           {/* Services Grid */}
-          <div className="grid gap-4 sm:grid-cols-2">
-            {filteredServices.map((service) => (
-              <ServiceCard
-                key={service.id}
-                service={service}
-                inCart={cart.some((i) => i.service.id === service.id)}
-                onAdd={addToCart}
-                onToggleWishlist={toggleWishlist}
-              />
-            ))}
-          </div>
+          {filteredServices.length === 0 ? (
+            <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white py-16 text-center dark:bg-slate-900 dark:border-slate-800">
+              <p className="text-sm font-black text-slate-900 dark:text-white">No services found</p>
+              <p className="mt-1 text-xs text-slate-400 font-medium">Try clearing your search query or choosing another category.</p>
+              <Button onClick={() => { setSearchQuery(""); setActiveCategory(""); }} variant="outline" className="mt-4 h-9 px-4 rounded-xl text-xs font-black gap-1.5 border-slate-200">
+                <RotateCcw size={13} /> Reset Filters
+              </Button>
+            </div>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {filteredServices.map((service) => (
+                <ServiceCard
+                  key={service.id}
+                  service={service}
+                  inCart={cart.some((i) => i.service.id === service.id)}
+                  onAdd={addToCart}
+                  onToggleWishlist={toggleWishlist}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Right: Booking Summary */}
-        <div className="lg:col-span-5">
+        {/* Right Wing: Booking & Checkout Studio Card (6 Cols Wide) */}
+        <div className="lg:col-span-6">
           <div className="sticky top-6">
             <form onSubmit={handleSubmit}>
               <CartSummary
@@ -152,6 +210,6 @@ export default function BookLaundryPage() {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

@@ -42,7 +42,7 @@ export const dashboardNavItems: NavItem[] = [
   // Primary Dashboard Overview (Available to ALL Roles)
   // =========================
   {
-    name: "Dashboard",
+    name: "Overview",
     href: "/dashboard",
     icon: LayoutDashboard,
     roles: [
@@ -121,6 +121,12 @@ export const dashboardNavItems: NavItem[] = [
         name: "Inventory Stock",
         href: "/dashboard/branch-ops/inventory-stock",
         icon: Boxes,
+        roles: ["SUPER_ADMIN", "ADMIN"],
+      },
+      {
+        name: "Partner Applications",
+        href: "/dashboard/partner-applications",
+        icon: FileCheck,
         roles: ["SUPER_ADMIN", "ADMIN"],
       },
     ],
@@ -394,7 +400,7 @@ export const dashboardNavItems: NavItem[] = [
     name: "Partner Applications",
     href: "/dashboard/partner-applications",
     icon: FileCheck,
-    roles: ["BRANCH_MANAGER"],
+    roles: ["SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER"],
   },
 
   // =========================
@@ -402,7 +408,7 @@ export const dashboardNavItems: NavItem[] = [
   // =========================
   {
     name: "QR Scanner",
-    href: "/scanner",
+    href: "/dashboard/scanner",
     icon: QrCode,
     roles: ["EMPLOYEE"],
   },

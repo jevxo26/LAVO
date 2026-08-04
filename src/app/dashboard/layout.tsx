@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Sidebar } from "@/components/dashboard/layout/sidebar";
 import { Navbar } from "@/components/dashboard/layout/navbar";
+import { DashboardBottomBar } from "@/components/dashboard/layout/DashboardBottomBar";
 import { useAppSelector } from "@/store/store";
 import { toast } from "sonner";
 
@@ -42,7 +43,7 @@ export default function DashboardLayout({
   };
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-slate-50 font-sans">
+    <div className="relative flex h-screen w-full overflow-hidden bg-gray-200/25 font-sans">
       <React.Suspense fallback={null}>
         <UnauthorizedCheck />
       </React.Suspense>
@@ -50,12 +51,15 @@ export default function DashboardLayout({
       
       <div className="flex w-full flex-1 flex-col overflow-hidden">
         <Navbar />
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 pb-8 sm:pb-10">
           <div className="max-w-7xl mx-auto">
             {children}
           </div>
         </main>
       </div>
+
+      {/* Edge-to-edge fixed BottomBar overlay (z-[100]) */}
+      <DashboardBottomBar />
     </div>
   );
 }

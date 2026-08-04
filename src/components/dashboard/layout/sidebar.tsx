@@ -61,11 +61,11 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
   return (
     <aside
       className={cn(
-        "relative flex flex-col h-screen bg-white/80 backdrop-blur-xl border-r border-slate-200/60 shadow-[4px_0_24px_rgba(0,0,0,0.02)] transition-all duration-300 ease-in-out z-20",
+        "relative flex flex-col h-screen bg-gradient-to-b from-blue-50/60 via-slate-50/80 to-indigo-50/40 backdrop-blur-xl border-r border-slate-200/50 shadow-[4px_0_24px_rgba(0,0,0,0.02)] transition-all duration-300 ease-in-out z-20",
         isCollapsed ? "w-20" : "w-64"
       )}
     >
-      <div className="flex items-center justify-between h-16 px-4 border-b border-slate-200/60">
+      <div className="flex items-center justify-between py-4.5 px-4 border-b border-[#EBEDEF] shadow-xs">
         {!isCollapsed && (
           <Link href="/dashboard" className="flex items-center gap-2">
             <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-600 text-white shadow-sm">
@@ -110,13 +110,15 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
               item.children?.some(
                 (child) =>
                   pathname === child.href ||
-                  (child.href && pathname.startsWith(`${child.href}/`))
+                  (child.href && pathname.startsWith(`${child.href}/`)),
               );
 
             const isActive =
               item.href === "/dashboard"
                 ? pathname === "/dashboard"
-                : item.href && (pathname === item.href || pathname.startsWith(`${item.href}/`));
+                : item.href &&
+                  (pathname === item.href ||
+                    pathname.startsWith(`${item.href}/`));
 
             return (
               <div key={item.name}>
@@ -126,10 +128,10 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
                       setOpenMenu(openMenu === item.name ? null : item.name)
                     }
                     className={cn(
-                      "flex items-center w-full px-3 py-2.5 rounded-xl text-sm font-medium transition-all",
+                      "flex items-center w-full px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
                       isParentActive || openMenu === item.name
-                        ? "bg-blue-50 text-blue-600 font-semibold"
-                        : "text-slate-600 hover:bg-slate-100/70 hover:text-slate-900"
+                        ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold shadow-md shadow-blue-500/20"
+                        : "text-slate-600 hover:bg-slate-100/80 hover:text-slate-900",
                     )}
                   >
                     <item.icon size={19} />
@@ -144,7 +146,7 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
                           size={16}
                           className={cn(
                             "transition-transform duration-300 ml-1 shrink-0",
-                            openMenu === item.name && "rotate-180"
+                            openMenu === item.name && "rotate-180",
                           )}
                         />
                       </>
@@ -154,10 +156,10 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
                   <Link
                     href={item.href || "#"}
                     className={cn(
-                      "flex items-center px-3 py-2.5 rounded-xl text-sm font-medium transition-all",
+                      "flex items-center px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
                       isActive
-                        ? "bg-blue-50 text-blue-600 font-semibold"
-                        : "text-slate-600 hover:bg-slate-100/70 hover:text-slate-900"
+                        ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold shadow-md shadow-blue-500/20"
+                        : "text-slate-600 hover:bg-slate-100/80 hover:text-slate-900",
                     )}
                   >
                     <item.icon size={19} />
@@ -173,7 +175,7 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
                       ?.filter(
                         (child) =>
                           !child.roles ||
-                          (userRole && child.roles.includes(userRole))
+                          (userRole && child.roles.includes(userRole)),
                       )
                       .map((child) => {
                         const isChildActive =
@@ -187,7 +189,7 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
                               "flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all",
                               isChildActive
                                 ? "bg-blue-50/80 text-blue-600 font-semibold"
-                                : "text-slate-500 hover:bg-slate-100/50 hover:text-slate-900"
+                                : "text-slate-500 hover:bg-slate-100/50 hover:text-slate-900",
                             )}
                           >
                             <child.icon size={15} />
@@ -202,38 +204,19 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
           })}
       </nav>
 
-      <div className="p-4 border-t border-slate-200/60 flex flex-col gap-3">
-        <div
-          className={cn(
-            "flex items-center",
-            isCollapsed ? "justify-center" : ""
-          )}
-        >
-          <div className="h-8 w-8 rounded-full bg-blue-600 text-white shrink-0 shadow-sm flex items-center justify-center font-bold text-xs uppercase">
-            {user?.fullName?.charAt(0) || "U"}
-          </div>
-          {!isCollapsed && (
-            <div className="ml-3 truncate">
-              <p className="text-sm font-semibold text-slate-800 truncate">
-                {user?.fullName || "User"}
-              </p>
-              <p className="text-xs text-slate-500 truncate capitalize">
-                {(userRole || "User").replace(/_/g, " ").toLowerCase()}
-              </p>
-            </div>
-          )}
-        </div>
-
+      <div className="p-4 border-t border-slate-300/75 shadow-sm">
         <button
           onClick={logout}
           className={cn(
-            "flex items-center gap-3 text-slate-500 hover:text-red-600 hover:bg-red-50 transition-all rounded-xl py-2 text-sm font-medium",
-            isCollapsed ? "justify-center px-0" : "px-3"
+            "w-full flex z-[150] items-center justify-center gap-3 text-slate-600 hover:text-rose-600 bg-rose-50 hover:bg-rose-100 transition-all rounded-xl py-2.5 text-sm font-medium",
+            isCollapsed ? "px-0" : "px-3",
           )}
           title="Logout"
         >
-          <LogOut size={18} className="shrink-0" />
-          {!isCollapsed && <span>Logout</span>}
+          <LogOut size={18} className="shrink-0 text-rose-500" />
+          {!isCollapsed && (
+            <span className="font-semibold text-rose-600">Logout</span>
+          )}
         </button>
       </div>
     </aside>

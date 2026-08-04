@@ -76,6 +76,7 @@ const adminPermissionRoutes_1 = __importDefault(require("./routes/admin/adminPer
 const adminOverviewRoutes_1 = __importDefault(require("./routes/admin/adminOverviewRoutes"));
 const auditMiddleware_1 = require("./middlewares/auditMiddleware");
 const partnerApplicationRoute_1 = __importDefault(require("./routes/super-admin/partnerApplicationRoute"));
+const notificationRoutes_1 = __importDefault(require("./routes/shared/notificationRoutes"));
 const socket_1 = require("./sockets/socket");
 const prisma = new client_1.PrismaClient();
 const dev = process.env.NODE_ENV !== 'production';
@@ -165,6 +166,7 @@ app.prepare().then(async () => {
     server.use('/api/admin/overview', adminOverviewRoutes_1.default);
     server.use('/api/vendor-dashboard', vendorDashboardRoutes_1.default);
     server.use('/api/partner-applications', partnerApplicationRoute_1.default);
+    server.use('/api/notifications', notificationRoutes_1.default);
     // Serve uploaded files statically
     server.use('/uploads', express_1.default.static(path_1.default.join(process.cwd(), 'public', 'uploads')));
     // Let Next.js handle all other routes

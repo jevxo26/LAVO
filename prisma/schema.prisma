@@ -23,6 +23,7 @@ model User {
   status       String    @default("ACTIVE")
   isVerified   Boolean   @default(false)
   profileImage String?
+  fcmTokens    String[]  @default([])
   lastLogin    DateTime?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt

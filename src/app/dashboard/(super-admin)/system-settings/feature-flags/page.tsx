@@ -1,84 +1,72 @@
 "use client";
 
-import React, { useState } from "react";
-import { Settings, Save, Lock, ToggleLeft, ToggleRight } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Sliders, Lock, Loader2 } from "lucide-react";
+import { FeatureFlagsForm, FeatureFlagState } from "@/components/settings/FeatureFlagsForm";
 import { toast } from "sonner";
 
-export default function FeatureFlagsSettingsPage() {
-  const [flags, setFlags] = useState({
+export default function FeatureFlagsPage() {
+  const [data, setData] = useState<FeatureFlagState>({
+    enableWalletSystem: true,
+    enablePromoCodes: true,
     enableVendorMarketplace: true,
     enableLiveAgentTracking: true,
-    enableWalletCashback: true,
     enableSMSNotifications: true,
-    enableMaintenanceMode: false,
   });
+  const [isLoading, setIsLoading] = useState(true);
 
-  const toggleFlag = (key: keyof typeof flags) => {
-    setFlags((prev) => ({ ...prev, [key]: !prev[key] }));
+  const loadData = async () => {
+    setIsLoading(true);
+    try {
+      const token = typeof window !== "undefined" ? localStorage.getItem("laundrix_token") : null;
+      const headers: Record<string, string> = {};
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+
+      const res = await fetch("/api/system-settings/feature-flags", { headers });
+      const json = await res.json();
+
+      if (res.ok && json.success) {
+        setData(json.data);
+      } else {
+        toast.error(json.message || "Failed to load feature flags");
+      }
+    } catch {
+      toast.error("Network error while loading feature flags");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleSave = () => {
-    toast.success("Feature Flags & System Toggles updated!");
-  };
+  useEffect(() => {
+    loadData();
+  }, []);
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/80 backdrop-blur-xl p-6 rounded-2xl border border-slate-200/80 shadow-sm">
+    <div className="w-full space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 backdrop-blur-xl p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-            <Settings className="text-blue-600" />
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <Sliders className="text-blue-600" />
             System Feature Flags & Module Toggles
           </h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
             Enable or disable platform modules dynamically without redeploying code.
           </p>
         </div>
-        <span className="flex items-center gap-1.5 text-xs font-bold text-amber-800 bg-amber-50 px-3 py-1.5 rounded-xl border border-amber-200">
-          <Lock size={14} /> Super Admin Only
+        <span className="flex items-center gap-1.5 text-xs font-bold text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 px-3 py-1.5 rounded-xl border border-amber-200 dark:border-amber-900 w-fit">
+          <Lock size={14} /> SUPER_ADMIN STRICT ACCESS
         </span>
       </div>
 
-      <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm space-y-6 max-w-3xl">
-        <div className="divide-y divide-slate-100 space-y-4">
-          {[
-            { key: "enableVendorMarketplace", title: "Vendor Partner Marketplace", desc: "Allow third-party vendors to list services & receive orders" },
-            { key: "enableLiveAgentTracking", title: "Live GPS Agent Tracking", desc: "Show real-time delivery agent location on customer tracking screen" },
-            { key: "enableWalletCashback", title: "Wallet Cashback Rewards", desc: "Auto-credit bonus wallet funds on qualifying orders" },
-            { key: "enableSMSNotifications", title: "SMS Gateway Integration", desc: "Send SMS alerts for pickup & delivery confirmations" },
-            { key: "enableMaintenanceMode", title: "Platform Maintenance Mode", desc: "Block new customer bookings while system is undergoing updates" },
-          ].map((item) => {
-            const isEnabled = flags[item.key as keyof typeof flags];
-            return (
-              <div key={item.key} className="pt-4 flex items-center justify-between">
-                <div>
-                  <h3 className="font-bold text-slate-900 text-sm">{item.title}</h3>
-                  <p className="text-xs text-slate-500 mt-0.5">{item.desc}</p>
-                </div>
-                <button
-                  onClick={() => toggleFlag(item.key as keyof typeof flags)}
-                  className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                    isEnabled
-                      ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
-                      : "bg-slate-100 text-slate-600 border border-slate-200"
-                  }`}
-                >
-                  {isEnabled ? <ToggleRight size={18} className="text-emerald-600" /> : <ToggleLeft size={18} />}
-                  <span>{isEnabled ? "ENABLED" : "DISABLED"}</span>
-                </button>
-              </div>
-            );
-          })}
+      {isLoading ? (
+        <div className="p-8 flex items-center justify-center min-h-[300px]">
+          <div className="flex items-center gap-3 text-slate-500 font-semibold">
+            <Loader2 size={24} className="animate-spin text-blue-600" /> Loading feature flags...
+          </div>
         </div>
-
-        <div className="pt-4 border-t border-slate-100 flex justify-end">
-          <button
-            onClick={handleSave}
-            className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white font-semibold rounded-xl text-sm hover:bg-blue-700 shadow-sm transition-colors"
-          >
-            <Save size={16} /> Save Feature Toggles
-          </button>
-        </div>
-      </div>
+      ) : (
+        <FeatureFlagsForm initialFlags={data} />
+      )}
     </div>
   );
 }

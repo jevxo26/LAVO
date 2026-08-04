@@ -9,26 +9,28 @@ import {
 import {
   Package, Clock, CheckCircle2, Store, Layers,
   Sparkles, ArrowRight, RefreshCw, Gauge,
-  BarChart3, Users, AlertTriangle,
+  BarChart3, Users, AlertTriangle, ShieldCheck, Zap
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { authFetch } from "@/lib/api";
 import io from "socket.io-client";
 import { useAuth } from "@/hooks/useAuth";
+import { motion } from "framer-motion";
+import { OverviewStatCard } from "@/components/dashboard/shared/overview/OverviewStatCard";
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 
 function Sk({ className }: { className?: string }) {
-  return <div className={`animate-pulse rounded-2xl bg-slate-100 ${className ?? ""}`} />;
+  return <div className={`animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800 ${className ?? ""}`} />;
 }
 function PageSkeleton() {
   return (
     <div className="space-y-7">
-      <Sk className="h-44 w-full" />
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">{[0,1,2,3].map((i) => <Sk key={i} className="h-28" />)}</div>
+      <Sk className="h-52 w-full" />
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">{[0,1,2,3].map((i) => <Sk key={i} className="h-32" />)}</div>
       <div className="grid gap-6 md:grid-cols-7">
-        <Sk className="md:col-span-4 h-72" />
-        <Sk className="md:col-span-3 h-72" />
+        <Sk className="md:col-span-4 h-96" />
+        <Sk className="md:col-span-3 h-96" />
       </div>
     </div>
   );
@@ -43,15 +45,15 @@ function QuickAction({ href, Icon, iconBg, iconColor, title, sub }: {
 }) {
   return (
     <Link href={href}
-      className="flex items-center gap-3 rounded-xl border border-slate-100 bg-white p-3.5 hover:border-indigo-100 hover:bg-indigo-50/30 hover:shadow-sm transition-all duration-150 group">
-      <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${iconBg} ${iconColor} group-hover:scale-105 transition-transform`}>
-        <Icon size={16} />
+      className="flex items-center gap-3.5 rounded-2xl border border-slate-100 bg-white p-4 hover:border-indigo-200 hover:bg-indigo-50/30 hover:shadow-md transition-all duration-200 group dark:bg-slate-900 dark:border-slate-800">
+      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${iconBg} ${iconColor} group-hover:scale-105 transition-transform`}>
+        <Icon size={18} />
       </div>
       <div className="min-w-0 flex-1">
-        <p className="text-[13px] font-bold text-slate-900 group-hover:text-indigo-700 transition-colors leading-tight">{title}</p>
-        <p className="text-[11px] text-slate-400 leading-tight mt-0.5">{sub}</p>
+        <p className="text-xs font-black text-slate-900 dark:text-white group-hover:text-indigo-600 transition-colors leading-tight">{title}</p>
+        <p className="text-[11px] font-medium text-slate-400 leading-tight mt-0.5">{sub}</p>
       </div>
-      <ArrowRight size={13} className="shrink-0 text-slate-300 group-hover:text-indigo-400 group-hover:translate-x-0.5 transition-all" />
+      <ArrowRight size={14} className="shrink-0 text-slate-300 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" />
     </Link>
   );
 }
@@ -61,13 +63,13 @@ function QuickAction({ href, Icon, iconBg, iconColor, title, sub }: {
 function ChartTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-xl border border-slate-100 bg-white px-3 py-2.5 shadow-xl text-xs space-y-1">
-      <p className="font-bold text-slate-900">{label}</p>
+    <div className="rounded-2xl border border-slate-200 bg-white/95 backdrop-blur-md px-4 py-3 shadow-xl text-xs space-y-1 dark:bg-slate-900 dark:border-slate-800">
+      <p className="font-black text-slate-900 dark:text-white">{label}</p>
       {payload.map((p: any) => (
         <div key={p.dataKey} className="flex items-center gap-2">
-          <span className="h-2 w-2 rounded-full" style={{ backgroundColor: p.fill }} />
-          <span className="text-slate-500">{p.name}:</span>
-          <span className="font-bold text-slate-900">{p.value}</span>
+          <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: p.fill }} />
+          <span className="text-slate-500 font-medium">{p.name}:</span>
+          <span className="font-black text-slate-900 dark:text-white">{p.value} units</span>
         </div>
       ))}
     </div>
@@ -115,132 +117,139 @@ export function BranchManagerOverview() {
   ];
 
   return (
-    <div className="space-y-7">
-
-      {/* ── Hero banner ─────────────────────────────────────────────────── */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-700 px-7 py-9">
-        <div className="pointer-events-none absolute inset-0 opacity-10">
-          <div className="absolute -top-16 -right-16 h-72 w-72 rounded-full bg-white" />
-          <div className="absolute -bottom-12 -left-10 h-52 w-52 rounded-full bg-white" />
+    <motion.div
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35 }}
+      className="space-y-7"
+    >
+      {/* ── 1. Branch Manager Command Banner ───────────────────────────────── */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-950 via-indigo-900 to-slate-900 p-7 md:p-9 text-white shadow-2xl border border-indigo-800/40">
+        <div className="pointer-events-none absolute inset-0 opacity-20">
+          <div className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-indigo-500 blur-3xl" />
+          <div className="absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-violet-500 blur-3xl" />
         </div>
-        <div className="relative z-10 flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Sparkles size={13} className="text-indigo-200" />
-              <span className="text-indigo-200 text-[11px] font-semibold uppercase tracking-widest">Branch Manager Portal</span>
+
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div className="space-y-3 max-w-2xl">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-200 text-xs font-black uppercase tracking-wider backdrop-blur-md">
+                <Sparkles size={13} className="text-indigo-300" /> Branch Operational Control
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-bold backdrop-blur-md">
+                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" /> Machinery Active
+              </span>
             </div>
-            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-white leading-tight">
+
+            <h1 className="text-3xl md:text-4xl font-black tracking-tight text-white leading-tight">
               Welcome back, {firstName}
             </h1>
-            <p className="text-indigo-200 text-sm">
-              Real-time capacity tracking, live order load, and active machinery status.
+            <p className="text-indigo-100 text-xs md:text-sm leading-relaxed font-medium">
+              Real-time branch processing capacity, live washer load, employee assignment, and vendor offloading.
             </p>
           </div>
-          <div className="flex items-center gap-3 shrink-0">
-            {[
-              { label: "Capacity",  value: `${capacityPct}%`                        },
-              { label: "Active",    value: data?.activeOrders          ?? 0          },
-              { label: "Vendors",   value: data?.vendorDelegatedOrders ?? "—"        },
-            ].map(({ label, value }) => (
-              <div key={label} className="rounded-xl bg-white/10 border border-white/20 backdrop-blur-sm px-4 py-3 text-center">
-                <p className="text-indigo-200 text-[10px] font-semibold uppercase tracking-wider">{label}</p>
-                <p className="text-white font-extrabold text-xl leading-tight">{value}</p>
-              </div>
-            ))}
+
+          {/* Live Capacity Telemetry Chips */}
+          <div className="flex flex-wrap sm:flex-nowrap gap-3 shrink-0">
+            <div className="flex-1 sm:flex-initial rounded-2xl bg-white/10 border border-white/15 backdrop-blur-xl p-4 text-center min-w-[120px] shadow-inner">
+              <p className="text-indigo-200 text-[10px] font-black uppercase tracking-wider">Capacity Used</p>
+              <p className="text-white font-black text-2xl mt-0.5">{capacityPct}%</p>
+            </div>
+
+            <div className="flex-1 sm:flex-initial rounded-2xl bg-white/10 border border-white/15 backdrop-blur-xl p-4 text-center min-w-[120px] shadow-inner">
+              <p className="text-indigo-200 text-[10px] font-black uppercase tracking-wider">Active Orders</p>
+              <p className="text-white font-black text-2xl mt-0.5">{data?.activeOrders ?? 0}</p>
+            </div>
+
             <Button onClick={() => { setRefreshing(true); fetchOverview(); }}
-              className="h-10 rounded-xl bg-white text-indigo-700 hover:bg-indigo-50 font-bold text-sm px-4 shadow-sm gap-1.5">
-              <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} /> Refresh
+              className="h-10 px-4 rounded-xl bg-white text-indigo-700 hover:bg-indigo-50 font-black text-xs shadow-md gap-2 transition-all hover:scale-[1.02]">
+              <RefreshCw size={15} className={refreshing ? "animate-spin" : ""} /> Refresh Telemetry
             </Button>
           </div>
         </div>
       </div>
 
-      {/* ── Overflow alert ──────────────────────────────────────────────── */}
+      {/* ── 2. Overflow Alert ───────────────────────────────────────────────── */}
       {isOverflow && (
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-2xl border border-amber-200 bg-amber-50 px-6 py-4 shadow-sm">
-          <div className="flex items-start gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
-              <AlertTriangle size={16} />
+        <motion.div
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-3xl border border-amber-300 bg-gradient-to-r from-amber-500/10 via-amber-400/5 to-amber-500/10 p-6 shadow-md"
+        >
+          <div className="flex items-start gap-4">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-500 text-white shadow-md shadow-amber-500/20">
+              <AlertTriangle size={22} />
             </div>
             <div>
-              <p className="text-sm font-bold text-amber-900">High Order Volume — {data?.activeOrders} Active Orders</p>
-              <p className="text-xs text-amber-700 mt-0.5">Branch threshold of 5 orders exceeded. Delegate overflow to partner vendors.</p>
+              <p className="text-base font-black text-amber-900 dark:text-amber-300">
+                High Volume Capacity Warning — {data?.activeOrders} Active Orders
+              </p>
+              <p className="text-xs font-medium text-amber-700 dark:text-amber-400 mt-0.5">
+                Branch threshold exceeded. Immediately delegate overflow garments to verified partner vendors.
+              </p>
             </div>
           </div>
           <Link href="/dashboard/partner-vendors">
-            <Button size="sm" className="h-8 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold gap-1.5 shrink-0">
-              View Vendors <ArrowRight size={12} />
+            <Button className="h-10 px-5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-black gap-2 shrink-0 shadow-md transition-all hover:scale-[1.02]">
+              Delegate to Vendors <ArrowRight size={14} />
             </Button>
           </Link>
-        </div>
+        </motion.div>
       )}
 
-      {/* ── Stat cards ──────────────────────────────────────────────────── */}
+      {/* ── 3. Stat Cards Grid ──────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        {[
-          { label: "Capacity Utilization", sub: "Of daily limit",              value: `${capacityPct}%`,                  Icon: Package,      iconBg: "bg-indigo-50",  iconColor: "text-indigo-600",  ringColor: "ring-indigo-100"  },
-          { label: "Active Processing",    sub: "Currently in progress",        value: `${data?.activeOrders ?? 0}`,       Icon: Clock,        iconBg: "bg-blue-50",    iconColor: "text-blue-600",    ringColor: "ring-blue-100"    },
-          { label: "Pending Orders",       sub: "Awaiting pickup / confirm",    value: `${data?.pendingOrders ?? 0}`,      Icon: CheckCircle2, iconBg: "bg-amber-50",   iconColor: "text-amber-600",   ringColor: "ring-amber-100"   },
-          { label: "Vendor Delegated",     sub: "Sent to branch vendors",       value: `${data?.vendorDelegatedOrders ?? 0}`, Icon: Store,     iconBg: "bg-violet-50",  iconColor: "text-violet-600",  ringColor: "ring-violet-100"  },
-        ].map(({ label, sub, value, Icon, iconBg, iconColor, ringColor }) => (
-          <div key={label} className="flex items-center gap-4 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-200">
-            <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ring-4 ${iconBg} ${iconColor} ${ringColor}`}>
-              <Icon size={22} />
-            </div>
-            <div className="min-w-0">
-              <p className="text-2xl font-extrabold text-slate-900 leading-none">{value}</p>
-              <p className="mt-0.5 text-[12px] font-semibold text-slate-700 leading-tight">{label}</p>
-              <p className="text-[11px] text-slate-400 leading-tight">{sub}</p>
-            </div>
-          </div>
-        ))}
+        <OverviewStatCard title="Capacity Utilization" subLabel="Of daily limit"              value={`${capacityPct}%`}                  icon={Package}      gradient="from-indigo-500 to-violet-600" />
+        <OverviewStatCard title="Active Processing"    subLabel="Currently in progress"        value={`${data?.activeOrders ?? 0}`}       icon={Clock}        gradient="from-blue-500 to-cyan-600" />
+        <OverviewStatCard title="Pending Orders"       subLabel="Awaiting pickup / confirm"    value={`${data?.pendingOrders ?? 0}`}      icon={CheckCircle2} gradient="from-amber-400 to-orange-500" />
+        <OverviewStatCard title="Vendor Delegated"     subLabel="Sent to branch vendors"       value={`${data?.vendorDelegatedOrders ?? 0}`} icon={Store}     gradient="from-violet-500 to-purple-600" />
       </div>
 
-      {/* ── Charts + Quick actions ───────────────────────────────────────── */}
+      {/* ── 4. Main Grid: Machinery Load Bar Chart + Capacity Gauge ─────────── */}
       <div className="grid gap-6 md:grid-cols-7 items-start">
 
-        {/* Machinery bar chart */}
-        <div className="md:col-span-4 rounded-2xl border border-slate-100 bg-white shadow-sm overflow-hidden">
-          <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+        {/* Machinery Bar Chart */}
+        <div className="md:col-span-4 rounded-3xl border border-slate-200/80 bg-white shadow-sm overflow-hidden dark:bg-slate-900 dark:border-slate-800">
+          <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5 dark:border-slate-800">
             <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50">
-                <Layers size={14} className="text-indigo-500" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400">
+                <Layers size={18} />
               </div>
               <div>
-                <h2 className="text-sm font-extrabold text-slate-900">Active Machinery Load</h2>
-                <p className="text-[11px] text-slate-400">Live machines running — Washers, Dryers, Irons</p>
+                <h3 className="text-sm font-black text-slate-900 dark:text-white">Active Machinery Telemetry</h3>
+                <p className="text-[11px] text-slate-400 font-medium">Live equipment status — Washers, Dryers &amp; Irons</p>
               </div>
             </div>
-            <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full">
+            <span className="flex items-center gap-1.5 text-[10px] font-black text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 dark:text-emerald-300 px-3 py-1 rounded-full border border-emerald-200 dark:border-emerald-900">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> LIVE
             </span>
           </div>
           <div className="p-4 h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data?.activeMachinery || []} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+              <BarChart data={data?.activeMachinery || []} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" opacity={0.6} />
                 <XAxis dataKey="type" stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
                 <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
                 <RechartsTooltip content={<ChartTooltip />} />
-                <Bar dataKey="active" fill="#6366f1" radius={[4,4,0,0]} name="Active" />
-                <Bar dataKey="count"  fill="#e2e8f0" radius={[4,4,0,0]} name="Total"  />
+                <Bar dataKey="active" fill="#6366f1" radius={[6,6,0,0]} name="Active Running" />
+                <Bar dataKey="count"  fill="#e2e8f0" radius={[6,6,0,0]} name="Total Capacity" />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Right col: capacity donut + quick actions */}
+        {/* Right Col: Capacity Donut + Operations Hub */}
         <div className="md:col-span-3 space-y-5">
 
-          {/* Capacity donut */}
-          <div className="rounded-2xl border border-slate-100 bg-white shadow-sm overflow-hidden">
-            <div className="flex items-center gap-3 border-b border-slate-100 px-5 py-4">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-50">
-                <Gauge size={14} className="text-violet-500" />
+          {/* Capacity Donut Gauge */}
+          <div className="rounded-3xl border border-slate-200/80 bg-white shadow-sm overflow-hidden dark:bg-slate-900 dark:border-slate-800">
+            <div className="flex items-center gap-3 border-b border-slate-100 px-6 py-4 dark:border-slate-800">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-violet-50 text-violet-600 dark:bg-violet-950/50 dark:text-violet-400">
+                <Gauge size={16} />
               </div>
               <div>
-                <h2 className="text-sm font-extrabold text-slate-900">Capacity Breakdown</h2>
-                <p className="text-[11px] text-slate-400">Daily maximum utilization</p>
+                <h3 className="text-sm font-black text-slate-900 dark:text-white">Daily Capacity Gauge</h3>
+                <p className="text-[11px] text-slate-400 font-medium">Limit vs. actual order volume</p>
               </div>
             </div>
             <div className="flex items-center justify-center py-4 h-[180px]">
@@ -256,43 +265,38 @@ export function BranchManagerOverview() {
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-2xl font-extrabold text-slate-900">{capacityPct}%</span>
-                  <span className="text-[11px] text-slate-400 font-semibold">Used</span>
+                  <span className="text-2xl font-black text-slate-900 dark:text-white">{capacityPct}%</span>
+                  <span className="text-[11px] text-slate-400 font-extrabold">Utilization</span>
                 </div>
               </div>
             </div>
-            {/* Progress bar */}
-            <div className="border-t border-slate-50 px-5 py-3">
-              <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+            <div className="border-t border-slate-100 px-5 py-3.5 dark:border-slate-800">
+              <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
                 <div className={`h-full rounded-full transition-all duration-700 ${capacityPct >= 90 ? "bg-rose-500" : capacityPct >= 70 ? "bg-amber-500" : "bg-indigo-500"}`}
                   style={{ width: `${Math.min(capacityPct, 100)}%` }} />
               </div>
-              <p className="mt-1.5 text-[11px] text-slate-400">
-                {capacityPct >= 90 ? "⚠️ Near full capacity" : capacityPct >= 70 ? "Moderate load" : "Capacity available"}
+              <p className="mt-2 text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                {capacityPct >= 90 ? "⚠️ High volume load — Delegate to Vendors" : capacityPct >= 70 ? "Moderate load — Monitor machinery" : "Capacity available"}
               </p>
             </div>
           </div>
 
-          {/* Quick actions */}
-          <div className="rounded-2xl border border-slate-100 bg-white shadow-sm overflow-hidden">
-            <div className="flex items-center gap-3 border-b border-slate-100 px-5 py-4">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50">
-                <Sparkles size={13} className="text-indigo-500" />
-              </div>
-              <h2 className="text-sm font-extrabold text-slate-900">Quick Actions</h2>
-            </div>
-            <div className="p-4 space-y-2">
+          {/* Quick Operations Hub */}
+          <div className="rounded-3xl border border-slate-200/80 bg-white p-5 shadow-sm space-y-3 dark:bg-slate-900 dark:border-slate-800">
+            <h3 className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              Quick Operations
+            </h3>
+            <div className="space-y-2">
               <QuickAction href="/dashboard/branch-orders"        Icon={Package}   iconBg="bg-indigo-50"  iconColor="text-indigo-600"  title="Branch Orders"        sub="View & manage active orders"     />
               <QuickAction href="/dashboard/partner-vendors"      Icon={Store}     iconBg="bg-violet-50"  iconColor="text-violet-600"  title="Partner Vendors"      sub="Delegate & monitor capacity"     />
               <QuickAction href="/dashboard/branch-analytics"     Icon={BarChart3} iconBg="bg-emerald-50" iconColor="text-emerald-600" title="Analytics"            sub="7-day financial overview"        />
               <QuickAction href="/dashboard/branch-employees"     Icon={Users}     iconBg="bg-amber-50"   iconColor="text-amber-600"   title="Employees"            sub="Manage branch staff"             />
-              <QuickAction href="/dashboard/partner-applications" Icon={CheckCircle2} iconBg="bg-sky-50"  iconColor="text-sky-600"     title="Partner Applications" sub="Review vendor applications"      />
             </div>
           </div>
 
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 

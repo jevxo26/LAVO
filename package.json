@@ -29,6 +29,8 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "express-validator": "^7.3.2",
+    "firebase": "^12.17.0",
+    "firebase-admin": "^14.2.0",
     "framer-motion": "^12.42.2",
     "google-auth-library": "^10.9.0",
     "handlebars": "^4.7.9",

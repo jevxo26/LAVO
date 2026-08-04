@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { Sparkles, PackageCheck, Truck, Calendar } from "lucide-react";
+import { Sparkles, PackageCheck, Truck, Calendar, Radio, ShieldCheck, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
 
 const AVATAR_COLORS = [
   "from-indigo-500 to-violet-600", "from-sky-500 to-cyan-600",
@@ -29,13 +30,13 @@ function greeting() {
 
 function todayLabel() {
   return new Date().toLocaleDateString("en-US", {
-    weekday: "long", month: "long", day: "numeric",
+    weekday: "long", month: "short", day: "numeric",
   });
 }
 
 const STATUS_META: Record<string, { dot: string; label: string; text: string; bg: string }> = {
-  ACTIVE:      { dot: "bg-emerald-400", label: "Active",      text: "text-emerald-100", bg: "bg-emerald-500/20" },
-  ON_DELIVERY: { dot: "bg-blue-400",    label: "On Delivery", text: "text-blue-100",    bg: "bg-blue-500/20"    },
+  ACTIVE:      { dot: "bg-emerald-400 animate-pulse", label: "Duty Active",   text: "text-emerald-200", bg: "bg-emerald-500/20 border-emerald-400/30" },
+  ON_DELIVERY: { dot: "bg-blue-400 animate-pulse",    label: "On Route",      text: "text-blue-200",    bg: "bg-blue-500/20 border-blue-400/30"    },
 };
 
 interface Props {
@@ -50,16 +51,14 @@ export function AgentHeroBanner({
   fullName, status, availablePickups, activeDeliveries, completedToday,
 }: Props) {
   const grad = avatarGradient(fullName);
-  const sm   = STATUS_META[status] ?? { dot: "bg-slate-400", label: status, text: "text-slate-100", bg: "bg-slate-500/20" };
+  const sm   = STATUS_META[status] ?? { dot: "bg-slate-400", label: status, text: "text-slate-200", bg: "bg-slate-500/20 border-slate-400/30" };
 
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-800 px-7 py-9">
-      {/* Decorative blobs + dot grid */}
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-20 -right-20 h-80 w-80 rounded-full bg-white/[0.07] blur-2xl" />
-        <div className="absolute -bottom-14 -left-14 h-60 w-60 rounded-full bg-violet-400/20 blur-2xl" />
-        <div className="absolute inset-0 opacity-[0.06]"
-          style={{ backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
+    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-950 via-slate-900 to-violet-950 p-7 md:p-9 text-white shadow-2xl border border-indigo-800/40">
+      {/* Decorative ambient blobs */}
+      <div className="pointer-events-none absolute inset-0 opacity-20">
+        <div className="absolute -top-20 -right-20 h-80 w-80 rounded-full bg-indigo-500 blur-3xl" />
+        <div className="absolute -bottom-14 -left-14 h-60 w-60 rounded-full bg-violet-500 blur-3xl" />
       </div>
 
       <div className="relative z-10 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
@@ -67,32 +66,34 @@ export function AgentHeroBanner({
         {/* Left: avatar + greeting */}
         <div className="flex items-center gap-5">
           <div className="relative shrink-0">
-            <div className={`flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br ${grad} text-white text-xl font-extrabold shadow-lg ring-4 ring-white/20`}>
+            <div className={`flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br ${grad} text-white text-xl font-black shadow-lg ring-4 ring-white/20`}>
               {initials(fullName)}
             </div>
-            <span className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-indigo-700 ring-2 ring-indigo-700">
-              <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-slate-900 ring-2 ring-slate-900">
+              <span className={`h-2.5 w-2.5 rounded-full ${sm.dot}`} />
             </span>
           </div>
-          <div className="space-y-1.5">
+
+          <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-indigo-200 text-[11px] font-semibold uppercase tracking-widest flex items-center gap-1">
-                <Sparkles size={11} className="text-indigo-300" /> Delivery Agent Portal
+              <span className="text-indigo-200 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5 backdrop-blur-md px-3 py-0.5 rounded-full bg-indigo-500/20 border border-indigo-400/30">
+                <Sparkles size={12} className="text-indigo-300" /> Delivery Agent Workstation
               </span>
-              <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-bold border border-white/20 ${sm.bg} ${sm.text}`}>
+              <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-0.5 text-xs font-extrabold border ${sm.bg} ${sm.text}`}>
                 <span className={`h-1.5 w-1.5 rounded-full ${sm.dot}`} />{sm.label}
               </span>
             </div>
-            <h1 className="text-2xl md:text-[1.7rem] font-extrabold tracking-tight text-white leading-tight">
+
+            <h1 className="text-2xl md:text-3xl font-black tracking-tight text-white leading-tight">
               {greeting()}, {fullName.split(" ")[0]}
             </h1>
-            <p className="flex items-center gap-1.5 text-indigo-300 text-[12px] font-medium">
-              <Calendar size={12} />{todayLabel()}
+            <p className="flex items-center gap-1.5 text-indigo-200 text-xs font-medium">
+              <Calendar size={13} /> {todayLabel()}
             </p>
           </div>
         </div>
 
-        {/* Right: chips + buttons */}
+        {/* Right: chips + action buttons */}
         <div className="flex flex-col gap-3 shrink-0">
           <div className="flex flex-wrap gap-2.5">
             {[
@@ -100,21 +101,22 @@ export function AgentHeroBanner({
               { label: "Active",  value: activeDeliveries, accent: "text-sky-300"     },
               { label: "Done",    value: completedToday,   accent: "text-emerald-300" },
             ].map(({ label, value, accent }) => (
-              <div key={label} className="rounded-xl bg-white/10 border border-white/15 backdrop-blur-sm px-4 py-2.5 text-center min-w-[72px]">
-                <p className={`text-[9px] font-bold uppercase tracking-wider ${accent}`}>{label}</p>
-                <p className="text-white font-extrabold text-xl leading-tight mt-0.5">{value}</p>
+              <div key={label} className="rounded-2xl bg-white/10 border border-white/15 backdrop-blur-xl px-4 py-2.5 text-center min-w-[78px]">
+                <p className={`text-[9px] font-black uppercase tracking-wider ${accent}`}>{label}</p>
+                <p className="text-white font-black text-xl leading-tight mt-0.5">{value}</p>
               </div>
             ))}
           </div>
+
           <div className="flex gap-2">
-            <Link href="/dashboard/pickups">
-              <Button className="h-9 rounded-xl bg-white text-indigo-700 hover:bg-indigo-50 font-bold text-xs px-4 gap-1.5 shadow-sm">
-                <PackageCheck size={13} /> Pickups
+            <Link href="/dashboard/pickups" className="flex-1">
+              <Button className="w-full h-10 rounded-2xl bg-white text-indigo-700 hover:bg-indigo-50 font-extrabold text-xs shadow-md gap-1.5">
+                <PackageCheck size={14} /> Available Pickups
               </Button>
             </Link>
-            <Link href="/dashboard/deliveries">
-              <Button variant="outline" className="h-9 rounded-xl border-white/25 bg-white/10 text-white hover:bg-white/20 font-medium text-xs px-4 gap-1.5">
-                <Truck size={13} /> Deliveries
+            <Link href="/dashboard/deliveries" className="flex-1">
+              <Button variant="outline" className="w-full h-10 rounded-2xl border-white/25 bg-white/10 text-white hover:bg-white/20 font-bold text-xs gap-1.5">
+                <Truck size={14} /> Active Drop-Offs
               </Button>
             </Link>
           </div>
