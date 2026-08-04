@@ -183,10 +183,10 @@ export function BranchManagerOverview() {
       {/* ── Stat cards ──────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {[
-          { label: "Capacity Utilization", sub: "Of daily limit",              value: `${capacityPct}%`,                  Icon: Package,      iconBg: "bg-indigo-50",  iconColor="text-indigo-600",  ringColor: "ring-indigo-100"  },
-          { label: "Active Processing",    sub: "Currently in progress",        value: `${data?.activeOrders ?? 0}`,       Icon: Clock,        iconBg: "bg-blue-50",    iconColor="text-blue-600",    ringColor: "ring-blue-100"    },
-          { label: "Pending Orders",       sub: "Awaiting pickup / confirm",    value: `${data?.pendingOrders ?? 0}`,      Icon: CheckCircle2, iconBg: "bg-amber-50",   iconColor="text-amber-600",   ringColor="ring-amber-100"   },
-          { label: "Vendor Delegated",     sub: "Sent to branch vendors",       value: `${data?.vendorDelegatedOrders ?? 0}`, Icon: Store,     iconBg: "bg-violet-50",  iconColor="text-violet-600",  ringColor="ring-violet-100"  },
+          { label: "Capacity Utilization", sub: "Of daily limit",              value: `${capacityPct}%`,                  Icon: Package,      iconBg: "bg-indigo-50",  iconColor: "text-indigo-600",  ringColor: "ring-indigo-100"  },
+          { label: "Active Processing",    sub: "Currently in progress",        value: `${data?.activeOrders ?? 0}`,       Icon: Clock,        iconBg: "bg-blue-50",    iconColor: "text-blue-600",    ringColor: "ring-blue-100"    },
+          { label: "Pending Orders",       sub: "Awaiting pickup / confirm",    value: `${data?.pendingOrders ?? 0}`,      Icon: CheckCircle2, iconBg: "bg-amber-50",   iconColor: "text-amber-600",   ringColor: "ring-amber-100"   },
+          { label: "Vendor Delegated",     sub: "Sent to branch vendors",       value: `${data?.vendorDelegatedOrders ?? 0}`, Icon: Store,     iconBg: "bg-violet-50",  iconColor: "text-violet-600",  ringColor: "ring-violet-100"  },
         ].map(({ label, sub, value, Icon, iconBg, iconColor, ringColor }) => (
           <div key={label} className="flex items-center gap-4 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-200">
             <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ring-4 ${iconBg} ${iconColor} ${ringColor}`}>
