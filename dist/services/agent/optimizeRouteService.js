@@ -4,7 +4,7 @@ exports.getOptimizedRoutes = void 0;
 const client_1 = require("@prisma/client");
 const geoUtils_1 = require("../../utils/geoUtils");
 const prisma = new client_1.PrismaClient();
-const getOptimizedRoutes = async (userId) => {
+const getOptimizedRoutes = async (userId, startLat, startLon) => {
     var _a, _b, _c, _d;
     const agent = await prisma.deliveryAgent.findUnique({
         where: { userId },
@@ -56,9 +56,9 @@ const getOptimizedRoutes = async (userId) => {
     const validStops = stops.filter((stop) => stop.lat !== null && stop.lon !== null);
     const unmappedStops = stops.filter((stop) => stop.lat === null || stop.lon === null);
     const optimizedSequence = [];
-    // 3. Start from the Branch coordinates
-    let currentLat = (_b = (_a = agent.branch) === null || _a === void 0 ? void 0 : _a.latitude) !== null && _b !== void 0 ? _b : 23.8103; // Default to Dhaka if missing
-    let currentLon = (_d = (_c = agent.branch) === null || _c === void 0 ? void 0 : _c.longitude) !== null && _d !== void 0 ? _d : 90.4125;
+    // 3. Start from Agent Live Location if available, else Branch coordinates
+    let currentLat = (_b = startLat !== null && startLat !== void 0 ? startLat : (_a = agent.branch) === null || _a === void 0 ? void 0 : _a.latitude) !== null && _b !== void 0 ? _b : 23.8103; // Default to Dhaka if missing
+    let currentLon = (_d = startLon !== null && startLon !== void 0 ? startLon : (_c = agent.branch) === null || _c === void 0 ? void 0 : _c.longitude) !== null && _d !== void 0 ? _d : 90.4125;
     let accumulatedDistance = 0;
     // 4. Nearest-Neighbor Algorithm
     while (optimizedSequence.length < validStops.length) {

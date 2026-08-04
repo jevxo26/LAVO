@@ -22,6 +22,9 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
             Math.sin(dLon / 2);
     const c = 2 *
         Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return Number((R * c).toFixed(2));
+    // Multiply by 1.25 urban road factor for realistic driving distance estimation
+    const straightDistance = R * c;
+    const roadDistance = straightDistance * 1.25;
+    return Number(roadDistance.toFixed(2));
 };
 exports.calculateDistance = calculateDistance;
