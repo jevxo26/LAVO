@@ -1,8 +1,9 @@
 "use client";
 
 import React from "react";
-import { Store, Building, Truck, Check, ArrowRight, Building2, User } from "lucide-react";
+import { Store, Building, Truck, Check, ArrowRight, Building2, User, Handshake } from "lucide-react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 
 export function HomePartnership({ data }: { data?: any }) {
   const title = data?.title || "Grow your business with LAUNDRIX";
@@ -85,13 +86,13 @@ export function HomePartnership({ data }: { data?: any }) {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <div className="inline-flex items-center justify-center px-3 py-1 mb-4 rounded-full bg-blue-50">
-            <span className="w-1.5 h-1.5 bg-blue-600 rounded-full mr-2"></span>
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-card px-4 py-2 shadow-sm">
+            <Handshake className="h-4 w-4 text-primary" />
             <span className="text-xs font-bold tracking-wider text-blue-600 uppercase">
               Partnerships
             </span>
           </div>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mb-4">
+          <h2 className="mt-5 text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mb-4">
             {title}
           </h2>
           <p className="text-slate-500 max-w-2xl mx-auto">
@@ -128,10 +129,10 @@ export function HomePartnership({ data }: { data?: any }) {
                   ))}
                 </ul>
 
-                <button className="flex items-center justify-center gap-2 bg-gradient-to-l from-blue-400 to-blue-500 text-white rounded-xl font-semibold hover:bg-brand-sky-hover w-full py-3 rounded-xl font-semibold transition-colors mt-auto shadow-sm">
+                <Link href={'/partner'} className="flex items-center justify-center gap-2 bg-gradient-to-l from-blue-400 to-blue-500 text-white rounded-xl font-semibold hover:bg-brand-sky-hover w-full py-3 rounded-xl font-semibold transition-colors mt-auto shadow-sm">
                   Apply Now
                   <ArrowRight size={16} />
-                </button>
+                </Link>
               </motion.div>
             );
           })}

@@ -28,7 +28,7 @@ export function ServiceCard({
   return (
     <Link
       href={`/services/${id}`}
-      className="group flex flex-col bg-card border border-slate-100 rounded-[2rem] overflow-hidden shadow-sm hover:shadow-md transition-all duration-300"
+      className="group flex h-full flex-col rounded-[2rem] border border-border bg-card overflow-hidden shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
     >
       {/* Image Section */}
       <div className="relative w-full h-56 bg-slate-100 p-2">

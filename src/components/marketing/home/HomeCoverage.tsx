@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import dynamic from "next/dynamic";
-import { Search, MapPin, Truck, Sparkles, QrCode, Calendar } from "lucide-react";
+import { Search, MapPin, Truck, Sparkles, QrCode, Calendar, Map } from "lucide-react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 
@@ -49,12 +49,13 @@ export function HomeCoverage({ data }: { data?: any }) {
           viewport={{ once: true }}
           className="text-center mb-10"
         >
-          <div className="inline-flex items-center justify-center px-3 py-1 mb-4 rounded-full bg-blue-50">
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-card px-4 py-2 shadow-sm">
+            <Map className="h-4 w-4 text-primary" />
             <span className="text-xs font-bold tracking-wider text-blue-600 uppercase">
               COVERAGE
             </span>
           </div>
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-slate-800 mb-4">
+          <h2 className="mt-5 text-2xl md:text-3xl lg:text-4xl font-bold text-slate-800 mb-4">
             {title}
           </h2>
           <p className="text-slate-500 max-w-xl mx-auto">

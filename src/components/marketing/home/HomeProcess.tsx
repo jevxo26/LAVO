@@ -14,7 +14,7 @@ const getIcon = (name: string, props: any) => {
 export function HomeProcess({ data }: { data?: any }) {
   const title = data?.title || "Six Steps to Perfectly Clean";
   const subtitle = data?.subtitle || "From a single tap to delivery at your door — every step tracked, automated, and transparent.";
-  
+
   const steps = data?.items?.length ? data.items : [
     { icon: "Calendar", title: "Book", desc: "Schedule your pickup in under 60 seconds.", num: "01" },
     { icon: "Truck", title: "Pickup", desc: "We collect at your chosen time window.", num: "02" },
@@ -48,24 +48,27 @@ export function HomeProcess({ data }: { data?: any }) {
   // ];
 
   return (
-    <section className="py-12 md:py-16 lg:py-20 bg-white border-t border-slate-100">
+    <section className="bg-card py-12 md:py-16 lg:py-20 border-t border-border">
       <div className="max-w-7xl mx-auto px-4 md:px-6">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-20"
+          className="mx-auto mb-16 max-w-3xl text-center"
         >
-          <div className="inline-flex items-center justify-center px-3 py-1 mb-4 rounded-full bg-blue-50">
-            <span className="w-1.5 h-1.5 bg-blue-600 rounded-full mr-2"></span>
-            <span className="text-xs font-bold tracking-wider text-blue-600 uppercase">
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-card px-4 py-2 shadow-sm">
+            <Sparkles className="h-4 w-4 text-primary" />
+
+            <span className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
               The Process
             </span>
           </div>
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-slate-800 mb-6">
+
+          <h2 className="mt-5 text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight text-foreground">
             {title}
           </h2>
-          <p className="text-slate-500 max-w-2xl mx-auto w-[560px]">
+
+          <p className="mt-5 mx-auto max-w-2xl text-base leading-7 text-muted-foreground">
             {subtitle}
           </p>
         </motion.div>
@@ -74,54 +77,93 @@ export function HomeProcess({ data }: { data?: any }) {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 mb-20 relative">
           {/* Connecting line for desktop */}
           <div className="hidden lg:block absolute top-10 left-12 right-12 h-[2px] bg-blue-100 z-0"></div>
-          
+
           {steps.map((step: any, idx: number) => (
-            <motion.div 
+            // <motion.div
+            //   initial={{ opacity: 0, y: 20 }}
+            //   whileInView={{ opacity: 1, y: 0 }}
+            //   viewport={{ once: true }}
+            //   transition={{ delay: idx * 0.1 }}
+            //   key={idx}
+            //   className="flex flex-col items-center text-center relative z-10"
+            // >
+            //   <div className="relative mb-6">
+            //     <div className="w-20 h-20 bg-brand-blue rounded-3xl flex items-center justify-center text-white shadow-xl shadow-blue-500/30 transform transition-transform hover:scale-105">
+            //       {getIcon(step.icon, { size: 32 })}
+            //     </div>
+            //     <div className="absolute -top-3 -right-3 w-8 h-8 bg-slate-900 rounded-full flex items-center justify-center text-white text-xs font-bold border-4 border-white shadow-sm">
+            //       {step.subtitle || step.num}
+            //     </div>
+            //   </div>
+            //   <h4 className="font-bold text-slate-900 mb-2">{step.title}</h4>
+            //   <p className="text-xs text-slate-500 max-w-[140px] leading-relaxed">{step.content || step.desc}</p>
+            // </motion.div>
+            <motion.div
+              key={idx}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: idx * 0.1 }}
-              key={idx} 
-              className="flex flex-col items-center text-center relative z-10"
+              transition={{ delay: idx * 0.08 }}
+              className="relative z-10 flex flex-col items-center text-center"
             >
-              <div className="relative mb-6">
-                <div className="w-20 h-20 bg-brand-blue rounded-3xl flex items-center justify-center text-white shadow-xl shadow-blue-500/30 transform transition-transform hover:scale-105">
-                  {getIcon(step.icon, { size: 32 })}
+              <div className="relative">
+                <div
+                  className="
+                    flex
+                    h-20
+                    w-20
+                    items-center
+                    justify-center
+                    rounded-3xl
+                    border
+                    border-primary/10
+                    bg-primary
+                    text-primary-foreground
+                    shadow-xl
+                    shadow-primary/20
+                    transition-all
+                    duration-300
+                    hover:-translate-y-1
+                    hover:shadow-2xl
+                    hover:shadow-primary/30
+                "
+                >
+                  {getIcon(step.icon, {
+                    size: 32,
+                  })}
                 </div>
-                <div className="absolute -top-3 -right-3 w-8 h-8 bg-slate-900 rounded-full flex items-center justify-center text-white text-xs font-bold border-4 border-white shadow-sm">
+                <div
+                  className="
+                    absolute
+                    -top-2
+                    -right-2
+                    flex
+                    h-8
+                    w-8
+                    items-center
+                    justify-center
+                    rounded-full
+                    bg-foreground
+                    text-background
+                    text-xs
+                    font-bold
+                    border-2
+                    border-background
+                    shadow-md
+                  "
+                >
                   {step.subtitle || step.num}
                 </div>
               </div>
-              <h4 className="font-bold text-slate-900 mb-2">{step.title}</h4>
-              <p className="text-xs text-slate-500 max-w-[140px] leading-relaxed">{step.content || step.desc}</p>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Bottom 4 Cards */}
-        {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {bottomCards.map((card, idx) => (
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: idx * 0.1 }}
-              key={idx} 
-              className="bg-slate-50 border border-slate-100 rounded-2xl p-6 hover:shadow-md transition-shadow"
-            >
-              <div className="text-slate-500 mb-4">
-                {(() => {
-                  const Icon = card.icon;
-                  return <Icon size={20} />;
-                })()}
-              </div>
-              <h4 className="font-bold text-slate-900 mb-3">{card.title}</h4>
-              <p className="text-sm text-slate-500 leading-relaxed">
-                {card.desc}
+              <h3 className="mt-6 text-lg font-semibold text-foreground">
+                {step.title}
+              </h3>
+              <p className="mt-2 max-w-[170px] text-sm leading-6 text-muted-foreground">
+                {step.content || step.desc}
               </p>
             </motion.div>
           ))}
-        </div> */}
+        </div>
       </div>
     </section>
   );

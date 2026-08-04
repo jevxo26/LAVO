@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef } from "react";
-import { Star, Quote } from "lucide-react";
+import { Star, Quote, MessageSquareQuote } from "lucide-react";
 import { motion } from "framer-motion";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -253,13 +253,13 @@ export function HomeTestimonials({ data, reviews }: HomeTestimonialsProps) {
           transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
           className="text-center mb-14"
         >
-          <div className="inline-flex items-center justify-center gap-2 px-3 py-1 mb-4 rounded-full bg-indigo-50 border border-indigo-100/80">
-            <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-pulse" />
-            <span className="text-xs font-bold tracking-wider text-indigo-600 uppercase">
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-card px-4 py-2 shadow-sm">
+            <MessageSquareQuote className="h-4 w-4 text-primary" />
+            <span className="text-xs font-bold tracking-wider text-primary uppercase">
               Customer Reviews
             </span>
           </div>
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-slate-800">
+          <h2 className="mt-5 text-2xl md:text-3xl lg:text-4xl font-bold text-slate-800">
             {title}
           </h2>
           <p className="mt-3 text-slate-400 text-sm max-w-xl mx-auto leading-relaxed">

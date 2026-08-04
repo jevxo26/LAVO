@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { ChevronDown, ArrowRight } from "lucide-react";
+import { ChevronDown, ArrowRight, CircleHelp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export function HomeFAQ({ data }: { data?: any }) {
@@ -46,13 +46,13 @@ export function HomeFAQ({ data }: { data?: any }) {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <div className="inline-flex items-center justify-center px-3 py-1 mb-4 rounded-full bg-blue-50">
-            <span className="w-1.5 h-1.5 bg-blue-600 rounded-full mr-2"></span>
-            <span className="text-xs font-bold tracking-wider text-blue-600 uppercase">
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-card px-4 py-2 shadow-sm">
+            <CircleHelp className="h-4 w-4 text-primary" />
+            <span className="text-xs font-bold tracking-wider text-primary uppercase">
               FAQ
             </span>
           </div>
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-slate-800 mb-4">
+          <h2 className="mt-5 text-2xl md:text-3xl lg:text-4xl font-bold text-slate-800 mb-4">
             {title}
           </h2>
           <p className="text-slate-500">
@@ -101,12 +101,12 @@ export function HomeFAQ({ data }: { data?: any }) {
           ))}
         </div>
 
-        <div className="mt-10 flex justify-center">
+        {/* <div className="mt-10 flex justify-center">
           <button className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 text-slate-700 font-semibold rounded-full hover:bg-slate-50 transition-colors shadow-sm">
             View All FAQs
             <ArrowRight size={16} />
           </button>
-        </div>
+        </div> */}
       </div>
     </section>
   );

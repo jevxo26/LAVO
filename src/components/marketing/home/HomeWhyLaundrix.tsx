@@ -4,11 +4,17 @@ import React from "react";
 import { Zap, ShieldCheck, Globe, Users, Star } from "lucide-react";
 import Image from "next/image";
 import { motion } from "framer-motion";
+const iconMap = {
+  Zap,
+  ShieldCheck,
+  Globe,
+  Users,
+};
 
 export function HomeWhyLaundrix({ data }: { data?: any }) {
   const title = data?.title || "The Standard Others Try to Match";
   const subtitle = data?.subtitle || "LAUNDRIX combines enterprise-grade reliability with consumer-level simplicity. Every feature — from QR tracking to multi-branch management — is designed to save you time and eliminate laundry anxiety.";
-  
+
   const features = data?.items?.length ? data.items : [
     {
       icon: Zap,
@@ -33,43 +39,67 @@ export function HomeWhyLaundrix({ data }: { data?: any }) {
   ];
 
   return (
-    <section className="py-12 md:py-16 lg:py-20 bg-white">
+    <section className="bg-background py-12 md:py-16 lg:py-20">
       <div className="max-w-7xl mx-auto px-4 md:px-6">
-        <div className="flex flex-col lg:flex-row gap-16 items-center">
-          
-          <motion.div 
+        <div className="flex flex-col items-center gap-12 lg:flex-row lg:gap-20">
+
+          {/* Left Content */}
+          <motion.div
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="lg:w-1/2"
+            className="w-full lg:w-1/2"
           >
-            <div className="inline-flex items-center justify-center px-3 py-1 mb-6 rounded-full bg-blue-50">
-              <span className="w-1.5 h-1.5 bg-blue-600 rounded-full mr-2"></span>
-              <span className="text-xs font-bold tracking-wider text-blue-600 uppercase">
-                WHY LAUNDRIX
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-card px-4 py-2 shadow-sm">
+              <Zap className="h-4 w-4 text-primary" />
+
+              <span className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+                Why Laundrix
               </span>
             </div>
-            
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-slate-800 mb-6 leading-tight">
+
+            <h2 className="mt-5 text-2xl font-bold tracking-tight text-foreground md:text-3xl lg:text-4xl">
               {title}
             </h2>
-            
-            <p className="text-slate-500 mb-12 text-lg leading-relaxed max-w-xl">
+
+            <p className="mt-5 max-w-xl text-base leading-7 text-muted-foreground">
               {subtitle}
             </p>
 
-            <div className="space-y-8">
+            <div className="mt-10 space-y-7">
               {features.map((item: any, idx: number) => {
-                const Icon = item.icon || Zap;
+                const Icon =
+                  typeof item.icon === "string"
+                    ? iconMap[item.icon as keyof typeof iconMap] || Zap
+                    : item.icon || Zap;
+
                 return (
-                  <div key={idx} className="flex gap-4">
-                    <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
+                  <div key={idx} className="flex items-start gap-4">
+                    <div
+                      className="
+                      flex
+                      h-12
+                      w-12
+                      shrink-0
+                      items-center
+                      justify-center
+                      rounded-2xl
+                      bg-primary/10
+                      text-primary
+                    "
+                    >
                       {typeof Icon === 'string' ? <Zap size={20} /> : <Icon size={20} />}
                     </div>
+
                     <div>
-                      <h4 className="font-bold text-slate-900 text-lg mb-1">{item.title}</h4>
-                      <p className="text-slate-500 leading-relaxed">{item.content || item.desc}</p>
+                      <h3 className="text-lg font-semibold text-foreground">
+                        {item.title}
+                      </h3>
+
+                      <p className="mt-1 leading-7 text-muted-foreground">
+                        {item.content || item.desc}
+                      </p>
                     </div>
                   </div>
                 );
@@ -77,38 +107,74 @@ export function HomeWhyLaundrix({ data }: { data?: any }) {
             </div>
           </motion.div>
 
-          <motion.div 
+          {/* Right Image */}
+          <motion.div
             initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="lg:w-1/2 w-full"
+            className="w-full lg:w-1/2"
           >
-            <div className="relative rounded-3xl overflow-hidden shadow-2xl h-[600px] w-full bg-slate-100">
-              <Image 
-                src="/images/home/whyLaundrix.jpg" 
-                alt="LAUNDRIX Facility"
+            <div
+              className="
+                relative
+                h-[500px]
+                lg:h-[600px]
+                overflow-hidden
+                rounded-3xl
+                border
+                border-border
+                bg-card
+                shadow-xl
+              "
+            >
+              <Image
+                src="/images/home/whyLaundriximg.png"
+                alt="Modern LAUNDRIX Facility"
                 fill
-                className="object-cover"
+                className="object-cover transition-transform duration-700 hover:scale-105"
               />
-              
-              <div className="absolute bottom-6 left-6 right-6 bg-white/95 backdrop-blur-sm rounded-2xl p-4 flex items-center gap-4 shadow-lg border border-slate-100">
-                <div className="flex -space-x-3">
-                  <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold border-2 border-white">SM</div>
-                  <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold border-2 border-white">JT</div>
-                  <div className="w-10 h-10 rounded-full bg-blue-700 flex items-center justify-center text-white text-xs font-bold border-2 border-white">PS</div>
-                  <div className="w-10 h-10 rounded-full bg-blue-800 flex items-center justify-center text-white text-xs font-bold border-2 border-white">MR</div>
-                </div>
-                <div>
-                  <h4 className="font-bold text-slate-900 text-sm mb-1">50,000+ Happy Customers</h4>
-                  <div className="flex items-center gap-1">
-                    <div className="flex text-yellow-400">
+
+              {/* Floating Card */}
+              <div
+                className="
+              absolute
+              bottom-6
+              left-6
+              right-6
+              rounded-2xl
+              border
+              border-border
+              bg-background/95
+              p-5
+              shadow-lg
+              backdrop-blur-md
+            "
+              >
+                <div className="flex items-center justify-between">
+
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">
+                      Trusted by Thousands
+                    </p>
+
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Premium garment care with consistent quality.
+                    </p>
+                  </div>
+
+                  <div className="text-right">
+                    <div className="flex justify-end text-amber-400">
                       {[...Array(5)].map((_, i) => (
-                        <Star key={i} size={12} fill="currentColor" />
+                        <Star key={i} size={14} fill="currentColor" />
                       ))}
                     </div>
-                    <span className="text-xs text-slate-500 font-medium ml-1">4.9 / 5.0</span>
+
+                    <p className="mt-1 text-sm font-semibold text-foreground">
+                      4.9 / 5.0
+                    </p>
                   </div>
+
                 </div>
               </div>
             </div>

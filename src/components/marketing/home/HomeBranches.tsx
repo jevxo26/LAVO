@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { MapPin, ArrowRight } from "lucide-react";
+import { MapPin, ArrowRight, Building2 } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 
@@ -40,12 +40,13 @@ export function HomeBranches({ data }: { data?: any }) {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <div className="inline-flex items-center justify-center px-3 py-1 mb-4 rounded-full bg-blue-50">
-            <span className="text-xs font-bold tracking-wider text-blue-600 uppercase">
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-card px-4 py-2 shadow-sm">
+            <Building2 className="h-4 w-4 text-primary" />
+            <span className="text-xs font-bold tracking-wider text-primary uppercase">
               BRANCHES
             </span>
           </div>
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-slate-800">
+          <h2 className="mt-5 text-2xl md:text-3xl lg:text-4xl font-bold text-slate-800">
             {title}
           </h2>
         </motion.div>
