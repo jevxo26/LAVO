@@ -1,7 +1,10 @@
+"use client";
+
 import Link from "next/link";
-import { Clock, ArrowRight } from "lucide-react";
+import { Clock, ArrowRight, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Ticket, priorityStyle, statusStyle } from "./types";
+import { motion } from "framer-motion";
 
 interface TicketCardProps {
   ticket: Ticket;
@@ -12,21 +15,26 @@ export function TicketCard({ ticket }: TicketCardProps) {
   const status = statusStyle(ticket.status);
 
   return (
-    <div className="group rounded-xl border border-slate-100 bg-white p-4 transition-all duration-150 hover:border-indigo-100 hover:shadow-sm">
+    <motion.div
+      whileHover={{ y: -2 }}
+      className="group rounded-2xl border border-slate-200/80 bg-white p-4.5 transition-all duration-200 hover:border-indigo-200 hover:shadow-md dark:bg-slate-900 dark:border-slate-800"
+    >
       <div className="flex items-start justify-between gap-4">
 
-        {/* Left */}
+        {/* Left Info */}
         <div className="min-w-0 space-y-2">
-          <h3 className="text-[13px] font-bold text-slate-900 leading-snug">{ticket.title}</h3>
+          <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white leading-snug group-hover:text-indigo-600 transition-colors">
+            {ticket.title}
+          </h3>
           <div className="flex flex-wrap items-center gap-2">
             {/* Priority badge */}
-            <span className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[10px] font-bold ${prio.cls}`}>
+            <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-black ${prio.cls}`}>
               <span className={`h-1.5 w-1.5 rounded-full ${prio.dot}`} />
               {prio.label}
             </span>
             {/* Date */}
-            <span className="flex items-center gap-1 text-[11px] text-slate-400">
-              <Clock size={11} />
+            <span className="flex items-center gap-1 text-[11px] font-medium text-slate-400">
+              <Clock size={12} />
               {new Date(ticket.createdAt).toLocaleDateString("en-US", {
                 month: "short", day: "numeric", year: "numeric",
               })}
@@ -34,23 +42,21 @@ export function TicketCard({ ticket }: TicketCardProps) {
           </div>
         </div>
 
-        {/* Right */}
-        <div className="flex shrink-0 flex-col items-end gap-2">
-          <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${status.cls}`}>
+        {/* Right Action */}
+        <div className="flex shrink-0 flex-col items-end gap-2.5">
+          <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-black ${status.cls}`}>
             <span className={`h-1.5 w-1.5 rounded-full ${status.dot}`} />
             {status.label}
           </span>
           <Link href={`/dashboard/help-desk/${ticket.id}`}>
             <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 rounded-lg px-2.5 text-[11px] font-bold text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700 gap-1"
+              className="h-8 px-3.5 rounded-xl bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white font-extrabold text-xs gap-1.5 transition-all dark:bg-indigo-950/50 dark:text-indigo-300"
             >
-              Open Chat <ArrowRight size={11} />
+              <MessageSquare size={13} /> Open Chat
             </Button>
           </Link>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

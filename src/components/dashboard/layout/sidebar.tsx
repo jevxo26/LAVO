@@ -128,10 +128,10 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
                       setOpenMenu(openMenu === item.name ? null : item.name)
                     }
                     className={cn(
-                      "flex items-center w-full px-3 py-2.5 rounded-xl text-sm font-medium transition-all",
+                      "flex items-center w-full px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
                       isParentActive || openMenu === item.name
-                        ? "bg-blue-50 text-blue-600 font-semibold"
-                        : "text-slate-600 hover:bg-slate-100/70 hover:text-slate-900",
+                        ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold shadow-md shadow-blue-500/20"
+                        : "text-slate-600 hover:bg-slate-100/80 hover:text-slate-900",
                     )}
                   >
                     <item.icon size={19} />
@@ -156,10 +156,10 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
                   <Link
                     href={item.href || "#"}
                     className={cn(
-                      "flex items-center px-3 py-2.5 rounded-xl text-sm font-medium transition-all",
+                      "flex items-center px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
                       isActive
-                        ? "bg-blue-50 text-blue-600 font-semibold"
-                        : "text-slate-600 hover:bg-slate-100/70 hover:text-slate-900",
+                        ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold shadow-md shadow-blue-500/20"
+                        : "text-slate-600 hover:bg-slate-100/80 hover:text-slate-900",
                     )}
                   >
                     <item.icon size={19} />
