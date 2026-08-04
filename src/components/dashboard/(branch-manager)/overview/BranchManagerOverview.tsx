@@ -161,7 +161,7 @@ export function BranchManagerOverview() {
             </div>
 
             <Button onClick={() => { setRefreshing(true); fetchOverview(); }}
-              className="h-full rounded-2xl bg-white text-indigo-700 hover:bg-indigo-50 font-black text-xs px-5 shadow-lg gap-2 self-stretch">
+              className="h-10 px-4 rounded-xl bg-white text-indigo-700 hover:bg-indigo-50 font-black text-xs shadow-md gap-2 transition-all hover:scale-[1.02]">
               <RefreshCw size={15} className={refreshing ? "animate-spin" : ""} /> Refresh Telemetry
             </Button>
           </div>
@@ -189,7 +189,7 @@ export function BranchManagerOverview() {
             </div>
           </div>
           <Link href="/dashboard/partner-vendors">
-            <Button className="h-10 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-black px-5 gap-2 shrink-0 shadow-md">
+            <Button className="h-10 px-5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-black gap-2 shrink-0 shadow-md transition-all hover:scale-[1.02]">
               Delegate to Vendors <ArrowRight size={14} />
             </Button>
           </Link>

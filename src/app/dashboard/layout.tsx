@@ -51,7 +51,7 @@ export default function DashboardLayout({
       
       <div className="flex w-full flex-1 flex-col overflow-hidden">
         <Navbar />
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 pb-20 md:pb-22">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 pb-8 sm:pb-10">
           <div className="max-w-7xl mx-auto">
             {children}
           </div>

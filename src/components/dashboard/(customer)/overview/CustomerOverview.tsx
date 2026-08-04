@@ -177,14 +177,14 @@ export function CustomerOverview() {
 
             <div className="flex flex-wrap items-center gap-3 pt-2">
               <Link href="/dashboard/book-services">
-                <Button className="h-11 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs px-6 shadow-lg shadow-indigo-600/30 gap-2 transition-all hover:scale-[1.02]">
+                <Button className="h-10 px-5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs shadow-lg shadow-indigo-600/30 gap-2 transition-all hover:scale-[1.02]">
                   <Zap size={16} className="fill-current" /> Book Express Pickup
                 </Button>
               </Link>
               <Link href="/dashboard/track-orders">
                 <Button
                   variant="outline"
-                  className="h-11 rounded-2xl border-white/20 bg-white/10 text-white hover:bg-white/20 font-bold text-xs px-5 gap-2 backdrop-blur-md transition-all"
+                  className="h-10 px-5 rounded-xl border-white/20 bg-white/10 text-white hover:bg-white/20 font-bold text-xs gap-2 backdrop-blur-md transition-all"
                 >
                   <Radio size={15} className="text-indigo-300 animate-pulse" /> Track Live Order
                 </Button>
@@ -239,7 +239,7 @@ export function CustomerOverview() {
             </div>
 
             <Link href={`/dashboard/track-orders?orderId=${activeOrder.id}`}>
-              <Button size="sm" className="rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold gap-1.5 px-4 shadow-sm">
+              <Button className="h-9 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-extrabold gap-1.5 shadow-sm transition-all hover:scale-[1.02]">
                 View Full Live Map <ChevronRight size={14} />
               </Button>
             </Link>
@@ -447,8 +447,7 @@ export function CustomerOverview() {
               {[500, 1000, 2000].map((amt) => (
                 <Link key={amt} href="/dashboard/wallet" className="flex-1">
                   <Button
-                    size="sm"
-                    className="w-full h-8 rounded-xl bg-white/15 hover:bg-white/25 border border-white/20 text-white font-extrabold text-[11px] backdrop-blur-md"
+                    className="w-full h-9 rounded-lg bg-white/15 hover:bg-white/25 border border-white/20 text-white font-extrabold text-[11px] backdrop-blur-md transition-all"
                   >
                     +৳{amt}
                   </Button>
