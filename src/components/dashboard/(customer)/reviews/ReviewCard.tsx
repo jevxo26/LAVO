@@ -10,18 +10,15 @@ import { Button } from "@/components/ui/button";
 import { StarRating }        from "./StarRating";
 import { StatusBadge, TypeBadge } from "./Badges";
 import { OrderReview, fmtDate, gradientFor, serviceType } from "./types";
-
-// ─── Thumbnail ────────────────────────────────────────────────────────────────
+import { motion } from "framer-motion";
 
 function ServiceThumbnail({ name }: { name: string }) {
   return (
-    <div className={`h-full w-full bg-gradient-to-br ${gradientFor(name)} flex items-center justify-center`}>
-      <Shirt size={28} className="text-white/60" />
+    <div className={`h-full w-full bg-gradient-to-br ${gradientFor(name)} flex items-center justify-center p-3`}>
+      <Shirt size={32} className="text-white/80" />
     </div>
   );
 }
-
-// ─── MetaChip ─────────────────────────────────────────────────────────────────
 
 function MetaChip({ icon: Icon, label, value }: {
   icon: React.ElementType; label: string; value: string;
@@ -30,14 +27,12 @@ function MetaChip({ icon: Icon, label, value }: {
     <div className="flex items-center gap-1.5">
       <Icon size={12} className="text-slate-400 shrink-0" />
       <div>
-        <p className="text-[10px] text-slate-400 leading-none">{label}</p>
-        <p className="text-[12px] font-semibold text-slate-700 leading-tight mt-0.5">{value}</p>
+        <p className="text-[10px] text-slate-400 font-medium leading-none">{label}</p>
+        <p className="text-xs font-black text-slate-800 dark:text-slate-200 leading-tight mt-0.5">{value}</p>
       </div>
     </div>
   );
 }
-
-// ─── Dot-menu ─────────────────────────────────────────────────────────────────
 
 function CardMenu({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
@@ -57,10 +52,10 @@ function CardMenu({ children }: { children: React.ReactNode }) {
         onClick={() => setOpen((v) => !v)}
         className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors"
       >
-        <MoreVertical size={14} />
+        <MoreVertical size={15} />
       </button>
       {open && (
-        <div className="absolute right-0 top-8 z-50 min-w-[148px] rounded-xl border border-slate-100 bg-white py-1 shadow-lg">
+        <div className="absolute right-0 top-8 z-50 min-w-[148px] rounded-2xl border border-slate-200 bg-white py-1.5 shadow-xl dark:bg-slate-800 dark:border-slate-700">
           {children}
         </div>
       )}
@@ -74,9 +69,9 @@ function CardMenuLink({ href, icon: Icon, children }: {
   return (
     <Link
       href={href}
-      className="flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+      className="flex w-full items-center gap-2 px-3.5 py-2 text-xs font-extrabold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors dark:text-slate-300 dark:hover:bg-slate-700/50 dark:hover:text-white"
     >
-      <Icon size={12} className="shrink-0" />{children}
+      <Icon size={13} className="shrink-0" />{children}
     </Link>
   );
 }
@@ -87,15 +82,14 @@ function CardMenuButton({ onClick, icon: Icon, children, highlight = false }: {
   return (
     <button
       onClick={onClick}
-      className={`flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold transition-colors hover:bg-slate-50
-        ${highlight ? "text-violet-600" : "text-slate-600 hover:text-slate-900"}`}
+      className={`flex w-full items-center gap-2 px-3.5 py-2 text-xs font-extrabold transition-colors hover:bg-slate-50 dark:hover:bg-slate-700/50 ${
+        highlight ? "text-amber-600 dark:text-amber-400" : "text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
+      }`}
     >
-      <Icon size={12} className="shrink-0" />{children}
+      <Icon size={13} className="shrink-0" />{children}
     </button>
   );
 }
-
-// ─── ReviewCard ───────────────────────────────────────────────────────────────
 
 interface ReviewCardProps {
   item: OrderReview;
@@ -108,120 +102,104 @@ export function ReviewCard({ item, onWrite, onView }: ReviewCardProps) {
   const type = serviceType(item.serviceName);
 
   return (
-    <div className={`flex overflow-hidden rounded-2xl border bg-white shadow-sm transition-all duration-200 hover:shadow-md
-      ${has ? "border-slate-100 hover:border-amber-100" : "border-slate-100 hover:border-violet-100"}`}>
-
-      {/* Thumbnail */}
-      <div className="relative w-[120px] shrink-0 md:w-[140px]">
+    <motion.div
+      whileHover={{ y: -2 }}
+      className={`flex flex-col sm:flex-row overflow-hidden rounded-3xl border bg-white shadow-sm transition-all duration-200 hover:shadow-md dark:bg-slate-900 ${
+        has ? "border-slate-200/80 hover:border-amber-300 dark:border-slate-800" : "border-slate-200/80 hover:border-indigo-300 dark:border-slate-800"
+      }`}
+    >
+      <div className="relative w-full sm:w-[130px] md:w-[150px] shrink-0 h-24 sm:h-auto">
         <ServiceThumbnail name={item.serviceName} />
-        {/* Reviewed badge overlay */}
         {has && (
-          <div className="absolute bottom-2.5 left-2.5 flex items-center gap-1 rounded-full bg-white/20 backdrop-blur-sm px-2 py-0.5">
-            <Star size={9} className="fill-amber-300 text-amber-300" />
-            <span className="text-white text-[10px] font-bold">{item.review!.rating.toFixed(1)}</span>
+          <div className="absolute bottom-2.5 left-2.5 flex items-center gap-1 rounded-full bg-black/30 backdrop-blur-md px-2.5 py-0.5 border border-white/20">
+            <Star size={10} className="fill-amber-400 text-amber-400" />
+            <span className="text-white text-[10px] font-black">{item.review!.rating.toFixed(1)}</span>
           </div>
         )}
       </div>
 
-      {/* Body */}
-      <div className="flex flex-1 flex-col gap-2 px-5 py-4 min-w-0">
-
-        {/* Row 1: order ID + status | date + menu */}
+      <div className="flex flex-1 flex-col gap-3 p-5 min-w-0">
         <div className="flex items-start justify-between gap-2">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="flex items-center gap-1 text-[12px] font-bold text-violet-600">
-              <Hash size={11} className="text-violet-400" />
+            <span className="flex items-center gap-1 text-xs font-mono font-black text-indigo-600 dark:text-indigo-400">
+              <Hash size={12} />
               {item.orderNumber}
             </span>
             <StatusBadge status={has ? item.review!.status : "PENDING"} />
           </div>
-          <div className="flex shrink-0 items-center gap-1.5">
-            <span className="hidden sm:block text-[11px] text-slate-400 whitespace-nowrap">
+
+          <div className="flex shrink-0 items-center gap-2">
+            <span className="hidden sm:block text-[11px] font-medium text-slate-400">
               {has ? `Reviewed ${fmtDate(item.review!.createdAt)}` : `Completed ${fmtDate(item.orderDate)}`}
             </span>
             <CardMenu>
               <CardMenuLink href="/dashboard/my-orders" icon={ExternalLink}>View Order</CardMenuLink>
-              {has  && <CardMenuButton onClick={() => onView(item)}  icon={Eye}     >View Review</CardMenuButton>}
+              {has  && <CardMenuButton onClick={() => onView(item)}  icon={Eye}>View Review</CardMenuButton>}
               {!has && <CardMenuButton onClick={() => onWrite(item)} icon={PenLine} highlight>Write Review</CardMenuButton>}
             </CardMenu>
           </div>
         </div>
 
-        {/* Row 2: service name + type badge */}
         <div className="flex flex-wrap items-center gap-2">
-          <h3 className="text-[15px] font-bold text-slate-900 leading-tight">{item.serviceName}</h3>
+          <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white leading-tight">{item.serviceName}</h3>
           <TypeBadge type={type} />
         </div>
 
-        {/* Row 3: meta chips */}
-        <div className="flex flex-wrap gap-x-5 gap-y-1.5">
+        <div className="flex flex-wrap gap-x-6 gap-y-2 pt-0.5">
           <MetaChip icon={CalendarDays} label="Order Date" value={fmtDate(item.orderDate)} />
-          <MetaChip icon={TrendingUp}   label="Amount"     value={`৳${item.grandTotal.toFixed(2)}`} />
+          <MetaChip icon={TrendingUp}   label="Total Spent" value={`৳${item.grandTotal.toFixed(2)}`} />
         </div>
 
-        {/* Row 4: review content or call-to-action */}
         {has ? (
-          <div className="rounded-xl border border-amber-100 bg-amber-50/40 px-3 py-2.5 space-y-1">
+          <div className="rounded-2xl border border-amber-200/80 bg-amber-50/50 p-3.5 space-y-1 dark:bg-amber-950/30 dark:border-amber-900/60">
             <div className="flex items-center gap-2">
               <StarRating value={item.review!.rating} readonly size={14} />
-              <span className="text-xs font-extrabold text-slate-800">{item.review!.rating.toFixed(1)}</span>
+              <span className="text-xs font-black text-slate-900 dark:text-white">{item.review!.rating.toFixed(1)}</span>
             </div>
             {item.review!.title && (
-              <p className="text-[13px] font-bold text-slate-900">{item.review!.title}</p>
+              <p className="text-xs font-black text-slate-900 dark:text-white">{item.review!.title}</p>
             )}
-            <p className="text-[12px] leading-relaxed text-slate-500 line-clamp-2">
+            <p className="text-xs font-medium text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-2">
               {item.review!.comment}
             </p>
           </div>
         ) : (
-          <div className="rounded-xl border border-violet-100 bg-violet-50/40 px-3 py-2 flex items-center gap-2">
-            <Star size={13} className="text-violet-400 shrink-0" />
-            <p className="text-[12px] text-violet-600 font-medium italic">
-              Share your feedback on this order.
+          <div className="rounded-2xl border border-indigo-100 bg-indigo-50/50 p-3 flex items-center gap-2 dark:bg-indigo-950/30 dark:border-indigo-900/60">
+            <Star size={14} className="text-indigo-500 shrink-0" />
+            <p className="text-xs text-indigo-700 dark:text-indigo-300 font-extrabold italic">
+              Order completed! Tap write review to rate this service.
             </p>
           </div>
         )}
 
-        {/* Row 5: actions */}
-        <div className="flex items-center justify-end mt-auto pt-1 gap-2">
+        <div className="flex items-center justify-end mt-auto pt-2 gap-2">
           {has ? (
             <>
               <Link href="/dashboard/my-orders">
                 <Button
-                  size="sm"
                   variant="outline"
-                  className="h-8 rounded-xl border-slate-200 px-3 text-[11px] font-semibold text-slate-600 hover:border-violet-200 hover:text-violet-700 hover:bg-violet-50 gap-1.5"
+                  className="h-8 rounded-xl border-slate-200 text-xs font-black text-slate-700 hover:bg-slate-50 gap-1.5 dark:border-slate-700 dark:text-slate-300"
                 >
-                  <ExternalLink size={11} /> View Order
+                  <ExternalLink size={12} /> View Order
                 </Button>
               </Link>
               <Button
-                size="sm"
-                variant="outline"
                 onClick={() => onView(item)}
-                className="h-8 rounded-xl border-amber-200 px-3 text-[11px] font-semibold text-amber-700 hover:bg-amber-50 gap-1.5"
+                className="h-8 px-4 rounded-xl bg-amber-500 hover:bg-amber-600 text-xs font-black text-white gap-1.5 shadow-sm shadow-amber-500/20"
               >
-                <Eye size={11} /> View
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => onView(item)}
-                className="h-8 rounded-xl bg-amber-500 hover:bg-amber-600 px-3 text-[11px] font-bold text-white gap-1.5 shadow-sm shadow-amber-200"
-              >
-                <PenLine size={11} /> Edit
+                <Eye size={12} /> View Review
               </Button>
             </>
           ) : (
             <Button
-              size="sm"
               onClick={() => onWrite(item)}
-              className="h-8 rounded-xl bg-violet-600 hover:bg-violet-700 px-4 text-[11px] font-bold text-white gap-1.5 shadow-sm shadow-violet-200"
+              className="h-9 px-5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-black text-white gap-1.5 shadow-md shadow-indigo-600/30 transition-all hover:scale-[1.02]"
             >
-              <Star size={11} className="fill-white" /> Write Review
+              <Star size={13} className="fill-white" /> Write Review
             </Button>
           )}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

@@ -18,10 +18,12 @@ import {
   ChevronLeft,
   ChevronRight,
   Sparkles,
+  ArrowRight
 } from "lucide-react";
 import { authFetch } from "@/lib/api";
 import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
 
 import {
   OrderRecord,
@@ -41,40 +43,42 @@ function StatCard({
   sub,
   value,
   Icon,
-  iconBg,
-  iconColor,
-  ringColor,
+  gradient,
 }: {
   label: string;
   sub: string;
   value: string | number;
   Icon: React.ElementType;
-  iconBg: string;
-  iconColor: string;
-  ringColor: string;
+  gradient: string;
 }) {
   return (
-    <div className="flex items-center gap-4 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
-      <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ring-4 ${iconBg} ${iconColor} ${ringColor}`}>
-        <Icon size={22} />
+    <motion.div
+      whileHover={{ y: -3 }}
+      className="relative overflow-hidden rounded-3xl border border-slate-200/80 bg-white p-5 shadow-sm dark:bg-slate-900 dark:border-slate-800"
+    >
+      <div className={`h-1 w-full bg-gradient-to-r ${gradient} absolute top-0 left-0 right-0`} />
+      <div className="flex items-center gap-4 pt-1">
+        <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br ${gradient} text-white shadow-md`}>
+          <Icon size={22} />
+        </div>
+        <div className="min-w-0">
+          <p className="text-2xl font-black text-slate-900 dark:text-white leading-none">{value}</p>
+          <p className="mt-1 text-xs font-black text-slate-700 dark:text-slate-200 leading-tight">{label}</p>
+          <p className="text-[11px] font-medium text-slate-400 leading-tight">{sub}</p>
+        </div>
       </div>
-      <div className="min-w-0">
-        <p className="text-2xl font-extrabold text-slate-900 leading-none">{value}</p>
-        <p className="mt-0.5 text-[12px] font-semibold text-slate-700 leading-tight">{label}</p>
-        <p className="text-[11px] text-slate-400 leading-tight">{sub}</p>
-      </div>
-    </div>
+    </motion.div>
   );
 }
 
 // ─── Tab button ───────────────────────────────────────────────────────────────
 
-const TAB_META: Record<string, { label: string; color: string; activeColor: string }> = {
-  ALL:        { label: "All Orders",  color: "bg-slate-100 text-slate-600 hover:bg-slate-200",                 activeColor: "bg-indigo-600 text-white shadow-md shadow-indigo-200"  },
-  PENDING:    { label: "Pending",     color: "bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200",   activeColor: "bg-amber-500 text-white shadow-md shadow-amber-200"    },
-  PROCESSING: { label: "Processing",  color: "bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200", activeColor: "bg-indigo-500 text-white shadow-md shadow-indigo-200" },
-  COMPLETED:  { label: "Completed",   color: "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200", activeColor: "bg-emerald-500 text-white shadow-md shadow-emerald-200"},
-  CANCELLED:  { label: "Cancelled",   color: "bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200",        activeColor: "bg-rose-500 text-white shadow-md shadow-rose-200"      },
+const TAB_META: Record<string, { label: string; activeColor: string }> = {
+  ALL:        { label: "All Orders",  activeColor: "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"  },
+  PENDING:    { label: "Pending",     activeColor: "bg-amber-500 text-white shadow-md shadow-amber-500/30"    },
+  PROCESSING: { label: "Processing",  activeColor: "bg-indigo-500 text-white shadow-md shadow-indigo-500/30" },
+  COMPLETED:  { label: "Completed",   activeColor: "bg-emerald-600 text-white shadow-md shadow-emerald-600/30"},
+  CANCELLED:  { label: "Cancelled",   activeColor: "bg-rose-500 text-white shadow-md shadow-rose-500/30"      },
 };
 
 function tabCount(orders: OrderRecord[], tab: string): number {
@@ -127,10 +131,8 @@ export default function MyOrdersPage() {
     init();
   }, []);
 
-  // Reset page when filters change
   useEffect(() => { setPage(1); }, [activeTab, searchQuery]);
 
-  // ── Real-time socket: auto-refresh when order status changes ────────────────
   const socketRef = useRef<Socket | null>(null);
   const { user } = useAuth();
 
@@ -155,15 +157,12 @@ export default function MyOrdersPage() {
     });
 
     socket.on("orderStatusUpdated", () => {
-      // Re-fetch all orders silently so the list reflects new status
       loadOrders();
     });
 
     return () => { socket.disconnect(); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
-
-  // ── Actions ─────────────────────────────────────────────────────────────────
 
   const handleCancelOrder = async (order: OrderRecord) => {
     const confirmed = window.confirm(
@@ -207,8 +206,6 @@ export default function MyOrdersPage() {
     }
   };
 
-  // ── Derived state ────────────────────────────────────────────────────────────
-
   const stats = useMemo(() => ({
     total:     orders.length,
     active:    orders.filter((o) => PROCESSING_STATUSES.includes(o.orderStatus.toUpperCase())).length,
@@ -233,68 +230,59 @@ export default function MyOrdersPage() {
 
   const hasSearch = searchQuery.trim().length > 0;
 
-  // ── Render ───────────────────────────────────────────────────────────────────
-
   return (
-    <div className="space-y-7">
-
-      {/* ── Hero Header ────────────────────────────────────────────────────── */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-700 px-7 py-8">
-        {/* decorative blobs */}
-        <div className="pointer-events-none absolute inset-0 opacity-10">
-          <div className="absolute -top-12 -right-12 h-56 w-56 rounded-full bg-white" />
-          <div className="absolute -bottom-10 -left-8 h-40 w-40 rounded-full bg-white" />
+    <motion.div
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35 }}
+      className="space-y-7"
+    >
+      {/* ── 1. Hero Header Banner ───────────────────────────────────────────── */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-950 via-indigo-900 to-slate-900 p-7 md:p-9 text-white shadow-2xl border border-indigo-800/40">
+        <div className="pointer-events-none absolute inset-0 opacity-20">
+          <div className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-indigo-500 blur-3xl" />
+          <div className="absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-purple-500 blur-3xl" />
         </div>
 
-        <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div className="flex items-center gap-2 mb-1.5">
-              <Sparkles size={14} className="text-indigo-200" />
-              <span className="text-indigo-200 text-[11px] font-semibold uppercase tracking-widest">
-                Laundry Dashboard
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Sparkles size={14} className="text-indigo-300" />
+              <span className="text-indigo-200 text-xs font-black uppercase tracking-widest">
+                Laundry Order Tracker &amp; Invoices
               </span>
             </div>
-            <h1 className="text-2xl font-extrabold tracking-tight text-white">My Orders</h1>
-            <p className="mt-1 text-sm text-indigo-200">
-              Track current garment laundry steps and look up past invoices.
+            <h1 className="text-3xl md:text-4xl font-black tracking-tight text-white leading-tight">
+              My Orders &amp; Receipts
+            </h1>
+            <p className="text-indigo-100 text-xs md:text-sm leading-relaxed font-medium max-w-xl">
+              Track live garment cleaning stages, download receipts, or initiate fast repeat orders.
             </p>
           </div>
 
-          {!loading && !error && (
-            <div className="flex items-center gap-3">
-              <div className="rounded-xl bg-white/10 border border-white/20 backdrop-blur-sm px-4 py-3 text-center">
-                <p className="text-indigo-200 text-[10px] font-semibold uppercase tracking-wider">Total Orders</p>
-                <p className="text-white font-extrabold text-xl leading-tight">{stats.total}</p>
-              </div>
-              {stats.active > 0 && (
-                <div className="rounded-xl bg-white/10 border border-white/20 backdrop-blur-sm px-4 py-3 text-center">
-                  <p className="text-indigo-200 text-[10px] font-semibold uppercase tracking-wider">Active</p>
-                  <p className="text-white font-extrabold text-xl leading-tight">{stats.active}</p>
-                </div>
-              )}
-            </div>
-          )}
+          <div className="flex items-center gap-3 shrink-0">
+            <Link href="/dashboard/book-services">
+              <Button className="h-11 px-6 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs shadow-lg shadow-indigo-600/30 gap-2 transition-all hover:scale-[1.02]">
+                <ShoppingBag size={16} /> Book New Laundry
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 
-      {/* ── Summary Stat Cards ──────────────────────────────────────────────── */}
+      {/* ── 2. Stat Cards Grid ──────────────────────────────────────────────── */}
       {loading ? <OrderSummarySkeletons /> : !error && (
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <StatCard label="Total Orders"  sub="All time orders placed"    value={stats.total}
-            Icon={ShoppingBag}  iconBg="bg-indigo-50"  iconColor="text-indigo-600" ringColor="ring-indigo-100" />
-          <StatCard label="Active Orders" sub="Currently in progress"     value={stats.active}
-            Icon={Clock}        iconBg="bg-amber-50"   iconColor="text-amber-600"  ringColor="ring-amber-100"  />
-          <StatCard label="Completed"     sub="Successfully delivered"    value={stats.completed}
-            Icon={CheckCircle2} iconBg="bg-emerald-50" iconColor="text-emerald-600" ringColor="ring-emerald-100"/>
-          <StatCard label="Cancelled"     sub="Orders you've cancelled"   value={stats.cancelled}
-            Icon={XCircle}      iconBg="bg-rose-50"    iconColor="text-rose-500"   ringColor="ring-rose-100"   />
+          <StatCard label="Total Orders"  sub="Lifetime bookings"  value={stats.total}     Icon={ShoppingBag}  gradient="from-indigo-500 to-violet-600" />
+          <StatCard label="Active Orders" sub="In cleaning stage"  value={stats.active}    Icon={Clock}        gradient="from-amber-400 to-orange-500" />
+          <StatCard label="Completed"     sub="Delivered to door"  value={stats.completed} Icon={CheckCircle2} gradient="from-emerald-500 to-teal-600" />
+          <StatCard label="Cancelled"     sub="Voided requests"    value={stats.cancelled} Icon={XCircle}      gradient="from-rose-500 to-pink-600" />
         </div>
       )}
 
-      {/* ── Toolbar: Tabs + Search ──────────────────────────────────────────── */}
+      {/* ── 3. Toolbar: Status Tabs & Search Input ───────────────────────────── */}
       {!loading && !error && (
-        <div className="rounded-2xl border border-slate-100 bg-white px-5 py-4 shadow-sm space-y-3">
-          {/* Tabs */}
+        <div className="rounded-3xl border border-slate-200/80 bg-white p-5 shadow-sm space-y-4 dark:bg-slate-900 dark:border-slate-800">
           <div className="flex flex-wrap gap-2">
             {STATUS_TABS.map((tab) => {
               const meta  = TAB_META[tab];
@@ -304,12 +292,16 @@ export default function MyOrdersPage() {
                 <button
                   key={tab}
                   onClick={() => { setActiveTab(tab); setExpandedId(null); }}
-                  className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-bold transition-all duration-150
-                    ${active ? meta.activeColor : meta.color}`}
+                  className={`flex items-center gap-2 rounded-2xl px-4 py-2 text-xs font-black transition-all duration-200 ${
+                    active
+                      ? meta.activeColor
+                      : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300"
+                  }`}
                 >
                   {meta.label}
-                  <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-extrabold
-                    ${active ? "bg-white/25 text-white" : "bg-white/70 text-current border border-current/20"}`}>
+                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-black ${
+                    active ? "bg-white/25 text-white" : "bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200"
+                  }`}>
                     {count}
                   </span>
                 </button>
@@ -317,84 +309,76 @@ export default function MyOrdersPage() {
             })}
           </div>
 
-          {/* Search */}
-          <div className="flex items-center gap-3">
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={13} />
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1 border-t border-slate-100 dark:border-slate-800">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3.5 top-3 text-slate-400" size={15} />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search by order number…"
-                className="w-full h-9 pl-9 pr-3 rounded-xl border border-slate-200 bg-slate-50 text-xs font-medium text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:bg-white transition"
+                placeholder="Search by order number..."
+                className="w-full h-10 rounded-2xl border border-slate-200 bg-slate-50/80 pl-10 pr-4 text-xs font-bold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white"
               />
             </div>
 
             {hasSearch && (
-              <Button size="sm" variant="ghost" onClick={() => setSearchQuery("")}
-                className="h-9 rounded-xl text-xs font-bold text-slate-500 hover:text-rose-600 hover:bg-rose-50 px-3 gap-1.5">
-                <RotateCcw size={12} /> Clear
+              <Button onClick={() => setSearchQuery("")} variant="ghost" className="h-9 px-3 rounded-xl text-xs font-extrabold text-slate-500 hover:text-rose-600 gap-1.5">
+                <RotateCcw size={13} /> Clear Search
               </Button>
             )}
 
             {!loading && filtered.length > 0 && (
-              <p className="text-[11px] text-slate-400 ml-auto">
-                Showing <span className="font-semibold text-slate-600">{displayed.length}</span> of{" "}
-                <span className="font-semibold text-slate-600">{filtered.length}</span> orders
+              <p className="text-xs text-slate-400 font-medium">
+                Showing <span className="font-black text-slate-800 dark:text-slate-200">{displayed.length}</span> of{" "}
+                <span className="font-black text-slate-800 dark:text-slate-200">{filtered.length}</span> orders
               </p>
             )}
           </div>
         </div>
       )}
 
-      {/* ── Content ─────────────────────────────────────────────────────────── */}
+      {/* ── 4. Order List / Empty States ─────────────────────────────────────── */}
       {loading ? (
         <OrderCardSkeletons />
       ) : error ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white py-20 text-center">
-          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-50">
-            <AlertCircle size={26} className="text-rose-400" />
+        <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white py-20 text-center dark:bg-slate-900 dark:border-slate-800">
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-50 text-rose-500">
+            <AlertCircle size={26} />
           </div>
-          <p className="text-sm font-semibold text-slate-700">Could not load your orders</p>
-          <p className="mt-1 text-xs text-slate-400">Check your connection and try again.</p>
-          <Button size="sm" variant="outline" onClick={loadOrders}
-            className="mt-4 rounded-xl border-slate-200 text-xs font-bold">
+          <p className="text-sm font-black text-slate-900 dark:text-white">Could not load your orders</p>
+          <p className="mt-1 text-xs text-slate-400 font-medium">Check your connection and try again.</p>
+          <Button onClick={loadOrders} variant="outline" className="mt-4 h-9 px-4 rounded-xl text-xs font-extrabold border-slate-200">
             Retry
           </Button>
         </div>
       ) : orders.length === 0 ? (
-        /* Completely empty account */
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white py-24 text-center">
-          <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-indigo-50">
-            <Inbox size={38} className="text-indigo-400" />
+        <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white py-24 text-center dark:bg-slate-900 dark:border-slate-800">
+          <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50">
+            <Inbox size={38} />
           </div>
-          <p className="text-base font-bold text-slate-800">No orders yet</p>
-          <p className="mt-2 max-w-xs text-sm text-slate-400">
-            You haven&apos;t placed any laundry orders. Book a service to get started!
+          <p className="text-lg font-black text-slate-900 dark:text-white">No Laundry Orders Yet</p>
+          <p className="mt-1.5 max-w-xs text-xs text-slate-400 font-medium">
+            Schedule an express pickup and experience premium eco-friendly garment care.
           </p>
           <Link href="/dashboard/book-services">
-            <Button className="mt-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-xs font-bold text-white gap-2">
-              <ShoppingBag size={14} /> Book a Service
+            <Button className="mt-6 h-11 px-6 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs shadow-lg shadow-indigo-600/30 gap-2">
+              <ShoppingBag size={16} /> Book Your First Order
             </Button>
           </Link>
         </div>
       ) : displayed.length === 0 ? (
-        /* Filtered — no results */
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white py-20 text-center">
-          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100">
-            <Filter size={24} className="text-slate-400" />
+        <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white py-20 text-center dark:bg-slate-900 dark:border-slate-800">
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
+            <Filter size={24} />
           </div>
-          <p className="text-sm font-semibold text-slate-700">No orders match your filters</p>
-          <p className="mt-1 text-xs text-slate-400">Try a different tab or clear your search.</p>
-          <Button size="sm" variant="outline"
-            onClick={() => { setActiveTab("ALL"); setSearchQuery(""); }}
-            className="mt-4 rounded-xl border-slate-200 text-xs font-bold gap-1.5">
-            <RotateCcw size={12} /> Clear Filters
+          <p className="text-sm font-black text-slate-900 dark:text-white">No orders match your filters</p>
+          <p className="mt-1 text-xs text-slate-400 font-medium">Try selecting a different tab or clear your search query.</p>
+          <Button onClick={() => { setActiveTab("ALL"); setSearchQuery(""); }} variant="outline" className="mt-4 h-9 px-4 rounded-xl text-xs font-extrabold gap-1.5 border-slate-200">
+            <RotateCcw size={13} /> Reset Filters
           </Button>
         </div>
       ) : (
         <>
-          {/* ── Order Cards ───────────────────────────────────────────────── */}
           <div className="space-y-4">
             {displayed.map((order) => (
               <OrderCard
@@ -409,28 +393,28 @@ export default function MyOrdersPage() {
             ))}
           </div>
 
-          {/* ── Pagination ────────────────────────────────────────────────── */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-1.5 pt-2">
+            <div className="flex items-center justify-center gap-2 pt-4">
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={safePage === 1}
-                className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300"
               >
-                <ChevronLeft size={14} />
+                <ChevronLeft size={16} />
               </button>
 
               {pages.map((p, i) =>
                 p === "…" ? (
-                  <span key={`ellipsis-${i}`} className="px-1 text-sm text-slate-400">…</span>
+                  <span key={`ellipsis-${i}`} className="px-1 text-xs font-bold text-slate-400">…</span>
                 ) : (
                   <button
                     key={p}
                     onClick={() => setPage(p as number)}
-                    className={`h-8 min-w-[2rem] rounded-lg border text-xs font-bold transition-all px-2
-                      ${safePage === p
-                        ? "border-indigo-500 bg-indigo-600 text-white shadow-sm shadow-indigo-200"
-                        : "border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300"}`}
+                    className={`h-9 min-w-[2.25rem] rounded-xl border text-xs font-black transition-all px-2.5 ${
+                      safePage === p
+                        ? "border-indigo-600 bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
+                        : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300"
+                    }`}
                   >
                     {p}
                   </button>
@@ -440,14 +424,14 @@ export default function MyOrdersPage() {
               <button
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={safePage === totalPages}
-                className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300"
               >
-                <ChevronRight size={14} />
+                <ChevronRight size={16} />
               </button>
             </div>
           )}
         </>
       )}
-    </div>
+    </motion.div>
   );
 }
