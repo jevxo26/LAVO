@@ -16,6 +16,7 @@ import { authFetch } from "@/lib/api";
 import io from "socket.io-client";
 import { useAuth } from "@/hooks/useAuth";
 import { motion } from "framer-motion";
+import { OverviewStatCard } from "@/components/dashboard/shared/overview/OverviewStatCard";
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 
@@ -90,7 +91,7 @@ export function BranchManagerOverview() {
       if (json.success && json.data) setData(json.data);
     } catch (e) {
       console.error("Failed to fetch branch overview:", e);
-    } finally {
+    } fontally {
       setLoading(false);
       setRefreshing(false);
     }
@@ -198,10 +199,10 @@ export function BranchManagerOverview() {
 
       {/* ── 3. Stat Cards Grid ──────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <OverviewStatCard label="Capacity Utilization" sub="Of daily limit"              value={`${capacityPct}%`}                  icon={Package}      gradient="from-indigo-500 to-violet-600" />
-        <OverviewStatCard label="Active Processing"    sub="Currently in progress"        value={`${data?.activeOrders ?? 0}`}       icon={Clock}        gradient="from-blue-500 to-cyan-600" />
-        <OverviewStatCard label="Pending Orders"       sub="Awaiting pickup / confirm"    value={`${data?.pendingOrders ?? 0}`}      icon={CheckCircle2} gradient="from-amber-400 to-orange-500" />
-        <OverviewStatCard label="Vendor Delegated"     sub="Sent to branch vendors"       value={`${data?.vendorDelegatedOrders ?? 0}`} icon={Store}     gradient="from-violet-500 to-purple-600" />
+        <OverviewStatCard title="Capacity Utilization" subLabel="Of daily limit"              value={`${capacityPct}%`}                  icon={Package}      gradient="from-indigo-500 to-violet-600" />
+        <OverviewStatCard title="Active Processing"    subLabel="Currently in progress"        value={`${data?.activeOrders ?? 0}`}       icon={Clock}        gradient="from-blue-500 to-cyan-600" />
+        <OverviewStatCard title="Pending Orders"       subLabel="Awaiting pickup / confirm"    value={`${data?.pendingOrders ?? 0}`}      icon={CheckCircle2} gradient="from-amber-400 to-orange-500" />
+        <OverviewStatCard title="Vendor Delegated"     subLabel="Sent to branch vendors"       value={`${data?.vendorDelegatedOrders ?? 0}`} icon={Store}     gradient="from-violet-500 to-purple-600" />
       </div>
 
       {/* ── 4. Main Grid: Machinery Load Bar Chart + Capacity Gauge ─────────── */}

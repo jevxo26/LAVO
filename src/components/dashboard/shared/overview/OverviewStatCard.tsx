@@ -5,24 +5,31 @@ import { LucideIcon, TrendingUp, TrendingDown } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface OverviewStatCardProps {
-  title: string;
+  title?: string;
+  label?: string;
   value: string | number;
   change?: string;
   isPositive?: boolean;
   icon: LucideIcon;
   gradient?: string; // e.g. "from-indigo-500 to-violet-600"
   subLabel?: string;
+  sub?: string;
 }
 
 export function OverviewStatCard({
   title,
+  label,
   value,
   change,
   isPositive = true,
   icon: Icon,
   gradient = "from-indigo-500 to-violet-600",
   subLabel,
+  sub,
 }: OverviewStatCardProps) {
+  const displayTitle = title || label || "";
+  const displaySub = subLabel || sub || "";
+
   return (
     <motion.div
       variants={{
@@ -49,7 +56,7 @@ export function OverviewStatCard({
       {/* Top row: title + glowing icon */}
       <div className="flex items-start justify-between mb-3">
         <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400 leading-none pr-2">
-          {title}
+          {displayTitle}
         </span>
         <div
           className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl
@@ -66,9 +73,9 @@ export function OverviewStatCard({
           {value}
         </div>
 
-        {subLabel && (
+        {displaySub && (
           <p className="mt-1.5 text-[11px] text-slate-500 dark:text-slate-400 font-medium leading-tight">
-            {subLabel}
+            {displaySub}
           </p>
         )}
 
