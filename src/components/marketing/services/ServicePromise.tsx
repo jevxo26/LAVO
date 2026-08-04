@@ -1,6 +1,6 @@
 "use client";
 
-import { Shield, Award, RefreshCcw } from "lucide-react";
+import { Shield, Award, RefreshCcw, ShieldCheck } from "lucide-react";
 import { motion } from "framer-motion";
 
 export function ServicePromise({ data }: { data?: any }) {
@@ -21,7 +21,7 @@ export function ServicePromise({ data }: { data?: any }) {
 
   const displayTitle = data?.title || "Service You Can Count On";
   const displaySubtitle = data?.subtitle || "Our Promise";
-  
+
   const defaultPromises = [
     { title: "Garment Insurance", content: "Every item is insured up to $500 while in our care.", icon: Shield },
     { title: "Certified Process", content: "ISO 9001 certified cleaning across all our locations.", icon: Award },
@@ -39,15 +39,15 @@ export function ServicePromise({ data }: { data?: any }) {
 
   const displayPromises = (data?.items?.length ?? 0) > 0
     ? data.items.map((item: any) => ({
-        id: item.id,
-        title: item.title,
-        content: item.content,
-        icon: getIcon(item.icon)
-      }))
+      id: item.id,
+      title: item.title,
+      content: item.content,
+      icon: getIcon(item.icon)
+    }))
     : defaultPromises.map((p, i) => ({ ...p, id: i }));
 
   return (
-    <section className="w-full py-12 md:py-16 lg:py-20 bg-surface-muted border-t border-border-soft">
+    <section className="w-full py-12 md:py-16 lg:py-20 bg-background border-t border-border">
       <div className="max-w-7xl mx-auto px-4 md:px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -56,11 +56,13 @@ export function ServicePromise({ data }: { data?: any }) {
           transition={{ duration: 0.5 }}
           className="flex flex-col items-center text-center mb-16"
         >
-          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 text-blue-600 mb-6 font-semibold tracking-wider text-xs uppercase">
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
-            {displaySubtitle}
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-card px-4 py-2 shadow-sm">
+            <ShieldCheck className="h-4 w-4 text-primary" />
+            <span className="text-xs font-bold tracking-wider text-primary uppercase">
+              {displaySubtitle}
+            </span>
           </div>
-          <h2 className="text-3xl md:text-4xl font-bold text-slate-900">
+          <h2 className="mt-5 text-3xl md:text-4xl font-bold text-slate-900">
             {displayTitle}
           </h2>
         </motion.div>
@@ -78,9 +80,45 @@ export function ServicePromise({ data }: { data?: any }) {
               <motion.div
                 key={promise.id}
                 variants={itemAnim}
-                className="flex flex-col items-center text-center bg-slate-200 py-10 rounded-2xl transition-all duration-500 ease-out hover:-translate-y-2 hover:scale-105"
+                className="
+                  group
+                  relative
+                  overflow-hidden
+                  rounded-3xl
+                  border border-border
+                  bg-card
+                  px-8
+                  py-10
+                  shadow-sm
+                  transition-all
+                  duration-500
+                  
+                  hover:-translate-y-2
+                  hover:scale-[1.02]
+                  hover:border-primary/20
+                  hover:bg-background/80
+                  hover:shadow-2xl
+                  hover:shadow-primary/10
+                "
               >
-                <div className="w-16 h-16 rounded-2xl bg-white shadow-sm border border-slate-100 flex items-center justify-center text-blue-600 mb-6 transition-transform duration-500 ease-out hover:scale-110">
+                <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-white/10 via-transparent to-transparent opacity-60 pointer-events-none" />
+                <div 
+                className="
+                  mx-auto mb-6
+                  flex h-16 w-16 items-center justify-center
+                  rounded-2xl
+
+                  bg-primary/10
+                  border border-primary/10
+
+                  text-primary
+
+                  transition-all
+                  duration-300
+
+                  group-hover:bg-primary
+                  group-hover:text-primary-foreground
+                ">
                   <Icon size={28} strokeWidth={1.5} />
                 </div>
                 <h3 className="text-xl font-bold text-slate-900 mb-3">

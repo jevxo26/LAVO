@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Minus, Plus } from "lucide-react";
+import { Calculator, Minus, Plus } from "lucide-react";
 
 // ─── Hardcoded fallback data ──────────────────────────────────────────────────
 
@@ -102,14 +102,14 @@ export function PricingCalculator({ data }: { data?: any }) {
   const cmsItems: CmsItem[] = data?.items ?? [];
   const parsed = parsePricingData(cmsItems);
 
-  const garments    = parsed.garments.length    ? parsed.garments    : DEFAULT_GARMENTS;
-  const services    = parsed.services.length    ? parsed.services    : DEFAULT_SERVICES;
+  const garments = parsed.garments.length ? parsed.garments : DEFAULT_GARMENTS;
+  const services = parsed.services.length ? parsed.services : DEFAULT_SERVICES;
   const turnarounds = parsed.turnarounds.length ? parsed.turnarounds : DEFAULT_TURNAROUNDS;
-  const addons      = parsed.addons.length      ? parsed.addons      : DEFAULT_ADDONS;
+  const addons = parsed.addons.length ? parsed.addons : DEFAULT_ADDONS;
 
-  const [selectedGarment, setSelectedGarment]     = useState(garments[2] ?? garments[0]);
-  const [selectedService, setSelectedService]     = useState(services[1] ?? services[0]);
-  const [quantity, setQuantity]                   = useState(5);
+  const [selectedGarment, setSelectedGarment] = useState(garments[2] ?? garments[0]);
+  const [selectedService, setSelectedService] = useState(services[1] ?? services[0]);
+  const [quantity, setQuantity] = useState(5);
   const [selectedTurnaround, setSelectedTurnaround] = useState(turnarounds[0]);
 
   const handleGarmentChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -172,7 +172,7 @@ export function PricingCalculator({ data }: { data?: any }) {
                   </select>
                   <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
                     <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   </div>
                 </div>
@@ -193,7 +193,7 @@ export function PricingCalculator({ data }: { data?: any }) {
                   </select>
                   <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
                     <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   </div>
                 </div>
@@ -230,7 +230,7 @@ export function PricingCalculator({ data }: { data?: any }) {
                   </select>
                   <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
                     <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   </div>
                 </div>
@@ -292,11 +292,13 @@ export function PricingCalculator({ data }: { data?: any }) {
             transition={{ duration: 0.5 }}
             className="flex flex-col items-center text-center mb-10"
           >
-            <div className="inline-flex items-center px-3 py-1 rounded-full bg-blue-50 text-blue-600 mb-4 font-bold tracking-widest text-[10px] uppercase">
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-600 mr-2"></span>
-              ADD-ONS
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-card px-4 py-2 shadow-sm">
+              <Calculator className="h-4 w-4 text-primary" />
+              <span className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+                ADD-ONS
+              </span>
             </div>
-            <h2 className="text-3xl font-bold text-slate-900 mb-2">
+            <h2 className="mt-5 text-3xl font-bold text-slate-900 mb-2">
               Customise Your Order
             </h2>
             <p className="text-slate-500 text-sm">
