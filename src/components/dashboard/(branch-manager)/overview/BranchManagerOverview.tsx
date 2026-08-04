@@ -91,7 +91,7 @@ export function BranchManagerOverview() {
       if (json.success && json.data) setData(json.data);
     } catch (e) {
       console.error("Failed to fetch branch overview:", e);
-    } fontally {
+    } finally {
       setLoading(false);
       setRefreshing(false);
     }
