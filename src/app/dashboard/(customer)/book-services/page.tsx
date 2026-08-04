@@ -1,10 +1,12 @@
 "use client";
 
-import { Loader2, Sparkles, Shirt, Wallet, ShoppingBag } from "lucide-react";
+import React, { useState } from "react";
+import { Loader2, Sparkles, Shirt, Wallet, ShoppingBag, Search, RotateCcw } from "lucide-react";
 import { useBooking } from "./_hooks/useBooking";
 import { ServiceCard } from "./_components/ServiceCard";
 import { CartSummary } from "./_components/CartSummary";
 import { PickupForm } from "./_components/PickupForm";
+import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 
 export default function BookLaundryPage() {
@@ -25,8 +27,20 @@ export default function BookLaundryPage() {
     pickupLon, setPickupLon,
   } = useBooking();
 
-  const filteredServices = services.filter((s) => s.category === activeCategory);
-  const countByCategory = (cat: string) => services.filter((s) => s.category === cat).length;
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredServices = services.filter((s) => {
+    const matchesCat = !activeCategory || activeCategory === "All" || s.category === activeCategory;
+    const matchesSearch = !searchQuery.trim() ||
+      s.serviceName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.garmentType.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.category.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCat && matchesSearch;
+  });
+
+  const allCategories = ["All", ...categories];
+  const countByCategory = (cat: string) =>
+    cat === "All" ? services.length : services.filter((s) => s.category === cat).length;
 
   if (loading) {
     return (
@@ -34,7 +48,7 @@ export default function BookLaundryPage() {
         <div className="w-16 h-16 rounded-3xl bg-indigo-50 dark:bg-indigo-950/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
           <Loader2 size={28} className="animate-spin" />
         </div>
-        <p className="text-slate-400 font-bold text-xs">Loading laundry services...</p>
+        <p className="text-slate-400 font-bold text-xs">Loading laundry catalog...</p>
       </div>
     );
   }
@@ -86,45 +100,71 @@ export default function BookLaundryPage() {
 
       {/* ── 2. Booking Workstation Grid ──────────────────────────────────────── */}
       <div className="grid gap-8 lg:grid-cols-12 items-start">
-        {/* Left: Services Selection */}
-        <div className="lg:col-span-7 space-y-6">
-          {/* Category Tabs */}
-          <div className="flex flex-wrap gap-2">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-black transition-all duration-200 ${
-                  activeCategory === cat
-                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
-                    : "bg-white text-slate-600 border border-slate-200/80 hover:border-indigo-300 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300"
-                }`}
-              >
-                {cat}
-                <span className={`text-[10px] px-2 py-0.5 rounded-full font-black ${
-                  activeCategory === cat ? "bg-white/25 text-white" : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"
-                }`}>
-                  {countByCategory(cat)}
-                </span>
-              </button>
-            ))}
+        {/* Left Column: Garment Catalog */}
+        <div className="lg:col-span-7 space-y-5">
+          {/* Toolbar: Search + Category Pills */}
+          <div className="space-y-4">
+            <div className="relative">
+              <Search className="absolute left-3.5 top-3 text-slate-400" size={15} />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search laundry services (e.g. Wash & Iron, Suit, Dry Clean)..."
+                className="w-full h-10 rounded-2xl border border-slate-200 bg-slate-50/80 pl-10 pr-4 text-xs font-bold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+              />
+            </div>
+
+            {/* Category Filter Pills */}
+            <div className="flex flex-wrap gap-2">
+              {allCategories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setActiveCategory(cat === "All" ? "" : cat)}
+                  className={`flex items-center gap-2 px-3.5 py-2 rounded-2xl text-xs font-black transition-all duration-200 ${
+                    (!activeCategory && cat === "All") || activeCategory === cat
+                      ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
+                      : "bg-white text-slate-600 border border-slate-200/80 hover:border-indigo-300 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300"
+                  }`}
+                >
+                  {cat}
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-black ${
+                    (!activeCategory && cat === "All") || activeCategory === cat
+                      ? "bg-white/25 text-white"
+                      : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+                  }`}>
+                    {countByCategory(cat)}
+                  </span>
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Services Grid */}
-          <div className="grid gap-4 sm:grid-cols-2">
-            {filteredServices.map((service) => (
-              <ServiceCard
-                key={service.id}
-                service={service}
-                inCart={cart.some((i) => i.service.id === service.id)}
-                onAdd={addToCart}
-                onToggleWishlist={toggleWishlist}
-              />
-            ))}
-          </div>
+          {filteredServices.length === 0 ? (
+            <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white py-16 text-center dark:bg-slate-900 dark:border-slate-800">
+              <p className="text-sm font-black text-slate-900 dark:text-white">No services found</p>
+              <p className="mt-1 text-xs text-slate-400 font-medium">Try clearing your search query or choosing another category.</p>
+              <Button onClick={() => { setSearchQuery(""); setActiveCategory(""); }} variant="outline" className="mt-4 h-9 px-4 rounded-xl text-xs font-black gap-1.5 border-slate-200">
+                <RotateCcw size={13} /> Reset Filters
+              </Button>
+            </div>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {filteredServices.map((service) => (
+                <ServiceCard
+                  key={service.id}
+                  service={service}
+                  inCart={cart.some((i) => i.service.id === service.id)}
+                  onAdd={addToCart}
+                  onToggleWishlist={toggleWishlist}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Right: Booking Summary & Payment */}
+        {/* Right Column: 2-Step Interactive Checkout Panel */}
         <div className="lg:col-span-5">
           <div className="sticky top-6">
             <form onSubmit={handleSubmit}>
