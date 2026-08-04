@@ -1,6 +1,6 @@
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { HomeHero } from "@/components/marketing/home/HomeHero";
+// import { HomeHero } from "@/components/marketing/home/HomeHero";
 import { HomeServices } from "@/components/marketing/home/HomeServices";
 import { HomeProcess } from "@/components/marketing/home/HomeProcess";
 import { HomeWhyLaundrix } from "@/components/marketing/home/HomeWhyLaundrix";
@@ -15,6 +15,7 @@ import { HomeFAQ } from "@/components/marketing/home/HomeFAQ";
 import { HomeCTA } from "@/components/marketing/home/HomeCTA";
 import prisma from "@/lib/prisma";
 import HomePricing from "@/components/marketing/home/HomePricing";
+import HomeHero from "@/components/marketing/home/HomeHero";
 
 export const revalidate = 0; // Always fetch latest CMS + review data
 
@@ -88,9 +89,10 @@ export default async function Home() {
         <HomeWhyLaundrix data={getSection("why-laundrix")} />
         <HomeQRTracking data={getSection("qr-tracking")} />
         <HomeCoverage data={getSection("coverage")} />
-        <HomePricing data={getSection("pricing")} />
+        {/* <HomePricing data={getSection("pricing")} /> */}
         <HomeCorporate data={getSection("corporate")} />
         <HomePartnership data={getSection("partnership")} />
+        <HomeBranches /> 
         <HomeMobileApp data={getSection("mobile-app")} />
         <HomeTestimonials
           data={getSection("testimonials")}

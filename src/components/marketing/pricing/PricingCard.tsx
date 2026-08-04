@@ -20,8 +20,7 @@ const PricingCard = ({
     imageUrl,
 }: ServiceCardProps) => {
     return (
-        <Link
-            href={`/services/${id}`}
+        <section
             className="group flex flex-col bg-card border border-slate-100 rounded-[2rem] overflow-hidden shadow-sm hover:shadow-md transition-all duration-300"
         >
             {/* Image Section */}
@@ -55,7 +54,7 @@ const PricingCard = ({
                 </div>
 
             </div>
-        </Link>
+        </section>
     );
 }
 

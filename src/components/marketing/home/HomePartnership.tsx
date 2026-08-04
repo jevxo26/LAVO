@@ -3,7 +3,6 @@
 import React from "react";
 import { Store, Building, Truck, Check, ArrowRight, Building2, User } from "lucide-react";
 import { motion } from "framer-motion";
-import { HomeBranches } from "./HomeBranches";
 
 export function HomePartnership({ data }: { data?: any }) {
   const title = data?.title || "Grow your business with LAUNDRIX";
@@ -78,7 +77,7 @@ export function HomePartnership({ data }: { data?: any }) {
   console.log(partners);
 
   return (
-    <section className="bg-surface-light py-24">
+    <section className="bg-surface-light py-12 md:py-16 lg:py-20">
       <div className="max-w-7xl mx-auto px-4 md:px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -137,7 +136,6 @@ export function HomePartnership({ data }: { data?: any }) {
             );
           })}
         </div>
-        <HomeBranches />
       </div>
     </section>
   );
