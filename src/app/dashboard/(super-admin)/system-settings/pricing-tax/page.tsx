@@ -1,83 +1,70 @@
 "use client";
 
-import React, { useState } from "react";
-import { CircleDollarSign, Save, Lock, ShieldCheck } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { CircleDollarSign, Lock, Loader2 } from "lucide-react";
+import { PricingTaxForm, PricingTaxData } from "@/components/settings/PricingTaxForm";
 import { toast } from "sonner";
 
 export default function PricingTaxSettingsPage() {
-  const [vat, setVat] = useState("15");
-  const [serviceCharge, setServiceCharge] = useState("5");
-  const [minOrder, setMinOrder] = useState("150");
+  const [data, setData] = useState<PricingTaxData>({
+    baseDeliveryFee: 50,
+    expressMultiplier: 1.5,
+    globalTaxPercentage: 15,
+  });
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleSave = () => {
-    toast.success("Pricing & Global Tax Configuration updated successfully!");
+  const loadData = async () => {
+    setIsLoading(true);
+    try {
+      const token = typeof window !== "undefined" ? localStorage.getItem("laundrix_token") : null;
+      const headers: Record<string, string> = {};
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+
+      const res = await fetch("/api/system-settings/pricing-tax", { headers });
+      const json = await res.json();
+
+      if (res.ok && json.success) {
+        setData(json.data);
+      } else {
+        toast.error(json.message || "Failed to load pricing tax settings");
+      }
+    } catch {
+      toast.error("Network error while loading settings");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
+  useEffect(() => {
+    loadData();
+  }, []);
+
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/80 backdrop-blur-xl p-6 rounded-2xl border border-slate-200/80 shadow-sm">
+    <div className="w-full space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 backdrop-blur-xl p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <CircleDollarSign className="text-blue-600" />
             Pricing & Global Tax Configuration
           </h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Configure VAT rates, service fees, minimum order thresholds, and platform pricing parameters.
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            Configure VAT rates, express delivery multipliers, and base delivery fees.
           </p>
         </div>
-        <span className="flex items-center gap-1.5 text-xs font-bold text-amber-800 bg-amber-50 px-3 py-1.5 rounded-xl border border-amber-200">
-          <Lock size={14} /> Super Admin Only
+        <span className="flex items-center gap-1.5 text-xs font-bold text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 px-3 py-1.5 rounded-xl border border-amber-200 dark:border-amber-900 w-fit">
+          <Lock size={14} /> SUPER_ADMIN STRICT ACCESS
         </span>
       </div>
 
-      <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm space-y-6 max-w-3xl">
-        <div className="space-y-4">
-          <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-              Government VAT / Tax Rate (%)
-            </label>
-            <input
-              type="number"
-              value={vat}
-              onChange={(e) => setVat(e.target.value)}
-              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-              Platform Service Charge (%)
-            </label>
-            <input
-              type="number"
-              value={serviceCharge}
-              onChange={(e) => setServiceCharge(e.target.value)}
-              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-              Minimum Order Value (BDT ৳)
-            </label>
-            <input
-              type="number"
-              value={minOrder}
-              onChange={(e) => setMinOrder(e.target.value)}
-              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-            />
+      {isLoading ? (
+        <div className="p-8 flex items-center justify-center min-h-[300px]">
+          <div className="flex items-center gap-3 text-slate-500 font-semibold">
+            <Loader2 size={24} className="animate-spin text-blue-600" /> Loading configuration...
           </div>
         </div>
-
-        <div className="pt-4 border-t border-slate-100 flex justify-end">
-          <button
-            onClick={handleSave}
-            className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white font-semibold rounded-xl text-sm hover:bg-blue-700 shadow-sm transition-colors"
-          >
-            <Save size={16} /> Save Settings
-          </button>
-        </div>
-      </div>
+      ) : (
+        <PricingTaxForm initialData={data} />
+      )}
     </div>
   );
 }

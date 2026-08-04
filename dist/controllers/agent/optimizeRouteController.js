@@ -39,7 +39,9 @@ const sendResponse_1 = require("../../utils/sendResponse");
 const optimizeRouteService = __importStar(require("../../services/agent/optimizeRouteService"));
 exports.getOptimizedRoutes = (0, catchAsync_1.catchAsync)(async (req, res) => {
     const userId = req.user.userId;
-    const result = await optimizeRouteService.getOptimizedRoutes(userId);
+    const agentLat = req.query.lat ? parseFloat(req.query.lat) : undefined;
+    const agentLon = req.query.lon ? parseFloat(req.query.lon) : undefined;
+    const result = await optimizeRouteService.getOptimizedRoutes(userId, agentLat, agentLon);
     (0, sendResponse_1.sendResponse)(res, {
         statusCode: 200,
         success: true,
