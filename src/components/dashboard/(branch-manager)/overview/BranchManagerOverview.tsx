@@ -9,12 +9,13 @@ import {
 import {
   Package, Clock, CheckCircle2, Store, Layers,
   Sparkles, ArrowRight, RefreshCw, Gauge,
-  BarChart3, Users, AlertTriangle,
+  BarChart3, Users, AlertTriangle, ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { authFetch } from "@/lib/api";
 import io from "socket.io-client";
 import { useAuth } from "@/hooks/useAuth";
+import { motion } from "framer-motion";
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 
@@ -43,7 +44,7 @@ function QuickAction({ href, Icon, iconBg, iconColor, title, sub }: {
 }) {
   return (
     <Link href={href}
-      className="flex items-center gap-3 rounded-xl border border-slate-100 bg-white p-3.5 hover:border-indigo-100 hover:bg-indigo-50/30 hover:shadow-sm transition-all duration-150 group">
+      className="flex items-center gap-3 rounded-xl border border-slate-100 bg-white p-3.5 hover:border-indigo-200 hover:bg-indigo-50/30 hover:shadow-sm transition-all duration-150 group">
       <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${iconBg} ${iconColor} group-hover:scale-105 transition-transform`}>
         <Icon size={16} />
       </div>
@@ -51,7 +52,7 @@ function QuickAction({ href, Icon, iconBg, iconColor, title, sub }: {
         <p className="text-[13px] font-bold text-slate-900 group-hover:text-indigo-700 transition-colors leading-tight">{title}</p>
         <p className="text-[11px] text-slate-400 leading-tight mt-0.5">{sub}</p>
       </div>
-      <ArrowRight size={13} className="shrink-0 text-slate-300 group-hover:text-indigo-400 group-hover:translate-x-0.5 transition-all" />
+      <ArrowRight size={13} className="shrink-0 text-slate-300 group-hover:text-indigo-500 group-hover:translate-x-0.5 transition-all" />
     </Link>
   );
 }
@@ -61,7 +62,7 @@ function QuickAction({ href, Icon, iconBg, iconColor, title, sub }: {
 function ChartTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-xl border border-slate-100 bg-white px-3 py-2.5 shadow-xl text-xs space-y-1">
+    <div className="rounded-xl border border-slate-200 bg-white/95 backdrop-blur-md px-3.5 py-2.5 shadow-xl text-xs space-y-1">
       <p className="font-bold text-slate-900">{label}</p>
       {payload.map((p: any) => (
         <div key={p.dataKey} className="flex items-center gap-2">
@@ -115,24 +116,28 @@ export function BranchManagerOverview() {
   ];
 
   return (
-    <div className="space-y-7">
-
+    <motion.div
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35 }}
+      className="space-y-7"
+    >
       {/* ── Hero banner ─────────────────────────────────────────────────── */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-700 px-7 py-9">
-        <div className="pointer-events-none absolute inset-0 opacity-10">
-          <div className="absolute -top-16 -right-16 h-72 w-72 rounded-full bg-white" />
-          <div className="absolute -bottom-12 -left-10 h-52 w-52 rounded-full bg-white" />
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-700 via-indigo-800 to-slate-900 px-7 py-9 text-white shadow-xl border border-indigo-700/40">
+        <div className="pointer-events-none absolute inset-0 opacity-15">
+          <div className="absolute -top-16 -right-16 h-72 w-72 rounded-full bg-indigo-400 blur-3xl" />
+          <div className="absolute -bottom-12 -left-10 h-52 w-52 rounded-full bg-violet-400 blur-2xl" />
         </div>
         <div className="relative z-10 flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <Sparkles size={13} className="text-indigo-200" />
-              <span className="text-indigo-200 text-[11px] font-semibold uppercase tracking-widest">Branch Manager Portal</span>
+              <span className="text-indigo-200 text-[11px] font-bold uppercase tracking-widest">Branch Manager Operational Portal</span>
             </div>
             <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-white leading-tight">
               Welcome back, {firstName}
             </h1>
-            <p className="text-indigo-200 text-sm">
+            <p className="text-indigo-100 text-xs md:text-sm">
               Real-time capacity tracking, live order load, and active machinery status.
             </p>
           </div>
@@ -142,13 +147,13 @@ export function BranchManagerOverview() {
               { label: "Active",    value: data?.activeOrders          ?? 0          },
               { label: "Vendors",   value: data?.vendorDelegatedOrders ?? "—"        },
             ].map(({ label, value }) => (
-              <div key={label} className="rounded-xl bg-white/10 border border-white/20 backdrop-blur-sm px-4 py-3 text-center">
-                <p className="text-indigo-200 text-[10px] font-semibold uppercase tracking-wider">{label}</p>
+              <div key={label} className="rounded-xl bg-white/10 border border-white/20 backdrop-blur-md px-4 py-3 text-center">
+                <p className="text-indigo-200 text-[10px] font-bold uppercase tracking-wider">{label}</p>
                 <p className="text-white font-extrabold text-xl leading-tight">{value}</p>
               </div>
             ))}
             <Button onClick={() => { setRefreshing(true); fetchOverview(); }}
-              className="h-10 rounded-xl bg-white text-indigo-700 hover:bg-indigo-50 font-bold text-sm px-4 shadow-sm gap-1.5">
+              className="h-10 rounded-xl bg-white text-indigo-700 hover:bg-indigo-50 font-bold text-xs px-4 shadow-md gap-1.5">
               <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} /> Refresh
             </Button>
           </div>
@@ -168,7 +173,7 @@ export function BranchManagerOverview() {
             </div>
           </div>
           <Link href="/dashboard/partner-vendors">
-            <Button size="sm" className="h-8 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold gap-1.5 shrink-0">
+            <Button size="sm" className="h-8 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold gap-1.5 shrink-0 shadow-sm">
               View Vendors <ArrowRight size={12} />
             </Button>
           </Link>
@@ -178,18 +183,18 @@ export function BranchManagerOverview() {
       {/* ── Stat cards ──────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {[
-          { label: "Capacity Utilization", sub: "Of daily limit",              value: `${capacityPct}%`,                  Icon: Package,      iconBg: "bg-indigo-50",  iconColor: "text-indigo-600",  ringColor: "ring-indigo-100"  },
-          { label: "Active Processing",    sub: "Currently in progress",        value: `${data?.activeOrders ?? 0}`,       Icon: Clock,        iconBg: "bg-blue-50",    iconColor: "text-blue-600",    ringColor: "ring-blue-100"    },
-          { label: "Pending Orders",       sub: "Awaiting pickup / confirm",    value: `${data?.pendingOrders ?? 0}`,      Icon: CheckCircle2, iconBg: "bg-amber-50",   iconColor: "text-amber-600",   ringColor: "ring-amber-100"   },
-          { label: "Vendor Delegated",     sub: "Sent to branch vendors",       value: `${data?.vendorDelegatedOrders ?? 0}`, Icon: Store,     iconBg: "bg-violet-50",  iconColor: "text-violet-600",  ringColor: "ring-violet-100"  },
+          { label: "Capacity Utilization", sub: "Of daily limit",              value: `${capacityPct}%`,                  Icon: Package,      iconBg: "bg-indigo-50",  iconColor="text-indigo-600",  ringColor: "ring-indigo-100"  },
+          { label: "Active Processing",    sub: "Currently in progress",        value: `${data?.activeOrders ?? 0}`,       Icon: Clock,        iconBg: "bg-blue-50",    iconColor="text-blue-600",    ringColor: "ring-blue-100"    },
+          { label: "Pending Orders",       sub: "Awaiting pickup / confirm",    value: `${data?.pendingOrders ?? 0}`,      Icon: CheckCircle2, iconBg: "bg-amber-50",   iconColor="text-amber-600",   ringColor="ring-amber-100"   },
+          { label: "Vendor Delegated",     sub: "Sent to branch vendors",       value: `${data?.vendorDelegatedOrders ?? 0}`, Icon: Store,     iconBg: "bg-violet-50",  iconColor="text-violet-600",  ringColor="ring-violet-100"  },
         ].map(({ label, sub, value, Icon, iconBg, iconColor, ringColor }) => (
-          <div key={label} className="flex items-center gap-4 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-200">
+          <div key={label} className="flex items-center gap-4 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-200">
             <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ring-4 ${iconBg} ${iconColor} ${ringColor}`}>
               <Icon size={22} />
             </div>
             <div className="min-w-0">
               <p className="text-2xl font-extrabold text-slate-900 leading-none">{value}</p>
-              <p className="mt-0.5 text-[12px] font-semibold text-slate-700 leading-tight">{label}</p>
+              <p className="mt-0.5 text-[12px] font-bold text-slate-700 leading-tight">{label}</p>
               <p className="text-[11px] text-slate-400 leading-tight">{sub}</p>
             </div>
           </div>
@@ -200,18 +205,18 @@ export function BranchManagerOverview() {
       <div className="grid gap-6 md:grid-cols-7 items-start">
 
         {/* Machinery bar chart */}
-        <div className="md:col-span-4 rounded-2xl border border-slate-100 bg-white shadow-sm overflow-hidden">
+        <div className="md:col-span-4 rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
           <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
             <div className="flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50">
-                <Layers size={14} className="text-indigo-500" />
+                <Layers size={15} className="text-indigo-600" />
               </div>
               <div>
                 <h2 className="text-sm font-extrabold text-slate-900">Active Machinery Load</h2>
                 <p className="text-[11px] text-slate-400">Live machines running — Washers, Dryers, Irons</p>
               </div>
             </div>
-            <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full">
+            <span className="flex items-center gap-1 text-[10px] font-extrabold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> LIVE
             </span>
           </div>
@@ -233,10 +238,10 @@ export function BranchManagerOverview() {
         <div className="md:col-span-3 space-y-5">
 
           {/* Capacity donut */}
-          <div className="rounded-2xl border border-slate-100 bg-white shadow-sm overflow-hidden">
+          <div className="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
             <div className="flex items-center gap-3 border-b border-slate-100 px-5 py-4">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-50">
-                <Gauge size={14} className="text-violet-500" />
+                <Gauge size={15} className="text-violet-600" />
               </div>
               <div>
                 <h2 className="text-sm font-extrabold text-slate-900">Capacity Breakdown</h2>
@@ -267,19 +272,19 @@ export function BranchManagerOverview() {
                 <div className={`h-full rounded-full transition-all duration-700 ${capacityPct >= 90 ? "bg-rose-500" : capacityPct >= 70 ? "bg-amber-500" : "bg-indigo-500"}`}
                   style={{ width: `${Math.min(capacityPct, 100)}%` }} />
               </div>
-              <p className="mt-1.5 text-[11px] text-slate-400">
+              <p className="mt-1.5 text-[11px] text-slate-400 font-medium">
                 {capacityPct >= 90 ? "⚠️ Near full capacity" : capacityPct >= 70 ? "Moderate load" : "Capacity available"}
               </p>
             </div>
           </div>
 
           {/* Quick actions */}
-          <div className="rounded-2xl border border-slate-100 bg-white shadow-sm overflow-hidden">
+          <div className="rounded-2xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
             <div className="flex items-center gap-3 border-b border-slate-100 px-5 py-4">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50">
-                <Sparkles size={13} className="text-indigo-500" />
+                <Sparkles size={14} className="text-indigo-600" />
               </div>
-              <h2 className="text-sm font-extrabold text-slate-900">Quick Actions</h2>
+              <h2 className="text-sm font-extrabold text-slate-900">Quick Operations</h2>
             </div>
             <div className="p-4 space-y-2">
               <QuickAction href="/dashboard/branch-orders"        Icon={Package}   iconBg="bg-indigo-50"  iconColor="text-indigo-600"  title="Branch Orders"        sub="View & manage active orders"     />
@@ -292,7 +297,7 @@ export function BranchManagerOverview() {
 
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
