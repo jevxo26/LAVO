@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { authFetch } from "@/lib/api";
 import { FileText, Plus, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
@@ -12,8 +12,8 @@ export default function LegalDocumentsCMSPage() {
   const fetchDocs = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("/api/website-cms/legal-documents");
-      setDocs(res.data.data);
+      const res = await authFetch("/website-cms/legal-documents").then(r => r.json());
+      setDocs(res.data);
     } catch (err) {
       console.error(err);
     } finally {

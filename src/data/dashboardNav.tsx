@@ -42,7 +42,7 @@ export const dashboardNavItems: NavItem[] = [
   // Primary Dashboard Overview (Available to ALL Roles)
   // =========================
   {
-    name: "Dashboard",
+    name: "Overview",
     href: "/dashboard",
     icon: LayoutDashboard,
     roles: [
@@ -82,8 +82,14 @@ export const dashboardNavItems: NavItem[] = [
       },
       {
         name: "Support Tickets",
-        href: "/dashboard/customer-ops/support-tickets",
+        href: "/dashboard/support",
         icon: Headphones,
+        roles: ["SUPER_ADMIN", "ADMIN"],
+      },
+      {
+        name: "Customer Reviews",
+        href: "/dashboard/customer-reviews",
+        icon: Star,
         roles: ["SUPER_ADMIN", "ADMIN"],
       },
       {
@@ -115,6 +121,12 @@ export const dashboardNavItems: NavItem[] = [
         name: "Inventory Stock",
         href: "/dashboard/branch-ops/inventory-stock",
         icon: Boxes,
+        roles: ["SUPER_ADMIN", "ADMIN"],
+      },
+      {
+        name: "Partner Applications",
+        href: "/dashboard/partner-applications",
+        icon: FileCheck,
         roles: ["SUPER_ADMIN", "ADMIN"],
       },
     ],
@@ -355,10 +367,40 @@ export const dashboardNavItems: NavItem[] = [
     roles: ["BRANCH_MANAGER"],
   },
   {
+    name: "Branch Analytics",
+    href: "/dashboard/branch-analytics",
+    icon: TrendingUp,
+    roles: ["BRANCH_MANAGER"],
+  },
+  {
+    name: "Branch Employees",
+    href: "/dashboard/branch-employees",
+    icon: UsersRound,
+    roles: ["BRANCH_MANAGER"],
+  },
+  {
+    name: "Delivery Agents",
+    href: "/dashboard/branch-delivery",
+    icon: Truck,
+    roles: ["BRANCH_MANAGER"],
+  },
+  {
     name: "Branch Inventory",
     href: "/dashboard/inventory",
     icon: Boxes,
     roles: ["BRANCH_MANAGER"],
+  },
+  {
+    name: "Partner Vendors",
+    href: "/dashboard/partner-vendors",
+    icon: Store,
+    roles: ["BRANCH_MANAGER"],
+  },
+  {
+    name: "Partner Applications",
+    href: "/dashboard/partner-applications",
+    icon: FileCheck,
+    roles: ["SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER"],
   },
 
   // =========================
@@ -399,6 +441,18 @@ export const dashboardNavItems: NavItem[] = [
     roles: ["VENDOR"],
   },
   {
+    name: "Vendor Employees",
+    href: "/dashboard/vendor-employees",
+    icon: UsersRound,
+    roles: ["VENDOR"],
+  },
+  {
+    name: "Vendor Performance",
+    href: "/dashboard/performance",
+    icon: TrendingUp,
+    roles: ["VENDOR"],
+  },
+  {
     name: "Vendor Payouts",
     href: "/dashboard/payouts",
     icon: Banknote,
@@ -433,6 +487,18 @@ export const dashboardNavItems: NavItem[] = [
   {
     name: "Optimized Routes",
     href: "/dashboard/agent-routes",
+    icon: ClipboardList,
+    roles: ["DELIVERY_AGENT"],
+  },
+  {
+    name: "Verification",
+    href: "/dashboard/verification",
+    icon: ShieldCheck,
+    roles: ["DELIVERY_AGENT"],
+  },
+  {
+    name: "Delivery History",
+    href: "/dashboard/history",
     icon: ClipboardList,
     roles: ["DELIVERY_AGENT"],
   },

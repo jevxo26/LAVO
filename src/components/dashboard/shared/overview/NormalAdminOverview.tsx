@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import { authFetch } from "@/lib/api";
 import { OverviewStatCard } from "./OverviewStatCard";
+
+// ─── Fallback data ────────────────────────────────────────────────────────────
 import {
   ClipboardList, Truck, PackageCheck, Headphones,
   Activity, ArrowUpRight, Clock,
@@ -67,8 +69,9 @@ export function NormalAdminOverview() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get("/api/admin/overview/normal-admin")
-      .then((res) => { if (res.data?.success) setData(res.data.data); })
+    authFetch("/admin/overview/normal-admin")
+      .then((res) => res.json())
+      .then((res) => { if (res?.success) setData(res.data); })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);

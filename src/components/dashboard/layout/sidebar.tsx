@@ -20,8 +20,28 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
 
   const userRole = React.useMemo(() => {
     if (!user) return "";
-    const rawRole = (user as any).role || user.userType || "";
-    return rawRole.toUpperCase().replace(/\s+/g, "_");
+    const rawRole = ((user as any).role || (user as any).userType || "")
+      .toString()
+      .toUpperCase()
+      .trim()
+      .replace(/[\s-]+/g, "_");
+
+    // Delivery Agent aliases
+    if (["AGENT", "DELIVERYAGENT", "DELIVERY_AGENT"].includes(rawRole)) return "DELIVERY_AGENT";
+    // Branch Manager aliases
+    if (["MANAGER", "BRANCHMANAGER", "BRANCH_MANAGER"].includes(rawRole)) return "BRANCH_MANAGER";
+    // Employee aliases
+    if (["STAFF", "BRANCH_EMPLOYEE", "BRANCHEMPLOYEE", "EMPLOYEE"].includes(rawRole)) return "EMPLOYEE";
+    // Vendor aliases
+    if (["VENDOR_OWNER", "VENDOROWNER", "VENDOR_STAFF", "VENDORSTAFF", "VENDOR"].includes(rawRole)) return "VENDOR";
+    // Super Admin aliases
+    if (["SUPER_ADMIN", "SUPERADMIN", "SUPER_ADMINISTRATOR", "SUPERADMINISTRATOR"].includes(rawRole)) return "SUPER_ADMIN";
+    // Admin aliases
+    if (["ADMIN", "ADMINISTRATOR", "NORMAL_ADMIN", "SYSTEM_ADMIN", "ADMIN_USER"].includes(rawRole)) return "ADMIN";
+    // Customer aliases
+    if (["CUSTOMER", "USER"].includes(rawRole)) return "CUSTOMER";
+
+    return rawRole;
   }, [user]);
 
   React.useEffect(() => {
@@ -72,10 +92,17 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
 
       <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
         {dashboardNavItems
-          .filter(
-            (item) =>
-              !item.roles || (userRole && item.roles.includes(userRole)),
-          )
+          .filter((item) => {
+            if (!item.roles || item.roles.length === 0) return true;
+            if (!userRole) return false;
+
+            const hasDirectRole = item.roles.includes(userRole);
+            const hasChildRole = item.children?.some(
+              (child) => !child.roles || child.roles.includes(userRole)
+            );
+
+            return hasDirectRole || hasChildRole;
+          })
           .map((item) => {
             const hasChildren = item.children && item.children.length > 0;
             const isParentActive =

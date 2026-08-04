@@ -52,6 +52,7 @@ const ROLE_ROUTES: { prefix: string; allowed: string[] }[] = [
   // Employee Routes
   // =========================
   { prefix: "/dashboard/intake-orders",         allowed: ["SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER", "EMPLOYEE"] },
+  { prefix: "/dashboard/scanner",               allowed: ["SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER", "EMPLOYEE"] },
 
   // =========================
   // Delivery Agent Routes

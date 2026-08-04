@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { authFetch } from "@/lib/api";
 import { Wrench, RefreshCw, AlertTriangle, CheckCircle2, Cpu } from "lucide-react";
 
 export default function MachineriesStatusPage() {
@@ -11,8 +11,8 @@ export default function MachineriesStatusPage() {
   const fetchMachines = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("/api/branch-ops/machineries-status");
-      setMachines(res.data.data);
+      const res = await authFetch("/branch-ops/machineries-status").then(r => r.json());
+      setMachines(res.data);
     } catch (err) {
       console.error(err);
     } finally {

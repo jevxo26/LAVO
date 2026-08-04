@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { authFetch } from "@/lib/api";
 import { Store, Gauge, RefreshCw, Star } from "lucide-react";
 
 export default function VendorCapacityMonitorPage() {
@@ -11,8 +11,8 @@ export default function VendorCapacityMonitorPage() {
   const fetchVendors = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("/api/vendor-ops/capacity-monitor");
-      setVendors(res.data.data);
+      const res = await authFetch("/vendor-ops/capacity-monitor").then(r => r.json());
+      setVendors(res.data);
     } catch (err) {
       console.error(err);
     } finally {

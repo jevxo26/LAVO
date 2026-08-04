@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
-import axios from "axios";
+import { authFetch } from "@/lib/api";
 import { Layout, Search, Edit, Eye, ChevronDown, Plus, ExternalLink, Globe, Smartphone, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { CmsSectionEditor } from "@/components/dashboard/shared/CmsSectionEditor";
@@ -29,11 +29,11 @@ export default function CMSDashboard() {
   const fetchPages = useCallback(async () => {
     setRefreshing(true);
     try {
-      const res = await axios.get("/api/cms/pages");
-      setPages(res.data.data);
+      const res = await authFetch("/cms/pages").then(r => r.json());
+      setPages(res.data);
       setExpandedPage((prev) => {
-        if (res.data.data.length > 0 && !prev) {
-          return res.data.data[0].slug;
+        if (res.data.length > 0 && !prev) {
+          return res.data[0].slug;
         }
         return prev;
       });

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { authFetch } from "@/lib/api";
 import { Banknote, RefreshCw, CircleDollarSign } from "lucide-react";
 
 export default function VendorCommissionHistoryPage() {
@@ -11,8 +11,8 @@ export default function VendorCommissionHistoryPage() {
   const fetchComms = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("/api/vendor-ops/commission-history");
-      setComms(res.data.data);
+      const res = await authFetch("/vendor-ops/commission-history").then(r => r.json());
+      setComms(res.data);
     } catch (err) {
       console.error(err);
     } finally {

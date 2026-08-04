@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import { authFetch } from "@/lib/api";
 import { Plus, ShieldAlert } from "lucide-react";
 import { CreateRoleModal } from "@/components/dashboard/shared/rbac/CreateRoleModal";
 import { PermissionMatrix } from "@/components/dashboard/shared/rbac/PermissionMatrix";
@@ -16,15 +16,15 @@ export default function RolesPage() {
   const fetchData = async () => {
     try {
       const [rolesRes, permsRes] = await Promise.all([
-        axios.get("/api/roles"),
-        axios.get("/api/roles/permissions"),
+        authFetch("/roles").then(r => r.json()),
+        authFetch("/roles/permissions").then(r => r.json()),
       ]);
-      setRoles(rolesRes.data.data);
-      setPermissions(permsRes.data.data);
-      if (rolesRes.data.data.length > 0) {
+      setRoles(rolesRes.data);
+      setPermissions(permsRes.data);
+      if (rolesRes.data.length > 0) {
         // Maintain selection or select first
         setSelectedRole((prev: any) => 
-          rolesRes.data.data.find((r: any) => r.id === prev?.id) || rolesRes.data.data[0]
+          rolesRes.data.find((r: any) => r.id === prev?.id) || rolesRes.data[0]
         );
       }
     } catch (err) {

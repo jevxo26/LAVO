@@ -10,6 +10,21 @@ import { EmployeeOverview } from "@/components/dashboard/(employee)/overview/Emp
 import { AgentOverview } from "@/components/dashboard/(agent)/overview/AgentOverview";
 import { CustomerOverview } from "@/components/dashboard/(customer)/overview/CustomerOverview";
 
+/** Normalize raw role string from JWT to a canonical role key */
+function normalizeRole(raw: string): string {
+  const r = raw.toUpperCase().trim().replace(/[\s-]+/g, "_");
+
+  if (["AGENT", "DELIVERYAGENT", "DELIVERY_AGENT"].includes(r)) return "DELIVERY_AGENT";
+  if (["MANAGER", "BRANCHMANAGER", "BRANCH_MANAGER"].includes(r)) return "BRANCH_MANAGER";
+  if (["STAFF", "BRANCH_EMPLOYEE", "BRANCHEMPLOYEE", "EMPLOYEE"].includes(r)) return "EMPLOYEE";
+  if (["VENDOR_OWNER", "VENDOROWNER", "VENDOR_STAFF", "VENDORSTAFF", "VENDOR"].includes(r)) return "VENDOR";
+  if (["SUPER_ADMIN", "SUPERADMIN", "SUPER_ADMINISTRATOR", "SUPERADMINISTRATOR"].includes(r)) return "SUPER_ADMIN";
+  if (["ADMIN", "ADMINISTRATOR", "NORMAL_ADMIN", "SYSTEM_ADMIN", "ADMIN_USER"].includes(r)) return "ADMIN";
+  if (["CUSTOMER", "USER"].includes(r)) return "CUSTOMER";
+
+  return r;
+}
+
 export default function DashboardRootPage() {
   const { user, isLoading } = useAuth();
 
@@ -24,8 +39,8 @@ export default function DashboardRootPage() {
     );
   }
 
-  const rawRole = (user as any)?.role || user?.userType || "";
-  const role = rawRole.toUpperCase().replace(/\s+/g, "_");
+  const rawRole = (user as any)?.role || (user as any)?.userType || "";
+  const role = normalizeRole(rawRole);
 
   switch (role) {
     case "SUPER_ADMIN":

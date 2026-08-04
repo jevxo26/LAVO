@@ -158,7 +158,7 @@ export function EmployeeOverview() {
                 <p className="text-violet-200 text-[10px] font-semibold uppercase tracking-wider">Assigned</p>
                 <p className="text-white font-extrabold text-xl leading-tight">{data?.assignedOrders ?? 0}</p>
               </div>
-              <Link href="/scanner">
+              <Link href="/dashboard/scanner">
                 <Button className="h-10 rounded-xl bg-white text-violet-700 hover:bg-violet-50 font-bold text-sm px-5 shadow-sm gap-2">
                   <QrCode size={15} /> QR Scanner
                 </Button>
@@ -204,7 +204,7 @@ export function EmployeeOverview() {
               <h2 className="text-sm font-extrabold text-slate-900">Quick Actions</h2>
             </div>
             <div className="p-4 space-y-2">
-              <QuickAction href="/scanner"                         Icon={QrCode}       iconBg="bg-violet-50"  iconColor="text-violet-600"  title="QR Scanner"         sub="Scan & tag garments"          />
+              <QuickAction href="/dashboard/scanner"                         Icon={QrCode}       iconBg="bg-violet-50"  iconColor="text-violet-600"  title="QR Scanner"         sub="Scan & tag garments"          />
               <QuickAction href="/dashboard/intake-orders"         Icon={PackageCheck} iconBg="bg-amber-50"   iconColor="text-amber-600"   title="Intake Orders"      sub="View assigned orders"         />
               <QuickAction href="/dashboard/intake-orders"         Icon={Store}        iconBg="bg-indigo-50"  iconColor="text-indigo-600"  title="Vendor Orders"      sub="Vendor processing queue"      />
             </div>
@@ -246,7 +246,7 @@ export function EmployeeOverview() {
               <p className="text-indigo-200 text-[10px] font-semibold uppercase tracking-wider">Ready</p>
               <p className="text-white font-extrabold text-xl leading-tight">{data?.readyDispatch ?? 0}</p>
             </div>
-            <Link href="/scanner">
+            <Link href="/dashboard/scanner">
               <Button className="h-10 rounded-xl bg-white text-indigo-700 hover:bg-indigo-50 font-bold text-sm px-5 shadow-sm gap-2">
                 <QrCode size={15} /> QR Scanner
               </Button>
@@ -292,7 +292,7 @@ export function EmployeeOverview() {
             <h2 className="text-sm font-extrabold text-slate-900">Quick Actions</h2>
           </div>
           <div className="p-4 space-y-2">
-            <QuickAction href="/scanner"                  Icon={QrCode}       iconBg="bg-indigo-50"  iconColor="text-indigo-600"  title="Open QR Scanner"    sub="Scan garment QR codes"        />
+            <QuickAction href="/dashboard/scanner"                  Icon={QrCode}       iconBg="bg-indigo-50"  iconColor="text-indigo-600"  title="Open QR Scanner"    sub="Scan garment QR codes"        />
             <QuickAction href="/dashboard/intake-orders"  Icon={PackageCheck} iconBg="bg-amber-50"   iconColor="text-amber-600"   title="Garment Intake"     sub="Tag & register garments"      />
             <QuickAction href="/dashboard/intake-orders"  Icon={Shirt}        iconBg="bg-blue-50"    iconColor="text-blue-600"    title="Processing Orders"  sub="View washing & processing"    />
             <QuickAction href="/dashboard/intake-orders"  Icon={Building2}    iconBg="bg-emerald-50" iconColor="text-emerald-600" title="Ready for Dispatch" sub="Ironed & ready orders"        />
