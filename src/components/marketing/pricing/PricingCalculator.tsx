@@ -245,9 +245,9 @@ export function PricingCalculator({ data }: { data?: any }) {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="lg:col-span-5 bg-navy-darker text-white rounded-[24px] p-8 shadow-xl border border-slate-800"
+            className="lg:col-span-5 bg-navy-darker text-foreground rounded-[24px] p-8 shadow-xl border border-border"
           >
-            <h3 className="text-lg font-bold tracking-wide uppercase mb-6 text-white">ESTIMATED PRICE</h3>
+            <h3 className="text-lg font-bold tracking-wide uppercase mb-6 text-foreground">ESTIMATED PRICE</h3>
 
             <div className="bg-brand-blue rounded-2xl p-6 text-center mb-6">
               <span className="block text-blue-100 text-xs font-medium mb-1">Estimated Total</span>
@@ -258,21 +258,21 @@ export function PricingCalculator({ data }: { data?: any }) {
             </div>
 
             <div className="grid grid-cols-2 gap-4 mb-8">
-              <div className="bg-slate-card border border-white/5 rounded-xl p-4">
-                <span className="block text-slate-400 text-xs mb-1 font-medium">Service</span>
-                <span className="block text-white font-semibold text-sm truncate">{selectedService.name}</span>
+              <div className="rounded-xl border border-border bg-card p-4 shadow-sm transition-colors hover:bg-muted/50">
+                <span className="block text-muted-foreground text-xs mb-1 font-medium">Service</span>
+                <span className="block text-foreground font-semibold text-sm truncate">{selectedService.name}</span>
               </div>
-              <div className="bg-slate-card border border-white/5 rounded-xl p-4">
-                <span className="block text-slate-400 text-xs mb-1 font-medium">Delivery</span>
-                <span className="block text-white font-semibold text-sm truncate">{deliveryLabel}</span>
+              <div className="rounded-xl border border-border bg-card p-4 shadow-sm transition-colors hover:bg-muted/50">
+                <span className="block text-muted-foreground text-xs mb-1 font-medium">Delivery</span>
+                <span className="block text-foreground font-semibold text-sm truncate">{deliveryLabel}</span>
               </div>
-              <div className="bg-slate-card border border-white/5 rounded-xl p-4">
-                <span className="block text-slate-400 text-xs mb-1 font-medium">Pickup</span>
-                <span className="block text-white font-semibold text-sm">Free</span>
+              <div className="rounded-xl border border-border bg-card p-4 shadow-sm transition-colors hover:bg-muted/50">
+                <span className="block text-muted-foreground text-xs mb-1 font-medium">Pickup</span>
+                <span className="block text-foreground font-semibold text-sm">Free</span>
               </div>
-              <div className="bg-slate-card border border-white/5 rounded-xl p-4">
+              <div className="rounded-xl border border-border bg-card p-4 shadow-sm transition-colors hover:bg-muted/50">
                 <span className="block text-slate-400 text-xs mb-1 font-medium">Payment</span>
-                <span className="block text-white font-semibold text-sm">On delivery</span>
+                <span className="block text-foreground font-semibold text-sm">On delivery</span>
               </div>
             </div>
 

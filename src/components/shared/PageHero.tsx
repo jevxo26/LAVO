@@ -25,12 +25,9 @@ export function PageHero({
       {/* Background Glow */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-44 -right-44 h-[520px] w-[520px] rounded-full bg-primary/10 blur-[140px]" />
-
         <div className="absolute -bottom-44 -left-44 h-[420px] w-[420px] rounded-full bg-secondary/10 blur-[140px]" />
-
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(37,99,235,.05),transparent_55%)]" />
       </div>
-
       <div className="relative z-10 mx-auto max-w-4xl px-4 text-center">
         {/* Badge */}
         <motion.div
