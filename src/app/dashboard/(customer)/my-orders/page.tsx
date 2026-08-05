@@ -74,9 +74,9 @@ function StatCard({
 // ─── Tab button ───────────────────────────────────────────────────────────────
 
 const TAB_META: Record<string, { label: string; activeColor: string }> = {
-  ALL:        { label: "All Orders",  activeColor: "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"  },
+  ALL:        { label: "All Orders",  activeColor: "bg-blue-600 text-white shadow-md shadow-blue-600/30"    },
   PENDING:    { label: "Pending",     activeColor: "bg-amber-500 text-white shadow-md shadow-amber-500/30"    },
-  PROCESSING: { label: "Processing",  activeColor: "bg-indigo-500 text-white shadow-md shadow-indigo-500/30" },
+  PROCESSING: { label: "Processing",  activeColor: "bg-cyan-600 text-white shadow-md shadow-cyan-600/30"      },
   COMPLETED:  { label: "Completed",   activeColor: "bg-emerald-600 text-white shadow-md shadow-emerald-600/30"},
   CANCELLED:  { label: "Cancelled",   activeColor: "bg-rose-500 text-white shadow-md shadow-rose-500/30"      },
 };
@@ -238,31 +238,31 @@ export default function MyOrdersPage() {
       className="space-y-7"
     >
       {/* ── 1. Hero Header Banner ───────────────────────────────────────────── */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-950 via-indigo-900 to-slate-900 p-7 md:p-9 text-white shadow-2xl border border-indigo-800/40">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 p-7 md:p-9 text-white shadow-2xl border border-blue-800/40">
         <div className="pointer-events-none absolute inset-0 opacity-20">
-          <div className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-indigo-500 blur-3xl" />
-          <div className="absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-purple-500 blur-3xl" />
+          <div className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-blue-500 blur-3xl" />
+          <div className="absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-cyan-500 blur-3xl" />
         </div>
 
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <Sparkles size={14} className="text-indigo-300" />
-              <span className="text-indigo-200 text-xs font-black uppercase tracking-widest">
+              <Sparkles size={14} className="text-cyan-300" />
+              <span className="text-cyan-200 text-xs font-black uppercase tracking-widest">
                 Laundry Order Tracker &amp; Invoices
               </span>
             </div>
             <h1 className="text-3xl md:text-4xl font-black tracking-tight text-white leading-tight">
               My Orders &amp; Receipts
             </h1>
-            <p className="text-indigo-100 text-xs md:text-sm leading-relaxed font-medium max-w-xl">
+            <p className="text-blue-100 text-xs md:text-sm leading-relaxed font-medium max-w-xl">
               Track live garment cleaning stages, download receipts, or initiate fast repeat orders.
             </p>
           </div>
 
           <div className="flex items-center gap-3 shrink-0">
             <Link href="/dashboard/book-services">
-              <Button className="h-11 px-6 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs shadow-lg shadow-indigo-600/30 gap-2 transition-all hover:scale-[1.02]">
+              <Button className="h-11 px-6 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-black text-xs shadow-lg shadow-blue-600/30 gap-2 transition-all hover:scale-[1.02]">
                 <ShoppingBag size={16} /> Book New Laundry
               </Button>
             </Link>
@@ -273,7 +273,7 @@ export default function MyOrdersPage() {
       {/* ── 2. Stat Cards Grid ──────────────────────────────────────────────── */}
       {loading ? <OrderSummarySkeletons /> : !error && (
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <StatCard label="Total Orders"  sub="Lifetime bookings"  value={stats.total}     Icon={ShoppingBag}  gradient="from-indigo-500 to-violet-600" />
+          <StatCard label="Total Orders"  sub="Lifetime bookings"  value={stats.total}     Icon={ShoppingBag}  gradient="from-blue-600 to-indigo-600" />
           <StatCard label="Active Orders" sub="In cleaning stage"  value={stats.active}    Icon={Clock}        gradient="from-amber-400 to-orange-500" />
           <StatCard label="Completed"     sub="Delivered to door"  value={stats.completed} Icon={CheckCircle2} gradient="from-emerald-500 to-teal-600" />
           <StatCard label="Cancelled"     sub="Voided requests"    value={stats.cancelled} Icon={XCircle}      gradient="from-rose-500 to-pink-600" />
@@ -317,7 +317,7 @@ export default function MyOrdersPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search by order number..."
-                className="w-full h-10 rounded-2xl border border-slate-200 bg-slate-50/80 pl-10 pr-4 text-xs font-bold text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                className="w-full h-10 rounded-2xl border border-slate-200 bg-slate-50/80 pl-10 pr-4 text-xs font-bold text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white"
               />
             </div>
 
@@ -353,7 +353,7 @@ export default function MyOrdersPage() {
         </div>
       ) : orders.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white py-24 text-center dark:bg-slate-900 dark:border-slate-800">
-          <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50">
+          <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-blue-50 text-blue-600 dark:bg-blue-950/50">
             <Inbox size={38} />
           </div>
           <p className="text-lg font-black text-slate-900 dark:text-white">No Laundry Orders Yet</p>
@@ -361,7 +361,7 @@ export default function MyOrdersPage() {
             Schedule an express pickup and experience premium eco-friendly garment care.
           </p>
           <Link href="/dashboard/book-services">
-            <Button className="mt-6 h-11 px-6 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs shadow-lg shadow-indigo-600/30 gap-2">
+            <Button className="mt-6 h-11 px-6 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-black text-xs shadow-lg shadow-blue-600/30 gap-2">
               <ShoppingBag size={16} /> Book Your First Order
             </Button>
           </Link>
@@ -412,7 +412,7 @@ export default function MyOrdersPage() {
                     onClick={() => setPage(p as number)}
                     className={`h-9 min-w-[2.25rem] rounded-xl border text-xs font-black transition-all px-2.5 ${
                       safePage === p
-                        ? "border-indigo-600 bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
+                        ? "border-blue-600 bg-blue-600 text-white shadow-md shadow-blue-600/30"
                         : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300"
                     }`}
                   >

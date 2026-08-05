@@ -78,24 +78,24 @@ export default function BranchOrders() {
       className="space-y-7"
     >
       {/* ── 1. Hero Banner ─────────────────────────────────────────────────── */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-950 via-indigo-900 to-slate-900 p-7 md:p-9 text-white shadow-2xl border border-indigo-800/40">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 p-7 md:p-9 text-white shadow-2xl border border-blue-800/40">
         <div className="pointer-events-none absolute inset-0 opacity-20">
-          <div className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-indigo-500 blur-3xl" />
-          <div className="absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-purple-500 blur-3xl" />
+          <div className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-blue-500 blur-3xl" />
+          <div className="absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-cyan-500 blur-3xl" />
         </div>
 
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <Building2 size={14} className="text-indigo-300" />
-              <span className="text-indigo-200 text-xs font-black uppercase tracking-widest">
+              <Building2 size={14} className="text-cyan-300" />
+              <span className="text-cyan-200 text-xs font-black uppercase tracking-widest">
                 Branch Workstation &amp; Live Dispatch
               </span>
             </div>
             <h1 className="text-3xl md:text-4xl font-black tracking-tight text-white leading-tight">
               Facility Active Orders
             </h1>
-            <p className="text-indigo-100 text-xs md:text-sm leading-relaxed font-medium max-w-xl">
+            <p className="text-blue-100 text-xs md:text-sm leading-relaxed font-medium max-w-xl">
               Monitor active garment intakes, machine load, employee workflow, and partner vendor delegations.
             </p>
           </div>
@@ -107,13 +107,13 @@ export default function BranchOrders() {
               { label: "Ready",   value: stats.ready    },
             ].map(({ label, value }) => (
               <div key={label} className="rounded-2xl bg-white/10 border border-white/15 backdrop-blur-xl px-4 py-3 text-center min-w-[85px] shadow-inner">
-                <p className="text-indigo-200 text-[10px] font-black uppercase tracking-wider">{label}</p>
+                <p className="text-cyan-200 text-[10px] font-black uppercase tracking-wider">{label}</p>
                 <p className="text-white font-black text-xl leading-tight mt-0.5">{value}</p>
               </div>
             ))}
             <Button
               onClick={() => fetchOrders(true)}
-              className="h-11 px-5 rounded-2xl bg-white text-indigo-700 hover:bg-indigo-50 font-black text-xs shadow-lg gap-2 transition-all hover:scale-[1.02]"
+              className="h-11 px-5 rounded-2xl bg-white text-blue-700 hover:bg-blue-50 font-black text-xs shadow-lg gap-2 transition-all hover:scale-[1.02]"
             >
               <RefreshCw size={15} className={refreshing ? "animate-spin" : ""} /> Refresh
             </Button>
@@ -171,7 +171,7 @@ export default function BranchOrders() {
         <div className="space-y-4">{[0, 1, 2].map((i) => <Sk key={i} className="h-28" />)}</div>
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white py-24 text-center dark:bg-slate-900 dark:border-slate-800">
-          <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-indigo-50 text-indigo-500 dark:bg-indigo-950/50">
+          <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-blue-50 text-blue-500 dark:bg-blue-950/50">
             <Inbox size={38} />
           </div>
           <p className="text-lg font-black text-slate-900 dark:text-white">No Orders Found</p>
