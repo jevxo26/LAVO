@@ -43,9 +43,9 @@ const TABS: TabType[] = ["ALL", "PENDING", "PROCESSING", "COMPLETED", "CANCELLED
 const PROCESSING_STATUSES = ["PROCESSING", "WASHING", "IRONING", "PACKAGING"];
 
 const TAB_META: Record<string, { label: string; active: string }> = {
-  ALL:        { label: "All Orders",  active: "bg-purple-600 text-white shadow-md shadow-purple-600/30"   },
+  ALL:        { label: "All Orders",  active: "bg-blue-600 text-white shadow-md shadow-blue-600/30"      },
   PENDING:    { label: "Pending",     active: "bg-amber-500 text-white shadow-md shadow-amber-500/30"    },
-  PROCESSING: { label: "Processing",  active: "bg-indigo-500 text-white shadow-md shadow-indigo-500/30" },
+  PROCESSING: { label: "Processing",  active: "bg-cyan-600 text-white shadow-md shadow-cyan-600/30"      },
   COMPLETED:  { label: "Completed",   active: "bg-emerald-600 text-white shadow-md shadow-emerald-600/30"},
   CANCELLED:  { label: "Cancelled",   active: "bg-rose-500 text-white shadow-md shadow-rose-500/30"      },
 };
@@ -160,24 +160,24 @@ export default function VendorOrdersPage() {
       className="space-y-7"
     >
       {/* ── 1. Hero Banner ─────────────────────────────────────────────────── */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-purple-950 via-indigo-900 to-slate-900 p-7 md:p-9 text-white shadow-2xl border border-purple-800/40">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 p-7 md:p-9 text-white shadow-2xl border border-blue-800/40">
         <div className="pointer-events-none absolute inset-0 opacity-20">
-          <div className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-purple-500 blur-3xl" />
-          <div className="absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-indigo-500 blur-3xl" />
+          <div className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-blue-500 blur-3xl" />
+          <div className="absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-cyan-500 blur-3xl" />
         </div>
 
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <Store size={14} className="text-purple-300" />
-              <span className="text-purple-200 text-xs font-black uppercase tracking-widest">
+              <Store size={14} className="text-cyan-300" />
+              <span className="text-cyan-200 text-xs font-black uppercase tracking-widest">
                 Partner Vendor Delegated Queue
               </span>
             </div>
             <h1 className="text-3xl md:text-4xl font-black tracking-tight text-white leading-tight">
               Delegated Orders
             </h1>
-            <p className="text-purple-100 text-xs md:text-sm leading-relaxed font-medium max-w-xl">
+            <p className="text-blue-100 text-xs md:text-sm leading-relaxed font-medium max-w-xl">
               Accept incoming laundry batches delegated from branch managers, process cleaning stages, and report progress.
             </p>
           </div>
@@ -185,12 +185,12 @@ export default function VendorOrdersPage() {
           {!error && (
             <div className="flex items-center gap-3 shrink-0">
               <div className="rounded-2xl bg-white/10 border border-white/15 backdrop-blur-xl px-4 py-3 text-center min-w-[90px] shadow-inner">
-                <p className="text-purple-200 text-[10px] font-black uppercase tracking-wider">Total</p>
+                <p className="text-cyan-200 text-[10px] font-black uppercase tracking-wider">Total</p>
                 <p className="text-white font-black text-2xl mt-0.5">{stats.total}</p>
               </div>
               {stats.pending > 0 && (
                 <div className="rounded-2xl bg-white/10 border border-white/15 backdrop-blur-xl px-4 py-3 text-center min-w-[90px] shadow-inner">
-                  <p className="text-purple-200 text-[10px] font-black uppercase tracking-wider">Pending</p>
+                  <p className="text-cyan-200 text-[10px] font-black uppercase tracking-wider">Pending</p>
                   <p className="text-white font-black text-2xl mt-0.5">{stats.pending}</p>
                 </div>
               )}
@@ -203,9 +203,9 @@ export default function VendorOrdersPage() {
       {!error && (
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {[
-            { label: "Total Orders",  sub: "All time assigned",  value: stats.total,     Icon: ShoppingBag,  gradient: "from-indigo-500 to-purple-600" },
+            { label: "Total Orders",  sub: "All time assigned",  value: stats.total,     Icon: ShoppingBag,  gradient: "from-blue-600 to-indigo-600" },
             { label: "Pending",       sub: "Needs acceptance",  value: stats.pending,   Icon: Clock,        gradient: "from-amber-400 to-orange-500" },
-            { label: "In Progress",   sub: "Washing & ironing", value: stats.active,    Icon: Package,      gradient: "from-blue-500 to-cyan-600" },
+            { label: "In Progress",   sub: "Washing & ironing", value: stats.active,    Icon: Package,      gradient: "from-cyan-500 to-blue-600" },
             { label: "Completed",     sub: "Dispatched back",   value: stats.completed, Icon: CheckCircle2, gradient: "from-emerald-500 to-teal-600" },
           ].map(({ label, sub, value, Icon, gradient }) => (
             <motion.div
@@ -262,7 +262,7 @@ export default function VendorOrdersPage() {
                 type="text" value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search by order # or customer..."
-                className="w-full h-10 rounded-2xl border border-slate-200 bg-slate-50/80 pl-10 pr-4 text-xs font-bold text-slate-900 placeholder:text-slate-400 focus:border-purple-500 focus:bg-white focus:outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                className="w-full h-10 rounded-2xl border border-slate-200 bg-slate-50/80 pl-10 pr-4 text-xs font-bold text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white"
               />
             </div>
             {search && (
@@ -291,7 +291,7 @@ export default function VendorOrdersPage() {
         </div>
       ) : displayed.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white py-20 text-center dark:bg-slate-900 dark:border-slate-800">
-          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-purple-50 text-purple-500 dark:bg-purple-950/50">
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-500 dark:bg-blue-950/50">
             <ShoppingBag size={24} />
           </div>
           <p className="text-sm font-black text-slate-900 dark:text-white">No orders found</p>
@@ -303,7 +303,7 @@ export default function VendorOrdersPage() {
             <motion.div
               key={order.id}
               whileHover={{ y: -2 }}
-              className="flex flex-col sm:flex-row sm:items-center justify-between rounded-3xl border border-slate-200/80 bg-white p-5 shadow-sm hover:border-purple-200 hover:shadow-md transition-all gap-4 dark:bg-slate-900 dark:border-slate-800"
+              className="flex flex-col sm:flex-row sm:items-center justify-between rounded-3xl border border-slate-200/80 bg-white p-5 shadow-sm hover:border-blue-200 hover:shadow-md transition-all gap-4 dark:bg-slate-900 dark:border-slate-800"
             >
               <div className="space-y-2 min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
@@ -331,7 +331,7 @@ export default function VendorOrdersPage() {
                       </Button>
                     </>
                   )}
-                  <Button onClick={() => { setStatusId(order.id); setNewStatus(order.orderStatus); setStatusOpen(true); }} variant="outline" className="h-9 px-4 rounded-xl border-purple-200 text-purple-600 hover:bg-purple-50 text-xs font-black gap-1.5 dark:border-purple-800 dark:text-purple-400">
+                  <Button onClick={() => { setStatusId(order.id); setNewStatus(order.orderStatus); setStatusOpen(true); }} variant="outline" className="h-9 px-4 rounded-xl border-blue-200 text-blue-600 hover:bg-blue-50 text-xs font-black gap-1.5 dark:border-blue-800 dark:text-blue-400">
                     Update Status
                   </Button>
                 </div>
@@ -351,7 +351,7 @@ export default function VendorOrdersPage() {
           {Array.from({ length: totalPages }, (_, i) => i + 1).map((pg) => (
             <button key={pg} onClick={() => setPage(pg)}
               className={`h-9 min-w-[2.25rem] rounded-xl border text-xs font-black transition-all px-2.5 ${
-                safePage === pg ? "border-purple-600 bg-purple-600 text-white shadow-md shadow-purple-600/30" : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300"
+                safePage === pg ? "border-blue-600 bg-blue-600 text-white shadow-md shadow-blue-600/30" : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300"
               }`}>
               {pg}
             </button>
@@ -387,7 +387,7 @@ export default function VendorOrdersPage() {
           </Select>
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setStatusOpen(false)} className="rounded-xl h-10">Cancel</Button>
-            <Button onClick={handleStatusUpdate} disabled={!newStatus} className="rounded-xl h-10 bg-purple-600 hover:bg-purple-500 font-bold">Update Status</Button>
+            <Button onClick={handleStatusUpdate} disabled={!newStatus} className="rounded-xl h-10 bg-blue-600 hover:bg-blue-500 font-bold">Update Status</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

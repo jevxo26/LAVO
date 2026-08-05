@@ -49,11 +49,11 @@ export function CartSummary({
   return (
     <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xl overflow-hidden dark:bg-slate-900 dark:border-slate-800 space-y-0">
       {/* ── 1. Header ────────────────────────────────────────────────────────── */}
-      <div className="px-7 py-6 bg-gradient-to-br from-indigo-950 via-indigo-900 to-slate-900 flex items-center justify-between text-white border-b border-indigo-800/40">
+      <div className="px-7 py-6 bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 flex items-center justify-between text-white border-b border-blue-800/40">
         <div>
           <div className="flex items-center gap-2">
-            <Sparkles size={14} className="text-indigo-300" />
-            <span className="text-[10px] font-black uppercase tracking-widest text-indigo-300">
+            <Sparkles size={14} className="text-cyan-300" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-cyan-300">
               Checkout &amp; Booking Studio
             </span>
           </div>
@@ -61,7 +61,7 @@ export function CartSummary({
         </div>
 
         <div className="bg-white/10 backdrop-blur-md rounded-2xl px-4 py-2 flex items-center gap-2 border border-white/15">
-          <ShoppingBag size={15} className="text-indigo-200" />
+          <ShoppingBag size={15} className="text-cyan-200" />
           <span className="text-white text-xs font-black">
             {cart.length} item{cart.length !== 1 ? "s" : ""}
           </span>
@@ -69,8 +69,8 @@ export function CartSummary({
       </div>
 
       {/* ── 2. Free Express Delivery Bar ─────────────────────────────────────── */}
-      <div className="bg-indigo-50/70 dark:bg-indigo-950/50 px-7 py-3.5 border-b border-indigo-100 dark:border-indigo-900/50">
-        <div className="flex items-center justify-between text-xs font-extrabold text-indigo-900 dark:text-indigo-200">
+      <div className="bg-blue-50/70 dark:bg-blue-950/50 px-7 py-3.5 border-b border-blue-100 dark:border-blue-900/50">
+        <div className="flex items-center justify-between text-xs font-extrabold text-blue-900 dark:text-blue-200">
           <span>
             {subtotal >= freeDeliveryThreshold
               ? "🎉 You qualify for FREE Express Doorstep Delivery!"
@@ -78,9 +78,9 @@ export function CartSummary({
           </span>
           <span className="font-black">{Math.round(freeDeliveryProgress)}%</span>
         </div>
-        <div className="mt-2 h-2 w-full bg-indigo-200/60 dark:bg-indigo-900/80 rounded-full overflow-hidden">
+        <div className="mt-2 h-2 w-full bg-blue-200/60 dark:bg-blue-900/80 rounded-full overflow-hidden">
           <div
-            className="h-full bg-gradient-to-r from-indigo-500 to-emerald-400 rounded-full transition-all duration-300"
+            className="h-full bg-gradient-to-r from-blue-600 to-cyan-400 rounded-full transition-all duration-300"
             style={{ width: `${freeDeliveryProgress}%` }}
           />
         </div>
@@ -96,7 +96,7 @@ export function CartSummary({
 
           {cart.length === 0 ? (
             <div className="text-center py-8 px-4 rounded-2xl bg-slate-50/80 dark:bg-slate-800/40 border border-dashed border-slate-200 dark:border-slate-700/80 space-y-2">
-              <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-950/50 rounded-2xl flex items-center justify-center mx-auto text-indigo-500">
+              <div className="w-12 h-12 bg-blue-50 dark:bg-blue-950/50 rounded-2xl flex items-center justify-center mx-auto text-blue-500">
                 <Shirt size={22} />
               </div>
               <p className="text-xs font-black text-slate-900 dark:text-white">Your Laundry Bag is empty</p>
@@ -111,7 +111,7 @@ export function CartSummary({
                   <div className="flex items-start justify-between">
                     <div className="flex-1 min-w-0 pr-2">
                       <h4 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white truncate">{item.service.serviceName}</h4>
-                      <p className="text-xs text-indigo-600 dark:text-indigo-400 font-extrabold mt-0.5">
+                      <p className="text-xs text-blue-600 dark:text-cyan-400 font-extrabold mt-0.5">
                         ৳{item.service.basePrice.toFixed(2)} / piece
                       </p>
                     </div>
@@ -158,8 +158,8 @@ export function CartSummary({
                               onClick={() => onToggleAddon(item.service.id, addon.id)}
                               className={`text-[11px] px-3 py-1 rounded-xl border font-bold transition-all ${
                                 isChecked
-                                  ? "bg-indigo-600 border-indigo-600 text-white shadow-sm"
-                                  : "bg-white border-slate-200 text-slate-600 hover:border-indigo-300 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300"
+                                  ? "bg-blue-600 border-blue-600 text-white shadow-sm"
+                                  : "bg-white border-slate-200 text-slate-600 hover:border-blue-300 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300"
                               }`}
                             >
                               {addon.addonName}{" "}
@@ -197,17 +197,17 @@ export function CartSummary({
               onClick={() => onPaymentMethodChange("ONLINE")}
               className={`relative flex flex-col items-start justify-between p-4 rounded-2xl border-2 transition-all duration-200 text-left ${
                 paymentMethod === "ONLINE"
-                  ? "bg-gradient-to-br from-indigo-50/90 via-white to-purple-50/90 border-indigo-600 text-indigo-900 shadow-md dark:bg-slate-800 dark:border-indigo-500 dark:text-white"
+                  ? "bg-gradient-to-br from-blue-50/90 via-white to-cyan-50/90 border-blue-600 text-blue-900 shadow-md dark:bg-slate-800 dark:border-blue-500 dark:text-white"
                   : "bg-white border-slate-200 text-slate-700 hover:border-slate-300 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300"
               }`}
             >
               <div className="flex items-center justify-between w-full">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-sm">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm">
                   <CreditCard size={18} />
                 </div>
                 <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full ${
                   paymentMethod === "ONLINE"
-                    ? "bg-indigo-600 text-white"
+                    ? "bg-blue-600 text-white"
                     : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"
                 }`}>
                   Cards / MFS
@@ -228,17 +228,17 @@ export function CartSummary({
               onClick={() => onPaymentMethodChange("WALLET")}
               className={`relative flex flex-col items-start justify-between p-4 rounded-2xl border-2 transition-all duration-200 text-left ${
                 paymentMethod === "WALLET"
-                  ? "bg-gradient-to-br from-indigo-50/90 via-white to-purple-50/90 border-indigo-600 text-indigo-900 shadow-md dark:bg-slate-800 dark:border-indigo-500 dark:text-white"
+                  ? "bg-gradient-to-br from-blue-50/90 via-white to-cyan-50/90 border-blue-600 text-blue-900 shadow-md dark:bg-slate-800 dark:border-blue-500 dark:text-white"
                   : "bg-white border-slate-200 text-slate-700 hover:border-slate-300 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300"
               }`}
             >
               <div className="flex items-center justify-between w-full">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-600 text-white shadow-sm">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-600 text-white shadow-sm">
                   <Wallet size={18} />
                 </div>
                 <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full ${
                   paymentMethod === "WALLET"
-                    ? "bg-purple-600 text-white"
+                    ? "bg-cyan-600 text-white"
                     : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"
                 }`}>
                   ৳{walletBalance.toFixed(2)}
@@ -262,7 +262,7 @@ export function CartSummary({
                   Insufficient Balance (Short ৳{(grandTotal - walletBalance).toFixed(2)})
                 </p>
               </div>
-              <Link href="/dashboard/wallet" target="_blank" className="text-xs font-black text-indigo-600 underline flex items-center gap-1">
+              <Link href="/dashboard/wallet" target="_blank" className="text-xs font-black text-blue-600 underline flex items-center gap-1">
                 Top Up <ArrowUpRight size={12} />
               </Link>
             </div>
@@ -288,7 +288,7 @@ export function CartSummary({
             </div>
             <div className="flex justify-between items-center pt-3 border-t border-slate-200 dark:border-slate-700">
               <span className="text-sm font-black text-slate-900 dark:text-white">Grand Total</span>
-              <span className="text-xl font-black text-indigo-600 dark:text-indigo-400">৳{grandTotal.toFixed(2)}</span>
+              <span className="text-xl font-black text-blue-600 dark:text-cyan-400">৳{grandTotal.toFixed(2)}</span>
             </div>
           </div>
         )}
@@ -297,7 +297,7 @@ export function CartSummary({
         <Button
           type="submit"
           disabled={submitting || cart.length === 0 || isWalletInsufficient}
-          className="w-full h-12 rounded-2xl font-black text-xs bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30 gap-2 transition-all hover:scale-[1.01] disabled:opacity-50 disabled:shadow-none"
+          className="w-full h-12 rounded-2xl font-black text-xs bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/30 gap-2 transition-all hover:scale-[1.01] disabled:opacity-50 disabled:shadow-none"
         >
           {submitting ? (
             <span className="flex items-center gap-2">

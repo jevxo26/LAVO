@@ -17,12 +17,12 @@ export function ServiceCard({ service, inCart, onAdd, onToggleWishlist }: Servic
       whileHover={{ y: -3 }}
       className={`relative bg-white dark:bg-slate-900 rounded-3xl border transition-all duration-200 overflow-hidden ${
         inCart
-          ? "border-indigo-500 shadow-md shadow-indigo-500/10 ring-1 ring-indigo-400"
-          : "border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-indigo-200"
+          ? "border-blue-500 shadow-md shadow-blue-500/10 ring-1 ring-blue-400"
+          : "border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-blue-200"
       }`}
     >
       {inCart && (
-        <div className="absolute top-0 left-0 right-0 h-1 bg-indigo-600" />
+        <div className="absolute top-0 left-0 right-0 h-1 bg-blue-600" />
       )}
       
       <div className="p-5 space-y-3.5">
@@ -68,8 +68,8 @@ export function ServiceCard({ service, inCart, onAdd, onToggleWishlist }: Servic
             disabled={inCart}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-black transition-all ${
               inCart
-                ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
-                : "bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white dark:bg-indigo-950/50 dark:text-indigo-300"
+                ? "bg-blue-600 text-white shadow-md shadow-blue-600/30"
+                : "bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white dark:bg-blue-950/50 dark:text-blue-300"
             }`}
           >
             {inCart ? <><Check size={13} /> Added</> : <><Plus size={13} /> Add</>}
