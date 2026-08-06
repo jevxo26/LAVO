@@ -149,66 +149,95 @@ export function CustomerOverview() {
       transition={{ duration: 0.35 }}
       className="space-y-7"
     >
-      {/* ── 1. DRASTIC Glassmorphism Hero Header ──────────────────────────────── */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 p-7 md:p-9 text-white shadow-2xl border border-indigo-800/40">
-        {/* Background ambient glow circles */}
-        <div className="pointer-events-none absolute inset-0 opacity-20">
-          <div className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-indigo-500 blur-3xl" />
-          <div className="absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-purple-500 blur-3xl" />
+      {/* ── 1. Hero Banner ───────────────────────────────────────────────────── */}
+      <div className="relative overflow-hidden rounded-3xl p-7 md:p-9 text-white shadow-2xl"
+        style={{
+          background: "linear-gradient(135deg, color-mix(in srgb, var(--primary) 35%, var(--foreground) 65%) 0%, color-mix(in srgb, var(--primary) 75%, var(--foreground) 25%) 55%, color-mix(in srgb, var(--secondary) 55%, var(--foreground) 45%) 100%)",
+          border: "1px solid color-mix(in srgb, var(--primary) 40%, transparent)",
+        }}
+      >
+        {/* Ambient glows */}
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="absolute -top-24 -right-24 h-96 w-96 rounded-full opacity-[0.35] blur-3xl"
+            style={{ background: "var(--primary)" }} />
+          <div className="absolute -bottom-20 -left-20 h-72 w-72 rounded-full opacity-[0.28] blur-3xl"
+            style={{ background: "var(--secondary)" }} />
         </div>
 
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="space-y-3 max-w-2xl">
             <div className="flex flex-wrap items-center gap-2.5">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-200 text-xs font-extrabold uppercase tracking-wider backdrop-blur-md">
-                <Sparkles size={13} className="text-indigo-300" /> VIP Gold Member
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider backdrop-blur-md"
+                style={{
+                  background: "color-mix(in srgb, var(--primary) 22%, transparent)",
+                  border: "1px solid color-mix(in srgb, var(--primary) 40%, transparent)",
+                  color: "color-mix(in srgb, var(--primary-foreground) 85%, var(--primary) 15%)",
+                }}>
+                <Sparkles size={13} style={{ color: "color-mix(in srgb, var(--primary-foreground) 65%, var(--primary))" }} />
+                VIP Gold Member
               </span>
-              <span className="text-slate-400 text-xs font-mono">
+              <span className="text-white/50 text-xs font-mono">
                 #{stats?.customerCode || "LV-CUST-8492"}
               </span>
             </div>
 
-            <h1 className="text-3xl md:text-4xl font-black tracking-tight text-white leading-tight">
+            <h1 className="text-3xl md:text-4xl font-black tracking-tight text-white leading-tight drop-shadow-sm">
               Hello, {customerName} 👋
             </h1>
-            <p className="text-slate-300 text-xs md:text-sm leading-relaxed font-medium">
+            <p className="text-white/65 text-xs md:text-sm leading-relaxed font-medium">
               Schedule express laundry pickups in 1-tap, track real-time garment cleaning stages, and unlock loyalty rewards.
             </p>
 
             <div className="flex flex-wrap items-center gap-3 pt-2">
               <Link href="/dashboard/book-services">
-                <Button className="h-10 px-5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs shadow-lg shadow-indigo-600/30 gap-2 transition-all hover:scale-[1.02]">
+                <Button className="h-10 px-5 rounded-xl font-extrabold text-xs gap-2 shadow-lg transition-all hover:scale-[1.02] hover:shadow-xl"
+                  style={{
+                    background: "color-mix(in srgb, var(--primary-foreground) 95%, transparent)",
+                    color: "var(--primary)",
+                    boxShadow: "0 4px 20px color-mix(in srgb, var(--primary) 30%, transparent)",
+                  }}>
                   <Zap size={16} className="fill-current" /> Book Express Pickup
                 </Button>
               </Link>
               <Link href="/dashboard/track-orders">
-                <Button
-                  variant="outline"
-                  className="h-10 px-5 rounded-xl border-white/20 bg-white/10 text-white hover:bg-white/20 font-bold text-xs gap-2 backdrop-blur-md transition-all"
-                >
-                  <Radio size={15} className="text-indigo-300 animate-pulse" /> Track Live Order
+                <Button variant="outline"
+                  className="h-10 px-5 rounded-xl border-white/20 bg-white/10 text-white hover:bg-white/20 font-bold text-xs gap-2 backdrop-blur-md transition-all">
+                  <Radio size={15} className="animate-pulse" style={{ color: "var(--secondary)" }} /> Track Live Order
                 </Button>
               </Link>
             </div>
           </div>
 
-          {/* Right Hero Stats Chips */}
+          {/* Stats chips */}
           <div className="flex flex-wrap sm:flex-nowrap gap-3 shrink-0">
-            <div className="flex-1 sm:flex-initial rounded-2xl bg-white/10 border border-white/15 backdrop-blur-xl p-4 text-center min-w-[130px] shadow-inner">
-              <p className="text-indigo-200 text-[10px] font-black uppercase tracking-wider">Wallet Credit</p>
-              <p className="text-white font-black text-2xl mt-0.5">৳{stats?.walletBalance?.toFixed(2) ?? "0.00"}</p>
-              <Link href="/dashboard/wallet" className="text-[10px] text-indigo-300 hover:underline font-bold mt-1 inline-block">
-                + Top Up Cash
-              </Link>
-            </div>
-
-            <div className="flex-1 sm:flex-initial rounded-2xl bg-white/10 border border-white/15 backdrop-blur-xl p-4 text-center min-w-[130px] shadow-inner">
-              <p className="text-indigo-200 text-[10px] font-black uppercase tracking-wider">Reward Points</p>
-              <p className="text-white font-black text-2xl mt-0.5">{stats?.loyaltyPoints ?? 0}</p>
-              <span className="text-[10px] text-emerald-400 font-bold mt-1 block">
-                ⭐ Gold Tier
-              </span>
-            </div>
+            {[
+              {
+                label: "Wallet Credit",
+                value: `৳${stats?.walletBalance?.toFixed(2) ?? "0.00"}`,
+                sub: <Link href="/dashboard/wallet" className="text-[10px] font-bold mt-1 inline-block hover:underline"
+                       style={{ color: "var(--secondary)" }}>+ Top Up Cash</Link>,
+              },
+              {
+                label: "Reward Points",
+                value: stats?.loyaltyPoints ?? 0,
+                sub: <span className="text-[10px] font-bold mt-1 block" style={{ color: "var(--success)" }}>⭐ Gold Tier</span>,
+              },
+            ].map((chip) => (
+              <div key={chip.label}
+                className="flex-1 sm:flex-initial rounded-2xl p-4 text-center min-w-[130px] backdrop-blur-xl"
+                style={{
+                  background: "color-mix(in srgb, var(--primary-foreground) 10%, transparent)",
+                  border: "1px solid color-mix(in srgb, var(--primary-foreground) 15%, transparent)",
+                  boxShadow: "inset 0 1px 0 color-mix(in srgb, var(--primary-foreground) 8%, transparent)",
+                }}>
+                <p className="text-[10px] font-black uppercase tracking-wider"
+                  style={{ color: "color-mix(in srgb, var(--primary-foreground) 60%, var(--primary))" }}>
+                  {chip.label}
+                </p>
+                <p className="text-white font-black text-2xl mt-0.5 tabular-nums">{chip.value}</p>
+                {chip.sub}
+              </div>
+            ))}
           </div>
         </div>
       </div>

@@ -118,50 +118,106 @@ export function EmployeeOverview() {
       className="space-y-7"
     >
       {/* ── 1. Employee Workstation Command Hero ─────────────────────────────── */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-950 via-indigo-900 to-slate-900 p-7 md:p-9 text-white shadow-2xl border border-indigo-800/40">
-        <div className="pointer-events-none absolute inset-0 opacity-20">
-          <div className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-indigo-500 blur-3xl" />
-          <div className="absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-blue-500 blur-3xl" />
+      <div className="relative overflow-hidden rounded-3xl p-7 md:p-9 text-white shadow-2xl"
+        style={{
+          background: "linear-gradient(135deg, color-mix(in srgb, var(--primary) 35%, var(--foreground) 65%) 0%, color-mix(in srgb, var(--primary) 75%, var(--foreground) 25%) 55%, color-mix(in srgb, var(--secondary) 55%, var(--foreground) 45%) 100%)",
+          borderColor: "color-mix(in srgb, var(--primary) 40%, transparent)",
+          borderWidth: "1px",
+          borderStyle: "solid",
+        }}
+      >
+        {/* Ambient glow — primary left, secondary right */}
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="absolute -top-24 -right-20 h-96 w-96 rounded-full opacity-[0.35] blur-3xl"
+            style={{ background: "var(--primary)" }} />
+          <div className="absolute -bottom-20 -left-20 h-72 w-72 rounded-full opacity-[0.28] blur-3xl"
+            style={{ background: "var(--secondary)" }} />
+          {/* Subtle noise grain overlay for depth */}
+          <div className="absolute inset-0 opacity-[0.03]"
+            style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E\")" }} />
         </div>
 
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="space-y-3 max-w-2xl">
+
+            {/* Badges */}
             <div className="flex flex-wrap items-center gap-2.5">
-              <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-200 text-xs font-black uppercase tracking-wider backdrop-blur-md">
-                <Sparkles size={13} className="text-indigo-300" /> {isVendorEmployee ? "Vendor Processing Workstation" : "Branch Processing Workstation"}
+              <span
+                className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-wider backdrop-blur-md"
+                style={{
+                  background: "color-mix(in srgb, var(--primary) 25%, transparent)",
+                  border: "1px solid color-mix(in srgb, var(--primary) 45%, transparent)",
+                  color: "color-mix(in srgb, var(--primary-foreground) 90%, var(--primary) 10%)",
+                }}
+              >
+                <Sparkles size={13} style={{ color: "color-mix(in srgb, var(--primary-foreground) 70%, var(--primary))" }} />
+                {isVendorEmployee ? "Vendor Processing Workstation" : "Branch Processing Workstation"}
               </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-bold backdrop-blur-md">
-                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" /> Scanner Active
+
+              <span
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold backdrop-blur-md"
+                style={{
+                  background: "color-mix(in srgb, var(--success) 20%, transparent)",
+                  border: "1px solid color-mix(in srgb, var(--success) 40%, transparent)",
+                  color: "color-mix(in srgb, var(--success-foreground) 80%, var(--success) 20%)",
+                }}
+              >
+                <span
+                  className="h-2 w-2 rounded-full animate-pulse"
+                  style={{ background: "var(--success)" }}
+                />
+                Scanner Active
               </span>
             </div>
 
-            <h1 className="text-3xl md:text-4xl font-black tracking-tight text-white leading-tight">
+            <h1 className="text-3xl md:text-4xl font-black tracking-tight text-white leading-tight drop-shadow-sm">
               Welcome, {firstName}
             </h1>
-            <p className="text-indigo-100 text-xs md:text-sm leading-relaxed font-medium">
+            <p className="text-white/70 text-xs md:text-sm leading-relaxed font-medium">
               Garment intake, QR tag scanning, washing stage transitions, and processing queue updates.
             </p>
 
+            {/* CTA Button */}
             <div className="pt-2">
               <Link href="/dashboard/scanner">
-                <Button className="h-12 rounded-2xl bg-white text-indigo-700 hover:bg-indigo-50 font-black text-xs px-7 shadow-xl shadow-white/10 gap-2.5 transition-all hover:scale-[1.02]">
-                  <QrCode size={18} /> Open QR Code Scanner Workstation
+                <Button
+                  className="h-11 rounded-xl font-black text-xs px-6 gap-2.5 shadow-lg transition-all duration-200 hover:scale-[1.02] hover:shadow-xl"
+                  style={{
+                    background: "color-mix(in srgb, var(--primary-foreground) 95%, transparent)",
+                    color: "var(--primary)",
+                    boxShadow: "0 4px 24px color-mix(in srgb, var(--primary) 25%, transparent)",
+                  }}
+                >
+                  <QrCode size={17} /> Open QR Code Scanner Workstation
                 </Button>
               </Link>
             </div>
           </div>
 
-          {/* Telemetry Chips */}
+          {/* Telemetry chips */}
           <div className="flex flex-wrap sm:flex-nowrap gap-3 shrink-0">
-            <div className="flex-1 sm:flex-initial rounded-2xl bg-white/10 border border-white/15 backdrop-blur-xl p-4 text-center min-w-[125px] shadow-inner">
-              <p className="text-indigo-200 text-[10px] font-black uppercase tracking-wider">Intake Today</p>
-              <p className="text-white font-black text-2xl mt-0.5">{data?.intakeGarments ?? 0}</p>
-            </div>
-
-            <div className="flex-1 sm:flex-initial rounded-2xl bg-white/10 border border-white/15 backdrop-blur-xl p-4 text-center min-w-[125px] shadow-inner">
-              <p className="text-indigo-200 text-[10px] font-black uppercase tracking-wider">Dispatch Ready</p>
-              <p className="text-white font-black text-2xl mt-0.5">{data?.readyDispatch ?? 0}</p>
-            </div>
+            {[
+              { label: "Intake Today",    value: data?.intakeGarments ?? 0 },
+              { label: "Dispatch Ready",  value: data?.readyDispatch  ?? 0 },
+            ].map((chip) => (
+              <div
+                key={chip.label}
+                className="flex-1 sm:flex-initial rounded-2xl p-4 text-center min-w-[125px] backdrop-blur-xl"
+                style={{
+                  background: "color-mix(in srgb, var(--primary-foreground) 10%, transparent)",
+                  border: "1px solid color-mix(in srgb, var(--primary-foreground) 15%, transparent)",
+                  boxShadow: "inset 0 1px 0 color-mix(in srgb, var(--primary-foreground) 8%, transparent)",
+                }}
+              >
+                <p
+                  className="text-[10px] font-black uppercase tracking-wider"
+                  style={{ color: "color-mix(in srgb, var(--primary-foreground) 65%, var(--primary))" }}
+                >
+                  {chip.label}
+                </p>
+                <p className="text-white font-black text-2xl mt-0.5 tabular-nums">{chip.value}</p>
+              </div>
+            ))}
           </div>
         </div>
       </div>

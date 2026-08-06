@@ -133,42 +133,70 @@ export function NormalAdminOverview() {
       className="space-y-7"
     >
       {/* ── 1. Operations Command Hero Banner ────────────────────────────────── */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-950 via-blue-950 to-slate-900 p-7 md:p-9 text-white shadow-2xl border border-blue-800/40">
-        <div className="pointer-events-none absolute inset-0 opacity-20">
-          <div className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-blue-500 blur-3xl" />
-          <div className="absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-indigo-500 blur-3xl" />
+      <div className="relative overflow-hidden rounded-3xl p-7 md:p-9 text-white shadow-2xl"
+        style={{
+          background: "linear-gradient(135deg, color-mix(in srgb, var(--primary) 35%, var(--foreground) 65%) 0%, color-mix(in srgb, var(--primary) 75%, var(--foreground) 25%) 55%, color-mix(in srgb, var(--secondary) 55%, var(--foreground) 45%) 100%)",
+          border: "1px solid color-mix(in srgb, var(--primary) 40%, transparent)",
+        }}
+      >
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="absolute -top-24 -right-24 h-96 w-96 rounded-full opacity-[0.35] blur-3xl"
+            style={{ background: "var(--primary)" }} />
+          <div className="absolute -bottom-20 -left-20 h-72 w-72 rounded-full opacity-[0.28] blur-3xl"
+            style={{ background: "var(--secondary)" }} />
         </div>
 
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="space-y-3 max-w-2xl">
             <div className="flex flex-wrap items-center gap-2.5">
-              <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-200 text-xs font-black uppercase tracking-wider backdrop-blur-md">
-                <Sparkles size={13} className="text-blue-300" /> Operations Command
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-wider backdrop-blur-md"
+                style={{
+                  background: "color-mix(in srgb, var(--primary) 22%, transparent)",
+                  border: "1px solid color-mix(in srgb, var(--primary) 40%, transparent)",
+                  color: "color-mix(in srgb, var(--primary-foreground) 85%, var(--primary) 15%)",
+                }}>
+                <Sparkles size={13} style={{ color: "color-mix(in srgb, var(--primary-foreground) 65%, var(--primary))" }} />
+                Operations Command
               </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-bold backdrop-blur-md">
-                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" /> Processing Live
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold backdrop-blur-md"
+                style={{
+                  background: "color-mix(in srgb, var(--success) 20%, transparent)",
+                  border: "1px solid color-mix(in srgb, var(--success) 38%, transparent)",
+                  color: "color-mix(in srgb, var(--success-foreground) 80%, var(--success) 20%)",
+                }}>
+                <span className="h-2 w-2 rounded-full animate-pulse" style={{ background: "var(--success)" }} />
+                Processing Live
               </span>
             </div>
 
-            <h1 className="text-3xl md:text-4xl font-black tracking-tight text-white leading-tight">
+            <h1 className="text-3xl md:text-4xl font-black tracking-tight text-white leading-tight drop-shadow-sm">
               Admin Operations Workstation
             </h1>
-            <p className="text-blue-100 text-xs md:text-sm leading-relaxed font-medium">
+            <p className="text-white/65 text-xs md:text-sm leading-relaxed font-medium">
               Monitor real-time order intake, branch throughput, agent logistics dispatching, and resolve support tickets.
             </p>
           </div>
 
-          {/* Quick Operations Telemetry Chips */}
+          {/* Telemetry chips */}
           <div className="flex flex-wrap sm:flex-nowrap gap-3 shrink-0">
-            <div className="flex-1 sm:flex-initial rounded-2xl bg-white/10 border border-white/15 backdrop-blur-xl p-4 text-center min-w-[125px] shadow-inner">
-              <p className="text-blue-200 text-[10px] font-black uppercase tracking-wider">Today's Orders</p>
-              <p className="text-white font-black text-2xl mt-0.5">{todaysOrders}</p>
-            </div>
-
-            <div className="flex-1 sm:flex-initial rounded-2xl bg-white/10 border border-white/15 backdrop-blur-xl p-4 text-center min-w-[125px] shadow-inner">
-              <p className="text-blue-200 text-[10px] font-black uppercase tracking-wider">Pending Pickups</p>
-              <p className="text-white font-black text-2xl mt-0.5">{pendingPickups}</p>
-            </div>
+            {[
+              { label: "Today's Orders",  value: todaysOrders   },
+              { label: "Pending Pickups", value: pendingPickups },
+            ].map((chip) => (
+              <div key={chip.label}
+                className="flex-1 sm:flex-initial rounded-2xl p-4 text-center min-w-[125px] backdrop-blur-xl"
+                style={{
+                  background: "color-mix(in srgb, var(--primary-foreground) 10%, transparent)",
+                  border: "1px solid color-mix(in srgb, var(--primary-foreground) 15%, transparent)",
+                  boxShadow: "inset 0 1px 0 color-mix(in srgb, var(--primary-foreground) 8%, transparent)",
+                }}>
+                <p className="text-[10px] font-black uppercase tracking-wider"
+                  style={{ color: "color-mix(in srgb, var(--primary-foreground) 60%, var(--primary))" }}>
+                  {chip.label}
+                </p>
+                <p className="text-white font-black text-2xl mt-0.5 tabular-nums">{chip.value}</p>
+              </div>
+            ))}
           </div>
         </div>
       </div>
