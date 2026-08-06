@@ -5,9 +5,24 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Calculator, Minus, Plus, Trash2 } from "lucide-react";
 
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+type Garment = { name: string; basePrice: number; isCustom?: boolean };
+type Service = { name: string; addOn: number };
+type Turnaround = { name: string; multiplier: number };
+
+type BookingItem = {
+  id: string;
+  garment: Garment;
+  isCustom?: boolean;
+  customGarmentName?: string;
+  quantity: number;
+  services: Service[];
+};
+
 // ─── Hardcoded fallback data ──────────────────────────────────────────────────
 
-const DEFAULT_GARMENTS = [
+const DEFAULT_GARMENTS: Garment[] = [
   { name: "Shirts", basePrice: 40 },
   { name: "T-Shirts", basePrice: 30 },
   { name: "Pants", basePrice: 45 },
@@ -27,7 +42,7 @@ const DEFAULT_GARMENTS = [
   { name: "Shoes", basePrice: 350 },
 ];
 
-const CUSTOM_GARMENT_OPTION = {
+const CUSTOM_GARMENT_OPTION: Garment = {
   name: "Can't find? Type garment name",
   basePrice: 50,
   isCustom: true,
@@ -78,21 +93,8 @@ type CmsItem = {
   displayOrder?: number;
 };
 
-type Garment = { name: string; basePrice: number; isCustom?: boolean };
-type Service = { name: string; addOn: number };
-type Turnaround = { name: string; multiplier: number };
-
-type BookingItem = {
-  id: string;
-  garment: Garment;
-  isCustom?: boolean;
-  customGarmentName?: string;
-  quantity: number;
-  services: Service[];
-};
-
 function parsePricingData(items: CmsItem[]) {
-  const garments = items
+  const garments: Garment[] = items
     .filter((i) => i.subtitle === "garment" && i.title)
     .sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0))
     .map((i) => ({ name: i.title!, basePrice: parseFloat(i.content ?? "0") || 0 }));
@@ -124,8 +126,8 @@ export function PricingCalculator({ data }: { data?: any }) {
   const cmsItems: CmsItem[] = data?.items ?? [];
   const parsed = parsePricingData(cmsItems);
 
-  const baseGarments = parsed.garments.length ? parsed.garments : DEFAULT_GARMENTS;
-  const garments = [...baseGarments, CUSTOM_GARMENT_OPTION];
+  const baseGarments: Garment[] = parsed.garments.length ? parsed.garments : DEFAULT_GARMENTS;
+  const garments: Garment[] = [...baseGarments, CUSTOM_GARMENT_OPTION];
   const services = parsed.services.length ? parsed.services : DEFAULT_SERVICES;
   const turnarounds = parsed.turnarounds.length ? parsed.turnarounds : DEFAULT_TURNAROUNDS;
   const addons = parsed.addons.length ? parsed.addons : DEFAULT_ADDONS;

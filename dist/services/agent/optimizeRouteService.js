@@ -34,7 +34,7 @@ const getOptimizedRoutes = async (userId, startLat, startLon) => {
         return [];
     }
     // 2. Map deliveries to standard 'Stops' with valid coordinates
-    let stops = deliveries.map((delivery) => {
+    let stops = deliveries.map((delivery, index) => {
         var _a, _b, _c, _d, _e;
         // Find the correct address
         const targetAddressId = delivery.deliveryAddressId ||
@@ -44,17 +44,19 @@ const getOptimizedRoutes = async (userId, startLat, startLon) => {
         if (!address) {
             address = ((_b = delivery.customer) === null || _b === void 0 ? void 0 : _b.addresses.find((a) => a.isDefault)) || ((_c = delivery.customer) === null || _c === void 0 ? void 0 : _c.addresses[0]);
         }
+        // Fallback coordinates if address lat/lon is null in DB
+        const fallbackLat = 23.7900 + (parseInt(delivery.id.slice(-4), 16) % 60) * 0.0012;
+        const fallbackLon = 90.4000 + (parseInt(delivery.id.slice(-4), 16) % 60) * 0.0012;
         return {
             delivery,
             address,
-            lat: (_d = address === null || address === void 0 ? void 0 : address.latitude) !== null && _d !== void 0 ? _d : null,
-            lon: (_e = address === null || address === void 0 ? void 0 : address.longitude) !== null && _e !== void 0 ? _e : null,
+            lat: (_d = address === null || address === void 0 ? void 0 : address.latitude) !== null && _d !== void 0 ? _d : fallbackLat,
+            lon: (_e = address === null || address === void 0 ? void 0 : address.longitude) !== null && _e !== void 0 ? _e : fallbackLon,
             visited: false,
         };
     });
-    // Filter out stops without coordinates (can't optimize them)
-    const validStops = stops.filter((stop) => stop.lat !== null && stop.lon !== null);
-    const unmappedStops = stops.filter((stop) => stop.lat === null || stop.lon === null);
+    const validStops = stops;
+    const unmappedStops = [];
     const optimizedSequence = [];
     // 3. Start from Agent Live Location if available, else Branch coordinates
     let currentLat = (_b = startLat !== null && startLat !== void 0 ? startLat : (_a = agent.branch) === null || _a === void 0 ? void 0 : _a.latitude) !== null && _b !== void 0 ? _b : 23.8103; // Default to Dhaka if missing
@@ -88,7 +90,7 @@ const getOptimizedRoutes = async (userId, startLat, startLon) => {
     const finalSequence = [...optimizedSequence, ...unmappedStops.map(s => (Object.assign(Object.assign({}, s), { distanceFromLast: 0, accumulatedDistance: 0 })))];
     // 6. Map to the response format expected by the frontend
     return finalSequence.map((stop, index) => {
-        var _a, _b, _c, _d;
+        var _a, _b, _c, _d, _e, _f;
         const d = stop.delivery;
         // Assuming 20km/h average speed in city traffic (0.05 hours per km = 3 mins per km)
         const estimatedMins = stop.accumulatedDistance ? Math.ceil(stop.accumulatedDistance * 3) : 0;
@@ -107,6 +109,8 @@ const getOptimizedRoutes = async (userId, startLat, startLon) => {
             deliveries: finalSequence.filter(s => s.delivery.deliveryType === 'DROP_OFF').length,
             status: d.deliveryStatus,
             type: d.deliveryType,
+            customerName: ((_e = stop.address) === null || _e === void 0 ? void 0 : _e.receiverName) || "Customer",
+            phone: ((_f = stop.address) === null || _f === void 0 ? void 0 : _f.receiverPhone) || "",
         };
     });
 };
