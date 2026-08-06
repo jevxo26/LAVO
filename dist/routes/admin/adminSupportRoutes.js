@@ -8,6 +8,7 @@ const router = (0, express_1.Router)();
 // Protect administrative support & moderation endpoints
 router.use(authMiddleware_1.verifyToken);
 router.use((0, roleMiddleware_1.restrictTo)("SUPER_ADMIN", "ADMIN"));
+router.get("/tickets", adminSupportController_1.AdminSupportController.getAllTickets);
 router.get("/reviews", adminSupportController_1.AdminSupportController.getAllReviews);
 router.post("/reviews/:id/reply", adminSupportController_1.AdminSupportController.replyToReview);
 router
