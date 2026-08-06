@@ -1,26 +1,47 @@
 import ContactSection from "@/components/marketing/contact/ContactSection";
-import { Footer } from "@/components/layout/Footer"
-import { Navbar } from "@/components/layout/Navbar"
-import { PageHero } from "@/components/shared/PageHero"
+import { Footer } from "@/components/layout/Footer";
+import { Navbar } from "@/components/layout/Navbar";
+import { PageHero } from "@/components/shared/PageHero";
+import prisma from "@/lib/prisma";
 
-const heroData = {
-    subtitle: "Contact",
-    title: "Get in Touch",
-    content:
-        "We respond to all inquiries within 2 business hours.",
+export const revalidate = 0;
+
+export const metadata = {
+  title: "Contact Us | Laundrix",
+  description: "Get in touch with the LAUNDRIX support team.",
 };
 
-const GetInTouchPage = () => {
-    return (
-        <div>
-            <Navbar />
-            <div className="flex-1">
-                <PageHero data={heroData} />
-                <ContactSection />
-            </div>
-            <Footer />
-        </div>
-    )
-}
+export default async function GetInTouchPage() {
+  const page = await prisma.cmsPage.findUnique({
+    where: { slug: "contact" },
+    include: {
+      sections: {
+        include: {
+          items: { orderBy: { displayOrder: "asc" } },
+        },
+      },
+    },
+  });
 
-export default GetInTouchPage
+  const getSection = (key: string) => {
+    return page?.sections.find((s) => s.sectionKey === key) || null;
+  };
+
+  const heroSection = getSection("hero");
+  const heroData = {
+    subtitle: heroSection?.subtitle || "Contact",
+    title: heroSection?.title || "Get in Touch",
+    content: heroSection?.content || "We respond to all inquiries within 2 business hours.",
+  };
+
+  return (
+    <div>
+      <Navbar />
+      <div className="flex-1">
+        <PageHero data={heroData} />
+        <ContactSection />
+      </div>
+      <Footer />
+    </div>
+  );
+}

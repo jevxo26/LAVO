@@ -32,9 +32,14 @@ export function AdminCrudPage<TRecord extends AdminRecord>({
   const { records, isLoading, isReadOnly, handleCreate, handleUpdate, handleDelete } =
     useCrudData(config, search);
 
-  const { table, columns } = useCrudTable(
-    records, config, search, setSearch, isReadOnly,
-    setEditingRecord, setDeletingRecord,
+  const { table, columns } = useCrudTable<TRecord>(
+    records,
+    config,
+    search,
+    setSearch,
+    isReadOnly,
+    (row: TRecord) => setEditingRecord(row),
+    (row: TRecord) => setDeletingRecord(row)
   );
 
   return (

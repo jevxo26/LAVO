@@ -67,7 +67,7 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
     >
       <div className="flex items-center justify-between py-4.5 px-4 border-b border-[#EBEDEF] shadow-xs">
         {!isCollapsed && (
-          <Link href="/dashboard" className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2">
             <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-600 text-white shadow-sm">
               <ShoppingBag size={16} />
             </div>

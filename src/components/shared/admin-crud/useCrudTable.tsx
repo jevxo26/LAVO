@@ -2,12 +2,16 @@
 
 import * as React from "react";
 import {
-  getCoreRowModel, getFilteredRowModel,
-  getPaginationRowModel, useReactTable,
-  type CellContext, type ColumnDef,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  useReactTable,
+  type CellContext,
+  type ColumnDef,
+  type Table,
 } from "@tanstack/react-table";
 import { FormattedCell } from "./FormattedCell";
-import { ActionMenu }    from "@/components/shared/ActionMenu";
+import { ActionMenu } from "@/components/shared/ActionMenu";
 import { type AdminRecord, type CrudModuleConfig } from "./types";
 
 export function useCrudTable<TRecord extends AdminRecord>(
@@ -17,24 +21,32 @@ export function useCrudTable<TRecord extends AdminRecord>(
   onSearch: (v: string) => void,
   isReadOnly: boolean,
   onEdit: (row: TRecord) => void,
-  onDelete: (row: TRecord) => void,
-) {
-  const columns = React.useMemo<ColumnDef<TRecord>[]>(() => [
-    ...config.columns.map((col) => ({
-      accessorKey: col.accessorKey,
+  onDelete: (row: TRecord) => void
+): {
+  table: Table<TRecord>;
+  columns: ColumnDef<TRecord>[];
+} {
+  const columns = React.useMemo<ColumnDef<TRecord>[]>(() => {
+    const cols: ColumnDef<TRecord>[] = config.columns.map((col) => ({
+      accessorKey: col.accessorKey as string,
       header: col.header,
       cell: ({ row }: CellContext<TRecord, unknown>) => (
-        <FormattedCell value={row.original[col.accessorKey]} kind={col.kind} />
+        <FormattedCell value={(row.original as Record<string, any>)[col.accessorKey]} kind={col.kind} />
       ),
-    })),
-    ...(!isReadOnly ? [{
-      id: "actions",
-      header: () => <span className="sr-only">Actions</span>,
-      cell: ({ row }: CellContext<TRecord, unknown>) => (
-        <ActionMenu row={row.original} onEdit={onEdit} onDelete={onDelete} />
-      ),
-    }] : []),
-  ], [config.columns, isReadOnly, onEdit, onDelete]);
+    }));
+
+    if (!isReadOnly) {
+      cols.push({
+        id: "actions",
+        header: () => <span className="sr-only">Actions</span>,
+        cell: ({ row }: CellContext<TRecord, unknown>) => (
+          <ActionMenu row={row.original} onEdit={onEdit} onDelete={onDelete} />
+        ),
+      });
+    }
+
+    return cols;
+  }, [config.columns, isReadOnly, onEdit, onDelete]);
 
   const table = useReactTable({
     data: records,

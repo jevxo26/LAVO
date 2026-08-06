@@ -1,6 +1,21 @@
 const { execFileSync } = require("node:child_process")
-const { existsSync, readFileSync, rmSync } = require("node:fs")
+const { existsSync, readFileSync, copyFileSync, mkdirSync, rmSync } = require("node:fs")
 const { join } = require("node:path")
+
+function ensureEnvFile() {
+  const envPath = join(process.cwd(), ".env")
+  const examplePath = join(process.cwd(), ".env.example")
+
+  if (!existsSync(envPath) && existsSync(examplePath)) {
+    console.log("⚙️  Creating default .env from .env.example...")
+    copyFileSync(examplePath, envPath)
+  }
+
+  const uploadsDir = join(process.cwd(), "public", "uploads")
+  if (!existsSync(uploadsDir)) {
+    mkdirSync(uploadsDir, { recursive: true })
+  }
+}
 
 function readPort() {
   const envPath = join(process.cwd(), ".env")
@@ -89,12 +104,11 @@ function removeStaleLock() {
   try {
     rmSync(lockPath, { force: true })
   } catch {
-    // A live Next process can keep this file locked on Windows. In that case,
-    // Next's own lock check should still report the owning PID.
+    // Lock file handle ignored if process is active
   }
 }
 
+ensureEnvFile()
 const port = readPort()
-
 stopListeners(port)
 removeStaleLock()
