@@ -130,13 +130,13 @@ export function Navbar() {
 
         {/* Action Buttons */}
         <div className="hidden lg:flex items-center space-x-3">
-          {/* <Link
-            href="/track"
+          <Link
+            href="/dashboard/track-orders"
             className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 text-white text-sm font-medium hover:bg-slate-800 transition-colors"
           >
             <QrCode size={16} />
             Track Order
-          </Link> */}
+          </Link>
 
           {mounted && isAuthenticated ? (
             <button
@@ -156,7 +156,7 @@ export function Navbar() {
           )}
 
           <Link
-            href="/book"
+            href="/dashboard/book-services"
             className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary text-white text-sm font-medium hover:bg-primary/90 transition-colors shadow-sm shadow-primary/25"
           >
             Book Pickup
