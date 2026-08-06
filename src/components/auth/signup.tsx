@@ -138,7 +138,7 @@ export function SignUpForm() {
         </div>
         {errors.confirmPassword && <p className="text-sm text-red-500">{errors.confirmPassword.message}</p>}
       </div>
-      <div className="flex items-center justify-between">
+      {/* <div className="flex items-center justify-between">
         <div className="flex  items-center space-x-2">
           <input
             id="remember"
@@ -150,7 +150,7 @@ export function SignUpForm() {
             I agree to LAUNDRIX's <span className="text-blue-500 font-semibold">Terms of Service</span> and <span className="text-blue-500 font-semibold">Privacy Policy</span>
           </Label>
         </div>
-      </div>
+      </div> */}
 
       <Button type="submit" className="w-full" disabled={isSubmitting}>
         {isSubmitting ? (
@@ -163,7 +163,7 @@ export function SignUpForm() {
         )}
       </Button>
 
-      <div className="relative my-4">
+      <div className="relative mb-2">
         <div className="absolute inset-0 flex items-center">
           <span className="w-full border-t border-slate-200" />
         </div>
