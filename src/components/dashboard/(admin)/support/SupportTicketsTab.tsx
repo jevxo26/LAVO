@@ -141,7 +141,7 @@ export function SupportTicketsTab() {
       },
     ];
 
-    authFetch("/tickets")
+    authFetch("/admin/support/tickets")
       .then((r) => r.json())
       .then((d) => {
         if (d.success && Array.isArray(d.data) && d.data.length > 0) {

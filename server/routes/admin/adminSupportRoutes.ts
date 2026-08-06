@@ -9,6 +9,8 @@ const router = Router();
 router.use(verifyToken);
 router.use(restrictTo("SUPER_ADMIN", "ADMIN"));
 
+router.get("/tickets", AdminSupportController.getAllTickets);
+
 router.get("/reviews", AdminSupportController.getAllReviews);
 router.post("/reviews/:id/reply", AdminSupportController.replyToReview);
 
