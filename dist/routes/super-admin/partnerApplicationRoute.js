@@ -6,6 +6,6 @@ const partnerApplicationController_1 = require("../../controllers/super-admin/pa
 const roleMiddleware_1 = require("../../middlewares/roleMiddleware");
 const router = (0, express_1.Router)();
 router.post("/", authMiddleware_1.requireAuth, (0, roleMiddleware_1.restrictTo)("CUSTOMER"), partnerApplicationController_1.createPartnerApplicationController);
-router.get("/", authMiddleware_1.requireAuth, (0, roleMiddleware_1.restrictTo)("ADMIN", "BRANCH_MANAGER"), partnerApplicationController_1.getAllPartnerApplicationsController);
-router.patch("/:id", authMiddleware_1.requireAuth, (0, roleMiddleware_1.restrictTo)("ADMIN"), partnerApplicationController_1.updatePartnerApplicationController);
+router.get("/", authMiddleware_1.requireAuth, (0, roleMiddleware_1.restrictTo)("SUPER_ADMIN", "ADMIN", "BRANCH_MANAGER"), partnerApplicationController_1.getAllPartnerApplicationsController);
+router.patch("/:id", authMiddleware_1.requireAuth, (0, roleMiddleware_1.restrictTo)("SUPER_ADMIN"), partnerApplicationController_1.updatePartnerApplicationController);
 exports.default = router;

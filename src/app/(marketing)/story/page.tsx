@@ -1,32 +1,53 @@
-import { Footer } from "@/components/layout/Footer"
-import { Navbar } from "@/components/layout/Navbar"
+import { Footer } from "@/components/layout/Footer";
+import { Navbar } from "@/components/layout/Navbar";
 import { PageHero } from "@/components/shared/PageHero";
 import Journey from "@/components/marketing/story/Journey";
 import LeadershipTeam from "@/components/marketing/story/LeadershipTeam";
 import Mission from "@/components/marketing/story/Mission";
+import prisma from "@/lib/prisma";
 
-const heroData = {
-    subtitle: "About Us",
-    title: "The LAUNDRIX Story",
-    content:
-        "From a signle Manhattan location to a city-wise platform serving thousands dailys.",
+export const revalidate = 0;
+
+export const metadata = {
+  title: "About Us | The LAUNDRIX Story",
+  description: "Learn about the LAUNDRIX mission, journey, and leadership team.",
 };
 
-const StoryPage = () => {
-    return (
-        <div>
-            <Navbar />
-            <div className="flex-1">
-                <PageHero data={heroData} />
+export default async function StoryPage() {
+  const page = await prisma.cmsPage.findUnique({
+    where: { slug: "story" },
+    include: {
+      sections: {
+        include: {
+          items: { orderBy: { displayOrder: "asc" } },
+        },
+      },
+    },
+  });
 
-                {/* Story Sections */}
-                <Mission />
-                <Journey />
-                <LeadershipTeam />
-            </div>
-            <Footer />
-        </div>
-    )
+  const getSection = (key: string) => {
+    return page?.sections.find((s) => s.sectionKey === key) || null;
+  };
+
+  const heroSection = getSection("hero");
+  const heroData = {
+    subtitle: heroSection?.subtitle || "About Us",
+    title: heroSection?.title || "The LAUNDRIX Story",
+    content:
+      heroSection?.content ||
+      "From a single location to a city-wide platform serving thousands daily.",
+  };
+
+  return (
+    <div>
+      <Navbar />
+      <div className="flex-1">
+        <PageHero data={heroData} />
+        <Mission />
+        <Journey />
+        <LeadershipTeam />
+      </div>
+      <Footer />
+    </div>
+  );
 }
-
-export default StoryPage

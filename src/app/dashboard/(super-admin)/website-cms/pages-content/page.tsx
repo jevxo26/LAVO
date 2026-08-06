@@ -1,40 +1,100 @@
 "use client";
 
-import React, { useState } from "react";
-import { Edit3, Eye, Save, Sparkles, CheckCircle, Globe } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Loader2 } from "lucide-react";
+import { CmsSectionEditor, CmsSectionData } from "@/components/cms/CmsSectionEditor";
 import { toast } from "sonner";
+
+interface CmsPageRecord {
+  id: string;
+  slug: string;
+  title: string;
+  description?: string;
+  sections: Array<{
+    id: string;
+    sectionKey: string;
+    title: string | null;
+    subtitle: string | null;
+    content: string | null;
+  }>;
+}
 
 export default function PagesContentCMSPage() {
   const pagesList = [
-    { id: "home", title: "Home / Landing Page", slug: "/", lastEdited: "Today, 10:30 AM", status: "PUBLISHED" },
-    { id: "services", title: "Services & Dry Cleaning Catalog", slug: "/services", lastEdited: "Yesterday", status: "PUBLISHED" },
-    { id: "pricing", title: "Transparent Pricing & Calculator", slug: "/pricing", lastEdited: "2 Days ago", status: "PUBLISHED" },
-    { id: "about", title: "About Laundrix & Our Vision", slug: "/about", lastEdited: "1 Week ago", status: "PUBLISHED" },
-    { id: "contact", title: "Contact Us & Store Locator", slug: "/contact", lastEdited: "2 Weeks ago", status: "PUBLISHED" },
-    { id: "faq", title: "Frequently Asked Questions (FAQ)", slug: "/faq", lastEdited: "3 Days ago", status: "PUBLISHED" },
-    { id: "terms", title: "Terms & Conditions", slug: "/terms", lastEdited: "1 Month ago", status: "PUBLISHED" },
+    { id: "home", title: "Home / Landing Page", slug: "home" },
+    { id: "services", title: "Services Catalog", slug: "services" },
+    { id: "pricing", title: "Pricing & Calculator", slug: "pricing" },
+    { id: "story", title: "About Laundrix / Story", slug: "story" },
+    { id: "contact", title: "Contact Us & Support", slug: "contact" },
+    { id: "coverage", title: "Coverage & Cities", slug: "coverage" },
+    { id: "corporate", title: "Corporate B2B Solutions", slug: "corporate" },
+    { id: "partner", title: "Partner Network", slug: "partner" },
+    { id: "insights", title: "Insights & Blog", slug: "insights" },
   ];
 
-  const [activeTab, setActiveTab] = useState("home");
-  const [heroHeading, setHeroHeading] = useState("Premium Eco-Friendly Laundry & Dry Cleaning Delivered To Your Door");
-  const [subheading, setSubheading] = useState("Schedule instant pickup in seconds. Professional care for suits, silk sarees, and everyday garments.");
+  const [activeSlug, setActiveSlug] = useState("home");
+  const [pageRecord, setPageRecord] = useState<CmsPageRecord | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const currentPage = pagesList.find((p) => p.id === activeTab) || pagesList[0];
+  const fetchPageDetails = async (slug: string) => {
+    setIsLoading(true);
+    try {
+      const token = typeof window !== "undefined" ? localStorage.getItem("laundrix_token") : null;
+      const headers: Record<string, string> = {};
+      if (token) headers["Authorization"] = `Bearer ${token}`;
 
-  const handleSave = () => {
-    toast.success(`CMS Content for '${currentPage.title}' saved & published live!`);
+      const res = await fetch(`/api/cms/pages/${slug}`, { headers });
+      const json = await res.json();
+
+      if (res.ok && json.success && json.data) {
+        setPageRecord(json.data);
+      } else {
+        setPageRecord({
+          id: `fallback-${slug}`,
+          slug,
+          title: pagesList.find((p) => p.slug === slug)?.title || slug,
+          sections: [
+            {
+              id: `sec-${slug}-hero`,
+              sectionKey: "hero",
+              title: "Welcome to Laundrix",
+              subtitle: slug.toUpperCase(),
+              content: "Edit this section in the CMS editor.",
+            },
+          ],
+        });
+      }
+    } catch {
+      toast.error("Error connecting to CMS backend API");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
+  useEffect(() => {
+    fetchPageDetails(activeSlug);
+  }, [activeSlug]);
+
+  const currentPageInfo = pagesList.find((p) => p.slug === activeSlug) || pagesList[0];
+
+  const parsedSections: CmsSectionData[] = (pageRecord?.sections || []).map((s) => ({
+    id: s.id,
+    sectionKey: s.sectionKey,
+    title: s.title || "",
+    subtitle: s.subtitle || "",
+    content: s.content || "",
+  }));
+
   return (
-    <div className="space-y-6">
-      {/* 7 Pages Horizontal Swipeable Tabs */}
+    <div className="w-full space-y-6">
+      {/* 9 Marketing Pages Swipeable Tabs */}
       <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-200">
         {pagesList.map((p) => (
           <button
             key={p.id}
-            onClick={() => setActiveTab(p.id)}
+            onClick={() => setActiveSlug(p.slug)}
             className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
-              activeTab === p.id
+              activeSlug === p.slug
                 ? "bg-slate-900 text-white shadow-sm"
                 : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"
             }`}
@@ -44,63 +104,22 @@ export default function PagesContentCMSPage() {
         ))}
       </div>
 
-      {/* Selected CMS Page Editor */}
-      <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
-          <div>
-            <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-              Editing: {currentPage.title}
-              <span className="text-xs font-semibold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
-                {currentPage.status}
-              </span>
-            </h2>
-            <p className="text-xs text-slate-400 mt-0.5">Route Slug: {currentPage.slug} | Last Edited: {currentPage.lastEdited}</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleSave}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-semibold rounded-xl text-xs hover:bg-blue-700 shadow-sm transition-colors"
-            >
-              <Save size={14} /> Save & Publish
-            </button>
+      {/* Editor Panel */}
+      {isLoading ? (
+        <div className="p-12 flex items-center justify-center bg-white rounded-2xl border border-slate-200">
+          <div className="flex items-center gap-3 text-slate-500 font-semibold text-sm">
+            <Loader2 size={20} className="animate-spin text-blue-600" /> Loading CMS configuration...
           </div>
         </div>
-
-        {/* Content Form Fields */}
-        <div className="space-y-4 max-w-3xl">
-          <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-              Main Section Heading / Title
-            </label>
-            <input
-              type="text"
-              value={heroHeading}
-              onChange={(e) => setHeroHeading(e.target.value)}
-              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-              Subheading / Description Paragraph
-            </label>
-            <textarea
-              rows={3}
-              value={subheading}
-              onChange={(e) => setSubheading(e.target.value)}
-              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-            />
-          </div>
-
-          <div className="p-4 rounded-xl bg-blue-50/60 border border-blue-100 flex items-start gap-3 text-xs text-blue-800">
-            <Sparkles size={18} className="text-blue-600 shrink-0 mt-0.5" />
-            <div>
-              <p className="font-bold">Live Content Preview Mode Enabled</p>
-              <p className="text-blue-600 mt-0.5">Changes saved here are instantly distributed across edge CDN caches for all website visitors.</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      ) : (
+        <CmsSectionEditor
+          pageId={pageRecord?.id || "fallback-id"}
+          pageSlug={currentPageInfo.slug}
+          pageTitle={pageRecord?.title || currentPageInfo.title}
+          sections={parsedSections}
+          onSaveSuccess={() => fetchPageDetails(activeSlug)}
+        />
+      )}
     </div>
   );
 }
