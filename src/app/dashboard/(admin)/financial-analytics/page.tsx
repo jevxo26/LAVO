@@ -166,21 +166,38 @@ export default function FinancialAnalyticsPage() {
       className="space-y-7"
     >
       {/* ── 1. Hero Banner ────────────────────────────────────────────────────── */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 p-7 md:p-9 text-white shadow-2xl border border-indigo-800/40">
-        <div className="pointer-events-none absolute inset-0 opacity-20">
-          <div className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-indigo-500 blur-3xl" />
-          <div className="absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-cyan-500 blur-3xl" />
+      <div className="relative overflow-hidden rounded-3xl p-7 md:p-9 text-white shadow-2xl"
+        style={{
+          background: "linear-gradient(135deg, color-mix(in srgb, var(--primary) 35%, var(--foreground) 65%) 0%, color-mix(in srgb, var(--primary) 75%, var(--foreground) 25%) 55%, color-mix(in srgb, var(--secondary) 55%, var(--foreground) 45%) 100%)",
+          border: "1px solid color-mix(in srgb, var(--primary) 40%, transparent)",
+        }}
+      >
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="absolute -top-24 -right-24 h-96 w-96 rounded-full opacity-[0.35] blur-3xl"
+            style={{ background: "var(--primary)" }} />
+          <div className="absolute -bottom-20 -left-20 h-72 w-72 rounded-full opacity-[0.28] blur-3xl"
+            style={{ background: "var(--secondary)" }} />
         </div>
 
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="space-y-3 max-w-2xl">
             <div className="flex flex-wrap items-center gap-2.5">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-400/30 bg-indigo-500/20 px-3.5 py-1 text-xs font-black uppercase tracking-wider text-indigo-200 backdrop-blur-md">
-                <Sparkles size={12} className="text-indigo-300" />
+              <span className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-1 text-xs font-black uppercase tracking-wider backdrop-blur-md"
+                style={{
+                  background: "color-mix(in srgb, var(--primary) 22%, transparent)",
+                  border: "1px solid color-mix(in srgb, var(--primary) 40%, transparent)",
+                  color: "color-mix(in srgb, var(--primary-foreground) 85%, var(--primary) 15%)",
+                }}>
+                <Sparkles size={12} style={{ color: "color-mix(in srgb, var(--primary-foreground) 65%, var(--primary))" }} />
                 Financial Analytics
               </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-500/20 px-3 py-1 text-xs font-bold text-emerald-300 backdrop-blur-md">
-                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold backdrop-blur-md"
+                style={{
+                  background: "color-mix(in srgb, var(--success) 20%, transparent)",
+                  border: "1px solid color-mix(in srgb, var(--success) 38%, transparent)",
+                  color: "color-mix(in srgb, var(--success-foreground) 80%, var(--success) 20%)",
+                }}>
+                <span className="h-2 w-2 rounded-full animate-pulse" style={{ background: "var(--success)" }} />
                 Live DB Data
               </span>
             </div>
@@ -202,28 +219,38 @@ export default function FinancialAnalyticsPage() {
                 >
                   <Download size={14} /> Export CSV Report
                 </Button>
-              </a>
-            </div>
+              </a>            </div>
           </div>
 
           {/* Live telemetry chips */}
           <div className="flex flex-wrap sm:flex-nowrap gap-3 shrink-0">
-            <div className="flex-1 sm:flex-initial rounded-2xl border border-white/15 bg-white/10 p-4 text-center min-w-[130px] shadow-inner backdrop-blur-xl">
-              <p className="text-indigo-200 text-[10px] font-black uppercase tracking-wider">Gross Revenue</p>
-              <p className="text-white font-black text-2xl mt-0.5 tabular-nums">{gmvDisplay}</p>
-              <span className="mt-1 inline-flex items-center gap-1 text-[10px] font-bold text-emerald-400">
-                <ArrowUpRight size={11} /> Live
-              </span>
-            </div>
-            <div className="flex-1 sm:flex-initial rounded-2xl border border-white/15 bg-white/10 p-4 text-center min-w-[130px] shadow-inner backdrop-blur-xl">
-              <p className="text-indigo-200 text-[10px] font-black uppercase tracking-wider">Net Commission</p>
-              <p className="text-white font-black text-2xl mt-0.5 tabular-nums">{commDisplay}</p>
-              <span className="mt-1 block text-[10px] font-bold text-slate-400">Avg {commRate}%</span>
-            </div>
+            {[
+              { label: "Gross Revenue",   value: gmvDisplay,   sub: <span className="mt-1 inline-flex items-center gap-1 text-[10px] font-bold" style={{ color: "var(--success)" }}><ArrowUpRight size={11} /> Live</span> },
+              { label: "Net Commission",  value: commDisplay,  sub: <span className="mt-1 block text-[10px] font-bold text-white/50">Avg {commRate}%</span> },
+            ].map((chip) => (
+              <div key={chip.label}
+                className="flex-1 sm:flex-initial rounded-2xl p-4 text-center min-w-[130px] backdrop-blur-xl"
+                style={{
+                  background: "color-mix(in srgb, var(--primary-foreground) 10%, transparent)",
+                  border: "1px solid color-mix(in srgb, var(--primary-foreground) 15%, transparent)",
+                  boxShadow: "inset 0 1px 0 color-mix(in srgb, var(--primary-foreground) 8%, transparent)",
+                }}>
+                <p className="text-[10px] font-black uppercase tracking-wider"
+                  style={{ color: "color-mix(in srgb, var(--primary-foreground) 60%, var(--primary))" }}>
+                  {chip.label}
+                </p>
+                <p className="text-white font-black text-2xl mt-0.5 tabular-nums">{chip.value}</p>
+                {chip.sub}
+              </div>
+            ))}
           </div>
         </div>
 
-        <div className="absolute right-7 bottom-6 hidden md:flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-3 py-1.5 text-[11px] font-bold text-slate-300 backdrop-blur-md">
+        <div className="absolute right-7 bottom-6 hidden md:flex items-center gap-2 rounded-xl px-3 py-1.5 text-[11px] font-bold text-white/60 backdrop-blur-md"
+          style={{
+            background: "color-mix(in srgb, var(--primary-foreground) 10%, transparent)",
+            border: "1px solid color-mix(in srgb, var(--primary-foreground) 15%, transparent)",
+          }}>
           <Calendar size={12} />
           Last 30 days
         </div>
