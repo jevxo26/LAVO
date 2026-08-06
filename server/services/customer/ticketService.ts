@@ -18,22 +18,49 @@ export class TicketService {
     });
   });
 
-  // Get tickets list based on role (Customer: own tickets, Staff: assigned tickets)
+  // Get tickets list based on role
+  // CUSTOMER       → own tickets only
+  // ADMIN/SUPER_ADMIN → all tickets platform-wide
+  // others (Branch Manager, Agent, etc.) → only tickets assigned to them
   static getTickets = catchServiceAsync(async (userId: string, role: string) => {
     const uppercaseRole = role.toUpperCase();
+
     if (uppercaseRole === 'CUSTOMER') {
       return prisma.ticket.findMany({
         where: { customerId: userId },
         orderBy: { createdAt: 'desc' },
       });
-    } else {
-      // Admin/Branch Manager dashboards display only their assigned tickets
+    }
+
+    if (['ADMIN', 'SUPER_ADMIN'].includes(uppercaseRole)) {
       return prisma.ticket.findMany({
-        where: { assignedTo: userId },
         orderBy: { createdAt: 'desc' },
       });
     }
+
+    // Branch Manager, Agent, etc. — assigned tickets only
+    return prisma.ticket.findMany({
+      where: { assignedTo: userId },
+      orderBy: { createdAt: 'desc' },
+    });
   });
+
+  // Admin-wide: all tickets with optional pagination + search
+  static getAllTicketsForAdmin = catchServiceAsync(
+    async (page: number = 1, limit: number = 50, search: string = '') => {
+      const skip  = (page - 1) * limit;
+      const where = search
+        ? { title: { contains: search, mode: 'insensitive' as const } }
+        : {};
+
+      const [data, total] = await Promise.all([
+        prisma.ticket.findMany({ where, skip, take: limit, orderBy: { createdAt: 'desc' } }),
+        prisma.ticket.count({ where }),
+      ]);
+
+      return { data, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+    }
+  );
 
   // Get ticket details and messages
   static getTicketDetails = catchServiceAsync(async (ticketId: string, userId: string, role: string) => {

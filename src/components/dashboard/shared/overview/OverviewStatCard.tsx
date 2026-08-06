@@ -44,8 +44,7 @@ export function OverviewStatCard({
         dark:bg-slate-900/90 dark:border-slate-800 dark:hover:border-slate-700
       "
     >
-      {/* Top subtle gradient accent line */}
-      <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${gradient}`} />
+
 
       {/* Background glow circle on hover */}
       <div
