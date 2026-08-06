@@ -25,11 +25,12 @@ function StatusPill({ status }: { status: string }) {
 }
 
 function RouteCard({ route, index }: { route: any; index: number }) {
-  const destLat = route.latitude || route.endLat;
-  const destLng = route.longitude || route.endLng;
-  const mapsUrl = destLat && destLng
-    ? `https://www.google.com/maps/dir/?api=1&destination=${destLat},${destLng}&travelmode=driving`
-    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(route.endLocation || route.routeName || "Dhaka")}`;
+  const destLat = route.latitude;
+  const destLng = route.longitude;
+  const destinationParam = (destLat && destLng)
+    ? `${destLat},${destLng}`
+    : encodeURIComponent(route.endLocation || route.routeName || "Dhaka, Bangladesh");
+  const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${destinationParam}&travelmode=driving`;
 
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-3xl border border-slate-200/80 bg-white p-5 shadow-sm hover:border-blue-200 hover:shadow-md transition-all duration-200 dark:bg-slate-900 dark:border-slate-800">
