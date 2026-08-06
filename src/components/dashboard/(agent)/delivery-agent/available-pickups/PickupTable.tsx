@@ -169,7 +169,7 @@ function PickupCard({
               <Shirt size={11} />
               <span className="font-semibold text-indigo-600">{pickup.totalGarments ?? 1} garment(s)</span>
             </span>
-            {pickup.distance && (
+            {pickup.distance && pickup.distance !== "N/A" && (
               <span className="flex items-center gap-1">
                 <Ruler size={11} />
                 <span className="font-semibold text-violet-600">{pickup.distance}</span>

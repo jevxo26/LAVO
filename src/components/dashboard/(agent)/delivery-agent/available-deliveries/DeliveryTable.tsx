@@ -166,7 +166,7 @@ function DeliveryCard({ delivery, onStart }: {
               <Shirt size={11} />
               <span className="font-semibold text-indigo-600">{delivery.totalGarments ?? 1} garment(s)</span>
             </span>
-            {delivery.distance && (
+            {delivery.distance && delivery.distance !== "N/A" && (
               <span className="flex items-center gap-1">
                 <Ruler size={11} />
                 <span className="font-semibold text-violet-600">{delivery.distance}</span>
