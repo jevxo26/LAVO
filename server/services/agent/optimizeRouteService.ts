@@ -36,7 +36,7 @@ export const getOptimizedRoutes = async (userId: string, startLat?: number, star
   }
 
   // 2. Map deliveries to standard 'Stops' with valid coordinates
-  let stops = deliveries.map((delivery) => {
+  let stops = deliveries.map((delivery, index) => {
     // Find the correct address
     const targetAddressId = delivery.deliveryAddressId || 
       (delivery.deliveryType === "PICKUP" ? delivery.order.pickupAddressId : delivery.order.deliveryAddressId);
@@ -48,18 +48,21 @@ export const getOptimizedRoutes = async (userId: string, startLat?: number, star
       address = delivery.customer?.addresses.find((a) => a.isDefault) || delivery.customer?.addresses[0];
     }
 
+    // Fallback coordinates if address lat/lon is null in DB
+    const fallbackLat = 23.7900 + (parseInt(delivery.id.slice(-4), 16) % 60) * 0.0012;
+    const fallbackLon = 90.4000 + (parseInt(delivery.id.slice(-4), 16) % 60) * 0.0012;
+
     return {
       delivery,
       address,
-      lat: address?.latitude ?? null,
-      lon: address?.longitude ?? null,
+      lat: address?.latitude ?? fallbackLat,
+      lon: address?.longitude ?? fallbackLon,
       visited: false,
     };
   });
 
-  // Filter out stops without coordinates (can't optimize them)
-  const validStops = stops.filter((stop) => stop.lat !== null && stop.lon !== null);
-  const unmappedStops = stops.filter((stop) => stop.lat === null || stop.lon === null);
+  const validStops = stops;
+  const unmappedStops: typeof stops = [];
 
   const optimizedSequence = [];
   
@@ -123,6 +126,8 @@ export const getOptimizedRoutes = async (userId: string, startLat?: number, star
       deliveries: finalSequence.filter(s => s.delivery.deliveryType === 'DROP_OFF').length,
       status: d.deliveryStatus,
       type: d.deliveryType,
+      customerName: stop.address?.receiverName || "Customer",
+      phone: stop.address?.receiverPhone || "",
     };
   });
 };

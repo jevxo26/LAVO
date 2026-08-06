@@ -66,16 +66,13 @@ export default function RouteMap({ routes, agentLocation, onDirectionsCalculated
       ? { lat: agentLocation.lat, lng: agentLocation.lng }
       : { lat: validStops[0].latitude, lng: validStops[0].longitude };
 
-    // Determine Destination (last stop if > 1 stop, or same as origin)
-    const destination =
-      validStops.length > 1
-        ? {
-            lat: validStops[validStops.length - 1].latitude,
-            lng: validStops[validStops.length - 1].longitude,
-          }
-        : origin;
+    // Determine Destination (last stop)
+    const destination = {
+      lat: validStops[validStops.length - 1].latitude,
+      lng: validStops[validStops.length - 1].longitude,
+    };
 
-    // Waypoints for intermediate stops
+    // Waypoints for intermediate stops between origin and destination
     const waypoints: google.maps.DirectionsWaypoint[] =
       validStops.length > 1
         ? validStops.slice(0, validStops.length - 1).map((stop) => ({
