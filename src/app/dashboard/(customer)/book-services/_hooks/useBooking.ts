@@ -41,8 +41,53 @@ export function useBooking() {
           setCategories(cats);
           if (cats.length > 0) setActiveCategory(cats[0]);
 
-          // ── Auto-add requested service from URL parameter or Home Page Selection ──
-          if (requestedServiceParam && list.length > 0) {
+          let loadedFromSession = false;
+          if (typeof window !== "undefined") {
+            const rawPayload = sessionStorage.getItem("pending_laundry_booking");
+            if (rawPayload) {
+              try {
+                const booking = JSON.parse(rawPayload);
+                if (booking.items && Array.isArray(booking.items) && booking.items.length > 0) {
+                  const newCartItems: CartItem[] = [];
+                  for (const bItem of booking.items) {
+                    const mainServiceName = bItem.services?.[0]?.name;
+                    const matched = list.find((s) =>
+                      mainServiceName
+                        ? s.serviceName.toLowerCase().includes(mainServiceName.toLowerCase())
+                        : false
+                    ) || list.find((s) => bItem.garment && s.garmentType.toLowerCase().includes(bItem.garment.toLowerCase())) || list[0];
+
+                    if (matched) {
+                      const existingIdx = newCartItems.findIndex((c) => c.service.id === matched.id);
+                      if (existingIdx >= 0) {
+                        newCartItems[existingIdx].quantity += bItem.quantity || 1;
+                      } else {
+                        newCartItems.push({
+                          service: matched,
+                          quantity: bItem.quantity || 1,
+                          selectedAddons: [],
+                        });
+                      }
+                    }
+                  }
+
+                  if (newCartItems.length > 0) {
+                    setCart(newCartItems);
+                    setActiveCategory(newCartItems[0].service.category);
+                    setAutoSelectedService(newCartItems[0].service);
+                    loadedFromSession = true;
+                    toast.success("Loaded your custom selection from Pricing Calculator!");
+                    sessionStorage.removeItem("pending_laundry_booking");
+                  }
+                }
+              } catch (e) {
+                console.error("Failed to parse pending booking from sessionStorage", e);
+              }
+            }
+          }
+
+          // ── Auto-add requested service from URL parameter if not loaded from session ──
+          if (!loadedFromSession && requestedServiceParam && list.length > 0) {
             const query = requestedServiceParam.toLowerCase().trim();
             const matched = list.find(
               (s) =>

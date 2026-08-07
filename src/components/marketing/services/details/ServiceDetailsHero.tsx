@@ -74,7 +74,7 @@ export function ServiceDetailsHero({
                 <span className="text-foreground font-bold">{coverage}</span>
               </div>
             </div>
-            <Link href={`/dashboard/book-services?service=${encodeURIComponent(title)}`} className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-primary hover:bg-primary/90 text-white rounded-full font-semibold text-sm transition-all shadow-md shadow-blue-500/20 w-fit group">
+            <Link href={`/pricing?service=${encodeURIComponent(title)}`} className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-primary hover:bg-primary/90 text-white rounded-full font-semibold text-sm transition-all shadow-md shadow-blue-500/20 w-fit group">
               Schedule Pickup for {title}
               <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
             </Link>

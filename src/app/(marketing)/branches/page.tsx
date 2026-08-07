@@ -140,7 +140,7 @@ export default async function BranchesPage() {
                       <button className="w-full py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50 transition-colors">
                         Directions
                       </button>
-                      <Link href="/dashboard/book-services" className="w-full">
+                      <Link href="/services" className="w-full">
                         <button className="w-full py-2.5 rounded-xl bg-brand-blue text-white text-sm font-semibold hover:bg-blue-600 transition-colors">
                           Book Pickup
                         </button>

@@ -38,7 +38,7 @@ export function HomeCTA({ data }: { data?: any }) {
           transition={{ delay: 0.1 }}
           className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10"
         >
-          <Link href="/dashboard/book-services" className="flex items-center justify-center gap-2 rounded-xl bg-primary px-8 py-3.5 font-semibold text-primary-foreground shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl">
+          <Link href="/services" className="flex items-center justify-center gap-2 rounded-xl bg-primary px-8 py-3.5 font-semibold text-primary-foreground shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl">
             Schedule Pickup
             <ArrowRight size={18} />
           </Link>

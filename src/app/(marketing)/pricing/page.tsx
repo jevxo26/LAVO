@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { PricingCalculator } from "@/components/marketing/pricing/PricingCalculator";
 import { PageHero } from "@/components/shared/PageHero";
@@ -37,7 +38,9 @@ export default async function PricingPage() {
         <PageHero data={getSection("hero")} />
         
         <div className="my-12 md:my-16 lg:my-20 relative z-20">
-          <PricingCalculator data={getSection("calculator")} />
+          <Suspense fallback={<div className="text-center py-10">Loading pricing calculator...</div>}>
+            <PricingCalculator data={getSection("calculator")} />
+          </Suspense>
         </div>
       </div>
 
