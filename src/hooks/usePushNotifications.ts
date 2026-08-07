@@ -81,6 +81,28 @@ export function usePushNotifications(): PushNotificationState {
     return false;
   }, []);
 
+  // Auto-fetch token and register if permission was previously granted
+  useEffect(() => {
+    const autoRegisterIfGranted = async () => {
+      if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
+        try {
+          const messaging = await getFirebaseMessaging();
+          if (messaging) {
+            const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
+            const token = await getToken(messaging, { vapidKey });
+            if (token) {
+              setFcmToken(token);
+              await registerTokenWithBackend(token);
+            }
+          }
+        } catch (err) {
+          console.warn("[usePushNotifications] Auto-register failed silently:", err);
+        }
+      }
+    };
+    autoRegisterIfGranted();
+  }, []);
+
   // Foreground Message Listener
   useEffect(() => {
     let unsubscribe: (() => void) | undefined;
@@ -90,8 +112,8 @@ export function usePushNotifications(): PushNotificationState {
       if (messaging) {
         unsubscribe = onMessage(messaging, (payload) => {
           console.log("[usePushNotifications] Foreground message received:", payload);
-          const title = payload.notification?.title || "LAUNDRIX Update";
-          const body = payload.notification?.body || "You have a new update.";
+          const title = payload.notification?.title || payload.data?.title || "LAUNDRIX Update";
+          const body = payload.notification?.body || payload.data?.body || "You have a new update.";
           toast.info(title, { description: body, duration: 6000 });
         });
       }

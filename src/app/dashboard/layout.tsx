@@ -8,6 +8,8 @@ import { DashboardBottomBar } from "@/components/dashboard/layout/DashboardBotto
 import { useAppSelector } from "@/store/store";
 import { toast } from "sonner";
 
+import { PushNotificationInitializer } from "@/components/providers/PushNotificationInitializer";
+
 function UnauthorizedCheck() {
   const searchParams = useSearchParams();
   useEffect(() => {
@@ -44,6 +46,7 @@ export default function DashboardLayout({
 
   return (
     <div className="relative flex h-screen w-full overflow-hidden bg-gray-200/25 font-sans">
+      <PushNotificationInitializer />
       <React.Suspense fallback={null}>
         <UnauthorizedCheck />
       </React.Suspense>

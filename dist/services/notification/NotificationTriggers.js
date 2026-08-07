@@ -33,6 +33,64 @@ class NotificationTriggers {
         return NotificationService_1.NotificationService.sendToRoles(["SUPER_ADMIN", "ADMIN"], title, body, {
             type: "SUPPORT_TICKET_ESCALATED",
             ticketId,
+            url: `/dashboard/customer-ops/support-tickets`,
+        });
+    }
+    /** Triggered when a payout request exceeds auto-approval threshold */
+    static async notifyAdminsOnPayoutRequest(partnerName, amount) {
+        const title = "Payout Approval Required 💰";
+        const body = `${partnerName} submitted a payout request of ৳${amount} awaiting your review.`;
+        return NotificationService_1.NotificationService.sendToRoles(["SUPER_ADMIN", "ADMIN"], title, body, {
+            type: "PAYOUT_APPROVAL_REQUIRED",
+            partnerName,
+            amount: String(amount),
+            url: `/dashboard/payout-approvals`,
+        });
+    }
+    /** Triggered on SLA breach warning (order stuck in processing) */
+    static async notifyAdminsOnSLABreach(branchName, delayedCount) {
+        const title = "⏰ SLA Breach Warning";
+        const body = `${delayedCount} order(s) in ${branchName} have exceeded the 24-hour processing limit.`;
+        return NotificationService_1.NotificationService.sendToRoles(["SUPER_ADMIN", "ADMIN"], title, body, {
+            type: "SLA_BREACH_WARNING",
+            branchName,
+            delayedCount: String(delayedCount),
+            url: `/dashboard/intake-orders`,
+        });
+    }
+    // ==========================================
+    // EMPLOYEE SCOPE (WORKERS & OPERATORS)
+    // ==========================================
+    /** Triggered when a new work task is assigned to an employee */
+    static async notifyEmployeeOnTaskAssigned(employeeUserId, taskTitle, taskCategory) {
+        const title = "New Task Assigned 📋";
+        const body = `You were assigned task: "${taskTitle}" (${taskCategory}).`;
+        return NotificationService_1.NotificationService.sendToUser(employeeUserId, title, body, {
+            type: "TASK_ASSIGNED",
+            taskTitle,
+            taskCategory,
+            url: `/dashboard/employee-ops/tasks`,
+        });
+    }
+    /** Triggered when an express / urgent order arrives at station */
+    static async notifyEmployeeOnExpressOrder(employeeUserId, orderNumber) {
+        const title = "Express Order Alert ⚡";
+        const body = `Order #${orderNumber} is an Express priority item requiring rapid processing.`;
+        return NotificationService_1.NotificationService.sendToUser(employeeUserId, title, body, {
+            type: "EXPRESS_ORDER_ALERT",
+            orderNumber,
+            url: `/dashboard/employee-ops/tasks`,
+        });
+    }
+    /** Triggered on special garment care requirement */
+    static async notifyEmployeeOnSpecialGarmentCare(employeeUserId, garmentType, instruction) {
+        const title = "Special Garment Care 🧺";
+        const body = `Special handling required for ${garmentType}: "${instruction}".`;
+        return NotificationService_1.NotificationService.sendToUser(employeeUserId, title, body, {
+            type: "SPECIAL_GARMENT_CARE",
+            garmentType,
+            instruction,
+            url: `/dashboard/employee-ops/work-updates`,
         });
     }
     // ==========================================

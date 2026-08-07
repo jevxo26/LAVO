@@ -2,12 +2,21 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.updatePartnerApplicationController = exports.getAllPartnerApplicationsController = exports.createPartnerApplicationController = void 0;
 const partnerApplicationService_1 = require("../../services/super-admin/partnerApplicationService");
+const NotificationTriggers_1 = require("../../services/notification/NotificationTriggers");
 // Create Partner Application
 const createPartnerApplicationController = async (req, res) => {
-    var _a;
+    var _a, _b, _c;
     try {
         const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId;
         const application = await (0, partnerApplicationService_1.createPartnerApplication)(userId, req.body);
+        // Dispatch FCM Push Notification to Admins
+        try {
+            const businessName = ((_b = req.body) === null || _b === void 0 ? void 0 : _b.businessName) || ((_c = req.body) === null || _c === void 0 ? void 0 : _c.fullName) || "New Partner";
+            await NotificationTriggers_1.NotificationTriggers.notifyAdminsOnRegistration(businessName, "VENDOR");
+        }
+        catch (err) {
+            console.warn("[PartnerApplicationController] Trigger notification error:", err);
+        }
         return res.status(201).json({
             success: true,
             message: "Partner application submitted successfully",
