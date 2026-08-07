@@ -117,7 +117,7 @@ const HomeHero = ({ data }: { data?: any }) => {
 
       primaryBtn: {
         label: "Book Pickup",
-        href: "/book",
+        href: "/dashboard/book-services",
       },
 
       secondaryBtn: {

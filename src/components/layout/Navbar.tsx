@@ -228,7 +228,7 @@ export function Navbar() {
               <LogIn size={16} /> Login
             </Link>
             <Link
-              href="/book"
+              href="/dashboard/book-services"
               onClick={() => setIsOpen(false)}
               className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-primary text-white text-sm font-medium"
             >
