@@ -1,13 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { authFetch } from "@/lib/api";
 import { toast } from "@/lib/toast";
 import type { CartItem, PaymentMethod, Service } from "../_types";
 
 export function useBooking() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const requestedServiceParam = searchParams.get("service") || searchParams.get("serviceId") || "";
 
   const [services, setServices] = useState<Service[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
@@ -37,6 +39,24 @@ export function useBooking() {
           const cats = Array.from(new Set(list.map((s) => s.category)));
           setCategories(cats);
           if (cats.length > 0) setActiveCategory(cats[0]);
+
+          // ── Auto-add requested service from URL parameter or Home Page Selection ──
+          if (requestedServiceParam && list.length > 0) {
+            const query = requestedServiceParam.toLowerCase().trim();
+            const matched = list.find(
+              (s) =>
+                s.id === requestedServiceParam ||
+                s.serviceName.toLowerCase().includes(query) ||
+                s.category.toLowerCase().includes(query) ||
+                s.garmentType.toLowerCase().includes(query)
+            );
+
+            if (matched) {
+              setCart([{ service: matched, quantity: 1, selectedAddons: [] }]);
+              setActiveCategory(matched.category);
+              toast.success(`Selected "${matched.serviceName}" for your booking`);
+            }
+          }
         }
 
         const profileRes = await authFetch("/customer/profile");
@@ -55,7 +75,7 @@ export function useBooking() {
       }
     }
     loadData();
-  }, []);
+  }, [requestedServiceParam]);
 
   const toggleWishlist = async (service: Service) => {
     try {

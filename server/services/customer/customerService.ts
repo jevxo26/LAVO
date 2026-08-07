@@ -759,6 +759,9 @@ export class CustomerService {
             service: {
               include: { garmentType: true },
             },
+            garmentItems: {
+              include: { qrCodeRecord: true },
+            },
           },
         },
         timelines: {

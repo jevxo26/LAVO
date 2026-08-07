@@ -21,7 +21,10 @@ interface Order {
 interface GarmentItem {
   id: string; garmentName: string; garmentCode: string; status: string;
   qrCodeRecord: { qrCode: string } | null;
-  orderItem: { garmentType: { name: string } | null };
+  orderItem: {
+    garmentType?: { name: string } | null;
+    service?: { serviceName: string; category?: string } | null;
+  } | null;
 }
 
 // ─── Status pill ──────────────────────────────────────────────────────────────
@@ -337,7 +340,14 @@ export default function EmployeeOrdersPage() {
                       </div>
                       {/* Info */}
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-slate-900 leading-tight">{g.garmentName}</p>
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <p className="text-sm font-semibold text-slate-900 leading-tight">{g.garmentName}</p>
+                          {g.orderItem?.service?.serviceName && (
+                            <span className="inline-flex items-center gap-1 rounded-md bg-blue-50 border border-blue-200 px-2 py-0.5 text-[10px] font-extrabold text-blue-700">
+                              ⚡ {g.orderItem.service.serviceName}
+                            </span>
+                          )}
+                        </div>
                         <p className="text-[10px] text-slate-400 font-mono mt-0.5">{g.garmentCode}</p>
                         {g.qrCodeRecord && (
                           <p className="text-[10px] text-indigo-600 font-mono mt-0.5 truncate">{g.qrCodeRecord.qrCode}</p>

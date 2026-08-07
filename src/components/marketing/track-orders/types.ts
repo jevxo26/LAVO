@@ -8,6 +8,29 @@ export interface OrderTimeline {
   createdAt: string;
 }
 
+export interface GarmentItemRecord {
+  id: string;
+  garmentName: string;
+  garmentCode: string;
+  status: string;
+  qrCodeRecord?: { qrCode: string } | null;
+}
+
+export interface OrderItemDetail {
+  id: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+  service?: {
+    id: string;
+    serviceName: string;
+    description?: string;
+    category?: string;
+    garmentType?: { name: string };
+  };
+  garmentItems?: GarmentItemRecord[];
+}
+
 export interface OrderDetails {
   id: string;
   orderNumber: string;
@@ -19,6 +42,7 @@ export interface OrderDetails {
   estimatedPickupTime: string;
   estimatedDeliveryTime?: string;
   timelines: OrderTimeline[];
+  items?: OrderItemDetail[];
 }
 
 // ─── Tracking steps ───────────────────────────────────────────────────────────

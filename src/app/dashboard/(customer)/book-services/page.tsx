@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import { Loader2, Sparkles, Shirt, Wallet, ShoppingBag, Search, RotateCcw } from "lucide-react";
 import { useBooking } from "./_hooks/useBooking";
 import { ServiceCard } from "./_components/ServiceCard";
@@ -9,7 +9,7 @@ import { PickupForm } from "./_components/PickupForm";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 
-export default function BookLaundryPage() {
+function BookLaundryContent() {
   const {
     services, categories, activeCategory, setActiveCategory,
     loading, walletBalance,
@@ -211,5 +211,22 @@ export default function BookLaundryPage() {
         </div>
       </div>
     </motion.div>
+  );
+}
+
+export default function BookLaundryPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-[60vh] flex-col items-center justify-center gap-3">
+          <div className="w-16 h-16 rounded-3xl bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center text-blue-600 dark:text-blue-400">
+            <Loader2 size={28} className="animate-spin" />
+          </div>
+          <p className="text-slate-400 font-bold text-xs">Loading laundry services...</p>
+        </div>
+      }
+    >
+      <BookLaundryContent />
+    </Suspense>
   );
 }
