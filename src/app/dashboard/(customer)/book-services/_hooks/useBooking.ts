@@ -39,7 +39,7 @@ export function useBooking() {
           setServices(list);
           const cats = Array.from(new Set(list.map((s) => s.category)));
           setCategories(cats);
-          if (cats.length > 0) setActiveCategory(cats[0]);
+          setActiveCategory("");
 
           let loadedFromSession = false;
           if (typeof window !== "undefined") {
@@ -73,7 +73,6 @@ export function useBooking() {
 
                   if (newCartItems.length > 0) {
                     setCart(newCartItems);
-                    setActiveCategory(newCartItems[0].service.category);
                     setAutoSelectedService(newCartItems[0].service);
                     loadedFromSession = true;
                     toast.success("Loaded your custom selection from Pricing Calculator!");
@@ -99,7 +98,6 @@ export function useBooking() {
 
             if (matched) {
               setCart([{ service: matched, quantity: 1, selectedAddons: [] }]);
-              setActiveCategory(matched.category);
               setAutoSelectedService(matched);
             }
           }
