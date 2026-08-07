@@ -1,6 +1,38 @@
 import * as React from "react";
+import { Check, Copy } from "lucide-react";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { type AdminRecord, type CrudColumn } from "./types";
+
+// ─── Copy-to-clipboard ID pill ────────────────────────────────────────────────
+
+function CopyableId({ full, short }: { full: string; short: string }) {
+  const [copied, setCopied] = React.useState(false);
+
+  const copy = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(full).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    });
+  };
+
+  return (
+    <button
+      onClick={copy}
+      title={`Copy: ${full}`}
+      className="inline-flex items-center gap-1.5 group font-mono text-[11px] font-bold
+        text-muted-foreground bg-muted border border-border rounded-md px-2 py-0.5
+        hover:border-ring/50 hover:text-card-foreground transition-all cursor-pointer"
+    >
+      {short}
+      <span className="opacity-0 group-hover:opacity-100 transition-opacity">
+        {copied
+          ? <Check size={10} className="text-success" />
+          : <Copy size={10} />}
+      </span>
+    </button>
+  );
+}
 
 export function FormattedCell({
   value,
@@ -14,16 +46,12 @@ export function FormattedCell({
     return <StatusBadge status={value} />;
   }
 
-  // ── Short ID (UUID first segment) ─────────────────────────────────────────
+  // ── Short ID — copy to clipboard on click ────────────────────────────────
   if (kind === "id" && typeof value === "string") {
     const short = value.includes("-")
       ? value.split("-")[0].toUpperCase()
       : value.slice(0, 8).toUpperCase();
-    return (
-      <span className="font-mono text-[11px] font-bold text-slate-500 bg-slate-50 border border-slate-100 rounded-md px-2 py-0.5">
-        {short}
-      </span>
-    );
+    return <CopyableId full={value} short={short} />;
   }
 
   // ── Currency ─────────────────────────────────────────────────────────────

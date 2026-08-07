@@ -311,12 +311,37 @@ export function SupportTicketsTab() {
                       </span>
                     </td>
 
-                    {/* Status */}
+                    {/* Status — inline update select */}
                     <td className="px-4 py-3.5">
-                      <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${status.cls}`}>
-                        <span className={`h-1.5 w-1.5 rounded-full ${status.dot}`} />
-                        {status.label}
-                      </span>
+                      <select
+                        value={t.status}
+                        onChange={async (e) => {
+                          const newStatus = e.target.value;
+                          // Optimistic update
+                          setTickets((prev) =>
+                            prev.map((tk) => tk.id === t.id ? { ...tk, status: newStatus } : tk)
+                          );
+                          try {
+                            await authFetch(`/tickets/${t.id}/status`, {
+                              method: "PATCH",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ status: newStatus }),
+                            });
+                          } catch {
+                            // revert on failure
+                            setTickets((prev) =>
+                              prev.map((tk) => tk.id === t.id ? { ...tk, status: t.status } : tk)
+                            );
+                          }
+                        }}
+                        className={`rounded-full border px-2.5 py-0.5 text-[11px] font-semibold
+                          cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring/50
+                          ${status.cls}`}
+                      >
+                        <option value="pendingReview">Pending Review</option>
+                        <option value="enabled-live-chat">Live Chat</option>
+                        <option value="solved">Solved</option>
+                      </select>
                     </td>
 
                     {/* Date */}
