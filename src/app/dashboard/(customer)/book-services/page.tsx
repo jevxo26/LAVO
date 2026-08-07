@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, Suspense } from "react";
-import { Loader2, Sparkles, Shirt, Wallet, ShoppingBag, Search, RotateCcw } from "lucide-react";
+import React, { useState, Suspense, useRef, useEffect } from "react";
+import { Loader2, Sparkles, Shirt, ShoppingBag, Search, RotateCcw, CheckCircle2, ArrowRight } from "lucide-react";
 import { useBooking } from "./_hooks/useBooking";
 import { ServiceCard } from "./_components/ServiceCard";
 import { CartSummary } from "./_components/CartSummary";
@@ -25,7 +25,17 @@ function BookLaundryContent() {
     submitting, handleSubmit,
     pickupLat, setPickupLat,
     pickupLon, setPickupLon,
+    autoSelectedService,
   } = useBooking();
+
+  const cartRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll cart into view on mobile when a service is pre-selected
+  useEffect(() => {
+    if (autoSelectedService && cartRef.current && window.innerWidth < 1024) {
+      cartRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [autoSelectedService]);
 
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -97,6 +107,46 @@ function BookLaundryContent() {
           </div>
         </div>
       </div>
+
+      {/* ── Pre-Selected Service Banner (visible when redirected from homepage) ── */}
+      {autoSelectedService && (
+        <div className="relative overflow-hidden rounded-2xl border border-emerald-200 bg-gradient-to-r from-emerald-50 to-teal-50 px-6 py-4 flex flex-col sm:flex-row sm:items-center gap-4 shadow-sm">
+          {/* Glow accent */}
+          <div className="pointer-events-none absolute -top-6 -right-6 h-24 w-24 rounded-full bg-emerald-300/30 blur-2xl" />
+
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500 text-white shadow-md">
+              <CheckCircle2 size={20} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[11px] font-black uppercase tracking-widest text-emerald-600">Service Pre-Selected</p>
+              <h3 className="text-sm font-black text-slate-900 truncate">{autoSelectedService.serviceName}</h3>
+              <p className="text-xs text-slate-500 font-medium mt-0.5">
+                {autoSelectedService.garmentType} · Category: {autoSelectedService.category} ·{" "}
+                <span className="font-extrabold text-emerald-700">৳{autoSelectedService.basePrice.toFixed(2)}/piece</span>
+              </p>
+            </div>
+          </div>
+
+          <div className="sm:ml-auto flex items-center gap-3 shrink-0">
+            <div className="rounded-xl bg-emerald-100 border border-emerald-200 px-4 py-2 text-center">
+              <p className="text-[10px] font-black text-emerald-700 uppercase tracking-wide">Booking Total</p>
+              <p className="text-lg font-black text-emerald-800">
+                ৳{(autoSelectedService.basePrice * (cart.find(i => i.service.id === autoSelectedService.id)?.quantity ?? 1)).toFixed(2)}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                if (cartRef.current) cartRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+              }}
+              className="hidden sm:flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-black text-white hover:bg-emerald-500 transition-colors shadow-md shadow-emerald-600/20"
+            >
+              View Cart <ArrowRight size={13} />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ── 2. Balanced Dual-Wing Workspace Layout ───────────────────────────── */}
       <div className="grid gap-8 lg:grid-cols-12 items-start">
@@ -175,7 +225,7 @@ function BookLaundryContent() {
 
         {/* Right Wing: Booking & Checkout Studio Card (6 Cols Wide) */}
         <div className="lg:col-span-6">
-          <div className="sticky top-6">
+          <div ref={cartRef} className="sticky top-6">
             <form onSubmit={handleSubmit}>
               <CartSummary
                 cart={cart}
@@ -186,6 +236,7 @@ function BookLaundryContent() {
                 tax={tax}
                 grandTotal={grandTotal}
                 submitting={submitting}
+                autoSelectedServiceId={autoSelectedService?.id}
                 onUpdateQuantity={updateQuantity}
                 onRemove={removeFromCart}
                 onToggleAddon={toggleAddon}

@@ -16,6 +16,7 @@ export function useBooking() {
   const [activeCategory, setActiveCategory] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [walletBalance, setWalletBalance] = useState(0);
+  const [autoSelectedService, setAutoSelectedService] = useState<Service | null>(null);
 
   const [cart, setCart] = useState<CartItem[]>([]);
   const [receiverName, setReceiverName] = useState("");
@@ -54,7 +55,7 @@ export function useBooking() {
             if (matched) {
               setCart([{ service: matched, quantity: 1, selectedAddons: [] }]);
               setActiveCategory(matched.category);
-              toast.success(`Selected "${matched.serviceName}" for your booking`);
+              setAutoSelectedService(matched);
             }
           }
         }
@@ -224,5 +225,7 @@ export function useBooking() {
     paymentMethod, setPaymentMethod,
     subtotal, deliveryCharge, tax, grandTotal,
     submitting, handleSubmit,
+    requestedServiceParam,
+    autoSelectedService,
   };
 }

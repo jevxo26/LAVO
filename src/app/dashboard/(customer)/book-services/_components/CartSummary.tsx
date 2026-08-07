@@ -20,6 +20,7 @@ interface CartSummaryProps {
   tax: number;
   grandTotal: number;
   submitting: boolean;
+  autoSelectedServiceId?: string;
   onUpdateQuantity: (serviceId: string, change: number) => void;
   onRemove: (serviceId: string) => void;
   onToggleAddon: (serviceId: string, addonId: string) => void;
@@ -36,6 +37,7 @@ export function CartSummary({
   tax,
   grandTotal,
   submitting,
+  autoSelectedServiceId,
   onUpdateQuantity,
   onRemove,
   onToggleAddon,
@@ -107,10 +109,21 @@ export function CartSummary({
           ) : (
             <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
               {cart.map((item) => (
-                <div key={item.service.id} className="bg-slate-50/80 dark:bg-slate-800/60 rounded-2xl p-4 border border-slate-200/60 dark:border-slate-700/60 space-y-3">
+                <div key={item.service.id} className={`rounded-2xl p-4 border space-y-3 ${
+                    item.service.id === autoSelectedServiceId
+                      ? "bg-emerald-50/70 border-emerald-200"
+                      : "bg-slate-50/80 dark:bg-slate-800/60 border-slate-200/60 dark:border-slate-700/60"
+                  }`}>
                   <div className="flex items-start justify-between">
                     <div className="flex-1 min-w-0 pr-2">
-                      <h4 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white truncate">{item.service.serviceName}</h4>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h4 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white truncate">{item.service.serviceName}</h4>
+                        {item.service.id === autoSelectedServiceId && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2 py-0.5 text-[9px] font-black text-white">
+                            ✦ From Homepage
+                          </span>
+                        )}
+                      </div>
                       <p className="text-xs text-blue-600 dark:text-cyan-400 font-extrabold mt-0.5">
                         ৳{item.service.basePrice.toFixed(2)} / piece
                       </p>
