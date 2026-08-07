@@ -19,7 +19,10 @@ const schema = yup.object({
     .string()
     .trim()
     .required("Phone Number is required")
-    .matches(/^\+?[1-9]\d{7,14}$/, "Enter a valid phone number (e.g. +8801XXXXXXXXX)"),
+    .matches(
+      /^(\+?8801[3-9]\d{8}|01[3-9]\d{8}|\+?[0-9]{7,15})$/,
+      "Enter a valid phone number (e.g. 016XXXXXXXX or +8801XXXXXXXXX)"
+    ),
   email: yup.string().email("Invalid email").required("Email is required"),
   password: yup.string().required("Password is required").min(6, "Min 6 characters"),
   confirmPassword: yup
@@ -83,7 +86,7 @@ export function SignUpForm() {
           id="phoneNumber"
           type="tel"
           inputMode="tel"
-          placeholder="+8801XXXXXXXXX"
+          placeholder="016XXXXXXXX or +8801XXXXXXXXX"
           {...register("phoneNumber")}
           aria-invalid={!!errors.phoneNumber}
         />
