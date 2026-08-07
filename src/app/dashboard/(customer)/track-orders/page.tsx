@@ -22,7 +22,7 @@ function TrackerContent() {
 
   const [orderNumberInput, setOrderNumberInput] = useState("");
   const [orderDetails, setOrderDetails]         = useState<OrderDetails | null>(null);
-  const [loading, setLoading]                   = useState(false);
+  const [loading, setLoading]                   = useState(true);
   const [liveConnected, setLiveConnected]       = useState(false);
   const [activeOrders, setActiveOrders]         = useState<Array<{ id: string; orderNumber: string }>>([]);
 
@@ -60,17 +60,26 @@ function TrackerContent() {
   // ── Load active orders list ───────────────────────────────────────────────
   useEffect(() => {
     async function loadActive() {
+      setLoading(true);
       try {
         const res  = await authFetch("/customer/orders");
         const data = await res.json();
         if (data.success) {
           const list: OrderDetails[] = data.data;
           setActiveOrders(list.map((o) => ({ id: o.id, orderNumber: o.orderNumber })));
-          if (initialOrderId) fetchOrderDetails(initialOrderId);
-          else if (list.length > 0) fetchOrderDetails(list[0].id);
+          if (initialOrderId) {
+            await fetchOrderDetails(initialOrderId);
+          } else if (list.length > 0) {
+            await fetchOrderDetails(list[0].id);
+          } else {
+            setLoading(false);
+          }
+        } else {
+          setLoading(false);
         }
       } catch (err) {
         console.error("Error loading active orders list:", err);
+        setLoading(false);
       }
     }
     loadActive();
@@ -136,11 +145,11 @@ function TrackerContent() {
       />
 
       {loading ? (
-        <div className="flex h-52 flex-col items-center justify-center gap-3 rounded-2xl border border-slate-100 bg-white shadow-sm">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50">
-            <Loader2 size={26} className="text-indigo-600 animate-spin" />
+        <div className="flex h-64 flex-col items-center justify-center gap-3.5 rounded-3xl border border-slate-200/80 bg-white p-8 shadow-sm dark:bg-slate-900 dark:border-slate-800">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400">
+            <Loader2 size={28} className="animate-spin" />
           </div>
-          <p className="text-slate-500 text-xs font-semibold">Fetching order details…</p>
+          <p className="text-slate-600 dark:text-slate-300 text-xs font-black">Fetching live order tracking details…</p>
         </div>
 
       ) : orderDetails ? (
@@ -158,12 +167,12 @@ function TrackerContent() {
         </div>
 
       ) : (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white py-24 text-center shadow-sm">
-          <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-indigo-50">
+        <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white py-24 text-center shadow-sm dark:bg-slate-900 dark:border-slate-800">
+          <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-indigo-50 text-indigo-500 dark:bg-indigo-950/50">
             <Package size={36} className="text-indigo-400" />
           </div>
-          <p className="text-base font-bold text-slate-800">No order selected</p>
-          <p className="mt-2 max-w-xs text-sm text-slate-400">
+          <p className="text-base font-bold text-slate-800 dark:text-white">No order selected</p>
+          <p className="mt-2 max-w-xs text-sm text-slate-400 font-medium">
             Enter an order number above or pick one from the quick-select dropdown to see live tracking.
           </p>
         </div>
