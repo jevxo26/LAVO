@@ -120,21 +120,34 @@ export function EmployeeOverview() {
       {/* ── 1. Employee Workstation Command Hero ─────────────────────────────── */}
       <div className="relative overflow-hidden rounded-3xl p-7 md:p-9 text-white shadow-2xl"
         style={{
-          background: "linear-gradient(135deg, color-mix(in srgb, var(--primary) 35%, var(--foreground) 65%) 0%, color-mix(in srgb, var(--primary) 75%, var(--foreground) 25%) 55%, color-mix(in srgb, var(--secondary) 55%, var(--foreground) 45%) 100%)",
-          borderColor: "color-mix(in srgb, var(--primary) 40%, transparent)",
+          background: [
+            "radial-gradient(ellipse 80% 80% at 10% 50%, color-mix(in srgb, var(--primary) 55%, transparent) 0%, transparent 60%)",
+            "radial-gradient(ellipse 60% 90% at 90% 20%, color-mix(in srgb, var(--secondary) 45%, transparent) 0%, transparent 55%)",
+            "radial-gradient(ellipse 50% 60% at 60% 90%, color-mix(in srgb, var(--primary) 30%, transparent) 0%, transparent 50%)",
+            "linear-gradient(135deg, color-mix(in srgb, var(--primary) 85%, black 15%) 0%, color-mix(in srgb, var(--primary) 60%, var(--secondary) 40%) 50%, color-mix(in srgb, var(--secondary) 70%, black 30%) 100%)",
+          ].join(", "),
+          borderColor: "color-mix(in srgb, white 18%, transparent)",
           borderWidth: "1px",
           borderStyle: "solid",
+          boxShadow: "0 32px 64px -16px color-mix(in srgb, var(--primary) 50%, transparent), inset 0 1px 0 color-mix(in srgb, white 20%, transparent)",
         }}
       >
-        {/* Ambient glow — primary left, secondary right */}
+        {/* Bokeh orbs */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute -top-24 -right-20 h-96 w-96 rounded-full opacity-[0.35] blur-3xl"
-            style={{ background: "var(--primary)" }} />
-          <div className="absolute -bottom-20 -left-20 h-72 w-72 rounded-full opacity-[0.28] blur-3xl"
-            style={{ background: "var(--secondary)" }} />
-          {/* Subtle noise grain overlay for depth */}
-          <div className="absolute inset-0 opacity-[0.03]"
-            style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E\")" }} />
+          <div className="absolute -top-24 -right-24 h-[28rem] w-[28rem] rounded-full blur-[80px] opacity-[0.55]"
+            style={{ background: "color-mix(in srgb, var(--primary) 55%, white 45%)" }} />
+          <div className="absolute -bottom-24 -left-12 h-80 w-80 rounded-full blur-[70px] opacity-[0.45]"
+            style={{ background: "color-mix(in srgb, var(--secondary) 60%, white 40%)" }} />
+          <div className="absolute top-1/2 left-[42%] h-44 w-44 -translate-y-1/2 rounded-full blur-[50px] opacity-[0.30]"
+            style={{ background: "white" }} />
+          <div className="absolute -top-8 -right-8 h-64 w-64 rounded-full opacity-[0.12]"
+            style={{ border: "1.5px solid color-mix(in srgb, white 90%, transparent)", background: "transparent" }} />
+          <div className="absolute top-1/2 left-[38%] h-28 w-28 -translate-y-1/2 rounded-full opacity-[0.10]"
+            style={{ border: "1px solid white", background: "transparent" }} />
+          <div className="absolute inset-0 opacity-[0.04]"
+            style={{ backgroundImage: "repeating-linear-gradient(45deg, white 0px, white 1px, transparent 1px, transparent 28px)" }} />
+          <div className="absolute inset-x-0 top-0 h-px opacity-[0.35]"
+            style={{ background: "linear-gradient(90deg, transparent, white 30%, white 70%, transparent)" }} />
         </div>
 
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">

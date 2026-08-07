@@ -1,96 +1,177 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { z } from "zod";
+import { RefreshCw, ArrowDownLeft, ArrowUpRight, Wallet, TrendingDown } from "lucide-react";
 import { authFetch } from "@/lib/api";
-import { Wallet, RefreshCw, ArrowUpRight, ArrowDownLeft, ShieldCheck } from "lucide-react";
+import { AdminCrudPage } from "@/components/shared/admin-crud";
+import { type CrudModuleConfig } from "@/components/shared/admin-crud";
+import { DashboardPageHero } from "@/components/shared/DashboardPageHero";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { OverviewStatCard } from "@/components/dashboard/shared/overview/OverviewStatCard";
+import { motion } from "framer-motion";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface WalletTx {
+  id:        string;
+  customer:  string;
+  email:     string;
+  type:      string;
+  amount:    string;
+  purpose:   string;
+  status:    string;
+  createdAt: string;
+  _raw:      number; // numeric amount for stats
+}
+
+// ─── Config ───────────────────────────────────────────────────────────────────
+
+function makeConfig(data: WalletTx[]): CrudModuleConfig<WalletTx> {
+  return {
+    title:             "Wallet Transactions",
+    description:       "Audit customer deposits, order debits, refunds, and promo credits",
+    createLabel:       "Add Entry",
+    searchPlaceholder: "Search by customer, ref ID or purpose…",
+    emptyTitle:        "No transactions found",
+    emptyDescription:  "No wallet transactions match the current filters.",
+    data,
+    columns: [
+      { accessorKey: "id",        header: "Ref ID",    kind: "id"       },
+      { accessorKey: "customer",  header: "Customer"                    },
+      { accessorKey: "type",      header: "Type",      kind: "status"   },
+      { accessorKey: "amount",    header: "Amount",    kind: "currency" },
+      { accessorKey: "purpose",   header: "Purpose"                     },
+      { accessorKey: "status",    header: "Status",    kind: "status"   },
+      { accessorKey: "createdAt", header: "Timestamp"                   },
+    ],
+    schema: z.object({
+      customer:  z.string().min(1),
+      email:     z.string().email(),
+      type:      z.string().min(1),
+      amount:    z.string().min(1),
+      purpose:   z.string().min(1),
+      status:    z.string().min(1),
+      createdAt: z.string().min(1),
+      _raw:      z.coerce.number(),
+    }),
+    fields: [
+      { name: "customer",  label: "Customer Name",   placeholder: "Full name"            },
+      { name: "email",     label: "Email",            placeholder: "customer@example.com" },
+      { name: "type",      label: "Type",             options: ["CREDIT","DEBIT","REFUND","PROMO"] },
+      { name: "amount",    label: "Amount (৳)",       placeholder: "0.00"                 },
+      { name: "purpose",   label: "Purpose",          placeholder: "e.g. Order payment"  },
+      { name: "status",    label: "Status",           options: ["COMPLETED","PENDING","FAILED","REVERSED"] },
+      { name: "createdAt", label: "Timestamp",        placeholder: "YYYY-MM-DD HH:mm"    },
+    ],
+    getRowLabel: (row) => `${row.customer} — ${row.amount}`,
+  };
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function WalletTransactionsPage() {
-  const [txs, setTxs] = useState<any[]>([]);
+  const [txs, setTxs]         = useState<WalletTx[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchTxs = async () => {
+  const fetchTxs = () => {
     setLoading(true);
-    try {
-      const res = await authFetch("/customer-ops/wallet-transactions").then(r => r.json());
-      setTxs(res.data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+    authFetch("/customer-ops/wallet-transactions")
+      .then((r) => r.json())
+      .then((res) => {
+        if (res?.success && Array.isArray(res.data)) {
+          setTxs(
+            res.data.map((tx: any) => {
+              const rawAmt = Number(tx.amount) || 0;
+              return {
+                id:        tx.id,
+                customer:  tx.userName  ?? tx.user?.fullName ?? "—",
+                email:     tx.userEmail ?? tx.user?.email    ?? "—",
+                type:      tx.type      ?? "DEBIT",
+                amount:    `৳ ${rawAmt.toFixed(2)}`,
+                purpose:   tx.purpose   ?? tx.description    ?? "—",
+                status:    tx.status    ?? "COMPLETED",
+                createdAt: tx.createdAt
+                  ? new Date(tx.createdAt).toLocaleString("en-US", {
+                      month: "short", day: "numeric",
+                      year: "numeric", hour: "2-digit", minute: "2-digit",
+                    })
+                  : "—",
+                _raw: rawAmt,
+              };
+            })
+          );
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
   };
 
-  useEffect(() => {
-    fetchTxs();
-  }, []);
+  useEffect(() => { fetchTxs(); }, []);
+
+  // ── Derived stats ──────────────────────────────────────────────────────────
+  const totalCredits = txs
+    .filter((t) => ["CREDIT","REFUND","PROMO"].includes(t.type.toUpperCase()))
+    .reduce((s, t) => s + t._raw, 0);
+
+  const totalDebits = txs
+    .filter((t) => t.type.toUpperCase() === "DEBIT")
+    .reduce((s, t) => s + t._raw, 0);
+
+  const netBalance  = totalCredits - totalDebits;
+  const fmtAmt = (n: number) =>
+    n >= 100000 ? `৳${(n / 100000).toFixed(2)}L` : `৳${n.toFixed(0)}`;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/80 backdrop-blur-xl p-6 rounded-2xl border border-slate-200/80 shadow-sm">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-            <Wallet className="text-blue-600" />
-            Customer Wallet Transactions Log
-          </h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Audit customer deposits, order debits, refunds, and promo credits.
-          </p>
-        </div>
-        <button
-          onClick={fetchTxs}
-          className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 font-medium rounded-xl text-sm hover:bg-slate-50 shadow-sm transition-colors"
-        >
-          <RefreshCw size={16} className={loading ? "animate-spin" : ""} /> Refresh Log
-        </button>
-      </div>
+    <div className="space-y-5">
+      {/* ── Hero ──────────────────────────────────────────────────────────── */}
+      <DashboardPageHero
+        badge="Customer Operations"
+        title="Wallet Transactions Log"
+        description="Audit customer deposits, order debits, refunds, and promotional credits across the platform."
+        liveLabel="Audit Log"
+        chips={[
+          { label: "Total Credits",  value: fmtAmt(totalCredits),  sub: `${txs.filter((t) => ["CREDIT","REFUND","PROMO"].includes(t.type.toUpperCase())).length} txns` },
+          { label: "Total Debits",   value: fmtAmt(totalDebits),   sub: `${txs.filter((t) => t.type.toUpperCase() === "DEBIT").length} txns` },
+          { label: "Net Flow",       value: fmtAmt(Math.abs(netBalance)), sub: netBalance >= 0 ? "Surplus" : "Deficit" },
+        ]}
+      />
 
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm border-collapse">
-            <thead>
-              <tr className="bg-slate-50/80 border-b border-slate-100 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                <th className="py-3.5 px-6">Transaction Ref</th>
-                <th className="py-3.5 px-6">Customer</th>
-                <th className="py-3.5 px-6">Type</th>
-                <th className="py-3.5 px-6">Amount</th>
-                <th className="py-3.5 px-6">Purpose / Reference</th>
-                <th className="py-3.5 px-6">Status</th>
-                <th className="py-3.5 px-6">Timestamp</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {txs.map((tx) => (
-                <tr key={tx.id} className="hover:bg-slate-50/50 transition-colors">
-                  <td className="py-4 px-6 font-bold text-slate-900">{tx.id}</td>
-                  <td className="py-4 px-6">
-                    <p className="font-semibold text-slate-900">{tx.userName}</p>
-                    <p className="text-xs text-slate-500">{tx.userEmail}</p>
-                  </td>
-                  <td className="py-4 px-6 text-xs font-bold">
-                    {tx.type === "CREDIT" || tx.type === "REFUND" ? (
-                      <span className="inline-flex items-center gap-1 text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-                        <ArrowDownLeft size={14} /> {tx.type}
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-200">
-                        <ArrowUpRight size={14} /> {tx.type}
-                      </span>
-                    )}
-                  </td>
-                  <td className="py-4 px-6 font-bold text-slate-900">৳ {tx.amount}</td>
-                  <td className="py-4 px-6 text-slate-700 font-medium">{tx.purpose}</td>
-                  <td className="py-4 px-6 text-xs">
-                    <span className="px-2.5 py-1 rounded-full font-bold bg-emerald-100 text-emerald-800">
-                      {tx.status}
-                    </span>
-                  </td>
-                  <td className="py-4 px-6 text-xs text-slate-500">{new Date(tx.createdAt).toLocaleString()}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      {/* ── Summary stat cards ─────────────────────────────────────────── */}
+      {txs.length > 0 && (
+        <motion.div
+          initial="hidden"
+          animate="show"
+          variants={{ hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.06 } } }}
+          className="grid grid-cols-1 sm:grid-cols-3 gap-4"
+        >
+          <OverviewStatCard
+            title="Total Credits"
+            value={fmtAmt(totalCredits)}
+            sub={`${txs.filter((t) => ["CREDIT","REFUND","PROMO"].includes(t.type.toUpperCase())).length} transactions`}
+            icon={ArrowDownLeft}
+            gradient="from-emerald-500 to-teal-600"
+          />
+          <OverviewStatCard
+            title="Total Debits"
+            value={fmtAmt(totalDebits)}
+            sub={`${txs.filter((t) => t.type.toUpperCase() === "DEBIT").length} transactions`}
+            icon={TrendingDown}
+            gradient="from-rose-500 to-pink-600"
+          />
+          <OverviewStatCard
+            title="Net Balance Flow"
+            value={fmtAmt(Math.abs(netBalance))}
+            sub={netBalance >= 0 ? "Net credit surplus" : "Net debit surplus"}
+            icon={Wallet}
+            gradient={netBalance >= 0 ? "from-primary to-indigo-700" : "from-amber-400 to-orange-500"}
+            isPositive={netBalance >= 0}
+          />
+        </motion.div>
+      )}
+
+      {/* ── Table ─────────────────────────────────────────────────────── */}
+      <AdminCrudPage config={makeConfig(txs)} hideHeader />
     </div>
   );
 }
