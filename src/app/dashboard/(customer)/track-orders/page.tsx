@@ -8,7 +8,7 @@ import { Loader2, Package } from "lucide-react";
 import { authFetch } from "@/lib/api";
 import { toast } from "@/lib/toast";
 
-import { OrderDetails, getStepIndex, progressPercent } from "@/components/marketing/track-orders/types";
+import { OrderDetails, getTrackingStepsForOrder, getStepIndexForOrder, progressPercentForOrder } from "@/components/marketing/track-orders/types";
 import { TrackHeroHeader }   from "@/components/marketing/track-orders/TrackHeroHeader";
 import { TrackingTimeline }  from "@/components/marketing/track-orders/TrackingTimeline";
 import { OrderDetailsPanel } from "@/components/marketing/track-orders/OrderDetailsPanel";
@@ -124,8 +124,9 @@ function TrackerContent() {
   };
 
   // ── Derived ───────────────────────────────────────────────────────────────
-  const currentStepIndex = orderDetails ? getStepIndex(orderDetails.orderStatus) : 0;
-  const pct              = progressPercent(currentStepIndex);
+  const trackingSteps    = getTrackingStepsForOrder(orderDetails);
+  const currentStepIndex = orderDetails ? getStepIndexForOrder(orderDetails.orderStatus, trackingSteps) : 0;
+  const pct              = progressPercentForOrder(currentStepIndex, trackingSteps.length);
   const isCancelled      = orderDetails?.orderStatus.toUpperCase() === "CANCELLED";
 
   // ── Render ────────────────────────────────────────────────────────────────

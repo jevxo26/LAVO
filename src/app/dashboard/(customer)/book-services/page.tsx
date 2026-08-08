@@ -6,14 +6,16 @@ import { useBooking } from "./_hooks/useBooking";
 import { ServiceCard } from "./_components/ServiceCard";
 import { CartSummary } from "./_components/CartSummary";
 import { PickupForm } from "./_components/PickupForm";
+import { ServiceDetailDrawer } from "./_components/ServiceDetailDrawer";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import type { Service } from "./_types";
 
 function BookLaundryContent() {
   const {
     services, categories, activeCategory, setActiveCategory,
     loading, walletBalance,
-    cart, addToCart, removeFromCart, updateQuantity, toggleAddon,
+    cart, addToCart, removeFromCart, updateQuantity, updateGarmentQty, toggleAddon,
     toggleWishlist,
     receiverName, setReceiverName,
     receiverPhone, setReceiverPhone,
@@ -29,6 +31,16 @@ function BookLaundryContent() {
   } = useBooking();
 
   const cartRef = useRef<HTMLDivElement>(null);
+
+  // ── Service Detail Drawer state ──────────────────────────────────────────────
+  const [drawerService, setDrawerService] = useState<Service | null>(null);
+
+  const openDrawer = (service: Service) => setDrawerService(service);
+  const openDrawerById = (serviceId: string) => {
+    const svc = services.find((s) => s.id === serviceId);
+    if (svc) setDrawerService(svc);
+  };
+  const closeDrawer = () => setDrawerService(null);
 
   // Auto-scroll cart into view on mobile when a service is pre-selected
   useEffect(() => {
@@ -64,6 +76,7 @@ function BookLaundryContent() {
   }
 
   return (
+    <>
     <motion.div
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
@@ -217,6 +230,7 @@ function BookLaundryContent() {
                   inCart={cart.some((i) => i.service.id === service.id)}
                   onAdd={addToCart}
                   onToggleWishlist={toggleWishlist}
+                  onViewDetails={openDrawer}
                 />
               ))}
             </div>
@@ -238,9 +252,11 @@ function BookLaundryContent() {
                 submitting={submitting}
                 autoSelectedServiceId={autoSelectedService?.id}
                 onUpdateQuantity={updateQuantity}
+                onUpdateGarmentQty={updateGarmentQty}
                 onRemove={removeFromCart}
                 onToggleAddon={toggleAddon}
                 onPaymentMethodChange={setPaymentMethod}
+                onViewDetails={openDrawerById}
               >
                 <PickupForm
                   receiverName={receiverName}
@@ -262,6 +278,21 @@ function BookLaundryContent() {
         </div>
       </div>
     </motion.div>
+
+    {/* ── Service Detail Drawer ─────────────────────────────────────────────── */}
+    <ServiceDetailDrawer
+      service={drawerService}
+      isOpen={!!drawerService}
+      onClose={closeDrawer}
+      cartItem={cart.find((i) => i.service.id === drawerService?.id)}
+      inCart={cart.some((i) => i.service.id === drawerService?.id)}
+      onAdd={(svc) => { addToCart(svc); }}
+      onToggleAddon={toggleAddon}
+      onUpdateQuantity={updateQuantity}
+      onUpdateGarmentQty={updateGarmentQty}
+      onRemove={removeFromCart}
+    />
+    </>
   );
 }
 

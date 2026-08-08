@@ -1,6 +1,6 @@
 "use client";
 
-import { Heart, Clock, Tag, Plus, Check, Shirt } from "lucide-react";
+import { Heart, Clock, Tag, Plus, Check, Info } from "lucide-react";
 import type { Service } from "../_types";
 import { motion } from "framer-motion";
 
@@ -9,9 +9,10 @@ interface ServiceCardProps {
   inCart: boolean;
   onAdd: (service: Service) => void;
   onToggleWishlist: (service: Service) => void;
+  onViewDetails: (service: Service) => void;
 }
 
-export function ServiceCard({ service, inCart, onAdd, onToggleWishlist }: ServiceCardProps) {
+export function ServiceCard({ service, inCart, onAdd, onToggleWishlist, onViewDetails }: ServiceCardProps) {
   return (
     <motion.div
       whileHover={{ y: -3 }}
@@ -24,7 +25,7 @@ export function ServiceCard({ service, inCart, onAdd, onToggleWishlist }: Servic
       {inCart && (
         <div className="absolute top-0 left-0 right-0 h-1 bg-blue-600" />
       )}
-      
+
       <div className="p-5 space-y-3.5">
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0 pr-2">
@@ -52,30 +53,45 @@ export function ServiceCard({ service, inCart, onAdd, onToggleWishlist }: Servic
           </button>
         </div>
 
-        <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800">
-          <div>
-            <span className="text-xl font-black text-slate-900 dark:text-white">৳{service.basePrice.toFixed(2)}</span>
-            {service.addons.length > 0 && (
-              <span className="text-[10px] font-bold text-slate-400 ml-1.5 inline-flex items-center gap-0.5">
-                <Tag size={10} />
-                {service.addons.length} treatments
-              </span>
-            )}
+        {/* Bottom: price + action buttons */}
+        <div className="space-y-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+          {/* Price row */}
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="text-xl font-black text-slate-900 dark:text-white">৳{service.basePrice.toFixed(2)}</span>
+              {service.addons.length > 0 && (
+                <span className="text-[10px] font-bold text-slate-400 ml-1.5 inline-flex items-center gap-0.5">
+                  <Tag size={10} />
+                  {service.addons.length} treatments
+                </span>
+              )}
+            </div>
+
+            {/* Add to Cart */}
+            <button
+              onClick={() => onAdd(service)}
+              disabled={inCart}
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-black transition-all ${
+                inCart
+                  ? "bg-blue-600 text-white shadow-md shadow-blue-600/30"
+                  : "bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white dark:bg-blue-950/50 dark:text-blue-300"
+              }`}
+            >
+              {inCart ? <><Check size={13} /> Added</> : <><Plus size={13} /> Add</>}
+            </button>
           </div>
 
+          {/* View Details — full-width prominent button */}
           <button
-            onClick={() => onAdd(service)}
-            disabled={inCart}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-black transition-all ${
-              inCart
-                ? "bg-blue-600 text-white shadow-md shadow-blue-600/30"
-                : "bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white dark:bg-blue-950/50 dark:text-blue-300"
-            }`}
+            onClick={() => onViewDetails(service)}
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 text-xs font-bold hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700 dark:hover:border-blue-600 dark:hover:bg-blue-950/40 dark:hover:text-blue-300 transition-all"
           >
-            {inCart ? <><Check size={13} /> Added</> : <><Plus size={13} /> Add</>}
+            <Info size={13} />
+            View Details &amp; Manage
           </button>
         </div>
       </div>
     </motion.div>
   );
 }
+
