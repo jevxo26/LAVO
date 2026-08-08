@@ -344,7 +344,7 @@ export default function EmployeeOrdersPage() {
                           <p className="text-sm font-semibold text-slate-900 leading-tight">{g.garmentName}</p>
                           {g.orderItem?.service?.serviceName && (
                             <span className="inline-flex items-center gap-1 rounded-md bg-blue-50 border border-blue-200 px-2 py-0.5 text-[10px] font-extrabold text-blue-700">
-                              ⚡ {g.orderItem.service.serviceName}
+                              <Sparkles size={9} /> {g.orderItem.service.serviceName}
                             </span>
                           )}
                         </div>

@@ -4,12 +4,27 @@ import React from "react";
 import {
   Trash2, Plus, Minus, ShoppingBag, CreditCard, Wallet,
   Sparkles, Loader2, ShieldCheck, AlertCircle, ArrowUpRight,
-  CheckCircle2, Shirt
+  CheckCircle2, Shirt, Info, Package
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { CartItem, PaymentMethod } from "../_types";
 import Link from "next/link";
 import { motion } from "framer-motion";
+
+const GARMENT_PRESETS = [
+  { type: "Shirt" },
+  { type: "T-Shirt" },
+  { type: "Pants" },
+  { type: "Jeans" },
+  { type: "Suit Jacket" },
+  { type: "Suit Trouser" },
+  { type: "Saree" },
+  { type: "Kurta" },
+  { type: "Dress" },
+  { type: "Sweater" },
+  { type: "Jacket" },
+  { type: "Bed Sheet" },
+];
 
 interface CartSummaryProps {
   cart: CartItem[];
@@ -22,9 +37,11 @@ interface CartSummaryProps {
   submitting: boolean;
   autoSelectedServiceId?: string;
   onUpdateQuantity: (serviceId: string, change: number) => void;
+  onUpdateGarmentQty: (serviceId: string, garmentType: string, change: number) => void;
   onRemove: (serviceId: string) => void;
   onToggleAddon: (serviceId: string, addonId: string) => void;
   onPaymentMethodChange: (method: PaymentMethod) => void;
+  onViewDetails: (serviceId: string) => void;
   children?: React.ReactNode;
 }
 
@@ -39,9 +56,11 @@ export function CartSummary({
   submitting,
   autoSelectedServiceId,
   onUpdateQuantity,
+  onUpdateGarmentQty,
   onRemove,
   onToggleAddon,
   onPaymentMethodChange,
+  onViewDetails,
   children,
 }: CartSummaryProps) {
   const isWalletInsufficient = paymentMethod === "WALLET" && walletBalance < grandTotal && grandTotal > 0;
@@ -107,84 +126,140 @@ export function CartSummary({
               </p>
             </div>
           ) : (
-            <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
-              {cart.map((item) => (
-                <div key={item.service.id} className={`rounded-2xl p-4 border space-y-3 ${
-                    item.service.id === autoSelectedServiceId
-                      ? "bg-emerald-50/70 border-emerald-200"
-                      : "bg-slate-50/80 dark:bg-slate-800/60 border-slate-200/60 dark:border-slate-700/60"
-                  }`}>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1 min-w-0 pr-2">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h4 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white truncate">{item.service.serviceName}</h4>
-                        {item.service.id === autoSelectedServiceId && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2 py-0.5 text-[9px] font-black text-white">
-                            ✦ From Homepage
+            <div className="space-y-4 max-h-[600px] overflow-y-auto pr-1">
+              {cart.map((item) => {
+                const garmentQty = (type: string) =>
+                  item.garmentBreakdown.find((g) => g.type === type)?.qty ?? 0;
+                const breakdownSum = item.garmentBreakdown.reduce((s, g) => s + g.qty, 0);
+                const totalGarments = breakdownSum > 0 ? breakdownSum : item.quantity;
+
+                return (
+                  <div key={item.service.id} className={`rounded-2xl border overflow-hidden ${
+                      item.service.id === autoSelectedServiceId
+                        ? "border-emerald-200 dark:border-emerald-800/50"
+                        : "border-slate-200/60 dark:border-slate-700/60"
+                    }`}>
+
+                    {/* ── Item header ── */}
+                    <div className={`p-4 ${
+                      item.service.id === autoSelectedServiceId
+                        ? "bg-emerald-50/70 dark:bg-emerald-950/20"
+                        : "bg-slate-50/80 dark:bg-slate-800/60"
+                    }`}>
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 min-w-0 pr-2">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h4 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white">{item.service.serviceName}</h4>
+                            {item.service.id === autoSelectedServiceId && (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2 py-0.5 text-[9px] font-black text-white">✦ From Homepage</span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                            <p className="text-xs text-blue-600 dark:text-cyan-400 font-extrabold">
+                              ৳{item.service.basePrice.toFixed(2)} / piece
+                            </p>
+                            <button
+                              type="button"
+                              onClick={() => onViewDetails(item.service.id)}
+                              className="inline-flex items-center gap-1 text-[10px] font-black px-2.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 hover:bg-blue-200 transition-colors border border-blue-200 dark:border-blue-700"
+                            >
+                              <Info size={11} />
+                              View Details &amp; Summary
+                            </button>
+                            {totalGarments > 0 && (
+                              <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400">
+                                → {totalGarments} pcs · ৳{(item.service.basePrice * item.quantity).toFixed(2)}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          {totalGarments === 0 && (
+                            <div className="flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+                              <button type="button" onClick={() => onUpdateQuantity(item.service.id, -1)} className="px-2.5 py-1.5 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"><Minus size={12} /></button>
+                              <span className="px-2.5 text-xs font-black text-slate-900 dark:text-white min-w-[22px] text-center">{item.quantity}</span>
+                              <button type="button" onClick={() => onUpdateQuantity(item.service.id, 1)} className="px-2.5 py-1.5 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"><Plus size={12} /></button>
+                            </div>
+                          )}
+                          <button type="button" onClick={() => onRemove(item.service.id)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all dark:hover:bg-rose-950/40">
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Addon treatments */}
+                      {item.service.addons.length > 0 && (
+                        <div className="space-y-1.5 mt-3">
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Care Treatments</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {item.service.addons.map((addon) => {
+                              const isChecked = item.selectedAddons.includes(addon.id);
+                              return (
+                                <button key={addon.id} type="button" onClick={() => onToggleAddon(item.service.id, addon.id)}
+                                  className={`text-[11px] px-3 py-1 rounded-xl border font-bold transition-all ${
+                                    isChecked ? "bg-blue-600 border-blue-600 text-white" : "bg-white border-slate-200 text-slate-600 hover:border-blue-300 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300"
+                                  }`}>
+                                  {addon.addonName} <span className="opacity-80 font-black">+৳{addon.price}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* ── Garment Picker ── */}
+                    <div className="border-t border-slate-200/60 dark:border-slate-700/60 bg-white dark:bg-slate-900">
+                      <div className="px-4 py-2.5 flex items-center justify-between bg-slate-100/80 dark:bg-slate-800/80">
+                        <div className="flex items-center gap-1.5">
+                          <Package size={12} className="text-blue-600" />
+                          <span className="text-[10px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest">Select Garments</span>
+                        </div>
+                        {totalGarments > 0 && (
+                          <span className="text-[10px] font-black text-blue-600 dark:text-cyan-400">
+                            {totalGarments} piece{totalGarments !== 1 ? "s" : ""} selected
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-blue-600 dark:text-cyan-400 font-extrabold mt-0.5">
-                        ৳{item.service.basePrice.toFixed(2)} / piece
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-xs">
-                        <button
-                          type="button"
-                          onClick={() => onUpdateQuantity(item.service.id, -1)}
-                          className="px-2.5 py-1.5 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                        >
-                          <Minus size={12} />
-                        </button>
-                        <span className="px-3 text-xs font-black text-slate-900 dark:text-white min-w-[22px] text-center">
-                          {item.quantity}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => onUpdateQuantity(item.service.id, 1)}
-                          className="px-2.5 py-1.5 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                        >
-                          <Plus size={12} />
-                        </button>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => onRemove(item.service.id)}
-                        className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all dark:hover:bg-rose-950/40"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  </div>
-
-                  {item.service.addons.length > 0 && (
-                    <div className="space-y-1.5 pt-1">
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Garment Care Treatments</p>
-                      <div className="flex flex-wrap gap-1.5">
-                        {item.service.addons.map((addon) => {
-                          const isChecked = item.selectedAddons.includes(addon.id);
+                      <div className="px-4 py-3 grid grid-cols-2 gap-2">
+                        {GARMENT_PRESETS.map(({ type }) => {
+                          const qty = garmentQty(type);
                           return (
-                            <button
-                              key={addon.id}
-                              type="button"
-                              onClick={() => onToggleAddon(item.service.id, addon.id)}
-                              className={`text-[11px] px-3 py-1 rounded-xl border font-bold transition-all ${
-                                isChecked
-                                  ? "bg-blue-600 border-blue-600 text-white shadow-sm"
-                                  : "bg-white border-slate-200 text-slate-600 hover:border-blue-300 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300"
-                              }`}
-                            >
-                              {addon.addonName}{" "}
-                              <span className="opacity-80 font-black">+৳{addon.price}</span>
-                            </button>
+                            <div key={type} className={`flex items-center justify-between rounded-xl px-2.5 py-2 border transition-all ${
+                              qty > 0
+                                ? "bg-blue-50 border-blue-300 dark:bg-blue-950/40 dark:border-blue-700"
+                                : "bg-slate-50 border-slate-200 dark:bg-slate-800/50 dark:border-slate-700"
+                            }`}>
+                              <span className={`text-[11px] font-bold flex items-center gap-1.5 ${
+                                qty > 0 ? "text-blue-700 dark:text-blue-300" : "text-slate-600 dark:text-slate-300"
+                              }`}>
+                                <Shirt size={12} className={qty > 0 ? "text-blue-600" : "text-slate-400"} />
+                                {type}
+                              </span>
+                              <div className="flex items-center gap-0.5">
+                                {qty > 0 && (
+                                  <>
+                                    <button type="button" onClick={() => onUpdateGarmentQty(item.service.id, type, -1)}
+                                      className="w-6 h-6 rounded-lg flex items-center justify-center bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-all">
+                                      {qty === 1 ? <Trash2 size={10} /> : <Minus size={10} />}
+                                    </button>
+                                    <span className="w-6 text-center text-xs font-black text-slate-900 dark:text-white">{qty}</span>
+                                  </>
+                                )}
+                                <button type="button" onClick={() => onUpdateGarmentQty(item.service.id, type, 1)}
+                                  className="w-6 h-6 rounded-lg flex items-center justify-center bg-blue-600 text-white hover:bg-blue-500 transition-all">
+                                  <Plus size={10} />
+                                </button>
+                              </div>
+                            </div>
                           );
                         })}
                       </div>
                     </div>
-                  )}
-                </div>
-              ))}
+
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>

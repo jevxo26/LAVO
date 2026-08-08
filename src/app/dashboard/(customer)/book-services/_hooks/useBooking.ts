@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { authFetch } from "@/lib/api";
 import { toast } from "@/lib/toast";
-import type { CartItem, PaymentMethod, Service } from "../_types";
+import type { CartItem, GarmentItem, PaymentMethod, Service } from "../_types";
 
 export function useBooking() {
   const router = useRouter();
@@ -58,14 +58,26 @@ export function useBooking() {
                     ) || list.find((s) => bItem.garment && s.garmentType.toLowerCase().includes(bItem.garment.toLowerCase())) || list[0];
 
                     if (matched) {
+                      const garmentName = bItem.garment || matched.garmentType || "General Item";
+                      const itemQty = bItem.quantity || 1;
+
                       const existingIdx = newCartItems.findIndex((c) => c.service.id === matched.id);
                       if (existingIdx >= 0) {
-                        newCartItems[existingIdx].quantity += bItem.quantity || 1;
+                        newCartItems[existingIdx].quantity += itemQty;
+                        const existingG = newCartItems[existingIdx].garmentBreakdown.find(
+                          (g) => g.type.toLowerCase() === garmentName.toLowerCase()
+                        );
+                        if (existingG) {
+                          existingG.qty += itemQty;
+                        } else {
+                          newCartItems[existingIdx].garmentBreakdown.push({ type: garmentName, qty: itemQty });
+                        }
                       } else {
                         newCartItems.push({
                           service: matched,
-                          quantity: bItem.quantity || 1,
+                          quantity: itemQty,
                           selectedAddons: [],
+                          garmentBreakdown: [{ type: garmentName, qty: itemQty }],
                         });
                       }
                     }
@@ -97,7 +109,8 @@ export function useBooking() {
             );
 
             if (matched) {
-              setCart([{ service: matched, quantity: 1, selectedAddons: [] }]);
+              const defaultGarment = matched.garmentType || "Shirt";
+              setCart([{ service: matched, quantity: 1, selectedAddons: [], garmentBreakdown: [{ type: defaultGarment, qty: 1 }] }]);
               setAutoSelectedService(matched);
             }
           }
@@ -148,7 +161,8 @@ export function useBooking() {
       toast.info(`${service.serviceName} is already in your booking`);
       return;
     }
-    setCart((prev) => [...prev, { service, quantity: 1, selectedAddons: [] }]);
+    const defaultGarment = service.garmentType || "Shirt";
+    setCart((prev) => [...prev, { service, quantity: 1, selectedAddons: [], garmentBreakdown: [{ type: defaultGarment, qty: 1 }] }]);
     toast.success(`Added ${service.serviceName}`);
   };
 
@@ -177,6 +191,30 @@ export function useBooking() {
             ? item.selectedAddons.filter((id) => id !== addonId)
             : [...item.selectedAddons, addonId],
         };
+      })
+    );
+  };
+
+  // Update quantity of a specific garment type within a cart item.
+  // qty=0 removes that garment type entry. Total quantity auto-recalculates.
+  const updateGarmentQty = (serviceId: string, garmentType: string, change: number) => {
+    setCart((prev) =>
+      prev.map((item) => {
+        if (item.service.id !== serviceId) return item;
+        const existing = item.garmentBreakdown.find((g) => g.type === garmentType);
+        let newBreakdown: GarmentItem[];
+        if (existing) {
+          const newQty = Math.max(0, existing.qty + change);
+          newBreakdown = newQty === 0
+            ? item.garmentBreakdown.filter((g) => g.type !== garmentType)
+            : item.garmentBreakdown.map((g) => g.type === garmentType ? { ...g, qty: newQty } : g);
+        } else if (change > 0) {
+          newBreakdown = [...item.garmentBreakdown, { type: garmentType, qty: change }];
+        } else {
+          newBreakdown = item.garmentBreakdown;
+        }
+        const totalQty = newBreakdown.reduce((s, g) => s + g.qty, 0);
+        return { ...item, garmentBreakdown: newBreakdown, quantity: Math.max(1, totalQty) };
       })
     );
   };
@@ -256,7 +294,7 @@ export function useBooking() {
   return {
     services, categories, activeCategory, setActiveCategory,
     loading, walletBalance,
-    cart, addToCart, removeFromCart, updateQuantity, toggleAddon,
+    cart, addToCart, removeFromCart, updateQuantity, updateGarmentQty, toggleAddon,
     toggleWishlist,
     receiverName, setReceiverName,
     receiverPhone, setReceiverPhone,
