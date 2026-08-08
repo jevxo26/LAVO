@@ -88,16 +88,19 @@ export default function PagesContentCMSPage() {
   return (
     <div className="w-full space-y-6">
       {/* 9 Marketing Pages Swipeable Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-200">
+      {/* Page selector tabs */}
+      <div className="flex items-center gap-1 rounded-2xl border border-border bg-muted p-1.5 overflow-x-auto scrollbar-none">
         {pagesList.map((p) => (
           <button
             key={p.id}
             onClick={() => setActiveSlug(p.slug)}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+            className={[
+              "flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-[11px] font-black",
+              "whitespace-nowrap select-none transition-all duration-150",
               activeSlug === p.slug
-                ? "bg-slate-900 text-white shadow-sm"
-                : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"
-            }`}
+                ? "bg-card text-card-foreground shadow-sm"
+                : "text-muted-foreground hover:text-card-foreground hover:bg-card/60",
+            ].join(" ")}
           >
             {p.title}
           </button>
@@ -106,10 +109,8 @@ export default function PagesContentCMSPage() {
 
       {/* Editor Panel */}
       {isLoading ? (
-        <div className="p-12 flex items-center justify-center bg-white rounded-2xl border border-slate-200">
-          <div className="flex items-center gap-3 text-slate-500 font-semibold text-sm">
-            <Loader2 size={20} className="animate-spin text-blue-600" /> Loading CMS configuration...
-          </div>
+        <div className="flex items-center justify-center rounded-2xl border border-border bg-card p-12 gap-3 text-muted-foreground text-sm font-semibold">
+          <Loader2 size={20} className="animate-spin text-primary" /> Loading CMS configuration…
         </div>
       ) : (
         <CmsSectionEditor
