@@ -1,18 +1,21 @@
 "use client";
 
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { authFetch } from "@/lib/api";
 import {
-  Banknote, CheckCircle2, XCircle, RefreshCw,
-  Lock, Search, Building2, Wallet,
-  Clock, Check, X, CreditCard, RotateCcw, Loader2,
+  AlertTriangle, ShieldCheck, Banknote, CheckCircle2,
+  XCircle, RefreshCw, Search, Wallet, Clock,
+  Check, X, CreditCard, RotateCcw, Loader2,
 } from "lucide-react";
 import { Button }            from "@/components/ui/button";
 import { DashboardPageHero } from "@/components/shared/DashboardPageHero";
 import { OverviewStatCard }  from "@/components/dashboard/shared/overview/OverviewStatCard";
 import { OpsTable }          from "@/components/shared/OpsTable";
 import { toast }             from "sonner";
-import { motion }            from "framer-motion";
+import {
+  Dialog, DialogContent, DialogHeader,
+  DialogTitle, DialogDescription,
+} from "@/components/ui/dialog";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -99,19 +102,35 @@ export default function PayoutApprovalsPage() {
   const [activeTab,     setActiveTab]     = useState("ALL");
   const [processingId,  setProcessingId]  = useState<string | null>(null);
 
-  const fetchPayouts = () => {
+  // ── Confirm dialog state ───────────────────────────────────────────────────
+  const [confirmPayout,  setConfirmPayout]  = useState<VendorPayoutItem | null>(null);
+  const [confirmAction,  setConfirmAction]  = useState<"PAID" | "REJECTED" | null>(null);
+
+  const fetchPayouts = useCallback(() => {
     setRefreshing(true);
     authFetch("/admin/vendors/payouts")
       .then((r) => r.json())
       .then((json) => setPayouts(json.success && json.data?.length ? json.data : FALLBACK))
       .catch(() => setPayouts(FALLBACK))
       .finally(() => { setLoading(false); setRefreshing(false); });
-  };
-  useEffect(() => { fetchPayouts(); }, []);
+  }, []);
+  useEffect(() => { fetchPayouts(); }, [fetchPayouts]);
 
-  // ── Action ────────────────────────────────────────────────────────────────
-  const handleProcess = async (payoutId: string, status: "PAID" | "REJECTED") => {
+  // ── Request confirm (opens dialog) ──────────────────────────────────────
+  const requestConfirm = (payout: VendorPayoutItem, action: "PAID" | "REJECTED") => {
+    setConfirmPayout(payout);
+    setConfirmAction(action);
+  };
+
+  // ── Confirmed action ──────────────────────────────────────────────────────
+  const handleProcess = async () => {
+    if (!confirmPayout || !confirmAction) return;
+    const payoutId = confirmPayout.id;
+    const status   = confirmAction;
+    // Set processing BEFORE closing dialog so button shows spinner
     setProcessingId(payoutId + "_" + status);
+    setConfirmPayout(null);
+    setConfirmAction(null);
     try {
       const json = await authFetch(`/admin/vendors/payouts/${payoutId}/process`, {
         method: "PUT",
@@ -179,16 +198,12 @@ export default function PayoutApprovalsPage() {
 
       {/* ── 2. Stat cards ───────────────────────────────────────────────── */}
       {!loading && (
-        <motion.div
-          initial="hidden" animate="show"
-          variants={{ hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.06 } } }}
-          className="grid grid-cols-2 sm:grid-cols-4 gap-4"
-        >
-          <OverviewStatCard title="Pending Requests" value={pendingCount}            icon={Clock}        gradient="from-amber-400 to-orange-500"   isPositive={pendingCount === 0} />
-          <OverviewStatCard title="Approved & Paid"  value={paidCount}              icon={CheckCircle2} gradient="from-emerald-500 to-teal-600"   />
-          <OverviewStatCard title="Rejected"         value={rejectedCount}           icon={XCircle}      gradient="from-error to-rose-600"         isPositive={false} />
-          <OverviewStatCard title="Total Settled"    value={fmtAmt(totalSettled)}   icon={Wallet}       gradient="from-primary to-indigo-700"     />
-        </motion.div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <OverviewStatCard title="Pending Requests" value={pendingCount}          icon={Clock}        gradient="from-amber-400 to-orange-500" isPositive={pendingCount === 0} />
+          <OverviewStatCard title="Approved & Paid"  value={paidCount}            icon={CheckCircle2} gradient="from-emerald-500 to-teal-600" />
+          <OverviewStatCard title="Rejected"         value={rejectedCount}         icon={XCircle}      gradient="from-error to-rose-600"       isPositive={false} />
+          <OverviewStatCard title="Total Settled"    value={fmtAmt(totalSettled)} icon={Wallet}       gradient="from-primary to-indigo-700"   />
+        </div>
       )}
 
       {/* ── 3. Toolbar ──────────────────────────────────────────────────── */}
@@ -329,17 +344,15 @@ export default function PayoutApprovalsPage() {
                 return (
                   <div className="flex items-center gap-1.5">
                     <Button size="sm" disabled={!!processingId}
-                      onClick={() => handleProcess(p.id, "PAID")}
+                      onClick={() => requestConfirm(p, "PAID")}
                       className="h-8 rounded-xl px-2.5 text-[11px] font-black gap-1 shadow-sm
                         bg-gradient-to-br from-emerald-500 to-teal-600 text-white hover:opacity-90 transition-all hover:scale-[1.02]">
-                      {processingId === p.id + "_PAID" ? <Loader2 size={11} className="animate-spin" /> : <Check size={11} />}
-                      Approve
+                      <Check size={11} /> Approve
                     </Button>
                     <Button size="sm" variant="ghost" disabled={!!processingId}
-                      onClick={() => handleProcess(p.id, "REJECTED")}
+                      onClick={() => requestConfirm(p, "REJECTED")}
                       className="h-8 rounded-xl px-2.5 text-[11px] font-black gap-1 text-muted-foreground hover:text-error hover:bg-error/10 transition-colors">
-                      {processingId === p.id + "_REJECTED" ? <Loader2 size={11} className="animate-spin" /> : <X size={11} />}
-                      Reject
+                      <X size={11} /> Reject
                     </Button>
                   </div>
                 );
@@ -348,6 +361,89 @@ export default function PayoutApprovalsPage() {
           ]}
         />
       )}
+
+      {/* ── 5. Confirm Dialog ───────────────────────────────────────────── */}
+      <Dialog
+        open={!!confirmPayout}
+        onOpenChange={(v) => { if (!v) { setConfirmPayout(null); setConfirmAction(null); } }}
+      >
+        <DialogContent className="sm:max-w-md rounded-2xl">
+          <div className="flex flex-col items-center text-center gap-4 pt-2">
+
+            {/* Icon */}
+            <div className={`flex h-14 w-14 items-center justify-center rounded-2xl ${
+              confirmAction === "PAID" ? "bg-success/10" : "bg-error/10"}`}>
+              {confirmAction === "PAID"
+                ? <ShieldCheck size={26} className="text-success" />
+                : <AlertTriangle size={26} className="text-error" />}
+            </div>
+
+            <DialogHeader>
+              <DialogTitle className="text-base font-black text-card-foreground">
+                {confirmAction === "PAID" ? "Approve Payout?" : "Reject Payout?"}
+              </DialogTitle>
+              <DialogDescription className="text-xs text-muted-foreground mt-1">
+                {confirmAction === "PAID"
+                  ? "This will mark the payout as settled and update the vendor wallet. This action cannot be undone."
+                  : "This will decline the payout request. The vendor will need to submit a new request."}
+              </DialogDescription>
+            </DialogHeader>
+
+            {/* Payout summary card */}
+            {confirmPayout && (
+              <div className="w-full rounded-xl border border-border bg-muted/50 px-4 py-3 space-y-2.5 text-left">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">Vendor</span>
+                  <span className="text-[12px] font-black text-card-foreground">
+                    {confirmPayout.vendor?.businessName || confirmPayout.vendor?.user?.fullName || "Vendor Partner"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">Amount</span>
+                  <span className="text-[15px] font-black tabular-nums" style={{ color: "var(--success)" }}>
+                    {fmtAmt(confirmPayout.amount)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">Method</span>
+                  <span className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-muted px-2.5 py-[3px] text-[10px] font-black text-muted-foreground">
+                    <CreditCard size={10} /> {confirmPayout.paymentMethod}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">Ref</span>
+                  <span className="text-[11px] font-mono font-black" style={{ color: "var(--primary)" }}>
+                    #{confirmPayout.id.slice(-8).toUpperCase()}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Action buttons */}
+            <div className="flex gap-2 w-full">
+              <Button variant="outline"
+                onClick={() => { setConfirmPayout(null); setConfirmAction(null); }}
+                className="flex-1 rounded-xl text-xs font-bold">
+                Cancel
+              </Button>
+              <Button
+                disabled={!!processingId}
+                onClick={handleProcess}
+                className={`flex-1 rounded-xl text-xs font-black gap-1.5 text-white hover:opacity-90 transition-all ${
+                  confirmAction === "PAID"
+                    ? "bg-gradient-to-br from-emerald-500 to-teal-600"
+                    : "bg-gradient-to-br from-error to-rose-600"
+                }`}>
+                {processingId
+                  ? <Loader2 size={13} className="animate-spin" />
+                  : confirmAction === "PAID" ? <Check size={13} /> : <X size={13} />}
+                {confirmAction === "PAID" ? "Yes, Approve & Pay" : "Yes, Reject"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 }
