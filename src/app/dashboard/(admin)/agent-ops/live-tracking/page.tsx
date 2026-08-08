@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { Button }            from "@/components/ui/button";
 import { DashboardPageHero } from "@/components/shared/DashboardPageHero";
+import { OpsTable }          from "@/components/shared/OpsTable";
 import { motion }            from "framer-motion";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -398,84 +399,66 @@ export default function AgentLiveTrackingPage() {
       ) : (
 
         // ── List ──────────────────────────────────────────────────────────
-        <motion.div
-          initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}
-          className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm"
-        >
-          <div className="border-b border-border bg-muted/50">
-            <div className="grid grid-cols-[minmax(160px,2fr)_1fr_1fr_160px_120px_100px_100px_130px] px-5 py-3 gap-4">
-              {["Agent","Zone","Coordinates","Last Ping","Battery","Pickups","Drops","Status"].map((h) => (
-                <p key={h} className="text-[10.5px] font-black uppercase tracking-wider text-muted-foreground">{h}</p>
-              ))}
-            </div>
-          </div>
-          <div className="divide-y divide-border">
-            {displayed.map((ag, idx) => {
-              const sm     = statusMeta(ag.currentStatus);
-              const batCol = batteryColor(ag.batteryLevel);
-              const batPct = Math.min(parseInt(ag.batteryLevel) || 0, 100);
-              return (
-                <motion.div key={ag.id}
-                  initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.03 }}
-                  className="group grid grid-cols-[minmax(160px,2fr)_1fr_1fr_160px_120px_100px_100px_130px]
-                    px-5 py-4 gap-4 items-center hover:bg-muted/40 transition-colors duration-150"
-                >
-                  {/* Agent */}
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl
-                      bg-gradient-to-br from-primary to-indigo-700 text-white text-[12px] font-black
-                      shadow-md shadow-black/10 transition-transform group-hover:scale-110">
-                      {(ag.agentName ?? "A").charAt(0).toUpperCase()}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-[13px] font-black text-card-foreground truncate group-hover:text-primary transition-colors">{ag.agentName}</p>
-                      <p className="text-[11px] text-muted-foreground font-medium flex items-center gap-1 mt-0.5"><Phone size={10} />{ag.phone}</p>
-                    </div>
+        <OpsTable
+          animateKey={activeTab + search + "list"}
+          keyExtractor={(ag) => ag.id}
+          displayed={displayed}
+          totalCount={agents.length}
+          noun="agents"
+          hasFilters={hasFilters}
+          onClearFilters={() => { setSearch(""); setActiveTab("ALL"); }}
+          emptyTitle="No agents found"
+          emptyFiltered="Try adjusting your filters."
+          emptyDefault="No fleet data available."
+          footerStats={[
+            { dot: "bg-primary",   label: "On Pickup",   value: onPickup,   pulse: true },
+            { dot: "bg-secondary", label: "On Delivery", value: onDelivery, pulse: true },
+            { dot: "bg-success",   label: "Available",   value: available               },
+          ]}
+          columns={[
+            {
+              header: "Agent", width: "minmax(160px,2fr)",
+              render: (ag) => (
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-indigo-700 text-white text-[12px] font-black shadow-md shadow-black/10 transition-transform group-hover:scale-110">
+                    {(ag.agentName ?? "A").charAt(0).toUpperCase()}
                   </div>
-                  {/* Zone */}
-                  <div className="flex items-center gap-1.5 text-[12px] font-bold text-card-foreground">
-                    <MapPin size={11} className="text-muted-foreground shrink-0" />{ag.assignedZone}
+                  <div className="min-w-0">
+                    <p className="text-[13px] font-black text-card-foreground truncate group-hover:text-primary transition-colors">{ag.agentName}</p>
+                    <p className="text-[11px] text-muted-foreground font-medium flex items-center gap-1 mt-0.5"><Phone size={10} />{ag.phone}</p>
                   </div>
-                  {/* Coords */}
-                  <p className="text-[10px] font-mono text-muted-foreground">{ag.lat}, {ag.lng}</p>
-                  {/* Last ping */}
-                  <p className="text-[11px] text-muted-foreground font-medium">{ag.lastPing}</p>
-                  {/* Battery */}
+                </div>
+              ),
+            },
+            {
+              header: "Zone", width: "1fr",
+              render: (ag) => <div className="flex items-center gap-1.5 text-[12px] font-bold text-card-foreground"><MapPin size={11} className="text-muted-foreground shrink-0" />{ag.assignedZone}</div>,
+            },
+            { header: "Coordinates", width: "1fr",   render: (ag) => <p className="text-[10px] font-mono text-muted-foreground">{ag.lat}, {ag.lng}</p> },
+            { header: "Last Ping",   width: "160px", render: (ag) => <p className="text-[11px] text-muted-foreground font-medium">{ag.lastPing}</p> },
+            {
+              header: "Battery", width: "120px",
+              render: (ag, idx) => {
+                const batCol = batteryColor(ag.batteryLevel);
+                const batPct = Math.min(parseInt(ag.batteryLevel) || 0, 100);
+                return (
                   <div className="space-y-1">
                     <p className="text-[12px] font-black tabular-nums" style={{ color: batCol }}>{ag.batteryLevel}</p>
                     <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
                       <div className="h-full rounded-full" style={{ width: `${batPct}%`, background: batCol }} />
                     </div>
                   </div>
-                  {/* Pickups */}
-                  <div className="flex items-center gap-1 text-[13px] font-black text-card-foreground">
-                    <Package size={12} className="text-muted-foreground" />{ag.activePickups}
-                  </div>
-                  {/* Drops */}
-                  <div className="flex items-center gap-1 text-[13px] font-black text-card-foreground">
-                    <Truck size={12} className="text-muted-foreground" />{ag.activeDeliveries}
-                  </div>
-                  {/* Status */}
-                  <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-[3px] text-[10px] font-black w-fit ${sm.cls}`}>
-                    <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${sm.dot}`} />
-                    {sm.label}
-                  </span>
-                </motion.div>
-              );
-            })}
-          </div>
-          <div className="flex items-center justify-between border-t border-border bg-muted/30 px-5 py-3">
-            <p className="text-[11px] text-muted-foreground font-medium">
-              Showing <span className="font-black text-card-foreground">{displayed.length}</span> of{" "}
-              <span className="font-black text-card-foreground">{agents.length}</span> agents
-            </p>
-            <div className="flex items-center gap-3 text-[11px] text-muted-foreground font-medium">
-              <span className="flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />{onPickup} On Pickup</span>
-              <span className="flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-secondary animate-pulse" />{onDelivery} On Delivery</span>
-              <span className="flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-success" />{available} Available</span>
-            </div>
-          </div>
-        </motion.div>
+                );
+              },
+            },
+            { header: "Pickups",   width: "100px", render: (ag) => <div className="flex items-center gap-1 text-[13px] font-black text-card-foreground"><Package size={12} className="text-muted-foreground" />{ag.activePickups}</div> },
+            { header: "Drops",     width: "100px", render: (ag) => <div className="flex items-center gap-1 text-[13px] font-black text-card-foreground"><Truck size={12} className="text-muted-foreground" />{ag.activeDeliveries}</div> },
+            {
+              header: "Status", width: "130px",
+              render: (ag) => { const sm = statusMeta(ag.currentStatus); return <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-[3px] text-[10px] font-black w-fit ${sm.cls}`}><span className={`h-1.5 w-1.5 rounded-full shrink-0 ${sm.dot}`} />{sm.label}</span>; },
+            },
+          ]}
+        />
       )}
     </div>
   );
