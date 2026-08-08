@@ -4,13 +4,12 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Globe, Megaphone, FileText, Layout } from "lucide-react";
-import { DashboardPageHero } from "@/components/shared/DashboardPageHero";
+import { Megaphone, FileText, Layout } from "lucide-react";
 
 const CMS_TABS = [
-  { name: "Pages Content",             href: "/dashboard/website-cms/pages-content",   icon: Layout   },
-  { name: "Announcements & Banners",   href: "/dashboard/website-cms/announcements",   icon: Megaphone },
-  { name: "Legal Documents & Policies",href: "/dashboard/website-cms/legal-documents", icon: FileText  },
+  { name: "Pages Content",              href: "/dashboard/website-cms/pages-content",   icon: Layout    },
+  { name: "Announcements & Banners",    href: "/dashboard/website-cms/announcements",   icon: Megaphone },
+  { name: "Legal Documents & Policies", href: "/dashboard/website-cms/legal-documents", icon: FileText  },
 ];
 
 export default function WebCMSLayout({ children }: { children: React.ReactNode }) {
@@ -18,16 +17,6 @@ export default function WebCMSLayout({ children }: { children: React.ReactNode }
 
   return (
     <div className="space-y-5">
-
-      {/* ── Hero ────────────────────────────────────────────────────────── */}
-      <DashboardPageHero
-        badge="Super Admin — Content Studio"
-        title="Website CMS & Marketing"
-        description="Manage public landing pages, pricing grids, promotional banners, and legal terms across the platform."
-        icon={Globe}
-        liveLabel="Live CMS"
-      />
-
       {/* ── Tab navigation ──────────────────────────────────────────────── */}
       <div className="flex items-center gap-1 rounded-2xl border border-border bg-muted p-1.5 overflow-x-auto scrollbar-none w-fit">
         {CMS_TABS.map((tab) => {

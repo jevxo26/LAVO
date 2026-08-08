@@ -2,10 +2,11 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import { authFetch } from "@/lib/api";
-import { Megaphone, Plus, RefreshCw, CheckCircle2, Clock, Search, RotateCcw } from "lucide-react";
-import { Button }   from "@/components/ui/button";
-import { OpsTable } from "@/components/shared/OpsTable";
-import { toast }    from "sonner";
+import { Megaphone, Plus, RefreshCw, Clock, Search, RotateCcw } from "lucide-react";
+import { Button }            from "@/components/ui/button";
+import { OpsTable }          from "@/components/shared/OpsTable";
+import { DashboardPageHero } from "@/components/shared/DashboardPageHero";
+import { toast }             from "sonner";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -117,6 +118,20 @@ export default function AnnouncementsCMSPage() {
 
   return (
     <div className="space-y-5">
+
+      {/* ── Hero ────────────────────────────────────────────────────────── */}
+      <DashboardPageHero
+        badge="Super Admin — Content Studio"
+        title="Announcements & Banners"
+        description="Manage promotional banners, system notices, and feature announcements displayed across the platform."
+        icon={Megaphone}
+        liveLabel={activeCount > 0 ? `${activeCount} Live` : "None Active"}
+        chips={[
+          { label: "Total",     value: loading ? "—" : String(announcements.length), sub: "All banners"                              },
+          { label: "Active",    value: loading ? "—" : String(activeCount),           sub: activeCount > 0 ? "Currently live" : "None"   },
+          { label: "Scheduled", value: loading ? "—" : String(scheduledCount),        sub: scheduledCount > 0 ? "Upcoming" : "None"       },
+        ]}
+      />
 
       {/* ── Toolbar ─────────────────────────────────────────────────────── */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

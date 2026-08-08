@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Loader2, Edit, Globe } from "lucide-react";
 import { CmsSectionEditor } from "@/components/dashboard/shared/CmsSectionEditor";
 import { PricingSectionEditor } from "@/components/dashboard/shared/PricingSectionEditor";
+import { DashboardPageHero } from "@/components/shared/DashboardPageHero";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { Prisma } from "@prisma/client";
@@ -76,6 +77,19 @@ export default function PagesContentCMSPage() {
 
   return (
     <div className="w-full space-y-5">
+
+      {/* ── Hero ────────────────────────────────────────────────────────── */}
+      <DashboardPageHero
+        badge="Super Admin — Content Studio"
+        title="Website Pages Content"
+        description="Edit public-facing landing pages, hero sections, pricing grids, and marketing copy across all 9 pages."
+        icon={Globe}
+        liveLabel="Live CMS"
+        chips={[
+          { label: "Total Pages",    value: String(PAGES_LIST.length), sub: "Marketing pages" },
+          { label: "Active Page",    value: currentPageInfo.title,     sub: `/${activeSlug}`  },
+        ]}
+      />
 
       {/* ── Page selector tabs ──────────────────────────────────────── */}
       <div className="flex items-center gap-1 rounded-2xl border border-border bg-muted p-1.5 overflow-x-auto scrollbar-none">

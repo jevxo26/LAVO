@@ -3,9 +3,10 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { authFetch } from "@/lib/api";
 import { FileText, Plus, RefreshCw, Search, RotateCcw, Globe, Clock } from "lucide-react";
-import { Button }   from "@/components/ui/button";
-import { OpsTable } from "@/components/shared/OpsTable";
-import { toast }    from "sonner";
+import { Button }            from "@/components/ui/button";
+import { OpsTable }          from "@/components/shared/OpsTable";
+import { DashboardPageHero } from "@/components/shared/DashboardPageHero";
+import { toast }             from "sonner";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -109,6 +110,20 @@ export default function LegalDocumentsCMSPage() {
 
   return (
     <div className="space-y-5">
+
+      {/* ── Hero ────────────────────────────────────────────────────────── */}
+      <DashboardPageHero
+        badge="Super Admin — Content Studio"
+        title="Legal Documents & Policies"
+        description="Manage Terms of Service, Privacy Policy, Refund Policy, and all legal compliance documents."
+        icon={FileText}
+        liveLabel={publishedCount > 0 ? `${publishedCount} Published` : "None Published"}
+        chips={[
+          { label: "Total Docs",  value: loading ? "—" : String(docs.length),         sub: "All policies"                              },
+          { label: "Published",   value: loading ? "—" : String(publishedCount),       sub: "Live on site"                              },
+          { label: "Draft",       value: loading ? "—" : String(draftCount),           sub: draftCount > 0 ? "Pending review" : "None"  },
+        ]}
+      />
 
       {/* ── Toolbar ─────────────────────────────────────────────────────── */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
