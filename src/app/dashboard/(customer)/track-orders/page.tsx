@@ -4,7 +4,7 @@ import React, { useEffect, useState, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { io, Socket } from "socket.io-client";
 import { useAuth } from "@/hooks/useAuth";
-import { Package } from "lucide-react";
+import { Loader2, Package } from "lucide-react";
 import { authFetch } from "@/lib/api";
 import { toast } from "@/lib/toast";
 
