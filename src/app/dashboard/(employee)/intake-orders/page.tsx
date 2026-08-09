@@ -5,9 +5,12 @@ import {
   Package, QrCode, Printer, CheckCircle2,
   Loader2, RefreshCw, Sparkles, Search,
   RotateCcw, Shirt, Inbox, Tag, ClipboardList,
+  Filter,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+
+type FilterTab = "pending" | "in_progress" | "all";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -124,6 +127,7 @@ export default function EmployeeOrdersPage() {
   const [orders, setOrders]               = useState<Order[]>([]);
   const [loading, setLoading]             = useState(true);
   const [search, setSearch]               = useState("");
+  const [activeTab, setActiveTab]         = useState<FilterTab>("pending");
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [garments, setGarments]           = useState<GarmentItem[]>([]);
   const [garmentLoading, setGarmentLoading] = useState(false);
@@ -227,10 +231,19 @@ export default function EmployeeOrdersPage() {
     w.document.close();
   };
 
-  const filtered = orders.filter((o) =>
+  const tabFiltered = orders.filter((o) => {
+    if (activeTab === "pending")     return !o.allQrDone;
+    if (activeTab === "in_progress") return o.allQrDone;
+    return true;
+  });
+
+  const filtered = tabFiltered.filter((o) =>
     o.orderNumber.toLowerCase().includes(search.toLowerCase()) ||
     o.customerName.toLowerCase().includes(search.toLowerCase())
   );
+
+  const pendingCount     = orders.filter((o) => !o.allQrDone).length;
+  const inProgressCount  = orders.filter((o) => o.allQrDone).length;
 
   return (
     <div className="space-y-7">
@@ -307,6 +320,7 @@ export default function EmployeeOrdersPage() {
 
         {/* ── Order list ──────────────────────────────────────────────────── */}
         <div className="space-y-3">
+          {/* Header */}
           <div className="flex items-center gap-3 px-1">
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50">
               <Package size={13} className="text-indigo-500" />
@@ -317,6 +331,31 @@ export default function EmployeeOrdersPage() {
             </span>
           </div>
 
+          {/* Filter tabs */}
+          {!loading && (
+            <div className="flex items-center gap-1.5 rounded-xl bg-slate-100 p-1">
+              {([
+                { key: "pending",     label: "Needs Tagging",  count: pendingCount    },
+                { key: "in_progress", label: "All Tagged",     count: inProgressCount },
+                { key: "all",         label: "All Orders",     count: orders.length   },
+              ] as { key: FilterTab; label: string; count: number }[]).map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-bold transition-all duration-150
+                    ${ activeTab === tab.key
+                      ? "bg-white text-indigo-700 shadow-sm"
+                      : "text-slate-500 hover:text-slate-700"}`}
+                >
+                  {tab.label}
+                  <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-black ${
+                    activeTab === tab.key ? "bg-indigo-100 text-indigo-600" : "bg-slate-200 text-slate-500"
+                  }`}>{tab.count}</span>
+                </button>
+              ))}
+            </div>
+          )}
+
           {loading ? (
             <div className="space-y-3">
               {[0, 1, 2, 3].map((i) => <OrderCardSkeleton key={i} />)}
@@ -326,9 +365,17 @@ export default function EmployeeOrdersPage() {
               <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-indigo-50">
                 <Inbox size={32} className="text-indigo-300" />
               </div>
-              <p className="text-sm font-bold text-slate-800">No orders found</p>
+              <p className="text-sm font-bold text-slate-800">
+                {activeTab === "pending"     ? "All orders tagged" :
+                 activeTab === "in_progress" ? "No fully tagged orders" :
+                 "No orders found"}
+              </p>
               <p className="mt-1 text-xs text-slate-400">
-                {search ? "Try a different search term." : "No pickup-stage orders at the moment."}
+                {search
+                  ? "Try a different search term."
+                  : activeTab === "pending"
+                  ? "All garments in current orders have been QR tagged."
+                  : "No pickup-stage orders at the moment."}
               </p>
             </div>
           ) : (
