@@ -7,6 +7,8 @@ import {
   Hash,
   ReceiptText,
   Radio,
+  Shirt,
+  Sparkles,
 } from "lucide-react";
 import { OrderDetails } from "./types";
 
@@ -55,6 +57,46 @@ interface OrderDetailsPanelProps {
 export function OrderDetailsPanel({ order, liveConnected }: OrderDetailsPanelProps) {
   return (
     <div className="space-y-5">
+
+      {/* Services Ordered Breakdown card */}
+      {order.items && order.items.length > 0 && (
+        <div className="rounded-2xl border border-slate-100 bg-white shadow-sm overflow-hidden">
+          <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                <Shirt size={14} />
+              </div>
+              <h3 className="text-sm font-extrabold text-slate-900">Ordered Services</h3>
+            </div>
+            <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-[10px] font-bold text-blue-700">
+              {order.items.length} Service{order.items.length > 1 ? "s" : ""}
+            </span>
+          </div>
+
+          <div className="divide-y divide-slate-50 px-5 py-2">
+            {order.items.map((item) => (
+              <div key={item.id} className="py-3 flex items-start justify-between gap-3">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1.5">
+                    <Sparkles className="h-3.5 w-3.5 text-blue-600 shrink-0" />
+                    <p className="text-xs font-bold text-slate-900">
+                      {item.service?.serviceName || "Laundry Service"}
+                    </p>
+                  </div>
+                  <p className="text-[11px] text-slate-500">
+                    {item.service?.garmentType?.name || "Garment"} · Qty:{" "}
+                    <span className="font-semibold text-slate-800">{item.quantity}</span>
+                  </p>
+                </div>
+                <div className="text-right shrink-0">
+                  <p className="text-xs font-extrabold text-slate-900">৳{item.totalPrice.toFixed(2)}</p>
+                  <p className="text-[10px] text-slate-400">৳{item.unitPrice.toFixed(2)}/unit</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Delivery Details card */}
       <div className="rounded-2xl border border-slate-100 bg-white shadow-sm overflow-hidden">

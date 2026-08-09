@@ -8,10 +8,88 @@ import { Loader2, Package } from "lucide-react";
 import { authFetch } from "@/lib/api";
 import { toast } from "@/lib/toast";
 
-import { OrderDetails, getStepIndex, progressPercent } from "@/components/marketing/track-orders/types";
+import { OrderDetails, getTrackingStepsForOrder, getStepIndexForOrder, progressPercentForOrder } from "@/components/marketing/track-orders/types";
 import { TrackHeroHeader }   from "@/components/marketing/track-orders/TrackHeroHeader";
 import { TrackingTimeline }  from "@/components/marketing/track-orders/TrackingTimeline";
 import { OrderDetailsPanel } from "@/components/marketing/track-orders/OrderDetailsPanel";
+
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
+
+function Sk({ className }: { className?: string }) {
+  return <div className={`animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800 ${className ?? ""}`} />;
+}
+
+function TrackOrdersSkeleton() {
+  return (
+    <div className="space-y-6">
+      {/* Hero / search bar skeleton */}
+      <Sk className="h-36 w-full rounded-3xl" />
+
+      <div className="grid gap-6 lg:grid-cols-12 items-start">
+        {/* Timeline skeleton */}
+        <div className="lg:col-span-8 rounded-3xl border border-slate-100 bg-white shadow-sm p-6 space-y-6 dark:bg-slate-900 dark:border-slate-800">
+          {/* Order header */}
+          <div className="flex items-center justify-between">
+            <div className="space-y-2">
+              <Sk className="h-5 w-36" />
+              <Sk className="h-3 w-24" />
+            </div>
+            <Sk className="h-7 w-20 rounded-full" />
+          </div>
+          {/* Progress bar */}
+          <Sk className="h-2 w-full rounded-full" />
+          {/* Steps */}
+          <div className="flex justify-between gap-2">
+            {[0,1,2,3,4].map((i) => (
+              <div key={i} className="flex flex-col items-center gap-2 flex-1">
+                <Sk className="h-10 w-10 rounded-full" />
+                <Sk className="h-2.5 w-14" />
+              </div>
+            ))}
+          </div>
+          {/* Details rows */}
+          <div className="space-y-3 pt-2">
+            {[0,1,2].map((i) => (
+              <div key={i} className="flex gap-3 items-center">
+                <Sk className="h-8 w-8 rounded-xl flex-shrink-0" />
+                <div className="flex-1 space-y-1.5">
+                  <Sk className="h-3 w-32" />
+                  <Sk className="h-2.5 w-48" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Order details panel skeleton */}
+        <div className="lg:col-span-4 rounded-3xl border border-slate-100 bg-white shadow-sm p-5 space-y-4 dark:bg-slate-900 dark:border-slate-800">
+          <Sk className="h-4 w-28" />
+          <div className="space-y-3">
+            {[0,1,2,3].map((i) => (
+              <div key={i} className="flex justify-between">
+                <Sk className="h-3 w-24" />
+                <Sk className="h-3 w-16" />
+              </div>
+            ))}
+          </div>
+          <Sk className="h-px w-full" />
+          <div className="space-y-3">
+            {[0,1,2].map((i) => (
+              <div key={i} className="flex gap-2 items-center">
+                <Sk className="h-8 w-8 rounded-xl flex-shrink-0" />
+                <div className="flex-1 space-y-1.5">
+                  <Sk className="h-3 w-28" />
+                  <Sk className="h-2.5 w-16" />
+                </div>
+                <Sk className="h-5 w-12 rounded-full" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // ─── TrackerContent ───────────────────────────────────────────────────────────
 
@@ -22,7 +100,7 @@ function TrackerContent() {
 
   const [orderNumberInput, setOrderNumberInput] = useState("");
   const [orderDetails, setOrderDetails]         = useState<OrderDetails | null>(null);
-  const [loading, setLoading]                   = useState(false);
+  const [loading, setLoading]                   = useState(true);
   const [liveConnected, setLiveConnected]       = useState(false);
   const [activeOrders, setActiveOrders]         = useState<Array<{ id: string; orderNumber: string }>>([]);
 
@@ -60,17 +138,26 @@ function TrackerContent() {
   // ── Load active orders list ───────────────────────────────────────────────
   useEffect(() => {
     async function loadActive() {
+      setLoading(true);
       try {
         const res  = await authFetch("/customer/orders");
         const data = await res.json();
         if (data.success) {
           const list: OrderDetails[] = data.data;
           setActiveOrders(list.map((o) => ({ id: o.id, orderNumber: o.orderNumber })));
-          if (initialOrderId) fetchOrderDetails(initialOrderId);
-          else if (list.length > 0) fetchOrderDetails(list[0].id);
+          if (initialOrderId) {
+            await fetchOrderDetails(initialOrderId);
+          } else if (list.length > 0) {
+            await fetchOrderDetails(list[0].id);
+          } else {
+            setLoading(false);
+          }
+        } else {
+          setLoading(false);
         }
       } catch (err) {
         console.error("Error loading active orders list:", err);
+        setLoading(false);
       }
     }
     loadActive();
@@ -115,8 +202,9 @@ function TrackerContent() {
   };
 
   // ── Derived ───────────────────────────────────────────────────────────────
-  const currentStepIndex = orderDetails ? getStepIndex(orderDetails.orderStatus) : 0;
-  const pct              = progressPercent(currentStepIndex);
+  const trackingSteps    = getTrackingStepsForOrder(orderDetails);
+  const currentStepIndex = orderDetails ? getStepIndexForOrder(orderDetails.orderStatus, trackingSteps) : 0;
+  const pct              = progressPercentForOrder(currentStepIndex, trackingSteps.length);
   const isCancelled      = orderDetails?.orderStatus.toUpperCase() === "CANCELLED";
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -136,12 +224,7 @@ function TrackerContent() {
       />
 
       {loading ? (
-        <div className="flex h-52 flex-col items-center justify-center gap-3 rounded-2xl border border-slate-100 bg-white shadow-sm">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50">
-            <Loader2 size={26} className="text-indigo-600 animate-spin" />
-          </div>
-          <p className="text-slate-500 text-xs font-semibold">Fetching order details…</p>
-        </div>
+        <TrackOrdersSkeleton />
 
       ) : orderDetails ? (
         <div className="grid gap-6 lg:grid-cols-12 items-start">
@@ -158,12 +241,12 @@ function TrackerContent() {
         </div>
 
       ) : (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white py-24 text-center shadow-sm">
-          <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-indigo-50">
+        <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white py-24 text-center shadow-sm dark:bg-slate-900 dark:border-slate-800">
+          <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-indigo-50 text-indigo-500 dark:bg-indigo-950/50">
             <Package size={36} className="text-indigo-400" />
           </div>
-          <p className="text-base font-bold text-slate-800">No order selected</p>
-          <p className="mt-2 max-w-xs text-sm text-slate-400">
+          <p className="text-base font-bold text-slate-800 dark:text-white">No order selected</p>
+          <p className="mt-2 max-w-xs text-sm text-slate-400 font-medium">
             Enter an order number above or pick one from the quick-select dropdown to see live tracking.
           </p>
         </div>

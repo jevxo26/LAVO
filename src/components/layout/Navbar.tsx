@@ -156,7 +156,7 @@ export function Navbar() {
           )}
 
           <Link
-            href="/dashboard/book-services"
+            href="/services"
             className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary text-white text-sm font-medium hover:bg-primary/90 transition-colors shadow-sm shadow-primary/25"
           >
             Book Pickup
@@ -228,7 +228,7 @@ export function Navbar() {
               <LogIn size={16} /> Login
             </Link>
             <Link
-              href="/book"
+              href="/services"
               onClick={() => setIsOpen(false)}
               className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-primary text-white text-sm font-medium"
             >

@@ -6,17 +6,23 @@ import { verifyToken } from "../../middlewares/authMiddleware";
 
 const router = Router();
 
-router.post('/register', RegisterController.register);
-router.post('/login', LoginController.login);
-router.post('/logout', verifyToken, LoginController.logout);
-router.post('/refresh-token', LoginController.refreshToken);
-router.post('/forgot-password', LoginController.forgotPassword);
-router.post('/reset-password', LoginController.resetPassword);
+// ── Registration & Phone OTP Verification ─────────────────────────────────────
+router.post("/register", RegisterController.register);
+router.post("/verify-registration-otp", RegisterController.verifyOtp);
+router.post("/resend-registration-otp", RegisterController.resendOtp);
 
-// Get current user (protected route)
-router.get('/me', verifyToken, RegisterController.me);
+// ── Login / Session ────────────────────────────────────────────────────────────
+router.post("/login", LoginController.login);
+router.post("/logout", verifyToken, LoginController.logout);
+router.post("/refresh-token", LoginController.refreshToken);
+router.post("/forgot-password", LoginController.forgotPassword);
+router.post("/reset-password", LoginController.resetPassword);
 
-router.post('/social-login/google', SocialAuthController.loginWithGoogle);
-router.post('/social-login/facebook', SocialAuthController.loginWithFacebook);
+// ── Current user (protected) ───────────────────────────────────────────────────
+router.get("/me", verifyToken, RegisterController.me);
+
+// ── Social Login ───────────────────────────────────────────────────────────────
+router.post("/social-login/google", SocialAuthController.loginWithGoogle);
+router.post("/social-login/facebook", SocialAuthController.loginWithFacebook);
 
 export default router;

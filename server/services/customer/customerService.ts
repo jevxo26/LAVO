@@ -111,96 +111,116 @@ export class CustomerService {
     };
   });
 
-  // Seed demo services & categories if none exist
+  // Seed demo services & categories if none exist (mirrors the homepage service catalogue)
   static async seedDemoServicesIfEmpty() {
     const serviceCount = await prisma.service.count();
     if (serviceCount > 0) return;
 
-    console.log('🌱 Seeding demo laundry services and garment categories...');
+    console.log('🌱 Seeding homepage laundry services and garment categories...');
 
-    // 1. Create Garment Categories
-    const categories = ['Clothing', 'Household', 'Specialty'];
-    const createdGarmentCats: Record<string, any> = {};
-
-    for (const catName of categories) {
-      let cat = await prisma.garmentCategory.findUnique({ where: { name: catName } });
-      if (!cat) {
-        cat = await prisma.garmentCategory.create({
-          data: { name: catName, description: `${catName} laundry items` },
-        });
-      }
-      createdGarmentCats[catName] = cat;
-    }
-
-    // 2. Create Garment Types
-    const garmentTypesData = [
-      { name: 'Shirt', category: 'Clothing', unit: 'PIECE' },
-      { name: 'T-Shirt', category: 'Clothing', unit: 'PIECE' },
-      { name: 'Pants', category: 'Clothing', unit: 'PIECE' },
-      { name: 'Suit', category: 'Clothing', unit: 'PIECE' },
-      { name: 'Bedsheet', category: 'Household', unit: 'PIECE' },
-      { name: 'Blanket', category: 'Household', unit: 'PIECE' },
-      { name: 'Shoes', category: 'Specialty', unit: 'PAIR' },
-    ];
-
-    const createdGarmentTypes: Record<string, any> = {};
-
-    for (const item of garmentTypesData) {
-      const parentCat = createdGarmentCats[item.category];
-      let gType = await prisma.garmentType.findFirst({
-        where: { name: item.name, categoryId: parentCat.id },
-      });
-      if (!gType) {
-        gType = await prisma.garmentType.create({
-          data: { name: item.name, categoryId: parentCat.id, unitType: item.unit },
-        });
-      }
-      createdGarmentTypes[item.name] = gType;
-    }
-
-    // 3. Create Service Category
-    let serviceCat = await prisma.serviceCategory.findUnique({ where: { name: 'Standard Wash' } });
-    if (!serviceCat) {
-      serviceCat = await prisma.serviceCategory.create({
-        data: { name: 'Standard Wash', description: 'Regular laundry services' },
-      });
-    }
-
-    // 4. Create Services
-    const servicesData = [
-      { name: 'Shirt Cleaning', gType: 'Shirt', price: 60.0 },
-      { name: 'T-Shirt Wash', gType: 'T-Shirt', price: 40.0 },
-      { name: 'Pants Wash & Iron', gType: 'Pants', price: 70.0 },
-      { name: 'Suit Dry Clean', gType: 'Suit', price: 350.0 },
-      { name: 'Bedsheet Wash', gType: 'Bedsheet', price: 120.0 },
-      { name: 'Blanket Wash', gType: 'Blanket', price: 240.0 },
-      { name: 'Premium Shoes Polish & Cleaning', gType: 'Shoes', price: 200.0 },
-    ];
-
-    for (const s of servicesData) {
-      const gType = createdGarmentTypes[s.gType];
-      const service = await prisma.service.create({
-        data: {
-          serviceName: s.name,
-          serviceCategoryId: serviceCat.id,
-          garmentTypeId: gType.id,
-          basePrice: s.price,
-          status: 'ACTIVE',
-        },
-      });
-
-      // Add addons
-      await prisma.serviceAddon.createMany({
-        data: [
-          { serviceId: service.id, addonName: 'Stain Removal', price: 50.0, description: 'Remove tough stains' },
-          { serviceId: service.id, addonName: 'Fabric Softener', price: 20.0, description: 'Adds softness and fragrance' },
-          { serviceId: service.id, addonName: 'Perfume Finish', price: 15.0, description: 'Premium fresh scent' },
-          { serviceId: service.id, addonName: 'Express Service', price: 100.0, description: 'Delivery in 24 hours' },
+    const SEED_GROUPS = [
+      {
+        garmentCategory: 'Clothing', garmentType: 'General Clothing', unit: 'Piece',
+        serviceCategory: 'Wash & Fold',
+        services: [
+          { name: 'Wash & Fold', price: 80, time: '24 Hours', desc: 'Everyday laundry washed, dried, and neatly folded.' },
+          { name: 'Wash & Iron', price: 150, time: '48 Hours', desc: 'Complete washing with professional steam ironing.' },
+          { name: 'Ironing & Pressing', price: 40, time: '48 Hours', desc: 'Crisp, wrinkle-free garments finished to a professional standard.' },
         ],
-      });
+      },
+      {
+        garmentCategory: 'Formal & Delicate', garmentType: 'Formal Wear', unit: 'Piece',
+        serviceCategory: 'Dry Cleaning',
+        services: [
+          { name: 'Dry Cleaning', price: 100, time: '48 Hours', desc: 'Expert solvent cleaning for delicate, formal, and specialty garments.' },
+          { name: 'Premium Shirt Dry Clean', price: 150, time: '48 Hours', desc: 'Thorough dry clean for premium shirts and formal tops.' },
+        ],
+      },
+      {
+        garmentCategory: 'Specialty', garmentType: 'Specialty Items', unit: 'Piece',
+        serviceCategory: 'Specialty Care',
+        services: [
+          { name: 'Stain Removal', price: 100, time: '24-48 Hours', desc: 'Advanced spot treatment for oil, ink, wine, and grease stains.' },
+          { name: 'Express Laundry', price: 80, time: '6-12 Hours', desc: 'Ultra-fast wash, dry and iron turnaround for urgent needs.' },
+        ],
+      },
+      {
+        garmentCategory: 'Household', garmentType: 'Home Linen', unit: 'Piece',
+        serviceCategory: 'Household Laundry',
+        services: [
+          { name: 'Bedsheet Wash', price: 120, time: '48 Hours', desc: 'Professional wash and fold for bed sheets and pillow cases.' },
+          { name: 'Blanket Wash', price: 240, time: '48 Hours', desc: 'Heavy-duty cleaning for blankets, quilts, and duvets.' },
+          { name: 'Curtain Wash', price: 180, time: '48 Hours', desc: 'Gentle wash for curtains and drapes of all sizes.' },
+        ],
+      },
+      {
+        garmentCategory: 'Clothing', garmentType: 'Men Tops', unit: 'Piece',
+        serviceCategory: 'Dry Cleaning',
+        services: [
+          { name: 'Suit Dry Clean', price: 350, time: '48 Hours', desc: 'Complete dry cleaning and pressing for full suits and blazers.' },
+        ],
+      },
+      {
+        garmentCategory: 'Specialty', garmentType: 'Shoes', unit: 'Pair',
+        serviceCategory: 'Specialty Care',
+        services: [
+          { name: 'Premium Shoes Polish & Cleaning', price: 200, time: '48 Hours', desc: 'Deep clean, deodorize, and polish for all types of shoes.' },
+        ],
+      },
+    ];
+
+    const STANDARD_ADDONS = [
+      { addonName: 'Stain Removal', price: 50, description: 'Remove tough stains' },
+      { addonName: 'Fabric Softener', price: 20, description: 'Adds softness and fragrance' },
+      { addonName: 'Perfume Finish', price: 15, description: 'Premium fresh scent' },
+      { addonName: 'Express Service', price: 100, description: 'Delivery in 24 hours' },
+      { addonName: 'Hanger Return', price: 40, description: 'Clothes returned on hangers' },
+    ];
+
+    for (const group of SEED_GROUPS) {
+      // Garment Category
+      let garmentCat = await prisma.garmentCategory.findUnique({ where: { name: group.garmentCategory } });
+      if (!garmentCat) {
+        garmentCat = await prisma.garmentCategory.create({
+          data: { name: group.garmentCategory, description: `${group.garmentCategory} laundry items` },
+        });
+      }
+
+      // Garment Type
+      let garmentType = await prisma.garmentType.findFirst({ where: { name: group.garmentType, categoryId: garmentCat.id } });
+      if (!garmentType) {
+        garmentType = await prisma.garmentType.create({
+          data: { name: group.garmentType, categoryId: garmentCat.id, unitType: group.unit },
+        });
+      }
+
+      // Service Category
+      let serviceCat = await prisma.serviceCategory.findUnique({ where: { name: group.serviceCategory } });
+      if (!serviceCat) {
+        serviceCat = await prisma.serviceCategory.create({
+          data: { name: group.serviceCategory, description: `${group.serviceCategory} services` },
+        });
+      }
+
+      // Services
+      for (const svc of group.services) {
+        const existing = await prisma.service.findFirst({ where: { serviceName: svc.name } });
+        if (existing) continue;
+        const created = await prisma.service.create({
+          data: {
+            serviceName: svc.name, description: svc.desc, basePrice: svc.price,
+            estimatedTime: svc.time, serviceCategoryId: serviceCat.id,
+            garmentTypeId: garmentType.id, status: 'ACTIVE',
+          },
+        });
+        await prisma.serviceAddon.createMany({
+          data: STANDARD_ADDONS.map((a) => ({ serviceId: created.id, ...a, status: 'ACTIVE' })),
+          skipDuplicates: true,
+        });
+      }
     }
 
-    // 5. Seed FAQ
+    // Seed FAQs
     const faqCount = await prisma.fAQ.count();
     if (faqCount === 0) {
       await prisma.fAQ.createMany({
@@ -215,6 +235,7 @@ export class CustomerService {
   }
 
   // Get all services with categories & addons
+
   static getServices = catchServiceAsync(async (userId?: string) => {
     await this.seedDemoServicesIfEmpty();
 
@@ -758,6 +779,9 @@ export class CustomerService {
           include: {
             service: {
               include: { garmentType: true },
+            },
+            garmentItems: {
+              include: { qrCodeRecord: true },
             },
           },
         },

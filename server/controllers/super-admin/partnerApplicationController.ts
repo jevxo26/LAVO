@@ -5,6 +5,7 @@ import {
     updatePartnerApplication,
 } from "../../services/super-admin/partnerApplicationService";
 import { AuthRequest } from "../../middlewares/auth.middleware";
+import { NotificationTriggers } from "../../services/notification/NotificationTriggers";
 
 // Create Partner Application
 export const createPartnerApplicationController = async (
@@ -18,6 +19,14 @@ export const createPartnerApplicationController = async (
             userId,
             req.body
         );
+
+        // Dispatch FCM Push Notification to Admins
+        try {
+            const businessName = req.body?.businessName || req.body?.fullName || "New Partner";
+            await NotificationTriggers.notifyAdminsOnRegistration(businessName, "VENDOR");
+        } catch (err) {
+            console.warn("[PartnerApplicationController] Trigger notification error:", err);
+        }
 
         return res.status(201).json({
             success: true,

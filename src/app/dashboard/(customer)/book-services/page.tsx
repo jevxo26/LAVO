@@ -1,19 +1,75 @@
 "use client";
 
-import React, { useState } from "react";
-import { Loader2, Sparkles, Shirt, Wallet, ShoppingBag, Search, RotateCcw } from "lucide-react";
+import React, { useState, Suspense, useRef, useEffect } from "react";
+import { Loader2, Sparkles, Shirt, ShoppingBag, Search, RotateCcw, CheckCircle2, ArrowRight } from "lucide-react";
 import { useBooking } from "./_hooks/useBooking";
 import { ServiceCard } from "./_components/ServiceCard";
 import { CartSummary } from "./_components/CartSummary";
 import { PickupForm } from "./_components/PickupForm";
+import { ServiceDetailDrawer } from "./_components/ServiceDetailDrawer";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import type { Service } from "./_types";
 
-export default function BookLaundryPage() {
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
+
+function Sk({ className }: { className?: string }) {
+  return <div className={`animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800 ${className ?? ""}`} />;
+}
+
+function BookServicesSkeleton() {
+  return (
+    <div className="space-y-7">
+      {/* Hero skeleton */}
+      <Sk className="h-44 w-full rounded-3xl" />
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        {/* Left — services */}
+        <div className="lg:col-span-2 space-y-5">
+          {/* Category tabs */}
+          <div className="flex gap-2 overflow-hidden">
+            {[0,1,2,3,4].map((i) => <Sk key={i} className="h-9 w-24 rounded-xl flex-shrink-0" />)}
+          </div>
+          {/* Search bar */}
+          <Sk className="h-11 w-full rounded-xl" />
+          {/* Service cards grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {[0,1,2,3,4,5].map((i) => (
+              <div key={i} className="rounded-2xl border border-slate-100 bg-white p-5 space-y-3 shadow-sm">
+                <div className="flex items-start gap-3">
+                  <Sk className="h-12 w-12 rounded-xl flex-shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <Sk className="h-4 w-3/4" />
+                    <Sk className="h-3 w-1/2" />
+                  </div>
+                </div>
+                <Sk className="h-3 w-full" />
+                <Sk className="h-3 w-5/6" />
+                <div className="flex items-center justify-between pt-1">
+                  <Sk className="h-5 w-16" />
+                  <Sk className="h-8 w-24 rounded-xl" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Right — cart sidebar */}
+        <div className="space-y-4">
+          <Sk className="h-64 w-full rounded-2xl" />
+          <Sk className="h-40 w-full rounded-2xl" />
+          <Sk className="h-12 w-full rounded-xl" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BookLaundryContent() {
   const {
     services, categories, activeCategory, setActiveCategory,
     loading, walletBalance,
-    cart, addToCart, removeFromCart, updateQuantity, toggleAddon,
+    cart, addToCart, removeFromCart, updateQuantity, updateGarmentQty, toggleAddon,
     toggleWishlist,
     receiverName, setReceiverName,
     receiverPhone, setReceiverPhone,
@@ -25,7 +81,27 @@ export default function BookLaundryPage() {
     submitting, handleSubmit,
     pickupLat, setPickupLat,
     pickupLon, setPickupLon,
+    autoSelectedService,
   } = useBooking();
+
+  const cartRef = useRef<HTMLDivElement>(null);
+
+  // ── Service Detail Drawer state ──────────────────────────────────────────────
+  const [drawerService, setDrawerService] = useState<Service | null>(null);
+
+  const openDrawer = (service: Service) => setDrawerService(service);
+  const openDrawerById = (serviceId: string) => {
+    const svc = services.find((s) => s.id === serviceId);
+    if (svc) setDrawerService(svc);
+  };
+  const closeDrawer = () => setDrawerService(null);
+
+  // Auto-scroll cart into view on mobile when a service is pre-selected
+  useEffect(() => {
+    if (autoSelectedService && cartRef.current && window.innerWidth < 1024) {
+      cartRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [autoSelectedService]);
 
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -42,18 +118,10 @@ export default function BookLaundryPage() {
   const countByCategory = (cat: string) =>
     cat === "All" ? services.length : services.filter((s) => s.category === cat).length;
 
-  if (loading) {
-    return (
-      <div className="flex h-[60vh] flex-col items-center justify-center gap-3">
-        <div className="w-16 h-16 rounded-3xl bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center text-blue-600 dark:text-blue-400">
-          <Loader2 size={28} className="animate-spin" />
-        </div>
-        <p className="text-slate-400 font-bold text-xs">Loading laundry services...</p>
-      </div>
-    );
-  }
+  if (loading) return <BookServicesSkeleton />;
 
   return (
+    <>
     <motion.div
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
@@ -97,6 +165,46 @@ export default function BookLaundryPage() {
           </div>
         </div>
       </div>
+
+      {/* ── Pre-Selected Service Banner (visible when redirected from homepage) ── */}
+      {autoSelectedService && (
+        <div className="relative overflow-hidden rounded-2xl border border-emerald-200 bg-gradient-to-r from-emerald-50 to-teal-50 px-6 py-4 flex flex-col sm:flex-row sm:items-center gap-4 shadow-sm">
+          {/* Glow accent */}
+          <div className="pointer-events-none absolute -top-6 -right-6 h-24 w-24 rounded-full bg-emerald-300/30 blur-2xl" />
+
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500 text-white shadow-md">
+              <CheckCircle2 size={20} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[11px] font-black uppercase tracking-widest text-emerald-600">Service Pre-Selected</p>
+              <h3 className="text-sm font-black text-slate-900 truncate">{autoSelectedService.serviceName}</h3>
+              <p className="text-xs text-slate-500 font-medium mt-0.5">
+                {autoSelectedService.garmentType} · Category: {autoSelectedService.category} ·{" "}
+                <span className="font-extrabold text-emerald-700">৳{autoSelectedService.basePrice.toFixed(2)}/piece</span>
+              </p>
+            </div>
+          </div>
+
+          <div className="sm:ml-auto flex items-center gap-3 shrink-0">
+            <div className="rounded-xl bg-emerald-100 border border-emerald-200 px-4 py-2 text-center">
+              <p className="text-[10px] font-black text-emerald-700 uppercase tracking-wide">Booking Total</p>
+              <p className="text-lg font-black text-emerald-800">
+                ৳{(autoSelectedService.basePrice * (cart.find(i => i.service.id === autoSelectedService.id)?.quantity ?? 1)).toFixed(2)}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                if (cartRef.current) cartRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+              }}
+              className="hidden sm:flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-black text-white hover:bg-emerald-500 transition-colors shadow-md shadow-emerald-600/20"
+            >
+              View Cart <ArrowRight size={13} />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ── 2. Balanced Dual-Wing Workspace Layout ───────────────────────────── */}
       <div className="grid gap-8 lg:grid-cols-12 items-start">
@@ -167,6 +275,7 @@ export default function BookLaundryPage() {
                   inCart={cart.some((i) => i.service.id === service.id)}
                   onAdd={addToCart}
                   onToggleWishlist={toggleWishlist}
+                  onViewDetails={openDrawer}
                 />
               ))}
             </div>
@@ -175,7 +284,7 @@ export default function BookLaundryPage() {
 
         {/* Right Wing: Booking & Checkout Studio Card (6 Cols Wide) */}
         <div className="lg:col-span-6">
-          <div className="sticky top-6">
+          <div ref={cartRef} className="sticky top-6">
             <form onSubmit={handleSubmit}>
               <CartSummary
                 cart={cart}
@@ -186,10 +295,13 @@ export default function BookLaundryPage() {
                 tax={tax}
                 grandTotal={grandTotal}
                 submitting={submitting}
+                autoSelectedServiceId={autoSelectedService?.id}
                 onUpdateQuantity={updateQuantity}
+                onUpdateGarmentQty={updateGarmentQty}
                 onRemove={removeFromCart}
                 onToggleAddon={toggleAddon}
                 onPaymentMethodChange={setPaymentMethod}
+                onViewDetails={openDrawerById}
               >
                 <PickupForm
                   receiverName={receiverName}
@@ -211,5 +323,37 @@ export default function BookLaundryPage() {
         </div>
       </div>
     </motion.div>
+
+    {/* ── Service Detail Drawer ─────────────────────────────────────────────── */}
+    <ServiceDetailDrawer
+      service={drawerService}
+      isOpen={!!drawerService}
+      onClose={closeDrawer}
+      cartItem={cart.find((i) => i.service.id === drawerService?.id)}
+      inCart={cart.some((i) => i.service.id === drawerService?.id)}
+      onAdd={(svc) => { addToCart(svc); }}
+      onToggleAddon={toggleAddon}
+      onUpdateQuantity={updateQuantity}
+      onUpdateGarmentQty={updateGarmentQty}
+      onRemove={removeFromCart}
+    />
+    </>
+  );
+}
+
+export default function BookLaundryPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-[60vh] flex-col items-center justify-center gap-3">
+          <div className="w-16 h-16 rounded-3xl bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center text-blue-600 dark:text-blue-400">
+            <Loader2 size={28} className="animate-spin" />
+          </div>
+          <p className="text-slate-400 font-bold text-xs">Loading laundry services...</p>
+        </div>
+      }
+    >
+      <BookLaundryContent />
+    </Suspense>
   );
 }

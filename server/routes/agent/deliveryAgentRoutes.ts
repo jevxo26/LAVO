@@ -27,6 +27,11 @@ router.patch(
   deliveryAgentController.acceptPickup
 );
 
+router.patch(
+  "/decline-pickup/:deliveryId",
+  deliveryAgentController.declinePickup
+);
+
 
 router.get(
   "/available-deliveries",
@@ -36,6 +41,11 @@ router.get(
 router.patch(
   "/accept-delivery/:deliveryId",
   availableDeliveriesController.acceptDelivery
+);
+
+router.patch(
+  "/decline-delivery/:deliveryId",
+  availableDeliveriesController.declineDelivery
 );
 
 router.get(

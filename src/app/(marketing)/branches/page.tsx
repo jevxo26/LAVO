@@ -2,6 +2,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { PageHero } from "@/components/shared/PageHero";
 import { MapPin, Clock, Phone } from "lucide-react";
+import Link from "next/link";
 import prisma from "@/lib/prisma";
 
 export const revalidate = 0;
@@ -139,9 +140,11 @@ export default async function BranchesPage() {
                       <button className="w-full py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50 transition-colors">
                         Directions
                       </button>
-                      <button className="w-full py-2.5 rounded-xl bg-brand-blue text-white text-sm font-semibold hover:bg-blue-600 transition-colors">
-                        Book Pickup
-                      </button>
+                      <Link href="/services" className="w-full">
+                        <button className="w-full py-2.5 rounded-xl bg-brand-blue text-white text-sm font-semibold hover:bg-blue-600 transition-colors">
+                          Book Pickup
+                        </button>
+                      </Link>
                     </div>
                   </div>
                 ))}

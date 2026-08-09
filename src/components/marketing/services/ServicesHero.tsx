@@ -51,7 +51,7 @@ export function ServicesHero() {
           className="flex flex-col sm:flex-row items-center gap-4"
         >
           <Link
-            href="/book"
+            href="/dashboard/book-services"
             className="flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-white text-slate-900 text-sm font-semibold hover:bg-slate-100 transition-all shadow-lg hover:shadow-white/20"
           >
             Schedule Pickup

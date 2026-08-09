@@ -245,7 +245,7 @@ export function CheckoutModal({
                     </div>
 
                     <div className="mt-3">
-                      <p className="text-xs font-black text-slate-900 dark:text-white">SSLCommerz Online</p>
+                      <p className="text-xs font-black text-slate-900 dark:text-white">Pay Online</p>
                       <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400 mt-0.5">
                         bKash, Nagad, Rocket, Visa &amp; Mastercard
                       </p>
@@ -276,7 +276,7 @@ export function CheckoutModal({
                     </div>
 
                     <div className="mt-3">
-                      <p className="text-xs font-black text-slate-900 dark:text-white">LAVO Pay Wallet</p>
+                      <p className="text-xs font-black text-slate-900 dark:text-white">Laundrix Wallet</p>
                       <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400 mt-0.5">
                         Instant 1-tap checkout
                       </p>

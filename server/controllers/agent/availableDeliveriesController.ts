@@ -41,3 +41,20 @@ export const acceptDelivery = catchAsync(
     });
   }
 );
+
+export const declineDelivery = catchAsync(
+  async (req: AuthRequest, res: Response) => {
+    const userId = req.user!.userId;
+    const deliveryId = req.params.deliveryId as string;
+
+    const result =
+      await availableDeliveriesService.declineDelivery(userId, deliveryId);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: "Delivery declined successfully",
+      data: result,
+    });
+  }
+);

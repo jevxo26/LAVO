@@ -49,7 +49,7 @@ export const getPickupOrders = catchServiceAsync(async (req: any, res: Response)
       },
       branch: true
     },
-    orderBy: { createdAt: 'asc' }
+    orderBy: { createdAt: 'desc' }
   });
 
   const formatted = orders.map((order: any) => {
@@ -89,7 +89,7 @@ export const getOrderQrCodes = catchServiceAsync(async (req: any, res: Response)
     where: { orderItem: { orderId } },
     include: {
       qrCodeRecord: true,
-      orderItem: { include: { garmentType: true } }
+      orderItem: { include: { garmentType: true, service: true } }
     }
   });
 
@@ -120,7 +120,7 @@ export const getOrderQrCodes = catchServiceAsync(async (req: any, res: Response)
         where: { orderItem: { orderId } },
         include: {
           qrCodeRecord: true,
-          orderItem: { include: { garmentType: true } }
+          orderItem: { include: { garmentType: true, service: true } }
         }
       });
     }

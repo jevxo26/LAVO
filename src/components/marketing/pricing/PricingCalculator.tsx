@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useMemo } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Calculator, Minus, Plus, Trash2 } from "lucide-react";
 
@@ -121,16 +121,33 @@ function parsePricingData(items: CmsItem[]) {
 
 export function PricingCalculator({ data }: { data?: any }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const requestedServiceParam = searchParams.get("service") || searchParams.get("serviceId") || "";
 
   // Parse CMS data, falling back to hardcoded defaults per category
   const cmsItems: CmsItem[] = data?.items ?? [];
-  const parsed = parsePricingData(cmsItems);
+  const parsed = useMemo(() => parsePricingData(cmsItems), [cmsItems]);
 
-  const baseGarments: Garment[] = parsed.garments.length ? parsed.garments : DEFAULT_GARMENTS;
-  const garments: Garment[] = [...baseGarments, CUSTOM_GARMENT_OPTION];
-  const services = parsed.services.length ? parsed.services : DEFAULT_SERVICES;
-  const turnarounds = parsed.turnarounds.length ? parsed.turnarounds : DEFAULT_TURNAROUNDS;
-  const addons = parsed.addons.length ? parsed.addons : DEFAULT_ADDONS;
+  const baseGarments: Garment[] = useMemo(
+    () => (parsed.garments.length ? parsed.garments : DEFAULT_GARMENTS),
+    [parsed.garments]
+  );
+  const garments: Garment[] = useMemo(
+    () => [...baseGarments, CUSTOM_GARMENT_OPTION],
+    [baseGarments]
+  );
+  const services = useMemo(
+    () => (parsed.services.length ? parsed.services : DEFAULT_SERVICES),
+    [parsed.services]
+  );
+  const turnarounds = useMemo(
+    () => (parsed.turnarounds.length ? parsed.turnarounds : DEFAULT_TURNAROUNDS),
+    [parsed.turnarounds]
+  );
+  const addons = useMemo(
+    () => (parsed.addons.length ? parsed.addons : DEFAULT_ADDONS),
+    [parsed.addons]
+  );
 
   const [applySameServiceToAll, setApplySameServiceToAll] = useState(true);
   const [globalServices, setGlobalServices] = useState<Service[]>(() => [
@@ -145,6 +162,18 @@ export function PricingCalculator({ data }: { data?: any }) {
     },
   ]);
   const [selectedTurnaround, setSelectedTurnaround] = useState<Turnaround>(turnarounds[0]);
+
+  // Pre-select service from URL parameter if passed (e.g. ?service=Wash%20%26%20Fold)
+  useEffect(() => {
+    if (requestedServiceParam && services.length > 0) {
+      const query = requestedServiceParam.toLowerCase().trim();
+      const matched = services.find((s) => s.name.toLowerCase().includes(query));
+      if (matched) {
+        setGlobalServices([matched]);
+        setItems((prev) => prev.map((item) => ({ ...item, services: [matched] })));
+      }
+    }
+  }, [requestedServiceParam]);
 
   // Handlers for garments
   const handleAddGarment = () => {

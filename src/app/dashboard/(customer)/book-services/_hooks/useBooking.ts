@@ -1,19 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { authFetch } from "@/lib/api";
 import { toast } from "@/lib/toast";
-import type { CartItem, PaymentMethod, Service } from "../_types";
+import type { CartItem, GarmentItem, PaymentMethod, Service } from "../_types";
 
 export function useBooking() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const requestedServiceParam = searchParams.get("service") || searchParams.get("serviceId") || "";
 
   const [services, setServices] = useState<Service[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [activeCategory, setActiveCategory] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [walletBalance, setWalletBalance] = useState(0);
+  const [autoSelectedService, setAutoSelectedService] = useState<Service | null>(null);
 
   const [cart, setCart] = useState<CartItem[]>([]);
   const [receiverName, setReceiverName] = useState("");
@@ -36,7 +39,81 @@ export function useBooking() {
           setServices(list);
           const cats = Array.from(new Set(list.map((s) => s.category)));
           setCategories(cats);
-          if (cats.length > 0) setActiveCategory(cats[0]);
+          setActiveCategory("");
+
+          let loadedFromSession = false;
+          if (typeof window !== "undefined") {
+            const rawPayload = sessionStorage.getItem("pending_laundry_booking");
+            if (rawPayload) {
+              try {
+                const booking = JSON.parse(rawPayload);
+                if (booking.items && Array.isArray(booking.items) && booking.items.length > 0) {
+                  const newCartItems: CartItem[] = [];
+                  for (const bItem of booking.items) {
+                    const mainServiceName = bItem.services?.[0]?.name;
+                    const matched = list.find((s) =>
+                      mainServiceName
+                        ? s.serviceName.toLowerCase().includes(mainServiceName.toLowerCase())
+                        : false
+                    ) || list.find((s) => bItem.garment && s.garmentType.toLowerCase().includes(bItem.garment.toLowerCase())) || list[0];
+
+                    if (matched) {
+                      const garmentName = bItem.garment || matched.garmentType || "General Item";
+                      const itemQty = bItem.quantity || 1;
+
+                      const existingIdx = newCartItems.findIndex((c) => c.service.id === matched.id);
+                      if (existingIdx >= 0) {
+                        newCartItems[existingIdx].quantity += itemQty;
+                        const existingG = newCartItems[existingIdx].garmentBreakdown.find(
+                          (g) => g.type.toLowerCase() === garmentName.toLowerCase()
+                        );
+                        if (existingG) {
+                          existingG.qty += itemQty;
+                        } else {
+                          newCartItems[existingIdx].garmentBreakdown.push({ type: garmentName, qty: itemQty });
+                        }
+                      } else {
+                        newCartItems.push({
+                          service: matched,
+                          quantity: itemQty,
+                          selectedAddons: [],
+                          garmentBreakdown: [{ type: garmentName, qty: itemQty }],
+                        });
+                      }
+                    }
+                  }
+
+                  if (newCartItems.length > 0) {
+                    setCart(newCartItems);
+                    setAutoSelectedService(newCartItems[0].service);
+                    loadedFromSession = true;
+                    toast.success("Loaded your custom selection from Pricing Calculator!");
+                    sessionStorage.removeItem("pending_laundry_booking");
+                  }
+                }
+              } catch (e) {
+                console.error("Failed to parse pending booking from sessionStorage", e);
+              }
+            }
+          }
+
+          // ── Auto-add requested service from URL parameter if not loaded from session ──
+          if (!loadedFromSession && requestedServiceParam && list.length > 0) {
+            const query = requestedServiceParam.toLowerCase().trim();
+            const matched = list.find(
+              (s) =>
+                s.id === requestedServiceParam ||
+                s.serviceName.toLowerCase().includes(query) ||
+                s.category.toLowerCase().includes(query) ||
+                s.garmentType.toLowerCase().includes(query)
+            );
+
+            if (matched) {
+              const defaultGarment = matched.garmentType || "Shirt";
+              setCart([{ service: matched, quantity: 1, selectedAddons: [], garmentBreakdown: [{ type: defaultGarment, qty: 1 }] }]);
+              setAutoSelectedService(matched);
+            }
+          }
         }
 
         const profileRes = await authFetch("/customer/profile");
@@ -55,7 +132,7 @@ export function useBooking() {
       }
     }
     loadData();
-  }, []);
+  }, [requestedServiceParam]);
 
   const toggleWishlist = async (service: Service) => {
     try {
@@ -84,7 +161,8 @@ export function useBooking() {
       toast.info(`${service.serviceName} is already in your booking`);
       return;
     }
-    setCart((prev) => [...prev, { service, quantity: 1, selectedAddons: [] }]);
+    const defaultGarment = service.garmentType || "Shirt";
+    setCart((prev) => [...prev, { service, quantity: 1, selectedAddons: [], garmentBreakdown: [{ type: defaultGarment, qty: 1 }] }]);
     toast.success(`Added ${service.serviceName}`);
   };
 
@@ -113,6 +191,30 @@ export function useBooking() {
             ? item.selectedAddons.filter((id) => id !== addonId)
             : [...item.selectedAddons, addonId],
         };
+      })
+    );
+  };
+
+  // Update quantity of a specific garment type within a cart item.
+  // qty=0 removes that garment type entry. Total quantity auto-recalculates.
+  const updateGarmentQty = (serviceId: string, garmentType: string, change: number) => {
+    setCart((prev) =>
+      prev.map((item) => {
+        if (item.service.id !== serviceId) return item;
+        const existing = item.garmentBreakdown.find((g) => g.type === garmentType);
+        let newBreakdown: GarmentItem[];
+        if (existing) {
+          const newQty = Math.max(0, existing.qty + change);
+          newBreakdown = newQty === 0
+            ? item.garmentBreakdown.filter((g) => g.type !== garmentType)
+            : item.garmentBreakdown.map((g) => g.type === garmentType ? { ...g, qty: newQty } : g);
+        } else if (change > 0) {
+          newBreakdown = [...item.garmentBreakdown, { type: garmentType, qty: change }];
+        } else {
+          newBreakdown = item.garmentBreakdown;
+        }
+        const totalQty = newBreakdown.reduce((s, g) => s + g.qty, 0);
+        return { ...item, garmentBreakdown: newBreakdown, quantity: Math.max(1, totalQty) };
       })
     );
   };
@@ -192,7 +294,7 @@ export function useBooking() {
   return {
     services, categories, activeCategory, setActiveCategory,
     loading, walletBalance,
-    cart, addToCart, removeFromCart, updateQuantity, toggleAddon,
+    cart, addToCart, removeFromCart, updateQuantity, updateGarmentQty, toggleAddon,
     toggleWishlist,
     receiverName, setReceiverName,
     receiverPhone, setReceiverPhone,
@@ -204,5 +306,7 @@ export function useBooking() {
     paymentMethod, setPaymentMethod,
     subtotal, deliveryCharge, tax, grandTotal,
     submitting, handleSubmit,
+    requestedServiceParam,
+    autoSelectedService,
   };
 }
