@@ -10,7 +10,37 @@ import { EmployeeOverview } from "@/components/dashboard/(employee)/overview/Emp
 import { AgentOverview } from "@/components/dashboard/(agent)/overview/AgentOverview";
 import { CustomerOverview } from "@/components/dashboard/(customer)/overview/CustomerOverview";
 
-/** Normalize raw role string from JWT to a canonical role key */
+// ─── Auth-loading skeleton ────────────────────────────────────────────────────
+// Shown while useAuth() resolves — mirrors the general overview layout so
+// there is no blank flash before the role-specific overview mounts.
+
+function Sk({ className }: { className?: string }) {
+  return <div className={`animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800 ${className ?? ""}`} />;
+}
+
+function DashboardAuthSkeleton() {
+  return (
+    <div className="space-y-7">
+      {/* Hero banner */}
+      <Sk className="h-52 w-full rounded-3xl" />
+      {/* Stat cards */}
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {[0, 1, 2, 3].map((i) => <Sk key={i} className="h-32" />)}
+      </div>
+      {/* Main content + sidebar */}
+      <div className="grid gap-6 md:grid-cols-6">
+        <Sk className="md:col-span-4 h-80" />
+        <div className="md:col-span-2 space-y-4">
+          <Sk className="h-36" />
+          <Sk className="h-36" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Role normalizer ──────────────────────────────────────────────────────────
+
 function normalizeRole(raw: string): string {
   const r = raw.toUpperCase().trim().replace(/[\s-]+/g, "_");
 
@@ -25,39 +55,24 @@ function normalizeRole(raw: string): string {
   return r;
 }
 
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
 export default function DashboardRootPage() {
   const { user, isLoading } = useAuth();
 
-  if (isLoading) {
-    return (
-      <div className="flex h-[60vh] w-full items-center justify-center">
-        <div className="flex flex-col items-center gap-3 text-slate-500">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
-          <p className="text-xs font-semibold text-slate-600">Loading your dashboard...</p>
-        </div>
-      </div>
-    );
-  }
+  if (isLoading) return <DashboardAuthSkeleton />;
 
   const rawRole = (user as any)?.role || (user as any)?.userType || "";
   const role = normalizeRole(rawRole);
 
   switch (role) {
-    case "SUPER_ADMIN":
-      return <SuperAdminOverview />;
-    case "ADMIN":
-      return <NormalAdminOverview />;
-    case "BRANCH_MANAGER":
-      return <BranchManagerOverview />;
-    case "VENDOR":
-      return <VendorOverview />;
-    case "EMPLOYEE":
-      return <EmployeeOverview />;
-    case "DELIVERY_AGENT":
-      return <AgentOverview />;
-    case "CUSTOMER":
-      return <CustomerOverview />;
-    default:
-      return <NormalAdminOverview />;
+    case "SUPER_ADMIN":    return <SuperAdminOverview />;
+    case "ADMIN":          return <NormalAdminOverview />;
+    case "BRANCH_MANAGER": return <BranchManagerOverview />;
+    case "VENDOR":         return <VendorOverview />;
+    case "EMPLOYEE":       return <EmployeeOverview />;
+    case "DELIVERY_AGENT": return <AgentOverview />;
+    case "CUSTOMER":       return <CustomerOverview />;
+    default:               return <NormalAdminOverview />;
   }
 }
