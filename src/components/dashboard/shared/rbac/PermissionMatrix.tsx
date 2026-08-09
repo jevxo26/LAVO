@@ -1,102 +1,113 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { authFetch } from "@/lib/api";
+import { Save, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import axios from "axios";
 
 interface Permission {
-  id: string;
-  module: string;
-  action: string;
+  id:             string;
+  module:         string;
+  action:         string;
   permissionName: string;
 }
 
 interface PermissionMatrixProps {
-  roleId: string;
-  roleName: string;
-  allPermissions: Permission[];
+  roleId:           string;
+  roleName:         string;
+  allPermissions:   Permission[];
   initialActiveIds: string[];
-  onSaved: () => void;
+  onSaved:          () => void;
 }
 
-const MODULES = ["Order", "Customer", "Branch", "Vendor", "Payment", "QR Tracking", "Pickup", "Delivery", "Reports", "Analytics"];
-const ACTIONS = ["Create", "Read", "Update", "Delete", "Approve", "Assign", "Export", "Cancel"];
+const MODULES = ["Order","Customer","Branch","Vendor","Payment","QR Tracking","Pickup","Delivery","Reports","Analytics"];
+const ACTIONS  = ["Create","Read","Update","Delete","Approve","Assign","Export","Cancel"];
 
 export function PermissionMatrix({ roleId, roleName, allPermissions, initialActiveIds, onSaved }: PermissionMatrixProps) {
   const [activeIds, setActiveIds] = useState<Set<string>>(new Set());
-  const [saving, setSaving] = useState(false);
+  const [saving,    setSaving]    = useState(false);
 
   useEffect(() => {
     setActiveIds(new Set(initialActiveIds));
   }, [initialActiveIds, roleId]);
 
   const togglePermission = (permId: string) => {
-    const next = new Set(activeIds);
-    if (next.has(permId)) next.delete(permId);
-    else next.add(permId);
-    setActiveIds(next);
+    setActiveIds((prev) => {
+      const next = new Set(prev);
+      next.has(permId) ? next.delete(permId) : next.add(permId);
+      return next;
+    });
   };
 
   const handleSave = async () => {
     setSaving(true);
     try {
-      await axios.put(`/api/roles/${roleId}/permissions`, {
-        permissionIds: Array.from(activeIds),
+      const res  = await authFetch(`/api/roles/${roleId}/permissions`, {
+        method:  "PUT",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ permissionIds: Array.from(activeIds) }),
       });
-      toast.success(`Matrix updated for ${roleName}`);
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message || "Failed to update");
+      toast.success(`Permission matrix updated for ${roleName}`);
       onSaved();
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to update matrix");
+      toast.error(err.message || "Failed to update matrix");
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
-      <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+    <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm flex flex-col">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-border px-5 py-4">
         <div>
-          <h3 className="font-bold text-slate-900 text-lg">Permission Control Matrix</h3>
-          <p className="text-slate-400 text-xs mt-0.5">Toggle fine-grained access bounds for {roleName}</p>
+          <h3 className="text-sm font-black text-card-foreground">Permission Control Matrix</h3>
+          <p className="text-[11px] text-muted-foreground mt-0.5">Toggle fine-grained access for <span className="font-black text-card-foreground">{roleName}</span></p>
         </div>
         <button
           onClick={handleSave}
           disabled={saving}
-          className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm transition-all shadow-md disabled:opacity-50"
+          className="flex items-center gap-1.5 h-9 px-4 rounded-xl text-xs font-black text-white bg-gradient-to-br from-primary to-indigo-700 hover:opacity-90 transition-all hover:scale-[1.02] shadow-sm disabled:opacity-50"
         >
-          {saving ? "Saving Changes..." : "Save Changes"}
+          {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
+          {saving ? "Saving…" : "Save Changes"}
         </button>
       </div>
 
+      {/* Matrix table */}
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-slate-50 border-b border-slate-100">
-              <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider min-w-[150px]">Module</th>
+            <tr className="border-b border-border bg-muted/50">
+              <th className="px-4 py-3 text-[10.5px] font-black uppercase tracking-wider text-muted-foreground min-w-[140px]">
+                Module
+              </th>
               {ACTIONS.map((action) => (
-                <th key={action} className="p-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">
+                <th key={action} className="px-3 py-3 text-center text-[10.5px] font-black uppercase tracking-wider text-muted-foreground">
                   {action}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-border">
             {MODULES.map((module) => (
-              <tr key={module} className="border-b border-slate-100 hover:bg-slate-50/50 transition-colors">
-                <td className="p-4 text-sm font-bold text-slate-700">{module}</td>
+              <tr key={module} className="hover:bg-muted/40 transition-colors duration-100">
+                <td className="px-4 py-3 text-[13px] font-black text-card-foreground">{module}</td>
                 {ACTIONS.map((action) => {
                   const perm = allPermissions.find((p) => p.module === module && p.action === action);
                   return (
-                    <td key={action} className="p-4 text-center">
+                    <td key={action} className="px-3 py-3 text-center">
                       {perm ? (
                         <input
                           type="checkbox"
                           checked={activeIds.has(perm.id)}
                           onChange={() => togglePermission(perm.id)}
-                          className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500 cursor-pointer"
+                          className="h-4 w-4 cursor-pointer rounded accent-primary focus:ring-2 focus:ring-ring/50"
                         />
                       ) : (
-                        <span className="text-slate-300 text-xs">-</span>
+                        <span className="text-[11px] text-muted-foreground/40">—</span>
                       )}
                     </td>
                   );
