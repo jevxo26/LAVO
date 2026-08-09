@@ -73,7 +73,7 @@ function WalletBalanceCard({ balance, onTopUp }: { balance: number; onTopUp: () 
       <div className="relative z-10 flex flex-col gap-6">
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-[11px] font-black uppercase tracking-widest text-cyan-300">LAVO Pay Wallet Balance</p>
+            <p className="text-[11px] font-black uppercase tracking-widest text-cyan-300">Laundrix Wallet Balance</p>
             <p className="mt-2 text-4xl font-black tracking-tight leading-none text-white">
               ৳{balance.toFixed(2)}
             </p>
@@ -169,7 +169,7 @@ function TopupDialog({ open, onOpenChange }: TopupDialogProps) {
       });
       const data = await res.json();
       if (data.success && data.data?.gatewayUrl) {
-        toast.info("Redirecting to SSLCommerz gateway...");
+        toast.info("Redirecting to payment gateway...");
         window.location.href = data.data.gatewayUrl;
       } else {
         toast.error(data.message || "Failed to initialize payment gateway");
@@ -192,7 +192,7 @@ function TopupDialog({ open, onOpenChange }: TopupDialogProps) {
             Instant Wallet Top-Up
           </DialogTitle>
           <DialogDescription className="text-xs text-slate-500 font-medium">
-            Deposit cash securely via SSLCommerz — bKash, Nagad, Visa, Mastercard, Rocket.
+            Deposit cash securely via Online Payment — bKash, Nagad, Visa, Mastercard, Rocket.
           </DialogDescription>
         </DialogHeader>
 
@@ -387,7 +387,7 @@ export default function WalletPage() {
               </span>
             </div>
             <h1 className="text-3xl md:text-4xl font-black tracking-tight text-white leading-tight">
-              My LAVO Pay Wallet
+              My Laundrix Wallet
             </h1>
             <p className="text-blue-100 text-xs md:text-sm leading-relaxed font-medium max-w-xl">
               1-tap instant laundry checkout, automatic cashbacks, and transparent transaction logs.
