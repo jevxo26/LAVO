@@ -1,133 +1,84 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { CircleDollarSign, Save, Loader2 } from "lucide-react";
+import { Save, Loader2, Truck, Zap, Percent } from "lucide-react";
 import { toast } from "sonner";
 
 export interface PricingTaxData {
-  baseDeliveryFee: number;
-  expressMultiplier: number;
+  baseDeliveryFee:     number;
+  expressMultiplier:   number;
   globalTaxPercentage: number;
 }
 
 interface PricingTaxFormProps {
   initialData?: PricingTaxData;
-  onSave?: (data: PricingTaxData) => Promise<void>;
+  onSave?:      (data: PricingTaxData) => Promise<void>;
 }
 
+const FIELDS = [
+  { key: "baseDeliveryFee"     as const, label: "Base Delivery Fee",           sub: "Flat fee applied to every standard order",               unit: "৳ BDT",       icon: Truck,   gradient: "from-primary to-indigo-700",   min: 0,  max: undefined, step: 1   },
+  { key: "expressMultiplier"   as const, label: "Express Delivery Multiplier", sub: "Multiplied on base fee for same-day express (1.5 = 150%)",unit: "× multiplier", icon: Zap,     gradient: "from-amber-400 to-orange-500", min: 1,  max: 5,         step: 0.1 },
+  { key: "globalTaxPercentage" as const, label: "Global Tax Rate (VAT)",       sub: "Platform-wide VAT applied to all taxable transactions",   unit: "% percent",   icon: Percent, gradient: "from-emerald-500 to-teal-600", min: 0,  max: 100,       step: 0.5 },
+];
+
 export const PricingTaxForm: React.FC<PricingTaxFormProps> = ({ initialData, onSave }) => {
-  const [baseFee, setBaseFee] = useState<number>(initialData?.baseDeliveryFee ?? 50);
-  const [expressMult, setExpressMult] = useState<number>(initialData?.expressMultiplier ?? 1.5);
-  const [taxPercent, setTaxPercent] = useState<number>(initialData?.globalTaxPercentage ?? 15);
+  const [values, setValues] = useState<PricingTaxData>({
+    baseDeliveryFee:     initialData?.baseDeliveryFee     ?? 50,
+    expressMultiplier:   initialData?.expressMultiplier   ?? 1.5,
+    globalTaxPercentage: initialData?.globalTaxPercentage ?? 15,
+  });
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    if (initialData) {
-      setBaseFee(initialData.baseDeliveryFee ?? 50);
-      setExpressMult(initialData.expressMultiplier ?? 1.5);
-      setTaxPercent(initialData.globalTaxPercentage ?? 15);
-    }
-  }, [initialData]);
+  useEffect(() => { if (initialData) setValues(initialData); }, [initialData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const payload: PricingTaxData = {
-        baseDeliveryFee: Number(baseFee),
-        expressMultiplier: Number(expressMult),
-        globalTaxPercentage: Number(taxPercent),
-      };
-
+      const payload = { baseDeliveryFee: Number(values.baseDeliveryFee), expressMultiplier: Number(values.expressMultiplier), globalTaxPercentage: Number(values.globalTaxPercentage) };
       if (onSave) {
         await onSave(payload);
       } else {
         const token = typeof window !== "undefined" ? localStorage.getItem("laundrix_token") : null;
-        const res = await fetch("/api/system-settings/pricing-tax", {
+        const res   = await fetch("/api/system-settings/pricing-tax", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: token ? `Bearer ${token}` : "",
-          },
+          headers: { "Content-Type": "application/json", Authorization: token ? `Bearer ${token}` : "" },
           body: JSON.stringify(payload),
         });
         const json = await res.json();
-        if (!res.ok) throw new Error(json.message || "Failed to update pricing & tax settings");
+        if (!res.ok) throw new Error(json.message || "Failed to update");
       }
-      toast.success("Pricing & Global Tax Configuration updated!");
-    } catch (err: any) {
-      toast.error(err.message || "Failed to update pricing & tax settings");
-    } finally {
-      setIsLoading(false);
-    }
+      toast.success("Pricing & Tax configuration saved!");
+    } catch (err: any) { toast.error(err.message || "Failed to save"); }
+    finally { setIsLoading(false); }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-6 w-full">
-      <div className="border-b border-slate-100 dark:border-slate-800 pb-4">
-        <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-          <CircleDollarSign className="text-blue-600" size={20} /> Pricing & Tax Rules
-        </h3>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Set platform-wide delivery pricing rates and global VAT tax rates.</p>
-      </div>
-
-      <div className="space-y-4">
-        <div>
-          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
-            Base Delivery Fee (BDT ৳)
-          </label>
-          <input
-            type="number"
-            min="0"
-            step="1"
-            value={baseFee}
-            onChange={(e) => setBaseFee(parseFloat(e.target.value) || 0)}
-            required
-            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-          />
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {FIELDS.map(({ key, label, sub, unit, icon: Icon, gradient, min, max, step }) => (
+        <div key={key} className="flex flex-col sm:flex-row sm:items-center gap-4 rounded-2xl border border-border bg-card p-5 shadow-sm">
+          <div className="flex items-center gap-4 flex-1 min-w-0">
+            <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${gradient} text-white shadow-md shadow-black/10`}>
+              <Icon size={18} strokeWidth={2.2} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[13px] font-black text-card-foreground">{label}</p>
+              <p className="text-[11px] text-muted-foreground font-medium mt-0.5 leading-snug">{sub}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <input type="number" min={min} max={max} step={step} value={values[key]} required
+              onChange={(e) => setValues((p) => ({ ...p, [key]: parseFloat(e.target.value) || 0 }))}
+              className="w-28 h-10 rounded-xl border border-border bg-muted px-3 text-sm font-black text-card-foreground tabular-nums text-right focus:outline-none focus:ring-2 focus:ring-ring/50 focus:bg-card transition" />
+            <span className="text-[11px] font-bold text-muted-foreground whitespace-nowrap">{unit}</span>
+          </div>
         </div>
-
-        <div>
-          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
-            Express Delivery Multiplier (e.g. 1.5 = 150%)
-          </label>
-          <input
-            type="number"
-            min="1"
-            max="5"
-            step="0.1"
-            value={expressMult}
-            onChange={(e) => setExpressMult(parseFloat(e.target.value) || 1)}
-            required
-            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
-            Global Tax Percentage (%)
-          </label>
-          <input
-            type="number"
-            min="0"
-            max="100"
-            step="0.5"
-            value={taxPercent}
-            onChange={(e) => setTaxPercent(parseFloat(e.target.value) || 0)}
-            required
-            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-          />
-        </div>
-      </div>
-
-      <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-end">
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white font-semibold rounded-xl text-sm hover:bg-blue-700 shadow-sm transition-colors disabled:opacity-50"
-        >
-          {isLoading ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-          <span>Save Pricing & Tax</span>
+      ))}
+      <div className="flex justify-end pt-1">
+        <button type="submit" disabled={isLoading}
+          className="flex items-center gap-2 h-10 px-6 rounded-xl text-xs font-black text-white bg-gradient-to-br from-primary to-indigo-700 hover:opacity-90 transition-all hover:scale-[1.02] shadow-md disabled:opacity-50">
+          {isLoading ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+          Save Pricing & Tax
         </button>
       </div>
     </form>
