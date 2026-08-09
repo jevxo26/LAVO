@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, Suspense, useRef, useEffect } from "react";
-import { Loader2, Sparkles, Shirt, ShoppingBag, Search, RotateCcw, CheckCircle2, ArrowRight } from "lucide-react";
+import { Sparkles, Shirt, ShoppingBag, Search, RotateCcw, CheckCircle2, ArrowRight } from "lucide-react";
 import { useBooking } from "./_hooks/useBooking";
 import { ServiceCard } from "./_components/ServiceCard";
 import { CartSummary } from "./_components/CartSummary";
@@ -10,6 +10,60 @@ import { ServiceDetailDrawer } from "./_components/ServiceDetailDrawer";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import type { Service } from "./_types";
+
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
+
+function Sk({ className }: { className?: string }) {
+  return <div className={`animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800 ${className ?? ""}`} />;
+}
+
+function BookServicesSkeleton() {
+  return (
+    <div className="space-y-7">
+      {/* Hero skeleton */}
+      <Sk className="h-44 w-full rounded-3xl" />
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        {/* Left — services */}
+        <div className="lg:col-span-2 space-y-5">
+          {/* Category tabs */}
+          <div className="flex gap-2 overflow-hidden">
+            {[0,1,2,3,4].map((i) => <Sk key={i} className="h-9 w-24 rounded-xl flex-shrink-0" />)}
+          </div>
+          {/* Search bar */}
+          <Sk className="h-11 w-full rounded-xl" />
+          {/* Service cards grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {[0,1,2,3,4,5].map((i) => (
+              <div key={i} className="rounded-2xl border border-slate-100 bg-white p-5 space-y-3 shadow-sm">
+                <div className="flex items-start gap-3">
+                  <Sk className="h-12 w-12 rounded-xl flex-shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <Sk className="h-4 w-3/4" />
+                    <Sk className="h-3 w-1/2" />
+                  </div>
+                </div>
+                <Sk className="h-3 w-full" />
+                <Sk className="h-3 w-5/6" />
+                <div className="flex items-center justify-between pt-1">
+                  <Sk className="h-5 w-16" />
+                  <Sk className="h-8 w-24 rounded-xl" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Right — cart sidebar */}
+        <div className="space-y-4">
+          <Sk className="h-64 w-full rounded-2xl" />
+          <Sk className="h-40 w-full rounded-2xl" />
+          <Sk className="h-12 w-full rounded-xl" />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function BookLaundryContent() {
   const {
@@ -64,16 +118,7 @@ function BookLaundryContent() {
   const countByCategory = (cat: string) =>
     cat === "All" ? services.length : services.filter((s) => s.category === cat).length;
 
-  if (loading) {
-    return (
-      <div className="flex h-[60vh] flex-col items-center justify-center gap-3">
-        <div className="w-16 h-16 rounded-3xl bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center text-blue-600 dark:text-blue-400">
-          <Loader2 size={28} className="animate-spin" />
-        </div>
-        <p className="text-slate-400 font-bold text-xs">Loading laundry services...</p>
-      </div>
-    );
-  }
+  if (loading) return <BookServicesSkeleton />;
 
   return (
     <>

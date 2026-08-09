@@ -4,7 +4,7 @@ import React, { useEffect, useState, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { io, Socket } from "socket.io-client";
 import { useAuth } from "@/hooks/useAuth";
-import { Loader2, Package } from "lucide-react";
+import { Package } from "lucide-react";
 import { authFetch } from "@/lib/api";
 import { toast } from "@/lib/toast";
 
@@ -12,6 +12,84 @@ import { OrderDetails, getTrackingStepsForOrder, getStepIndexForOrder, progressP
 import { TrackHeroHeader }   from "@/components/marketing/track-orders/TrackHeroHeader";
 import { TrackingTimeline }  from "@/components/marketing/track-orders/TrackingTimeline";
 import { OrderDetailsPanel } from "@/components/marketing/track-orders/OrderDetailsPanel";
+
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
+
+function Sk({ className }: { className?: string }) {
+  return <div className={`animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800 ${className ?? ""}`} />;
+}
+
+function TrackOrdersSkeleton() {
+  return (
+    <div className="space-y-6">
+      {/* Hero / search bar skeleton */}
+      <Sk className="h-36 w-full rounded-3xl" />
+
+      <div className="grid gap-6 lg:grid-cols-12 items-start">
+        {/* Timeline skeleton */}
+        <div className="lg:col-span-8 rounded-3xl border border-slate-100 bg-white shadow-sm p-6 space-y-6 dark:bg-slate-900 dark:border-slate-800">
+          {/* Order header */}
+          <div className="flex items-center justify-between">
+            <div className="space-y-2">
+              <Sk className="h-5 w-36" />
+              <Sk className="h-3 w-24" />
+            </div>
+            <Sk className="h-7 w-20 rounded-full" />
+          </div>
+          {/* Progress bar */}
+          <Sk className="h-2 w-full rounded-full" />
+          {/* Steps */}
+          <div className="flex justify-between gap-2">
+            {[0,1,2,3,4].map((i) => (
+              <div key={i} className="flex flex-col items-center gap-2 flex-1">
+                <Sk className="h-10 w-10 rounded-full" />
+                <Sk className="h-2.5 w-14" />
+              </div>
+            ))}
+          </div>
+          {/* Details rows */}
+          <div className="space-y-3 pt-2">
+            {[0,1,2].map((i) => (
+              <div key={i} className="flex gap-3 items-center">
+                <Sk className="h-8 w-8 rounded-xl flex-shrink-0" />
+                <div className="flex-1 space-y-1.5">
+                  <Sk className="h-3 w-32" />
+                  <Sk className="h-2.5 w-48" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Order details panel skeleton */}
+        <div className="lg:col-span-4 rounded-3xl border border-slate-100 bg-white shadow-sm p-5 space-y-4 dark:bg-slate-900 dark:border-slate-800">
+          <Sk className="h-4 w-28" />
+          <div className="space-y-3">
+            {[0,1,2,3].map((i) => (
+              <div key={i} className="flex justify-between">
+                <Sk className="h-3 w-24" />
+                <Sk className="h-3 w-16" />
+              </div>
+            ))}
+          </div>
+          <Sk className="h-px w-full" />
+          <div className="space-y-3">
+            {[0,1,2].map((i) => (
+              <div key={i} className="flex gap-2 items-center">
+                <Sk className="h-8 w-8 rounded-xl flex-shrink-0" />
+                <div className="flex-1 space-y-1.5">
+                  <Sk className="h-3 w-28" />
+                  <Sk className="h-2.5 w-16" />
+                </div>
+                <Sk className="h-5 w-12 rounded-full" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // ─── TrackerContent ───────────────────────────────────────────────────────────
 
@@ -146,12 +224,7 @@ function TrackerContent() {
       />
 
       {loading ? (
-        <div className="flex h-64 flex-col items-center justify-center gap-3.5 rounded-3xl border border-slate-200/80 bg-white p-8 shadow-sm dark:bg-slate-900 dark:border-slate-800">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400">
-            <Loader2 size={28} className="animate-spin" />
-          </div>
-          <p className="text-slate-600 dark:text-slate-300 text-xs font-black">Fetching live order tracking details…</p>
-        </div>
+        <TrackOrdersSkeleton />
 
       ) : orderDetails ? (
         <div className="grid gap-6 lg:grid-cols-12 items-start">
