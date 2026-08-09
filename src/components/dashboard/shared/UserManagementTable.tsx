@@ -1,721 +1,502 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { useAuth } from "@/hooks/useAuth";
-import { authFetch } from "@/lib/api";
+import { useAuth }    from "@/hooks/useAuth";
+import { authFetch }  from "@/lib/api";
+import { toast }      from "sonner";
 import {
-  Users,
-  Plus,
-  Trash2,
-  Ban,
-  CheckCircle,
-  Lock,
-  Search,
-  Eye,
-  ShieldCheck,
-  ShieldAlert,
-  User,
-  Mail,
-  Phone,
+  Users, Plus, Trash2, Ban, CheckCircle, Lock,
+  Search, Eye, User, AlertTriangle, RefreshCw,
   Calendar,
-  AlertTriangle,
-  RefreshCw,
-  X,
-  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
+  Dialog, DialogContent, DialogHeader,
+  DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
-import { toast } from "sonner";
+import { DashboardPageHero } from "@/components/shared/DashboardPageHero";
+import { OpsTable }          from "@/components/shared/OpsTable";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface UserRow {
-  id: string;
-  fullName: string;
-  email: string;
-  phone?: string;
-  role?: string;
-  userType?: string;
-  status: string;
+  id:          string;
+  fullName:    string;
+  email:       string;
+  phone?:      string;
+  role?:       string;
+  userType?:   string;
+  status:      string;
   isVerified?: boolean;
-  createdAt: string;
+  createdAt:   string;
 }
 
 interface UserManagementTableProps {
-  title: string;
-  description: string;
-  roleFilter: string; // e.g. "CUSTOMER", "EMPLOYEE", "BRANCH_MANAGER", "VENDOR", "DELIVERY_AGENT" or "" for ALL
+  title:        string;
+  description:  string;
+  roleFilter:   string;
   initialUsers?: UserRow[];
 }
 
-export function UserManagementTable({
-  title,
-  description,
-  roleFilter,
-  initialUsers = [],
-}: UserManagementTableProps) {
-  const { user } = useAuth();
+// ─── Fallback data ────────────────────────────────────────────────────────────
 
-  // Role Normalization
-  const rawRole = (user as any)?.role || user?.userType || "";
-  const normalizedRole = rawRole.toUpperCase().replace(/\s+/g, "_");
-  const isSuperAdmin = ["SUPER_ADMIN", "SUPERADMIN"].includes(normalizedRole);
-
-  const [users, setUsers] = useState<UserRow[]>(initialUsers);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTIVE" | "BANNED">("ALL");
-
-  // Dialog States
-  const [selectedUser, setSelectedUser] = useState<UserRow | null>(null);
-  const [userToDelete, setUserToDelete] = useState<UserRow | null>(null);
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [createLoading, setCreateLoading] = useState(false);
-  const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
-
-  // New User Form State
-  const [newFullName, setNewFullName] = useState("");
-  const [newEmail, setNewEmail] = useState("");
-  const [newPhone, setNewPhone] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [newRole, setNewRole] = useState(roleFilter || "CUSTOMER");
-
-const DEFAULT_FALLBACK_USERS: Record<string, UserRow[]> = {
+const FALLBACK: Record<string, UserRow[]> = {
   BRANCH_MANAGER: [
-    { id: "MGR-01", fullName: "Kazi Nabil", email: "nabil.mgr@laundrix.com", phone: "+880 1700-998877", userType: "BRANCH_MANAGER", status: "ACTIVE", createdAt: "2026-01-01" },
-    { id: "MGR-02", fullName: "Tanvir Ahmed", email: "tanvir.mgr@laundrix.com", phone: "+880 1800-112233", userType: "BRANCH_MANAGER", status: "ACTIVE", createdAt: "2026-01-15" },
-    { id: "MGR-03", fullName: "Mahmud Hasan", email: "mahmud.mgr@laundrix.com", phone: "+880 1900-334455", userType: "BRANCH_MANAGER", status: "ACTIVE", createdAt: "2026-02-01" },
+    { id: "MGR-01", fullName: "Kazi Nabil",    email: "nabil.mgr@laundrix.com",  phone: "+880 1700-998877", userType: "BRANCH_MANAGER", status: "ACTIVE", createdAt: "2026-01-01" },
+    { id: "MGR-02", fullName: "Tanvir Ahmed",  email: "tanvir.mgr@laundrix.com", phone: "+880 1800-112233", userType: "BRANCH_MANAGER", status: "ACTIVE", createdAt: "2026-01-15" },
   ],
   DELIVERY_AGENT: [
-    { id: "AG-01", fullName: "Kamal Hossain", email: "kamal.agent@laundrix.com", phone: "+880 1711-223344", userType: "DELIVERY_AGENT", status: "ACTIVE", createdAt: "2026-03-01" },
-    { id: "AG-02", fullName: "Rafiqul Islam", email: "rafiqul.agent@laundrix.com", phone: "+880 1819-887766", userType: "DELIVERY_AGENT", status: "ACTIVE", createdAt: "2026-03-10" },
-    { id: "AG-03", fullName: "Jamal Uddin", email: "jamal.agent@laundrix.com", phone: "+880 1912-556677", userType: "DELIVERY_AGENT", status: "ACTIVE", createdAt: "2026-03-15" },
+    { id: "AG-01", fullName: "Kamal Hossain",  email: "kamal.agent@laundrix.com",  phone: "+880 1711-223344", userType: "DELIVERY_AGENT", status: "ACTIVE", createdAt: "2026-03-01" },
+    { id: "AG-02", fullName: "Rafiqul Islam",  email: "rafiqul.agent@laundrix.com", phone: "+880 1819-887766", userType: "DELIVERY_AGENT", status: "ACTIVE", createdAt: "2026-03-10" },
   ],
   EMPLOYEE: [
     { id: "EMP-01", fullName: "Rahim Chowdhury", email: "rahim.emp@laundrix.com", phone: "+880 1722-334455", userType: "EMPLOYEE", status: "ACTIVE", createdAt: "2026-02-01" },
-    { id: "EMP-02", fullName: "Nusrat Jahan", email: "nusrat.emp@laundrix.com", phone: "+880 1823-445566", userType: "EMPLOYEE", status: "ACTIVE", createdAt: "2026-02-10" },
+    { id: "EMP-02", fullName: "Nusrat Jahan",    email: "nusrat.emp@laundrix.com", phone: "+880 1823-445566", userType: "EMPLOYEE", status: "ACTIVE", createdAt: "2026-02-10" },
   ],
   VENDOR: [
     { id: "VND-01", fullName: "CleanExpress Partner", email: "contact@cleanexpress.com", phone: "+880 1733-445566", userType: "VENDOR", status: "ACTIVE", createdAt: "2026-01-20" },
-    { id: "VND-02", fullName: "EcoWash Hub", email: "info@ecowash.com", phone: "+880 1834-556677", userType: "VENDOR", status: "ACTIVE", createdAt: "2026-02-15" },
+    { id: "VND-02", fullName: "EcoWash Hub",          email: "info@ecowash.com",         phone: "+880 1834-556677", userType: "VENDOR", status: "ACTIVE", createdAt: "2026-02-15" },
   ],
   CUSTOMER: [
     { id: "CUST-01", fullName: "Sarah Jenkins", email: "sarah@example.com", phone: "+880 1711-998877", userType: "CUSTOMER", status: "ACTIVE", createdAt: "2026-01-10" },
-    { id: "CUST-02", fullName: "David Miller", email: "david@example.com", phone: "+880 1819-223344", userType: "CUSTOMER", status: "ACTIVE", createdAt: "2026-02-14" },
+    { id: "CUST-02", fullName: "David Miller",  email: "david@example.com", phone: "+880 1819-223344", userType: "CUSTOMER", status: "ACTIVE", createdAt: "2026-02-14" },
     { id: "CUST-03", fullName: "Elena Rostova", email: "elena@example.com", phone: "+880 1911-445566", userType: "CUSTOMER", status: "ACTIVE", createdAt: "2026-03-05" },
   ],
 };
 
-  // Helper to resolve fallback users for a given roleFilter
-  const getFallbackUsers = () => {
-    if (initialUsers && initialUsers.length > 0) return initialUsers;
-    const key = (roleFilter || "").toUpperCase().replace(/[\s_]+/g, "_");
-    if (key.includes("BRANCH") || key.includes("MANAGER")) return DEFAULT_FALLBACK_USERS.BRANCH_MANAGER;
-    if (key.includes("DELIVERY") || key.includes("AGENT")) return DEFAULT_FALLBACK_USERS.DELIVERY_AGENT;
-    if (key.includes("EMPLOYEE")) return DEFAULT_FALLBACK_USERS.EMPLOYEE;
-    if (key.includes("VENDOR")) return DEFAULT_FALLBACK_USERS.VENDOR;
-    if (key.includes("CUSTOMER")) return DEFAULT_FALLBACK_USERS.CUSTOMER;
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
 
-    return [
-      ...DEFAULT_FALLBACK_USERS.BRANCH_MANAGER,
-      ...DEFAULT_FALLBACK_USERS.DELIVERY_AGENT,
-      ...DEFAULT_FALLBACK_USERS.EMPLOYEE,
-      ...DEFAULT_FALLBACK_USERS.VENDOR,
-      ...DEFAULT_FALLBACK_USERS.CUSTOMER,
-    ];
+function Sk({ className }: { className?: string }) {
+  return <div className={`animate-pulse rounded-lg bg-muted ${className ?? ""}`} />;
+}
+function TableSkeleton() {
+  return (
+    <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+      <div className="border-b border-border px-5 py-4 flex gap-3">
+        <Sk className="h-9 flex-1 rounded-xl max-w-sm" />
+        <Sk className="h-9 w-48 rounded-xl" />
+        <Sk className="h-9 w-28 rounded-xl" />
+      </div>
+      <div className="divide-y divide-border">
+        {[0,1,2,3,4].map((i) => (
+          <div key={i} className="flex items-center gap-4 px-5 py-4">
+            <div className="flex items-center gap-3 flex-1">
+              <Sk className="h-9 w-9 rounded-xl shrink-0" />
+              <div className="space-y-1.5"><Sk className="h-4 w-32" /><Sk className="h-3 w-20" /></div>
+            </div>
+            <Sk className="h-3 w-36" />
+            <Sk className="h-5 w-20 rounded-full" />
+            <Sk className="h-5 w-16 rounded-full" />
+            <Sk className="h-3 w-20" />
+            <Sk className="h-8 w-32 rounded-xl" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
+
+export function UserManagementTable({
+  title, description, roleFilter, initialUsers = [],
+}: UserManagementTableProps) {
+  const { user } = useAuth();
+
+  const rawRole        = (user as any)?.role || user?.userType || "";
+  const normalizedRole = rawRole.toUpperCase().replace(/\s+/g, "_");
+  const isSuperAdmin   = ["SUPER_ADMIN","SUPERADMIN"].includes(normalizedRole);
+
+  const [users,          setUsers]          = useState<UserRow[]>(initialUsers);
+  const [loading,        setLoading]        = useState(true);
+  const [search,         setSearch]         = useState("");
+  const [statusFilter,   setStatusFilter]   = useState<"ALL"|"ACTIVE"|"BANNED">("ALL");
+  const [selectedUser,   setSelectedUser]   = useState<UserRow | null>(null);
+  const [userToDelete,   setUserToDelete]   = useState<UserRow | null>(null);
+  const [isCreateOpen,   setIsCreateOpen]   = useState(false);
+  const [createLoading,  setCreateLoading]  = useState(false);
+  const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
+
+  const [newFullName, setNewFullName] = useState("");
+  const [newEmail,    setNewEmail]    = useState("");
+  const [newPhone,    setNewPhone]    = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [newRole,     setNewRole]     = useState(roleFilter || "CUSTOMER");
+
+  // ── Fallback helper ────────────────────────────────────────────────────────
+  const getFallbackUsers = () => {
+    if (initialUsers?.length > 0) return initialUsers;
+    const key = (roleFilter || "").toUpperCase().replace(/[\s_]+/g, "_");
+    if (key.includes("BRANCH") || key.includes("MANAGER")) return FALLBACK.BRANCH_MANAGER;
+    if (key.includes("DELIVERY") || key.includes("AGENT"))  return FALLBACK.DELIVERY_AGENT;
+    if (key.includes("EMPLOYEE"))                            return FALLBACK.EMPLOYEE;
+    if (key.includes("VENDOR"))                              return FALLBACK.VENDOR;
+    if (key.includes("CUSTOMER"))                            return FALLBACK.CUSTOMER;
+    return Object.values(FALLBACK).flat();
   };
 
-  // Fetch Users from Backend (/api/admin/users)
+  // ── Fetch ─────────────────────────────────────────────────────────────────
   const fetchUsers = async () => {
     setLoading(true);
     try {
       const queryRole = roleFilter ? roleFilter.toUpperCase().replace(/\s+/g, "_") : "";
-      const url = queryRole
-        ? `/admin/users?role=${queryRole}&limit=100`
-        : `/admin/users?limit=100`;
-
-      const res = await authFetch(url);
-      const json = await res.json();
-
-      if (json.success && Array.isArray(json.data) && json.data.length > 0) {
-        setUsers(json.data);
-      } else {
-        setUsers(getFallbackUsers());
-      }
+      const url = queryRole ? `/admin/users?role=${queryRole}&limit=100` : `/admin/users?limit=100`;
+      const json = await authFetch(url).then((r) => r.json());
+      setUsers(json.success && json.data?.length ? json.data : getFallbackUsers());
     } catch {
       setUsers(getFallbackUsers());
     } finally {
       setLoading(false);
     }
   };
+  useEffect(() => { fetchUsers(); }, [roleFilter]);
 
-  useEffect(() => {
-    fetchUsers();
-  }, [roleFilter]);
+  // ── Derived ───────────────────────────────────────────────────────────────
+  const active = users.filter((u) => (u.status || "").toUpperCase() === "ACTIVE").length;
+  const banned = users.filter((u) => (u.status || "").toUpperCase() === "BANNED").length;
 
-  // Filtered Users
   const filteredUsers = useMemo(() => {
     return users.filter((u) => {
-      const q = searchTerm.toLowerCase().trim();
-      const name = (u.fullName || "").toLowerCase();
-      const email = (u.email || "").toLowerCase();
-      const phone = (u.phone || "").toLowerCase();
-      const userRole = (u.userType || u.role || "").toUpperCase();
-
-      const matchesSearch = !q || name.includes(q) || email.includes(q) || phone.includes(q);
-      const matchesStatus = statusFilter === "ALL" || (u.status || "ACTIVE").toUpperCase() === statusFilter;
-
+      const q = search.toLowerCase().trim();
+      const matchSearch = !q || u.fullName?.toLowerCase().includes(q) ||
+        u.email?.toLowerCase().includes(q) || u.phone?.toLowerCase().includes(q);
+      const matchStatus = statusFilter === "ALL" || (u.status || "ACTIVE").toUpperCase() === statusFilter;
       const normFilter = roleFilter.toUpperCase().replace(/[\s_]+/g, "");
-      const normRole = userRole.replace(/[\s_]+/g, "");
-      const matchesRole =
-        !roleFilter ||
-        normRole === normFilter ||
-        normRole.includes(normFilter) ||
-        normFilter.includes(normRole);
-
-      return matchesSearch && matchesStatus && matchesRole;
+      const normRole   = (u.userType || u.role || "").toUpperCase().replace(/[\s_]+/g, "");
+      const matchRole  = !roleFilter || normRole === normFilter || normRole.includes(normFilter) || normFilter.includes(normRole);
+      return matchSearch && matchStatus && matchRole;
     });
-  }, [users, searchTerm, statusFilter, roleFilter]);
+  }, [users, search, statusFilter, roleFilter]);
 
-  // Handle Ban / Reactivate (Super Admin Only)
+  const hasFilters   = !!(search.trim() || statusFilter !== "ALL");
+  const clearFilters = () => { setSearch(""); setStatusFilter("ALL"); };
+
+  // ── Actions ───────────────────────────────────────────────────────────────
   const handleToggleBan = async (usr: UserRow) => {
-    if (!isSuperAdmin) {
-      toast.error("Access Restricted: Only Super Admin can ban or unban users.");
-      return;
-    }
-
-    const currentBanned = (usr.status || "").toUpperCase() === "BANNED";
-    const nextBanned = !currentBanned;
-
+    if (!isSuperAdmin) { toast.error("Only Super Admin can ban/unban users."); return; }
+    const nextBanned = (usr.status || "").toUpperCase() !== "BANNED";
     setActionLoadingId(usr.id + "_ban");
     try {
-      const res = await authFetch(`/admin/users/${usr.id}/ban`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+      const json = await authFetch(`/admin/users/${usr.id}/ban`, {
+        method: "PATCH", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isBanned: nextBanned }),
-      });
-      const json = await res.json();
-
+      }).then((r) => r.json());
       if (json.success) {
-        toast.success(
-          nextBanned
-            ? `User '${usr.fullName}' has been BANNED.`
-            : `User '${usr.fullName}' has been REACTIVATED.`
-        );
-
-        setUsers((prev) =>
-          prev.map((u) =>
-            u.id === usr.id ? { ...u, status: nextBanned ? "BANNED" : "ACTIVE" } : u
-          )
-        );
-      } else {
-        toast.error(json.message || "Failed to update user status");
-      }
-    } catch {
-      toast.error("Error connecting to server for ban action");
-    } finally {
-      setActionLoadingId(null);
-    }
+        toast.success(nextBanned ? `${usr.fullName} BANNED.` : `${usr.fullName} REACTIVATED.`);
+        setUsers((prev) => prev.map((u) => u.id === usr.id ? { ...u, status: nextBanned ? "BANNED" : "ACTIVE" } : u));
+      } else { toast.error(json.message || "Failed to update status"); }
+    } catch { toast.error("Server error"); }
+    finally { setActionLoadingId(null); }
   };
 
-  // Handle Delete (Super Admin Only)
   const handleDeleteUser = async () => {
     if (!userToDelete) return;
-
-    if (!isSuperAdmin) {
-      toast.error("Access Restricted: Only Super Admin can delete user accounts.");
-      setUserToDelete(null);
-      return;
-    }
-
+    if (!isSuperAdmin) { toast.error("Only Super Admin can delete accounts."); setUserToDelete(null); return; }
     setActionLoadingId(userToDelete.id + "_del");
     try {
-      const res = await authFetch(`/admin/users/${userToDelete.id}`, {
-        method: "DELETE",
-      });
-      const json = await res.json();
-
+      const json = await authFetch(`/admin/users/${userToDelete.id}`, { method: "DELETE" }).then((r) => r.json());
       if (json.success) {
-        toast.success(`User '${userToDelete.fullName}' deleted successfully.`);
+        toast.success(`${userToDelete.fullName} deleted.`);
         setUsers((prev) => prev.filter((u) => u.id !== userToDelete.id));
         setUserToDelete(null);
-      } else {
-        toast.error(json.message || "Failed to delete user");
-      }
-    } catch {
-      toast.error("Error executing user deletion");
-    } finally {
-      setActionLoadingId(null);
-    }
+      } else { toast.error(json.message || "Failed to delete"); }
+    } catch { toast.error("Server error"); }
+    finally { setActionLoadingId(null); }
   };
 
-  // Handle Create User (Super Admin Only)
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newFullName.trim() || !newEmail.trim()) {
-      toast.error("Please enter Full Name and Email");
-      return;
-    }
-
-    if (!isSuperAdmin) {
-      toast.error("Access Restricted: Only Super Admin can create user accounts.");
-      return;
-    }
-
+    if (!newFullName.trim() || !newEmail.trim()) { toast.error("Full Name and Email are required."); return; }
+    if (!isSuperAdmin) { toast.error("Only Super Admin can create accounts."); return; }
     setCreateLoading(true);
     try {
-      const res = await authFetch("/admin/users", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fullName: newFullName.trim(),
-          email: newEmail.trim(),
-          phone: newPhone.trim() || undefined,
-          password: newPassword.trim() || "ChangeMe123!",
-          userType: newRole.toUpperCase(),
-        }),
-      });
-      const json = await res.json();
-
+      const json = await authFetch("/admin/users", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fullName: newFullName.trim(), email: newEmail.trim(), phone: newPhone.trim() || undefined, password: newPassword.trim() || "ChangeMe123!", userType: newRole.toUpperCase() }),
+      }).then((r) => r.json());
       if (json.success) {
-        toast.success(`User account for '${newFullName}' created successfully.`);
+        toast.success(`Account for '${newFullName}' created.`);
         setIsCreateOpen(false);
-        setNewFullName("");
-        setNewEmail("");
-        setNewPhone("");
-        setNewPassword("");
+        setNewFullName(""); setNewEmail(""); setNewPhone(""); setNewPassword("");
         fetchUsers();
-      } else {
-        toast.error(json.message || "Failed to create user account");
-      }
-    } catch {
-      toast.error("Error creating user account");
-    } finally {
-      setCreateLoading(false);
-    }
+      } else { toast.error(json.message || "Failed to create"); }
+    } catch { toast.error("Server error"); }
+    finally { setCreateLoading(false); }
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-950 p-6 md:p-8 text-white shadow-lg">
-        <div className="pointer-events-none absolute inset-0 opacity-10">
-          <div className="absolute -top-12 -right-12 h-64 w-64 rounded-full bg-white" />
-        </div>
+    <div className="space-y-5">
 
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <Sparkles size={14} className="text-blue-200" />
-              <span className="text-blue-200 text-xs font-bold uppercase tracking-wider">
-                Identity & Access Governance
-              </span>
-            </div>
-            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight flex items-center gap-2.5">
-              <Users className="text-blue-300" />
-              {title}
-            </h1>
-            <p className="mt-1 text-sm text-blue-100 max-w-xl">{description}</p>
-          </div>
+      {/* ── 1. Hero ─────────────────────────────────────────────────────── */}
+      <DashboardPageHero
+        badge="Identity & Access Governance"
+        title={title}
+        description={description}
+        icon={Users}
+        liveLabel={isSuperAdmin ? "Super Admin Control" : "Read-Only Mode"}
+        chips={[
+          { label: "Total Users",  value: loading ? "—" : String(users.length), sub: roleFilter || "All roles"                    },
+          { label: "Active",       value: loading ? "—" : String(active),        sub: "Verified accounts"                         },
+          { label: "Banned",       value: loading ? "—" : String(banned),         sub: banned > 0 ? "Restricted access" : "None"  },
+        ]}
+      />
 
-          <div className="flex items-center gap-3">
-            {!isSuperAdmin ? (
-              <div className="flex items-center gap-2 px-3.5 py-2 bg-amber-500/20 border border-amber-400/30 text-amber-200 rounded-xl text-xs font-extrabold backdrop-blur-md">
-                <Lock size={14} /> Read-Only Mode (ADMIN)
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <span className="flex items-center gap-1.5 text-xs font-extrabold text-blue-950 bg-blue-300 px-3.5 py-2 rounded-xl shadow-sm">
-                  <ShieldCheck size={14} /> Super Admin Control Active
-                </span>
-                <Button
-                  onClick={() => setIsCreateOpen(true)}
-                  className="h-10 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold gap-2 text-xs shadow-md"
-                >
-                  <Plus size={16} /> Add New {roleFilter ? roleFilter.replace("_", " ") : "User"}
-                </Button>
-              </div>
-            )}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={fetchUsers}
-              className="h-10 rounded-xl bg-white/10 hover:bg-white/20 text-white border-white/20 font-bold gap-2 text-xs"
-            >
-              <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
-            </Button>
-          </div>
-        </div>
-      </div>
+      {/* ── 2. Toolbar ──────────────────────────────────────────────────── */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 
-      {/* Main Table Container */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-        {/* Search & Status Filter Toolbar */}
-        <div className="p-5 border-b border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3.5 top-3 text-slate-400" size={16} />
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search user by name, email or phone..."
-              className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-            />
-          </div>
-
-          <div className="flex items-center gap-2">
-            {(["ALL", "ACTIVE", "BANNED"] as const).map((st) => (
-              <button
-                key={st}
-                onClick={() => setStatusFilter(st)}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                  statusFilter === st
-                    ? "bg-slate-900 text-white shadow-sm"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                }`}
-              >
+        {/* Status filter tabs */}
+        <div className="flex items-center gap-1 rounded-2xl border border-border bg-muted p-1.5 overflow-x-auto scrollbar-none">
+          {(["ALL","ACTIVE","BANNED"] as const).map((st) => {
+            const isActive = statusFilter === st;
+            const dotCls   = st === "ACTIVE" ? "bg-success" : st === "BANNED" ? "bg-error" : "bg-muted-foreground/60";
+            const count    = st === "ALL" ? users.length : st === "ACTIVE" ? active : banned;
+            return (
+              <button key={st} onClick={() => setStatusFilter(st)}
+                className={["flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-[11px] font-black whitespace-nowrap select-none transition-all duration-150",
+                  isActive ? "bg-card text-card-foreground shadow-sm" : "text-muted-foreground hover:text-card-foreground hover:bg-card/60"].join(" ")}>
+                <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${dotCls}`} />
                 {st === "ALL" ? "All Status" : st}
+                <span className={["rounded-full px-1.5 py-px text-[10px] font-black leading-none tabular-nums",
+                  isActive ? "bg-primary/12 text-primary" : "bg-muted-foreground/10 text-muted-foreground"].join(" ")}>
+                  {count}
+                </span>
               </button>
-            ))}
-          </div>
+            );
+          })}
         </div>
 
-        {/* Users Table */}
-        <div className="overflow-x-auto">
-          {loading ? (
-            <div className="p-12 text-center text-slate-500">
-              <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent mb-3" />
-              <p className="text-xs font-semibold">Loading user accounts...</p>
-            </div>
-          ) : filteredUsers.length === 0 ? (
-            <div className="p-12 text-center text-slate-400">
-              <Users size={36} className="mx-auto mb-3 text-slate-300" />
-              <p className="text-sm font-semibold text-slate-600">No user accounts found</p>
-              <p className="text-xs text-slate-400 mt-1">Try refining your search or filter settings.</p>
-            </div>
-          ) : (
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="bg-slate-50/80 border-b border-slate-100 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                  <th className="py-3.5 px-6">User Profile</th>
-                  <th className="py-3.5 px-6">Contact Info</th>
-                  <th className="py-3.5 px-6">Assigned Role</th>
-                  <th className="py-3.5 px-6">Account Status</th>
-                  <th className="py-3.5 px-6">Joined Date</th>
-                  <th className="py-3.5 px-6 text-right">
-                    {isSuperAdmin ? "Super Admin Actions" : "Details"}
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {filteredUsers.map((usr) => {
-                  const roleName = usr.userType || usr.role || "USER";
-                  const isBanned = (usr.status || "").toUpperCase() === "BANNED";
-
-                  return (
-                    <tr key={usr.id} className="hover:bg-slate-50/60 transition-colors">
-                      <td className="py-4 px-6">
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600 font-extrabold text-xs border border-blue-100">
-                            {usr.fullName ? usr.fullName.charAt(0).toUpperCase() : "U"}
-                          </div>
-                          <div>
-                            <p className="font-bold text-slate-900 text-xs">{usr.fullName}</p>
-                            <p className="text-[11px] text-slate-400 font-mono">ID: #{usr.id.slice(-6)}</p>
-                          </div>
-                        </div>
-                      </td>
-
-                      <td className="py-4 px-6 text-slate-700">
-                        <div className="font-semibold text-slate-900">{usr.email}</div>
-                        <div className="text-slate-400 text-[11px]">{usr.phone || "No Phone Registered"}</div>
-                      </td>
-
-                      <td className="py-4 px-6">
-                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-blue-50 text-blue-700 border border-blue-200 uppercase">
-                          {roleName.replace(/_/g, " ")}
-                        </span>
-                      </td>
-
-                      <td className="py-4 px-6">
-                        <span
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold ${
-                            isBanned
-                              ? "bg-rose-50 text-rose-700 border border-rose-200"
-                              : "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                          }`}
-                        >
-                          <span
-                            className={`h-1.5 w-1.5 rounded-full ${
-                              isBanned ? "bg-rose-500" : "bg-emerald-500 animate-pulse"
-                            }`}
-                          />
-                          {isBanned ? "BANNED" : "ACTIVE"}
-                        </span>
-                      </td>
-
-                      <td className="py-4 px-6 text-slate-400 font-medium whitespace-nowrap">
-                        {new Date(usr.createdAt || Date.now()).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        })}
-                      </td>
-
-                      <td className="py-4 px-6 text-right whitespace-nowrap">
-                        <div className="flex items-center justify-end gap-2">
-                          {/* View Profile Modal Trigger */}
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => setSelectedUser(usr)}
-                            className="h-8 rounded-xl px-2.5 text-[11px] font-bold text-slate-600 hover:bg-slate-100 gap-1"
-                            title="View Account Details"
-                          >
-                            <Eye size={14} /> View
-                          </Button>
-
-                          {/* Super Admin ONLY Ban & Delete Controls */}
-                          {isSuperAdmin && (
-                            <>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                disabled={actionLoadingId === usr.id + "_ban"}
-                                onClick={() => handleToggleBan(usr)}
-                                className={`h-8 rounded-xl px-2.5 text-[11px] font-extrabold gap-1 ${
-                                  isBanned
-                                    ? "border-emerald-200 text-emerald-700 hover:bg-emerald-50"
-                                    : "border-amber-200 text-amber-700 hover:bg-amber-50"
-                                }`}
-                                title={isBanned ? "Reactivate Account" : "Ban Account"}
-                              >
-                                {isBanned ? <CheckCircle size={14} /> : <Ban size={14} />}
-                                {isBanned ? "Unban" : "Ban"}
-                              </Button>
-
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                disabled={actionLoadingId === usr.id + "_del"}
-                                onClick={() => setUserToDelete(usr)}
-                                className="h-8 rounded-xl px-2.5 text-[11px] font-extrabold border-rose-200 text-rose-600 hover:bg-rose-50 gap-1"
-                                title="Delete Account"
-                              >
-                                <Trash2 size={14} /> Delete
-                              </Button>
-                            </>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+        {/* Right — search + create + refresh */}
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60" size={13} />
+            <input type="text" placeholder="Search name, email or phone…" value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="h-8 w-64 pl-9 pr-3 rounded-xl border border-border bg-muted text-xs font-medium text-card-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-ring/50 focus:bg-card transition" />
+          </div>
+          {isSuperAdmin && (
+            <Button size="sm" onClick={() => setIsCreateOpen(true)}
+              className="h-8 rounded-xl text-xs font-black gap-1.5">
+              <Plus size={13} /> Add {roleFilter ? roleFilter.replace(/_/g," ") : "User"}
+            </Button>
           )}
+          <Button size="sm" variant="outline" onClick={fetchUsers} className="h-8 rounded-xl text-xs font-bold gap-1.5">
+            <RefreshCw size={12} className={loading ? "animate-spin" : ""} />
+          </Button>
         </div>
       </div>
 
-      {/* User Details Modal */}
-      <Dialog open={!!selectedUser} onOpenChange={(open) => !open && setSelectedUser(null)}>
-        {selectedUser && (
-          <DialogContent className="max-w-md rounded-2xl p-6">
-            <DialogHeader className="border-b border-slate-100 pb-4">
-              <DialogTitle className="text-xl font-extrabold text-slate-900 flex items-center gap-2">
-                <User size={20} className="text-blue-600" />
-                {selectedUser.fullName}
-              </DialogTitle>
-              <DialogDescription className="text-xs text-slate-500">
-                Account ID: #{selectedUser.id}
-              </DialogDescription>
-            </DialogHeader>
+      {/* ── 3. Permission notice ────────────────────────────────────────── */}
+      {!isSuperAdmin && (
+        <div className="flex items-center gap-2.5 rounded-2xl border border-warning/25 bg-warning/8 px-4 py-3">
+          <Lock size={14} className="text-warning shrink-0" />
+          <p className="text-xs font-bold text-card-foreground">
+            Read-Only Mode — Ban, unban, and delete actions are restricted to Super Admin.
+          </p>
+        </div>
+      )}
 
-            <div className="space-y-3 py-3 text-xs">
-              <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
-                <span className="font-semibold text-slate-500">Email Address</span>
-                <span className="font-bold text-slate-900">{selectedUser.email}</span>
-              </div>
-              <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
-                <span className="font-semibold text-slate-500">Phone Number</span>
-                <span className="font-bold text-slate-900">{selectedUser.phone || "Not provided"}</span>
-              </div>
-              <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
-                <span className="font-semibold text-slate-500">User Role</span>
-                <span className="font-extrabold text-blue-700 uppercase bg-blue-50 px-2 py-0.5 rounded text-[11px]">
-                  {(selectedUser.userType || selectedUser.role || "USER").replace(/_/g, " ")}
+      {/* ── 4. Table ────────────────────────────────────────────────────── */}
+      {loading ? <TableSkeleton /> : (
+        <OpsTable
+          animateKey={statusFilter + search}
+          keyExtractor={(u) => u.id}
+          displayed={filteredUsers}
+          totalCount={users.length}
+          noun="users"
+          hasFilters={hasFilters}
+          onClearFilters={clearFilters}
+          emptyTitle="No user accounts found"
+          emptyFiltered="Try refining your search or filter."
+          emptyDefault="No accounts available."
+          footerStats={[
+            { dot: "bg-success", label: "Active", value: active  },
+            { dot: "bg-error",   label: "Banned", value: banned  },
+          ]}
+          columns={[
+            {
+              header: "User Profile", width: "minmax(180px,2fr)",
+              render: (usr) => {
+                const isBanned = usr.status?.toUpperCase() === "BANNED";
+                return (
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-white text-[12px] font-black shadow-md shadow-black/10 transition-transform duration-200 group-hover:scale-110 group-hover:rotate-3"
+                      style={{ background: `linear-gradient(135deg, ${isBanned ? "var(--error)" : "var(--primary)"}, ${isBanned ? "var(--destructive)" : "var(--ring)"})` }}>
+                      {(usr.fullName ?? "U").charAt(0).toUpperCase()}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[13px] font-black text-card-foreground truncate group-hover:text-primary transition-colors">{usr.fullName}</p>
+                      <p className="text-[11px] font-mono text-muted-foreground">#{usr.id.slice(-6)}</p>
+                    </div>
+                  </div>
+                );
+              },
+            },
+            {
+              header: "Contact", width: "1.5fr",
+              render: (usr) => (
+                <div className="space-y-0.5 min-w-0">
+                  <p className="text-[12px] font-bold text-card-foreground truncate">{usr.email}</p>
+                  <p className="text-[11px] text-muted-foreground font-medium">{usr.phone || "—"}</p>
+                </div>
+              ),
+            },
+            {
+              header: "Role", width: "140px",
+              render: (usr) => (
+                <span className="inline-flex items-center rounded-full border border-primary/20 bg-primary/8 px-2.5 py-[3px] text-[10px] font-black text-primary w-fit uppercase">
+                  {(usr.userType || usr.role || "USER").replace(/_/g," ")}
                 </span>
-              </div>
-              <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
-                <span className="font-semibold text-slate-500">Account Status</span>
-                <span
-                  className={`font-bold px-2 py-0.5 rounded text-[11px] ${
-                    selectedUser.status === "BANNED"
-                      ? "bg-rose-100 text-rose-800"
-                      : "bg-emerald-100 text-emerald-800"
-                  }`}
-                >
-                  {selectedUser.status || "ACTIVE"}
-                </span>
-              </div>
-              <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
-                <span className="font-semibold text-slate-500">Registration Date</span>
-                <span className="font-bold text-slate-800">
-                  {new Date(selectedUser.createdAt || Date.now()).toLocaleDateString()}
-                </span>
+              ),
+            },
+            {
+              header: "Status", width: "110px",
+              render: (usr) => {
+                const isBanned = usr.status?.toUpperCase() === "BANNED";
+                return (
+                  <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-[3px] text-[10px] font-black w-fit ${isBanned ? "bg-error/10 text-error border-error/25" : "bg-success/10 text-success border-success/25"}`}>
+                    <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${isBanned ? "bg-error" : "bg-success animate-pulse"}`} />
+                    {isBanned ? "Banned" : "Active"}
+                  </span>
+                );
+              },
+            },
+            {
+              header: "Joined", width: "120px",
+              render: (usr) => (
+                <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground font-medium">
+                  <Calendar size={11} className="shrink-0" />
+                  {new Date(usr.createdAt || Date.now()).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                </div>
+              ),
+            },
+            {
+              header: "Actions", width: "180px",
+              render: (usr) => {
+                const isBanned = usr.status?.toUpperCase() === "BANNED";
+                return (
+                  <div className="flex items-center gap-1 justify-end">
+                    <Button size="sm" variant="ghost" onClick={() => setSelectedUser(usr)}
+                      className="h-8 rounded-xl px-2.5 text-[11px] font-bold text-muted-foreground hover:text-primary hover:bg-primary/10 gap-1">
+                      <Eye size={12} /> View
+                    </Button>
+                    {isSuperAdmin && (
+                      <>
+                        <Button size="sm" variant="ghost" disabled={actionLoadingId === usr.id + "_ban"}
+                          onClick={() => handleToggleBan(usr)}
+                          className={`h-8 rounded-xl px-2.5 text-[11px] font-black gap-1 ${isBanned ? "text-muted-foreground hover:text-success hover:bg-success/10" : "text-muted-foreground hover:text-warning hover:bg-warning/10"}`}>
+                          {isBanned ? <><CheckCircle size={12} /> Unban</> : <><Ban size={12} /> Ban</>}
+                        </Button>
+                        <Button size="sm" variant="ghost" disabled={actionLoadingId === usr.id + "_del"}
+                          onClick={() => setUserToDelete(usr)}
+                          className="h-8 rounded-xl px-2.5 text-[11px] font-black text-muted-foreground hover:text-error hover:bg-error/10 gap-1">
+                          <Trash2 size={12} /> Delete
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                );
+              },
+            },
+          ]}
+        />
+      )}
+
+      {/* ── View Detail Dialog ──────────────────────────────────────────── */}
+      <Dialog open={!!selectedUser} onOpenChange={(v) => !v && setSelectedUser(null)}>
+        <DialogContent className="sm:max-w-md rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-base font-black text-card-foreground flex items-center gap-2">
+              <User size={16} className="text-primary" /> {selectedUser?.fullName}
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">Account ID: #{selectedUser?.id}</DialogDescription>
+          </DialogHeader>
+          {selectedUser && (
+            <div className="space-y-2.5 pt-1">
+              {[
+                { label: "Email",   value: selectedUser.email                                              },
+                { label: "Phone",   value: selectedUser.phone || "Not provided"                            },
+                { label: "Role",    value: (selectedUser.userType || selectedUser.role || "USER").replace(/_/g," ") },
+                { label: "Status",  value: selectedUser.status || "ACTIVE"                                 },
+                { label: "Joined",  value: new Date(selectedUser.createdAt || Date.now()).toLocaleDateString() },
+              ].map(({ label, value }) => (
+                <div key={label} className="flex items-center justify-between rounded-xl border border-border bg-muted/50 px-3 py-2.5">
+                  <span className="text-[11px] font-black text-muted-foreground uppercase tracking-wider">{label}</span>
+                  <span className="text-[12px] font-bold text-card-foreground">{value}</span>
+                </div>
+              ))}
+              <div className="flex justify-end pt-1">
+                <Button variant="outline" size="sm" onClick={() => setSelectedUser(null)} className="rounded-xl text-xs font-bold">Close</Button>
               </div>
             </div>
-
-            <div className="border-t border-slate-100 pt-4 flex justify-end">
-              <Button
-                variant="ghost"
-                onClick={() => setSelectedUser(null)}
-                className="h-9 rounded-xl px-4 text-xs font-semibold"
-              >
-                Close
-              </Button>
-            </div>
-          </DialogContent>
-        )}
+          )}
+        </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Modal */}
-      <Dialog open={!!userToDelete} onOpenChange={(open) => !open && setUserToDelete(null)}>
-        {userToDelete && (
-          <DialogContent className="max-w-md rounded-2xl p-6 text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-rose-100 text-rose-600 mb-3">
-              <AlertTriangle size={24} />
+      {/* ── Delete Confirm Dialog ───────────────────────────────────────── */}
+      <Dialog open={!!userToDelete} onOpenChange={(v) => !v && setUserToDelete(null)}>
+        <DialogContent className="sm:max-w-sm rounded-2xl">
+          <div className="flex flex-col items-center text-center gap-3 pt-2">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-error/10">
+              <AlertTriangle size={22} className="text-error" />
             </div>
             <DialogHeader>
-              <DialogTitle className="text-lg font-bold text-slate-900 text-center">
-                Confirm Account Deletion
-              </DialogTitle>
-              <DialogDescription className="text-xs text-slate-500 mt-1 text-center">
-                Are you sure you want to permanently delete the user account for{" "}
-                <strong className="text-slate-900">{userToDelete.fullName}</strong> ({userToDelete.email})?
-                This action is irreversible.
+              <DialogTitle className="text-base font-black text-card-foreground">Delete Account</DialogTitle>
+              <DialogDescription className="text-xs text-muted-foreground">
+                Permanently delete <strong className="text-card-foreground">{userToDelete?.fullName}</strong>? This cannot be undone.
               </DialogDescription>
             </DialogHeader>
-
-            <div className="flex items-center justify-center gap-3 mt-6">
-              <Button
-                variant="outline"
-                onClick={() => setUserToDelete(null)}
-                className="h-9 rounded-xl px-4 text-xs font-bold"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleDeleteUser}
-                className="h-9 rounded-xl px-4 text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white"
-              >
-                Permanently Delete User
+            <div className="flex gap-2 w-full pt-1">
+              <Button variant="outline" onClick={() => setUserToDelete(null)} className="flex-1 rounded-xl text-xs font-bold">Cancel</Button>
+              <Button onClick={handleDeleteUser} className="flex-1 rounded-xl text-xs font-black bg-gradient-to-br from-error to-rose-600 text-white hover:opacity-90">
+                Delete
               </Button>
             </div>
-          </DialogContent>
-        )}
+          </div>
+        </DialogContent>
       </Dialog>
 
-      {/* Create User Modal (Super Admin Only) */}
+      {/* ── Create User Dialog ──────────────────────────────────────────── */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-        <DialogContent className="max-w-md rounded-2xl p-6">
-          <DialogHeader className="border-b border-slate-100 pb-3">
-            <DialogTitle className="text-lg font-bold text-slate-900 flex items-center gap-2">
-              <Plus size={18} className="text-blue-600" />
-              Create New User Account
+        <DialogContent className="sm:max-w-md rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-base font-black text-card-foreground flex items-center gap-2">
+              <Plus size={15} className="text-primary" /> Create User Account
             </DialogTitle>
-            <DialogDescription className="text-xs text-slate-500">
-              Super Admin override to add new platform users manually.
-            </DialogDescription>
+            <DialogDescription className="text-xs text-muted-foreground">Super Admin override to add platform users manually.</DialogDescription>
           </DialogHeader>
-
-          <form onSubmit={handleCreateUser} className="space-y-4 py-3">
+          <form onSubmit={handleCreateUser} className="space-y-3 pt-1">
+            {[
+              { label: "Full Name",        value: newFullName, setter: setNewFullName, type: "text",  placeholder: "e.g. Rahul Chowdhury",    required: true  },
+              { label: "Email Address",    value: newEmail,    setter: setNewEmail,    type: "email", placeholder: "e.g. user@laundrix.com",  required: true  },
+              { label: "Phone Number",     value: newPhone,    setter: setNewPhone,    type: "text",  placeholder: "e.g. +880 1711-223344",   required: false },
+              { label: "Initial Password", value: newPassword, setter: setNewPassword, type: "text",  placeholder: "Default: ChangeMe123!",   required: false },
+            ].map(({ label, value, setter, type, placeholder, required }) => (
+              <div key={label}>
+                <label className="text-[11px] font-black text-muted-foreground uppercase tracking-wider block mb-1">{label}</label>
+                <input type={type} required={required} value={value} onChange={(e) => setter(e.target.value)} placeholder={placeholder}
+                  className="w-full h-9 px-3 rounded-xl border border-border bg-muted text-xs font-medium text-card-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-ring/50 focus:bg-card transition" />
+              </div>
+            ))}
             <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">Full Name</label>
-              <input
-                type="text"
-                required
-                value={newFullName}
-                onChange={(e) => setNewFullName(e.target.value)}
-                placeholder="e.g. Rahul Chowdhury"
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-              />
-            </div>
-
-            <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">Email Address</label>
-              <input
-                type="email"
-                required
-                value={newEmail}
-                onChange={(e) => setNewEmail(e.target.value)}
-                placeholder="e.g. user@laundrix.com"
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-              />
-            </div>
-
-            <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">Phone Number</label>
-              <input
-                type="text"
-                value={newPhone}
-                onChange={(e) => setNewPhone(e.target.value)}
-                placeholder="e.g. +880 1711-223344"
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-              />
-            </div>
-
-            <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">Assigned Role</label>
-              <select
-                value={newRole}
-                onChange={(e) => setNewRole(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-              >
-                <option value="CUSTOMER">Customer</option>
-                <option value="EMPLOYEE">Employee</option>
-                <option value="BRANCH_MANAGER">Branch Manager</option>
-                <option value="VENDOR">Vendor</option>
-                <option value="DELIVERY_AGENT">Delivery Agent</option>
-                <option value="ADMIN">Normal Admin</option>
+              <label className="text-[11px] font-black text-muted-foreground uppercase tracking-wider block mb-1">Assigned Role</label>
+              <select value={newRole} onChange={(e) => setNewRole(e.target.value)}
+                className="w-full h-9 px-3 rounded-xl border border-border bg-muted text-xs font-bold text-card-foreground focus:outline-none focus:ring-2 focus:ring-ring/50 cursor-pointer">
+                {["CUSTOMER","EMPLOYEE","BRANCH_MANAGER","VENDOR","DELIVERY_AGENT","ADMIN"].map((r) => (
+                  <option key={r} value={r}>{r.replace(/_/g," ")}</option>
+                ))}
               </select>
             </div>
-
-            <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">Initial Password</label>
-              <input
-                type="text"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="Default: ChangeMe123!"
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-mono"
-              />
-            </div>
-
-            <div className="border-t border-slate-100 pt-4 flex items-center justify-end gap-2">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => setIsCreateOpen(false)}
-                className="h-9 rounded-xl px-4 text-xs font-bold"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={createLoading}
-                className="h-9 rounded-xl px-4 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                {createLoading ? "Creating..." : "Create User Account"}
+            <div className="flex gap-2 pt-1">
+              <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)} className="flex-1 rounded-xl text-xs font-bold">Cancel</Button>
+              <Button type="submit" disabled={createLoading}
+                className="flex-1 rounded-xl text-xs font-black bg-gradient-to-br from-primary to-indigo-700 text-white hover:opacity-90">
+                {createLoading ? "Creating…" : "Create Account"}
               </Button>
             </div>
           </form>
         </DialogContent>
       </Dialog>
+
     </div>
   );
 }

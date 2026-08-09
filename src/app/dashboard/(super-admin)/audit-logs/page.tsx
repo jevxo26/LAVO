@@ -3,546 +3,377 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { authFetch } from "@/lib/api";
 import {
-  Activity,
-  RefreshCw,
-  Lock,
-  Search,
-  AlertCircle,
-  Filter,
-  Shield,
-  Eye,
-  Globe,
-  Sliders,
-  Sparkles,
-  ArrowRight,
-  FileText,
-  UserCheck,
-  Tag,
+  Activity, RefreshCw, Lock, Search, AlertCircle,
+  Filter, Shield, Eye, Globe, Sliders, RotateCcw,
+  FileText, Clock, Cpu, CheckCircle2,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button }            from "@/components/ui/button";
+import { DashboardPageHero } from "@/components/shared/DashboardPageHero";
+import { OverviewStatCard }  from "@/components/dashboard/shared/overview/OverviewStatCard";
+import { OpsTable }          from "@/components/shared/OpsTable";
+import { motion }            from "framer-motion";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
+  Dialog, DialogContent, DialogHeader,
+  DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
 
+// ─── Types ────────────────────────────────────────────────────────────────────
+
 export interface AuditLogItem {
-  id: string;
-  module: string;
-  action: string;
+  id:          string;
+  module:      string;
+  action:      string;
   performedBy: string;
-  oldValue?: string | null;
-  newValue?: string | null;
-  ipAddress?: string | null;
-  createdAt: string;
+  oldValue?:   string | null;
+  newValue?:   string | null;
+  ipAddress?:  string | null;
+  createdAt:   string;
 }
 
-const FALLBACK_AUDIT_LOGS: AuditLogItem[] = [
-  {
-    id: "aud-901",
-    module: "PRICING_TAX",
-    action: "UPDATE_TAX_RATE",
-    performedBy: "Super Admin (admin@laundrix.com)",
-    oldValue: JSON.stringify({ vatPercentage: 5.0, expressSurcharge: 10 }),
-    newValue: JSON.stringify({ vatPercentage: 7.5, expressSurcharge: 15 }),
-    ipAddress: "103.48.26.11",
-    createdAt: new Date(Date.now() - 3600000 * 1).toISOString(),
-  },
-  {
-    id: "aud-902",
-    module: "PAYOUTS",
-    action: "APPROVE_VENDOR_PAYOUT",
-    performedBy: "Super Admin (admin@laundrix.com)",
-    oldValue: JSON.stringify({ payoutId: "pay-101", status: "PENDING", amount: 15500 }),
-    newValue: JSON.stringify({ payoutId: "pay-101", status: "PAID", amount: 15500 }),
-    ipAddress: "103.48.26.11",
-    createdAt: new Date(Date.now() - 3600000 * 3).toISOString(),
-  },
-  {
-    id: "aud-903",
-    module: "ROLE_MANAGEMENT",
-    action: "ELEVATE_USER_ROLE",
-    performedBy: "Super Admin (admin@laundrix.com)",
-    oldValue: JSON.stringify({ userId: "u-401", role: "CUSTOMER" }),
-    newValue: JSON.stringify({ userId: "u-401", role: "VENDOR" }),
-    ipAddress: "103.48.26.14",
-    createdAt: new Date(Date.now() - 3600000 * 12).toISOString(),
-  },
-  {
-    id: "aud-904",
-    module: "FEATURE_FLAGS",
-    action: "TOGGLE_EXPRESS_DELIVERY",
-    performedBy: "System Admin (sysadmin@laundrix.com)",
-    oldValue: JSON.stringify({ feature: "EXPRESS_SAME_DAY", isEnabled: false }),
-    newValue: JSON.stringify({ feature: "EXPRESS_SAME_DAY", isEnabled: true }),
-    ipAddress: "103.48.26.18",
-    createdAt: new Date(Date.now() - 3600000 * 24).toISOString(),
-  },
-  {
-    id: "aud-905",
-    module: "SYSTEM_SETTINGS",
-    action: "UPDATE_DELIVERY_CHARGES",
-    performedBy: "Super Admin (admin@laundrix.com)",
-    oldValue: JSON.stringify({ baseDeliveryFee: 60, freeDeliveryMin: 1000 }),
-    newValue: JSON.stringify({ baseDeliveryFee: 80, freeDeliveryMin: 1200 }),
-    ipAddress: "103.48.26.11",
-    createdAt: new Date(Date.now() - 3600000 * 36).toISOString(),
-  },
+// ─── Fallback data ────────────────────────────────────────────────────────────
+
+const FALLBACK: AuditLogItem[] = [
+  { id: "aud-901", module: "PRICING_TAX",     action: "UPDATE_TAX_RATE",        performedBy: "Super Admin (admin@laundrix.com)",   oldValue: JSON.stringify({ vatPercentage: 5.0,  expressSurcharge: 10 }), newValue: JSON.stringify({ vatPercentage: 7.5,  expressSurcharge: 15 }), ipAddress: "103.48.26.11", createdAt: new Date(Date.now() - 3600000 * 1).toISOString()  },
+  { id: "aud-902", module: "PAYOUTS",         action: "APPROVE_VENDOR_PAYOUT",  performedBy: "Super Admin (admin@laundrix.com)",   oldValue: JSON.stringify({ payoutId: "pay-101", status: "PENDING", amount: 15500 }), newValue: JSON.stringify({ payoutId: "pay-101", status: "PAID", amount: 15500 }), ipAddress: "103.48.26.11", createdAt: new Date(Date.now() - 3600000 * 3).toISOString()  },
+  { id: "aud-903", module: "ROLE_MANAGEMENT", action: "ELEVATE_USER_ROLE",      performedBy: "Super Admin (admin@laundrix.com)",   oldValue: JSON.stringify({ userId: "u-401", role: "CUSTOMER" }),               newValue: JSON.stringify({ userId: "u-401", role: "VENDOR" }),               ipAddress: "103.48.26.14", createdAt: new Date(Date.now() - 3600000 * 12).toISOString() },
+  { id: "aud-904", module: "FEATURE_FLAGS",   action: "TOGGLE_EXPRESS_DELIVERY",performedBy: "System Admin (sysadmin@laundrix.com)", oldValue: JSON.stringify({ feature: "EXPRESS_SAME_DAY", isEnabled: false }),  newValue: JSON.stringify({ feature: "EXPRESS_SAME_DAY", isEnabled: true }),  ipAddress: "103.48.26.18", createdAt: new Date(Date.now() - 3600000 * 24).toISOString() },
+  { id: "aud-905", module: "SYSTEM_SETTINGS", action: "UPDATE_DELIVERY_CHARGES",performedBy: "Super Admin (admin@laundrix.com)",   oldValue: JSON.stringify({ baseDeliveryFee: 60, freeDeliveryMin: 1000 }),       newValue: JSON.stringify({ baseDeliveryFee: 80, freeDeliveryMin: 1200 }),       ipAddress: "103.48.26.11", createdAt: new Date(Date.now() - 3600000 * 36).toISOString() },
 ];
 
-// Helper: Format raw module enum string to human-readable label
-function formatModuleLabel(moduleStr: string): string {
-  const map: Record<string, string> = {
-    PRICING_TAX: "Pricing & Tax",
-    PAYOUTS: "Payouts",
-    ROLE_MANAGEMENT: "Role Management",
-    FEATURE_FLAGS: "Feature Flags",
-    SYSTEM_SETTINGS: "System Settings",
-    USER_MANAGEMENT: "User Management",
-    BRANCH_OPS: "Branch Operations",
-    VENDOR_OPS: "Vendor Operations",
-    AUTH: "Authentication",
-  };
-  if (map[moduleStr.toUpperCase()]) return map[moduleStr.toUpperCase()];
-  return moduleStr
-    .toLowerCase()
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
-}
+// ─── Format helpers ───────────────────────────────────────────────────────────
 
-// Helper: Format raw action enum string to human-readable phrase
-function formatActionLabel(actionStr: string): string {
-  const map: Record<string, string> = {
-    UPDATE_TAX_RATE: "Updated Tax Rate",
-    APPROVE_VENDOR_PAYOUT: "Approved Vendor Payout",
-    ELEVATE_USER_ROLE: "Elevated User Role",
-    TOGGLE_EXPRESS_DELIVERY: "Toggled Express Delivery",
-    UPDATE_DELIVERY_CHARGES: "Updated Delivery Charges",
-    CREATE_BRANCH: "Created Branch",
-    BLOCK_USER: "Blocked User",
-    UPDATE_SETTING: "Updated Setting",
-  };
-  if (map[actionStr.toUpperCase()]) return map[actionStr.toUpperCase()];
-  return actionStr
-    .toLowerCase()
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
-}
+const MODULE_MAP: Record<string, string> = {
+  PRICING_TAX: "Pricing & Tax", PAYOUTS: "Payouts",
+  ROLE_MANAGEMENT: "Role Management", FEATURE_FLAGS: "Feature Flags",
+  SYSTEM_SETTINGS: "System Settings", USER_MANAGEMENT: "User Management",
+  BRANCH_OPS: "Branch Operations", VENDOR_OPS: "Vendor Operations", AUTH: "Authentication",
+};
+const ACTION_MAP: Record<string, string> = {
+  UPDATE_TAX_RATE: "Updated Tax Rate", APPROVE_VENDOR_PAYOUT: "Approved Vendor Payout",
+  ELEVATE_USER_ROLE: "Elevated User Role", TOGGLE_EXPRESS_DELIVERY: "Toggled Express Delivery",
+  UPDATE_DELIVERY_CHARGES: "Updated Delivery Charges", CREATE_BRANCH: "Created Branch",
+  BLOCK_USER: "Blocked User", UPDATE_SETTING: "Updated Setting",
+};
+const KEY_MAP: Record<string, string> = {
+  vatPercentage: "VAT %", expressSurcharge: "Express Surcharge", payoutId: "Payout Ref",
+  status: "Status", amount: "Amount", userId: "User Ref", role: "Role",
+  feature: "Feature", isEnabled: "Enabled", baseDeliveryFee: "Base Fee", freeDeliveryMin: "Free Delivery Min",
+};
 
-// Helper: Format key-value label nicely
-function formatKeyLabel(key: string): string {
-  const map: Record<string, string> = {
-    vatPercentage: "VAT Percentage",
-    expressSurcharge: "Express Surcharge",
-    payoutId: "Payout Reference",
-    status: "Status",
-    amount: "Amount",
-    userId: "User Reference",
-    role: "Assigned Role",
-    feature: "Feature Name",
-    isEnabled: "Feature Status",
-    baseDeliveryFee: "Base Delivery Fee",
-    freeDeliveryMin: "Free Delivery Minimum",
-  };
-  if (map[key]) return map[key];
-  return key
-    .replace(/([A-Z])/g, " $1")
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+function fmtModule(s: string) { return MODULE_MAP[s?.toUpperCase()] ?? s?.toLowerCase().replace(/_/g," ").replace(/\b\w/g, (c) => c.toUpperCase()); }
+function fmtAction(s: string) { return ACTION_MAP[s?.toUpperCase()] ?? s?.toLowerCase().replace(/_/g," ").replace(/\b\w/g, (c) => c.toUpperCase()); }
+function fmtKey(k: string)    { return KEY_MAP[k] ?? k.replace(/([A-Z])/g," $1").replace(/\b\w/g,(c)=>c.toUpperCase()); }
+function fmtVal(k: string, v: any): string {
+  if (v == null) return "None";
+  if (typeof v === "boolean") return v ? "Enabled" : "Disabled";
+  if (k.match(/fee|amount|surcharge|min/i) && typeof v === "number") return `৳${v.toLocaleString()}`;
+  if (k.match(/vat|percentage/i)) return `${v}%`;
+  return String(v);
 }
-
-// Helper: Format value display
-function formatValueDisplay(key: string, val: any): string {
-  if (val === null || val === undefined) return "None";
-  if (typeof val === "boolean") return val ? "Enabled" : "Disabled";
-  if (key.toLowerCase().includes("vat") || key.toLowerCase().includes("percentage")) return `${val}%`;
-  if (
-    key.toLowerCase().includes("fee") ||
-    key.toLowerCase().includes("amount") ||
-    key.toLowerCase().includes("surcharge") ||
-    key.toLowerCase().includes("min")
-  ) {
-    if (typeof val === "number") return `৳${val.toLocaleString()}`;
-  }
-  return String(val);
-}
-
-// Helper: Parse JSON to structured Key-Value pairs
-function parseJsonToEntries(jsonStr?: string | null): { key: string; label: string; value: string }[] {
-  if (!jsonStr) return [];
+function parseJson(s?: string | null): { key: string; label: string; value: string }[] {
+  if (!s) return [];
   try {
-    const obj = JSON.parse(jsonStr);
-    if (typeof obj !== "object" || obj === null) return [];
-    return Object.entries(obj).map(([k, v]) => ({
-      key: k,
-      label: formatKeyLabel(k),
-      value: formatValueDisplay(k, v),
-    }));
-  } catch {
-    return [{ key: "value", label: "Raw Value", value: String(jsonStr) }];
-  }
+    const obj = JSON.parse(s);
+    if (typeof obj !== "object" || !obj) return [];
+    return Object.entries(obj).map(([k, v]) => ({ key: k, label: fmtKey(k), value: fmtVal(k, v) }));
+  } catch { return [{ key: "v", label: "Raw Value", value: String(s) }]; }
 }
+
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
+
+function Sk({ className }: { className?: string }) { return <div className={`animate-pulse rounded-lg bg-muted ${className ?? ""}`} />; }
+function TableSkeleton() {
+  return (
+    <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+      <div className="border-b border-border px-5 py-4 flex gap-3">
+        <Sk className="h-9 flex-1 rounded-xl max-w-sm" /><Sk className="h-9 w-48 rounded-xl" />
+      </div>
+      <div className="divide-y divide-border">
+        {[0,1,2,3,4].map((i) => (
+          <div key={i} className="flex items-center gap-4 px-5 py-4">
+            <Sk className="h-3 w-20" />
+            <Sk className="h-3 flex-1" />
+            <div className="flex items-center gap-2"><Sk className="h-5 w-24 rounded-full" /><Sk className="h-3 w-32" /></div>
+            <Sk className="h-3 w-24" />
+            <Sk className="h-3 w-28" />
+            <Sk className="h-8 w-24 rounded-xl" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function AuditLogsPage() {
-  const [logs, setLogs] = useState<AuditLogItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
-  const [moduleFilter, setModuleFilter] = useState<string>("ALL");
-  const [selectedLog, setSelectedLog] = useState<AuditLogItem | null>(null);
+  const [logs,         setLogs]         = useState<AuditLogItem[]>([]);
+  const [loading,      setLoading]      = useState(true);
+  const [refreshing,   setRefreshing]   = useState(false);
+  const [search,       setSearch]       = useState("");
+  const [moduleFilter, setModuleFilter] = useState("ALL");
+  const [selectedLog,  setSelectedLog]  = useState<AuditLogItem | null>(null);
 
-  const fetchLogs = async () => {
-    setLoading(true);
-    try {
-      const res = await authFetch("/audit-logs?page=1&limit=100");
-      const json = await res.json();
-      if (json.success && Array.isArray(json.data) && json.data.length > 0) {
-        setLogs(json.data);
-      } else {
-        setLogs(FALLBACK_AUDIT_LOGS);
-      }
-    } catch {
-      setLogs(FALLBACK_AUDIT_LOGS);
-    } finally {
-      setLoading(false);
-    }
+  const fetchLogs = () => {
+    setRefreshing(true);
+    authFetch("/audit-logs?page=1&limit=100")
+      .then((r) => r.json())
+      .then((json) => setLogs(json.success && json.data?.length ? json.data : FALLBACK))
+      .catch(() => setLogs(FALLBACK))
+      .finally(() => { setLoading(false); setRefreshing(false); });
   };
+  useEffect(() => { fetchLogs(); }, []);
 
-  useEffect(() => {
-    fetchLogs();
-  }, []);
-
-  // Filtered Logs
-  const filteredLogs = useMemo(() => {
-    return logs.filter((log) => {
-      const q = search.toLowerCase().trim();
-      const formattedAction = formatActionLabel(log.action).toLowerCase();
-      const formattedModule = formatModuleLabel(log.module).toLowerCase();
-
-      const matchesSearch =
-        !q ||
-        log.id.toLowerCase().includes(q) ||
-        log.action.toLowerCase().includes(q) ||
-        formattedAction.includes(q) ||
-        log.module.toLowerCase().includes(q) ||
-        formattedModule.includes(q) ||
-        log.performedBy.toLowerCase().includes(q) ||
-        (log.ipAddress && log.ipAddress.toLowerCase().includes(q));
-
-      const matchesModule =
-        moduleFilter === "ALL" || log.module.toUpperCase() === moduleFilter.toUpperCase();
-
-      return matchesSearch && matchesModule;
-    });
-  }, [logs, search, moduleFilter]);
-
-  // Derived modules list
+  // ── Derived ───────────────────────────────────────────────────────────────
   const availableModules = useMemo(() => {
     const mods = new Set(logs.map((l) => l.module.toUpperCase()));
     return ["ALL", ...Array.from(mods)];
   }, [logs]);
 
-  // Modal Entries
-  const oldEntries = useMemo(
-    () => parseJsonToEntries(selectedLog?.oldValue),
-    [selectedLog?.oldValue]
-  );
-  const newEntries = useMemo(
-    () => parseJsonToEntries(selectedLog?.newValue),
-    [selectedLog?.newValue]
-  );
+  const uniqueIPs    = useMemo(() => new Set(logs.map((l) => l.ipAddress).filter(Boolean)).size, [logs]);
+  const totalModules = availableModules.length - 1;
+
+  const displayed = useMemo(() => logs.filter((log) => {
+    const q = search.toLowerCase().trim();
+    const matchSearch = !q ||
+      log.id.toLowerCase().includes(q) ||
+      log.action.toLowerCase().includes(q) ||
+      fmtAction(log.action).toLowerCase().includes(q) ||
+      log.module.toLowerCase().includes(q) ||
+      fmtModule(log.module).toLowerCase().includes(q) ||
+      log.performedBy.toLowerCase().includes(q) ||
+      (log.ipAddress?.toLowerCase().includes(q) ?? false);
+    const matchModule = moduleFilter === "ALL" || log.module.toUpperCase() === moduleFilter;
+    return matchSearch && matchModule;
+  }), [logs, search, moduleFilter]);
+
+  const hasFilters   = !!(search.trim() || moduleFilter !== "ALL");
+  const clearFilters = () => { setSearch(""); setModuleFilter("ALL"); };
+
+  // ── Dialog entries ─────────────────────────────────────────────────────────
+  const oldEntries = useMemo(() => parseJson(selectedLog?.oldValue), [selectedLog?.oldValue]);
+  const newEntries = useMemo(() => parseJson(selectedLog?.newValue), [selectedLog?.newValue]);
 
   return (
-    <div className="space-y-7">
-      {/* Header Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-700 via-indigo-800 to-slate-900 p-6 md:p-8 text-white shadow-lg">
-        <div className="pointer-events-none absolute inset-0 opacity-10">
-          <div className="absolute -top-12 -right-12 h-64 w-64 rounded-full bg-white" />
-          <div className="absolute -bottom-10 -left-8 h-48 w-48 rounded-full bg-white" />
+    <div className="space-y-6">
+
+      {/* ── 1. Hero ─────────────────────────────────────────────────────── */}
+      <DashboardPageHero
+        badge="Super Admin — Security Ledger"
+        title="System Audit Logs"
+        description="Immutable recorded timeline of admin overrides, pricing updates, role changes, payout approvals, and all security events."
+        icon={Activity}
+        liveLabel="Immutable Ledger"
+        chips={[
+          { label: "Total Events",  value: loading ? "—" : String(logs.length),   sub: "All recorded actions"   },
+          { label: "Modules",       value: loading ? "—" : String(totalModules),   sub: "System areas covered"  },
+          { label: "Unique IPs",    value: loading ? "—" : String(uniqueIPs),      sub: "Source addresses"       },
+        ]}
+      />
+
+      {/* ── 2. Stat cards ───────────────────────────────────────────────── */}
+      {!loading && (
+        <motion.div
+          initial="hidden" animate="show"
+          variants={{ hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.06 } } }}
+          className="grid grid-cols-2 sm:grid-cols-4 gap-4"
+        >
+          <OverviewStatCard title="Total Events"   value={logs.length}          icon={Activity}      gradient="from-violet-500 to-purple-600" />
+          <OverviewStatCard title="System Modules" value={totalModules}          icon={Sliders}       gradient="from-primary to-indigo-700"    />
+          <OverviewStatCard title="Secured Ledger" value="100% Active"           icon={Shield}        gradient="from-emerald-500 to-teal-600"  />
+          <OverviewStatCard title="Unique IPs"     value={uniqueIPs || 1}        icon={Globe}         gradient="from-sky-500 to-cyan-600"      />
+        </motion.div>
+      )}
+
+      {/* ── 3. Toolbar ──────────────────────────────────────────────────── */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+
+        {/* Module filter pills */}
+        <div className="flex items-center gap-1 rounded-2xl border border-border bg-muted p-1.5 overflow-x-auto scrollbar-none">
+          {availableModules.map((mod) => {
+            const isActive = moduleFilter === mod;
+            return (
+              <button key={mod} onClick={() => setModuleFilter(mod)}
+                className={["flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-[11px] font-black whitespace-nowrap select-none transition-all duration-150",
+                  isActive ? "bg-card text-card-foreground shadow-sm" : "text-muted-foreground hover:text-card-foreground hover:bg-card/60"].join(" ")}>
+                {mod === "ALL" ? "All Modules" : fmtModule(mod)}
+              </button>
+            );
+          })}
         </div>
 
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <Sparkles size={14} className="text-purple-200" />
-              <span className="text-purple-200 text-xs font-bold uppercase tracking-wider">
-                Immutable Security Ledger
+        {/* Right — search + clear + refresh */}
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60" size={13} />
+            <input type="text" placeholder="Search action, module, IP…" value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="h-8 w-64 pl-9 pr-3 rounded-xl border border-border bg-muted text-xs font-medium text-card-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-ring/50 focus:bg-card transition" />
+          </div>
+          {hasFilters && (
+            <Button size="sm" variant="ghost" onClick={clearFilters}
+              className="h-8 rounded-xl text-xs font-bold text-muted-foreground hover:text-error hover:bg-error/10 gap-1 px-2.5">
+              <RotateCcw size={12} /> Clear
+            </Button>
+          )}
+          <Button size="sm" variant="outline" onClick={fetchLogs} className="h-8 rounded-xl text-xs font-bold gap-1.5">
+            <RefreshCw size={12} className={refreshing ? "animate-spin" : ""} /> Refresh
+          </Button>
+        </div>
+      </div>
+
+      {/* ── 4. Table ────────────────────────────────────────────────────── */}
+      {loading ? <TableSkeleton /> : (
+        <OpsTable
+          animateKey={moduleFilter + search}
+          keyExtractor={(l) => l.id}
+          displayed={displayed}
+          totalCount={logs.length}
+          noun="events"
+          hasFilters={hasFilters}
+          onClearFilters={clearFilters}
+          emptyTitle="No audit log entries found"
+          emptyFiltered="Try adjusting your search or module filter."
+          emptyDefault="No audit events recorded yet."
+          footerStats={[
+            { icon: <Lock size={11} className="text-muted-foreground" />, label: "Immutable — entries cannot be deleted or modified" },
+          ]}
+          columns={[
+            {
+              header: "Event ID", width: "110px",
+              render: (l) => (
+                <p className="text-[11px] font-black font-mono tabular-nums"
+                  style={{ color: "var(--primary)" }}>
+                  #{l.id.slice(-8).toUpperCase()}
+                </p>
+              ),
+            },
+            {
+              header: "Performed By", width: "minmax(160px,2fr)",
+              render: (l) => (
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg
+                    bg-gradient-to-br from-violet-500 to-purple-600 text-white text-[11px] font-black
+                    shadow-sm transition-transform duration-200 group-hover:scale-110">
+                    {(l.performedBy ?? "S").charAt(0).toUpperCase()}
+                  </div>
+                  <p className="text-[12px] font-bold text-card-foreground truncate group-hover:text-primary transition-colors">
+                    {l.performedBy}
+                  </p>
+                </div>
+              ),
+            },
+            {
+              header: "Module & Action", width: "minmax(200px,2fr)",
+              render: (l) => (
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="inline-flex items-center rounded-full border border-violet-500/20 bg-violet-500/8 px-2.5 py-[3px] text-[10px] font-black text-violet-600 dark:text-violet-400 whitespace-nowrap">
+                    {fmtModule(l.module)}
+                  </span>
+                  <span className="text-[12px] font-bold text-card-foreground truncate">
+                    {fmtAction(l.action)}
+                  </span>
+                </div>
+              ),
+            },
+            {
+              header: "IP Address", width: "130px",
+              render: (l) => (
+                <p className="text-[11px] font-mono text-muted-foreground">{l.ipAddress || "127.0.0.1"}</p>
+              ),
+            },
+            {
+              header: "Timestamp", width: "160px",
+              render: (l) => (
+                <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground font-medium whitespace-nowrap">
+                  <Clock size={11} className="shrink-0" />
+                  {new Date(l.createdAt).toLocaleString("en-US", {
+                    month: "short", day: "numeric", year: "numeric",
+                    hour: "2-digit", minute: "2-digit",
+                  })}
+                </div>
+              ),
+            },
+            {
+              header: "Details", width: "120px",
+              render: (l) => (
+                <Button size="sm" variant="ghost" onClick={() => setSelectedLog(l)}
+                  className="h-8 rounded-xl px-2.5 text-[11px] font-black text-muted-foreground hover:text-primary hover:bg-primary/10 gap-1">
+                  <Eye size={12} /> View
+                </Button>
+              ),
+            },
+          ]}
+        />
+      )}
+
+      {/* ── 5. Detail Dialog ────────────────────────────────────────────── */}
+      <Dialog open={!!selectedLog} onOpenChange={(v) => !v && setSelectedLog(null)}>
+        <DialogContent className="sm:max-w-2xl rounded-2xl">
+          <DialogHeader className="border-b border-border pb-4">
+            <div className="flex items-center justify-between gap-3">
+              <DialogTitle className="text-base font-black text-card-foreground flex items-center gap-2">
+                <FileText size={16} className="text-violet-500" />
+                Audit Event — #{selectedLog?.id.slice(-8).toUpperCase()}
+              </DialogTitle>
+              <span className="inline-flex items-center rounded-full border border-violet-500/20 bg-violet-500/8 px-2.5 py-[3px] text-[10px] font-black text-violet-600">
+                {selectedLog && fmtModule(selectedLog.module)}
               </span>
             </div>
-            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight flex items-center gap-2.5">
-              <Activity className="text-purple-300" />
-              System Audit Logs & Security History
-            </h1>
-            <p className="mt-1 text-sm text-purple-100 max-w-xl">
-              Recorded timeline of admin overrides, pricing updates, role changes, and security events.
-            </p>
-          </div>
+            <DialogDescription className="text-xs text-muted-foreground mt-1">
+              Action: <strong className="text-card-foreground">{selectedLog && fmtAction(selectedLog.action)}</strong>
+              {" · "}Recorded at {selectedLog && new Date(selectedLog.createdAt).toLocaleString()}
+            </DialogDescription>
+          </DialogHeader>
 
-          <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1.5 text-xs font-extrabold text-purple-950 bg-purple-200 px-3.5 py-2 rounded-xl shadow-sm">
-              <Lock size={14} /> Super Admin Exclusive
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={fetchLogs}
-              className="h-10 rounded-xl bg-white/10 hover:bg-white/20 text-white border-white/20 font-bold gap-2 text-xs"
-            >
-              <RefreshCw size={14} className={loading ? "animate-spin" : ""} /> Refresh Logs
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Stat Summary Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="rounded-2xl bg-white p-4 border border-slate-200/80 shadow-sm flex items-center gap-3.5">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-purple-50 text-purple-600">
-            <Activity size={20} />
-          </div>
-          <div>
-            <p className="text-xs font-medium text-slate-500">Total Audit Events</p>
-            <p className="text-xl font-extrabold text-slate-900">{logs.length}</p>
-          </div>
-        </div>
-
-        <div className="rounded-2xl bg-white p-4 border border-slate-200/80 shadow-sm flex items-center gap-3.5">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
-            <Sliders size={20} />
-          </div>
-          <div>
-            <p className="text-xs font-medium text-slate-500">System Modules</p>
-            <p className="text-xl font-extrabold text-indigo-600">{availableModules.length - 1}</p>
-          </div>
-        </div>
-
-        <div className="rounded-2xl bg-white p-4 border border-slate-200/80 shadow-sm flex items-center gap-3.5">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
-            <Shield size={20} />
-          </div>
-          <div>
-            <p className="text-xs font-medium text-slate-500">Secured Ledger</p>
-            <p className="text-xl font-extrabold text-emerald-600">100% Active</p>
-          </div>
-        </div>
-
-        <div className="rounded-2xl bg-white p-4 border border-slate-200/80 shadow-sm flex items-center gap-3.5">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-            <Globe size={20} />
-          </div>
-          <div>
-            <p className="text-xs font-medium text-slate-500">Unique IPs Logged</p>
-            <p className="text-xl font-extrabold text-slate-900">
-              {new Set(logs.map((l) => l.ipAddress).filter(Boolean)).size || 1}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Table Card */}
-      <div className="rounded-2xl bg-white border border-slate-200/80 shadow-sm overflow-hidden">
-        {/* Search & Module Filters */}
-        <div className="p-5 border-b border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3.5 top-3 text-slate-400" size={16} />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search action, module, performed by or IP..."
-              className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-purple-500/20"
-            />
-          </div>
-
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
-            <Filter size={14} className="text-slate-400 shrink-0 ml-1" />
-            {availableModules.map((mod) => (
-              <button
-                key={mod}
-                onClick={() => setModuleFilter(mod)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-                  moduleFilter === mod
-                    ? "bg-slate-900 text-white shadow-sm"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                }`}
-              >
-                {mod === "ALL" ? "All Modules" : formatModuleLabel(mod)}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Table Content */}
-        {loading ? (
-          <div className="p-12 text-center text-slate-500">
-            <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-purple-600 border-t-transparent mb-3" />
-            <p className="text-xs font-semibold">Loading security audit entries...</p>
-          </div>
-        ) : filteredLogs.length === 0 ? (
-          <div className="p-12 text-center text-slate-400">
-            <AlertCircle size={36} className="mx-auto mb-3 text-slate-300" />
-            <p className="text-sm font-semibold text-slate-600">No audit log entries found</p>
-            <p className="text-xs text-slate-400 mt-1">Try adjusting your search query or module filter.</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="bg-slate-50/80 border-b border-slate-100 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                  <th className="py-3.5 px-6">Event ID</th>
-                  <th className="py-3.5 px-6">Performed By</th>
-                  <th className="py-3.5 px-6">Module & Action</th>
-                  <th className="py-3.5 px-6">IP Address</th>
-                  <th className="py-3.5 px-6">Timestamp</th>
-                  <th className="py-3.5 px-6 text-right">Details</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {filteredLogs.map((log) => (
-                  <tr key={log.id} className="hover:bg-slate-50/60 transition-colors group">
-                    <td className="py-4 px-6 font-bold text-purple-600 font-mono">
-                      #{log.id.slice(-8)}
-                    </td>
-
-                    <td className="py-4 px-6 font-semibold text-slate-900">
-                      <div>{log.performedBy}</div>
-                    </td>
-
-                    <td className="py-4 px-6 font-bold text-slate-800">
-                      <div className="flex items-center gap-2">
-                        <span className="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-purple-50 text-purple-700 border border-purple-200">
-                          {formatModuleLabel(log.module)}
-                        </span>
-                        <span className="text-slate-800 font-bold">{formatActionLabel(log.action)}</span>
-                      </div>
-                    </td>
-
-                    <td className="py-4 px-6 font-mono text-slate-500 text-[11px]">
-                      {log.ipAddress || "127.0.0.1"}
-                    </td>
-
-                    <td className="py-4 px-6 text-slate-400 font-medium whitespace-nowrap">
-                      {new Date(log.createdAt).toLocaleString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </td>
-
-                    <td className="py-4 px-6 text-right whitespace-nowrap">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setSelectedLog(log)}
-                        className="h-8 rounded-xl px-3 text-[11px] font-bold border-slate-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300 gap-1.5"
-                      >
-                        <Eye size={13} /> View Details
-                      </Button>
-                    </td>
-                  </tr>
+          {selectedLog && (
+            <div className="space-y-4 pt-2">
+              {/* Meta row */}
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { label: "Performed By", value: selectedLog.performedBy },
+                  { label: "IP Address",   value: selectedLog.ipAddress || "127.0.0.1" },
+                ].map(({ label, value }) => (
+                  <div key={label} className="rounded-xl border border-border bg-muted/50 px-3 py-2.5">
+                    <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">{label}</p>
+                    <p className="text-[12px] font-bold text-card-foreground mt-0.5 truncate">{value}</p>
+                  </div>
                 ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-
-      {/* Audit Log Detail Dialog */}
-      <Dialog open={!!selectedLog} onOpenChange={(open) => !open && setSelectedLog(null)}>
-        {selectedLog && (
-          <DialogContent className="max-w-2xl rounded-2xl p-6">
-            <DialogHeader className="border-b border-slate-100 pb-4">
-              <div className="flex items-center justify-between">
-                <DialogTitle className="text-xl font-extrabold text-slate-900 flex items-center gap-2">
-                  <FileText size={20} className="text-purple-600" />
-                  Audit Event — #{selectedLog.id.slice(-8)}
-                </DialogTitle>
-                <span className="px-3 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-800">
-                  {formatModuleLabel(selectedLog.module)}
-                </span>
-              </div>
-              <DialogDescription className="text-xs text-slate-500 mt-1">
-                Action: <strong className="text-slate-800">{formatActionLabel(selectedLog.action)}</strong> • Recorded at{" "}
-                {new Date(selectedLog.createdAt).toLocaleString()}
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="space-y-4 py-3 text-xs">
-              {/* Actor & Metadata */}
-              <div className="grid grid-cols-2 gap-4 rounded-xl bg-slate-50 p-4 border border-slate-100">
-                <div>
-                  <p className="text-[11px] font-semibold text-slate-400 uppercase">Performed By</p>
-                  <p className="text-xs font-bold text-slate-900">{selectedLog.performedBy}</p>
-                </div>
-                <div>
-                  <p className="text-[11px] font-semibold text-slate-400 uppercase">IP Address</p>
-                  <p className="text-xs font-mono font-semibold text-slate-800">{selectedLog.ipAddress || "127.0.0.1"}</p>
-                </div>
               </div>
 
-              {/* Clean Human-Readable State Comparison */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Old Value */}
-                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="h-2 w-2 rounded-full bg-rose-500" />
-                    <p className="text-[11px] font-extrabold text-slate-700 uppercase tracking-wider">
-                      Previous State (Old Values)
-                    </p>
+              {/* Old vs New diff */}
+              {(oldEntries.length > 0 || newEntries.length > 0) && (
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Old values */}
+                  <div className="rounded-xl border border-error/20 bg-error/5 p-3 space-y-2">
+                    <p className="text-[10px] font-black uppercase tracking-wider text-error/70">Before</p>
+                    {oldEntries.map(({ key, label, value }) => (
+                      <div key={key} className="flex items-center justify-between gap-2">
+                        <span className="text-[11px] text-muted-foreground font-medium">{label}</span>
+                        <span className="text-[11px] font-black text-card-foreground">{value}</span>
+                      </div>
+                    ))}
                   </div>
-                  {oldEntries.length === 0 ? (
-                    <p className="text-slate-400 italic text-xs">No previous state recorded.</p>
-                  ) : (
-                    <div className="space-y-2.5">
-                      {oldEntries.map((item) => (
-                        <div key={item.key} className="flex items-center justify-between border-b border-slate-100 pb-1.5">
-                          <span className="font-semibold text-slate-500">{item.label}</span>
-                          <span className="font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded text-xs">{item.value}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                  {/* New values */}
+                  <div className="rounded-xl border border-success/20 bg-success/5 p-3 space-y-2">
+                    <p className="text-[10px] font-black uppercase tracking-wider text-success/70">After</p>
+                    {newEntries.map(({ key, label, value }) => (
+                      <div key={key} className="flex items-center justify-between gap-2">
+                        <span className="text-[11px] text-muted-foreground font-medium">{label}</span>
+                        <span className="text-[11px] font-black text-card-foreground">{value}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
+              )}
 
-                {/* New Value */}
-                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                    <p className="text-[11px] font-extrabold text-slate-700 uppercase tracking-wider">
-                      Updated State (New Values)
-                    </p>
-                  </div>
-                  {newEntries.length === 0 ? (
-                    <p className="text-slate-400 italic text-xs">No new state recorded.</p>
-                  ) : (
-                    <div className="space-y-2.5">
-                      {newEntries.map((item) => (
-                        <div key={item.key} className="flex items-center justify-between border-b border-slate-100 pb-1.5">
-                          <span className="font-semibold text-slate-500">{item.label}</span>
-                          <span className="font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded text-xs">{item.value}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+              <div className="flex justify-end pt-1">
+                <Button variant="outline" size="sm" onClick={() => setSelectedLog(null)}
+                  className="rounded-xl text-xs font-bold">Close</Button>
               </div>
             </div>
-
-            <div className="border-t border-slate-100 pt-4 flex justify-end">
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => setSelectedLog(null)}
-                className="h-9 rounded-xl px-4 text-xs font-semibold"
-              >
-                Close Details
-              </Button>
-            </div>
-          </DialogContent>
-        )}
+          )}
+        </DialogContent>
       </Dialog>
     </div>
   );
