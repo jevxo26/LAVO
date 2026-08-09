@@ -93,9 +93,20 @@ export default function RolesPage() {
                   <span className={`text-[13px] font-black ${selectedRole?.id === role.id ? "text-primary" : "text-card-foreground"}`}>
                     {role.displayName}
                   </span>
-                  <span className="text-[11px] text-muted-foreground font-medium truncate">
-                    {role.description || "No description"}
-                  </span>
+                  <div className="flex items-center justify-between mt-0.5">
+                    <span className="text-[11px] text-muted-foreground font-medium truncate flex-1">
+                      {role.description || "No description"}
+                    </span>
+                    {role.permissions?.length > 0 && (
+                      <span className={`ml-2 shrink-0 rounded-full px-1.5 py-px text-[9px] font-black tabular-nums ${
+                        selectedRole?.id === role.id
+                          ? "bg-primary/15 text-primary"
+                          : "bg-muted-foreground/10 text-muted-foreground"
+                      }`}>
+                        {role.permissions.length}
+                      </span>
+                    )}
+                  </div>
                 </motion.button>
               ))}
             </div>
