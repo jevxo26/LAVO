@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, Suspense, useRef, useEffect } from "react";
-import { Sparkles, Shirt, ShoppingBag, Search, RotateCcw, CheckCircle2, ArrowRight } from "lucide-react";
+import { Loader2, Sparkles, Shirt, ShoppingBag, Search, RotateCcw, CheckCircle2, ArrowRight } from "lucide-react";
 import { useBooking } from "./_hooks/useBooking";
 import { ServiceCard } from "./_components/ServiceCard";
 import { CartSummary } from "./_components/CartSummary";
