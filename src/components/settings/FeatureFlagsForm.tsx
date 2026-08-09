@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Sliders, Save, Loader2, ToggleLeft, ToggleRight,
+import { Save, Loader2, ToggleLeft, ToggleRight,
   Wallet, Tag, Store, Navigation, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 

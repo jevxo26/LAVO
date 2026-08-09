@@ -1,113 +1,173 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import React, { useState, useEffect, useCallback } from "react";
+import { authFetch } from "@/lib/api";
 import { toast } from "sonner";
-import { Lock, ShieldCheck, RefreshCw } from "lucide-react";
+import { Lock, RefreshCw, Loader2 } from "lucide-react";
 
 interface AdminUser {
-  id: string;
-  fullName: string;
-  email: string;
-  status: string;
+  id:               string;
+  fullName:         string;
+  email:            string;
+  status:           string;
   adminPermission?: Record<string, boolean>;
 }
 
-export function AdminPermissionControl() {
-  const [admins, setAdmins] = useState<AdminUser[]>([]);
-  const [loading, setLoading] = useState(true);
+const PERM_COLUMNS = [
+  { flag: "canManageCustomerOps",  label: "Customer Ops" },
+  { flag: "canManageBranchOps",    label: "Branch Ops"   },
+  { flag: "canManageVendorOps",    label: "Vendor Ops"   },
+  { flag: "canManageAgentOps",     label: "Agent Ops"    },
+  { flag: "canManageEmployeeOps",  label: "Employee Ops" },
+  { flag: "canManageFinance",      label: "Finance"      },
+];
 
-  const fetchAdmins = async () => {
-    setLoading(true);
-    try {
-      const res = await axios.get("/api/admin/permissions");
-      setAdmins(res.data.data || []);
-    } catch {
-      toast.error("Failed to load admin permission metrics");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchAdmins();
-  }, []);
-
-  const handleToggle = async (adminId: string, flag: string, currentValue: boolean) => {
-    try {
-      await axios.put(`/api/admin/permissions/${adminId}`, {
-        [flag]: !currentValue,
-      });
-      toast.success("Permission flag updated");
-      fetchAdmins();
-    } catch {
-      toast.error("Failed to update permission");
-    }
-  };
-
-  if (loading) return <div className="p-8 text-center text-slate-400 font-semibold text-sm">Loading admin permissions matrix...</div>;
-
-  return (
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden space-y-4">
-      <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-        <div>
-          <h3 className="font-bold text-slate-900 text-lg flex items-center gap-2">
-            <Lock className="text-blue-600" size={20} /> Dynamic Admin Permission Matrix
-          </h3>
-          <p className="text-slate-400 text-xs mt-0.5">Toggle operational permissions for Normal Admins in real time.</p>
-        </div>
-        <button onClick={fetchAdmins} className="p-2 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-50 transition-all">
-          <RefreshCw size={18} />
-        </button>
-      </div>
-
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse text-xs">
-          <thead>
-            <tr className="bg-slate-50 border-b border-slate-100 text-slate-500 font-bold uppercase">
-              <th className="p-4">Admin User</th>
-              <th className="p-4 text-center">Customer Ops</th>
-              <th className="p-4 text-center">Branch Ops</th>
-              <th className="p-4 text-center">Vendor Ops</th>
-              <th className="p-4 text-center">Agent Ops</th>
-              <th className="p-4 text-center">Employee Ops</th>
-              <th className="p-4 text-center">Finance</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {admins.map((admin) => {
-              const perms = admin.adminPermission || {};
-              return (
-                <tr key={admin.id} className="hover:bg-slate-50/50">
-                  <td className="p-4">
-                    <span className="font-bold text-slate-800 text-sm block">{admin.fullName}</span>
-                    <span className="text-slate-400 text-xs">{admin.email}</span>
-                  </td>
-                  <td className="p-4 text-center"><ToggleSwitch active={!!perms.canManageCustomerOps} onChange={() => handleToggle(admin.id, "canManageCustomerOps", !!perms.canManageCustomerOps)} /></td>
-                  <td className="p-4 text-center"><ToggleSwitch active={!!perms.canManageBranchOps} onChange={() => handleToggle(admin.id, "canManageBranchOps", !!perms.canManageBranchOps)} /></td>
-                  <td className="p-4 text-center"><ToggleSwitch active={!!perms.canManageVendorOps} onChange={() => handleToggle(admin.id, "canManageVendorOps", !!perms.canManageVendorOps)} /></td>
-                  <td className="p-4 text-center"><ToggleSwitch active={!!perms.canManageAgentOps} onChange={() => handleToggle(admin.id, "canManageAgentOps", !!perms.canManageAgentOps)} /></td>
-                  <td className="p-4 text-center"><ToggleSwitch active={!!perms.canManageEmployeeOps} onChange={() => handleToggle(admin.id, "canManageEmployeeOps", !!perms.canManageEmployeeOps)} /></td>
-                  <td className="p-4 text-center"><ToggleSwitch active={!!perms.canManageFinance} onChange={() => handleToggle(admin.id, "canManageFinance", !!perms.canManageFinance)} /></td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
+// ─── Toggle switch ────────────────────────────────────────────────────────────
 
 function ToggleSwitch({ active, onChange }: { active: boolean; onChange: () => void }) {
   return (
     <button
       onClick={onChange}
-      className={`w-10 h-5 flex items-center rounded-full p-0.5 transition-colors mx-auto ${
-        active ? "bg-blue-600 justify-end" : "bg-slate-200 justify-start"
-      }`}
+      className={[
+        "flex h-5 w-10 items-center rounded-full p-0.5 transition-all duration-200 mx-auto",
+        active
+          ? "bg-success justify-end shadow-sm"
+          : "bg-muted justify-start",
+      ].join(" ")}
     >
-      <div className="w-4 h-4 bg-white rounded-full shadow-md" />
+      <div className="h-4 w-4 rounded-full bg-white shadow-md" />
     </button>
+  );
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
+
+export function AdminPermissionControl() {
+  const [admins,  setAdmins]  = useState<AdminUser[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchAdmins = useCallback(() => {
+    setLoading(true);
+    authFetch("/api/admin/permissions")
+      .then((r) => r.json())
+      .then((res) => setAdmins(res.data ?? []))
+      .catch(() => toast.error("Failed to load admin permission matrix"))
+      .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => { fetchAdmins(); }, [fetchAdmins]);
+
+  const handleToggle = async (adminId: string, flag: string, current: boolean) => {
+    // Optimistic update
+    setAdmins((prev) => prev.map((a) =>
+      a.id === adminId
+        ? { ...a, adminPermission: { ...a.adminPermission, [flag]: !current } }
+        : a
+    ));
+    try {
+      const res  = await authFetch(`/api/admin/permissions/${adminId}`, {
+        method:  "PUT",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ [flag]: !current }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message || "Failed");
+      toast.success("Permission updated");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update");
+      fetchAdmins(); // revert
+    }
+  };
+
+  return (
+    <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-border px-5 py-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-indigo-700 text-white shadow-md shadow-black/10">
+            <Lock size={16} strokeWidth={2.3} />
+          </div>
+          <div>
+            <h3 className="text-sm font-black text-card-foreground">Dynamic Admin Permission Matrix</h3>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Toggle operational permissions for Normal Admins in real time.</p>
+          </div>
+        </div>
+        <button
+          onClick={fetchAdmins}
+          className="flex h-8 w-8 items-center justify-center rounded-xl border border-border text-muted-foreground hover:bg-muted hover:text-card-foreground transition-colors"
+        >
+          <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
+        </button>
+      </div>
+
+      {/* Table */}
+      {loading ? (
+        <div className="flex items-center justify-center p-12 gap-3 text-muted-foreground">
+          <Loader2 size={20} className="animate-spin text-primary" />
+          <span className="text-xs font-semibold">Loading admin permissions…</span>
+        </div>
+      ) : admins.length === 0 ? (
+        <div className="flex flex-col items-center justify-center p-12 text-center">
+          <p className="text-sm font-black text-card-foreground">No admin accounts found</p>
+          <p className="text-xs text-muted-foreground mt-1">Admin users will appear here once created.</p>
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-border bg-muted/50">
+                <th className="px-5 py-3 text-[10.5px] font-black uppercase tracking-wider text-muted-foreground">
+                  Admin User
+                </th>
+                {PERM_COLUMNS.map(({ label }) => (
+                  <th key={label} className="px-3 py-3 text-center text-[10.5px] font-black uppercase tracking-wider text-muted-foreground whitespace-nowrap">
+                    {label}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {admins.map((admin) => {
+                const perms = admin.adminPermission ?? {};
+                return (
+                  <tr key={admin.id} className="group hover:bg-muted/40 transition-colors duration-150">
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-indigo-700 text-white text-[12px] font-black shadow-sm">
+                          {admin.fullName.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="text-[13px] font-black text-card-foreground group-hover:text-primary transition-colors">
+                            {admin.fullName}
+                          </p>
+                          <p className="text-[11px] text-muted-foreground font-medium">{admin.email}</p>
+                        </div>
+                      </div>
+                    </td>
+                    {PERM_COLUMNS.map(({ flag }) => (
+                      <td key={flag} className="px-3 py-4 text-center">
+                        <ToggleSwitch
+                          active={!!perms[flag]}
+                          onChange={() => handleToggle(admin.id, flag, !!perms[flag])}
+                        />
+                      </td>
+                    ))}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Footer */}
+      {!loading && admins.length > 0 && (
+        <div className="border-t border-border bg-muted/30 px-5 py-3">
+          <p className="text-[11px] text-muted-foreground font-medium">
+            Showing <span className="font-black text-card-foreground">{admins.length}</span> admin{admins.length !== 1 ? "s" : ""} — changes apply immediately
+          </p>
+        </div>
+      )}
+    </div>
   );
 }
