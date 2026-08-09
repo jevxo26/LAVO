@@ -12,7 +12,6 @@ import {
 import { authFetch } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { toast } from "@/lib/toast";
 import { motion } from "framer-motion";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -104,26 +103,33 @@ const GARMENT_CATEGORIES = [
 // ─── CustomerOverview Component ──────────────────────────────────────────────
 
 export function CustomerOverview() {
-  const { user }                      = useAuth();
-  const [stats, setStats]             = useState<ProfileStats | null>(null);
+  const { user }                        = useAuth();
+  const [stats, setStats]               = useState<ProfileStats | null>(null);
   const [recentOrders, setRecentOrders] = useState<OrderRecord[]>([]);
-  const [loading, setLoading]         = useState(true);
+  const [loading, setLoading]           = useState(true);
+  const [error, setError]               = useState(false);
 
   const fetchCustomerData = async () => {
+    setError(false);
+    setLoading(true);
     try {
       const [statsRes, ordersRes] = await Promise.all([
         authFetch("/customer/profile"),
         authFetch("/customer/orders"),
       ]);
-      const [statsData, ordersData] = await Promise.all([
-        statsRes.json(),
-        ordersRes.json(),
-      ]);
-      if (statsData.success)  setStats(statsData.data);
-      if (ordersData.success) setRecentOrders(ordersData.data.slice(0, 5));
+
+      if (statsRes.ok) {
+        const statsData = await statsRes.json().catch(() => null);
+        if (statsData?.success) setStats(statsData.data);
+      }
+
+      if (ordersRes.ok) {
+        const ordersData = await ordersRes.json().catch(() => null);
+        if (ordersData?.success) setRecentOrders((ordersData.data ?? []).slice(0, 5));
+      }
     } catch (err) {
       console.error("Error fetching customer overview data:", err);
-      toast.error("Failed to load dashboard telemetry");
+      setError(true);
     } finally {
       setLoading(false);
     }
@@ -134,6 +140,22 @@ export function CustomerOverview() {
   }, []);
 
   if (loading) return <DashboardSkeleton />;
+
+  if (error) return (
+    <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white py-24 text-center shadow-sm dark:bg-slate-900 dark:border-slate-800">
+      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-rose-50 dark:bg-rose-950/40">
+        <AlertCircle size={28} className="text-rose-400" />
+      </div>
+      <p className="text-sm font-bold text-slate-800 dark:text-white">Could not load your dashboard</p>
+      <p className="mt-1 text-xs text-slate-400">Check your connection and try again.</p>
+      <button
+        onClick={fetchCustomerData}
+        className="mt-5 inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-xs font-bold text-white hover:bg-indigo-700 transition-colors"
+      >
+        <RefreshCw size={13} /> Retry
+      </button>
+    </div>
+  );
 
   const customerName = user?.fullName?.split(" ")[0] || "Valued Customer";
   const activeOrder  = recentOrders.find(
