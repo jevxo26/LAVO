@@ -1,48 +1,58 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Sliders, Save, Loader2, ToggleLeft, ToggleRight } from "lucide-react";
+import { Sliders, Save, Loader2, ToggleLeft, ToggleRight,
+  Wallet, Tag, Store, Navigation, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 
+// ─── Types ────────────────────────────────────────────────────────────────────
+
 export interface FeatureFlagState {
-  enableWalletSystem: boolean;
-  enablePromoCodes: boolean;
+  enableWalletSystem:      boolean;
+  enablePromoCodes:        boolean;
   enableVendorMarketplace: boolean;
   enableLiveAgentTracking: boolean;
-  enableSMSNotifications: boolean;
+  enableSMSNotifications:  boolean;
 }
 
 interface FeatureFlagsFormProps {
   initialFlags?: Partial<FeatureFlagState>;
-  onSave?: (flags: FeatureFlagState) => Promise<void>;
+  onSave?:       (flags: FeatureFlagState) => Promise<void>;
 }
+
+// ─── Flag config ──────────────────────────────────────────────────────────────
+
+const FLAG_LIST = [
+  { key: "enableWalletSystem"      as const, title: "Wallet & Cash System",       desc: "Customer digital wallet top-up, refunds, and cashback balance.", icon: Wallet,      gradient: "from-emerald-500 to-teal-600"   },
+  { key: "enablePromoCodes"        as const, title: "Promo Codes & Vouchers",     desc: "Allow customers to apply discount coupons at checkout.",         icon: Tag,         gradient: "from-violet-500 to-purple-600"  },
+  { key: "enableVendorMarketplace" as const, title: "Vendor Partner Marketplace", desc: "Third-party vendor laundry listings and order assignment.",       icon: Store,       gradient: "from-primary to-indigo-700"     },
+  { key: "enableLiveAgentTracking" as const, title: "Live Agent GPS Tracking",    desc: "Real-time delivery agent location on customer tracking screens.", icon: Navigation,  gradient: "from-sky-500 to-cyan-600"       },
+  { key: "enableSMSNotifications"  as const, title: "SMS Gateway Alerts",         desc: "Automated SMS notifications for pickup & delivery dispatch.",     icon: MessageSquare,gradient: "from-amber-400 to-orange-500" },
+];
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 export const FeatureFlagsForm: React.FC<FeatureFlagsFormProps> = ({ initialFlags, onSave }) => {
   const [flags, setFlags] = useState<FeatureFlagState>({
-    enableWalletSystem: initialFlags?.enableWalletSystem ?? true,
-    enablePromoCodes: initialFlags?.enablePromoCodes ?? true,
+    enableWalletSystem:      initialFlags?.enableWalletSystem      ?? true,
+    enablePromoCodes:        initialFlags?.enablePromoCodes        ?? true,
     enableVendorMarketplace: initialFlags?.enableVendorMarketplace ?? true,
     enableLiveAgentTracking: initialFlags?.enableLiveAgentTracking ?? true,
-    enableSMSNotifications: initialFlags?.enableSMSNotifications ?? true,
+    enableSMSNotifications:  initialFlags?.enableSMSNotifications  ?? true,
   });
-
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (initialFlags) {
       setFlags({
-        enableWalletSystem: initialFlags.enableWalletSystem ?? true,
-        enablePromoCodes: initialFlags.enablePromoCodes ?? true,
+        enableWalletSystem:      initialFlags.enableWalletSystem      ?? true,
+        enablePromoCodes:        initialFlags.enablePromoCodes        ?? true,
         enableVendorMarketplace: initialFlags.enableVendorMarketplace ?? true,
         enableLiveAgentTracking: initialFlags.enableLiveAgentTracking ?? true,
-        enableSMSNotifications: initialFlags.enableSMSNotifications ?? true,
+        enableSMSNotifications:  initialFlags.enableSMSNotifications  ?? true,
       });
     }
   }, [initialFlags]);
-
-  const toggleFlag = (key: keyof FeatureFlagState) => {
-    setFlags((prev) => ({ ...prev, [key]: !prev[key] }));
-  };
 
   const handleSave = async () => {
     setIsLoading(true);
@@ -51,12 +61,9 @@ export const FeatureFlagsForm: React.FC<FeatureFlagsFormProps> = ({ initialFlags
         await onSave(flags);
       } else {
         const token = typeof window !== "undefined" ? localStorage.getItem("laundrix_token") : null;
-        const res = await fetch("/api/system-settings/feature-flags", {
+        const res   = await fetch("/api/system-settings/feature-flags", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: token ? `Bearer ${token}` : "",
-          },
+          headers: { "Content-Type": "application/json", Authorization: token ? `Bearer ${token}` : "" },
           body: JSON.stringify(flags),
         });
         const json = await res.json();
@@ -70,59 +77,52 @@ export const FeatureFlagsForm: React.FC<FeatureFlagsFormProps> = ({ initialFlags
     }
   };
 
-  const flagList = [
-    { key: "enableWalletSystem" as const, title: "Wallet & Cash System", desc: "Enable customer digital wallet top-up, refunds, and cashback balance." },
-    { key: "enablePromoCodes" as const, title: "Promo Codes & Vouchers", desc: "Allow customers to apply discount coupons during order checkout." },
-    { key: "enableVendorMarketplace" as const, title: "Vendor Partner Marketplace", desc: "Enable third-party vendor laundry listings and order assignment." },
-    { key: "enableLiveAgentTracking" as const, title: "Live Agent GPS Tracking", desc: "Show real-time delivery agent location on tracking screens." },
-    { key: "enableSMSNotifications" as const, title: "SMS Gateway Alerts", desc: "Send automated SMS alerts for pickup & delivery dispatch." },
-  ];
-
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-6 w-full">
-      <div className="border-b border-slate-100 dark:border-slate-800 pb-4">
-        <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-          <Sliders className="text-blue-600" size={20} /> System Module Feature Flags
-        </h3>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Dynamically enable or disable major platform modules without redeploying code.</p>
-      </div>
-
-      <div className="divide-y divide-slate-100 dark:divide-slate-800">
-        {flagList.map((item) => {
-          const isEnabled = flags[item.key];
-          return (
-            <div key={item.key} className="py-4 first:pt-0 last:pb-0 flex items-center justify-between gap-4">
-              <div>
-                <h4 className="text-sm font-bold text-slate-900 dark:text-white">{item.title}</h4>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{item.desc}</p>
+    <div className="space-y-4">
+      {/* ── Flag cards ──────────────────────────────────────────────────── */}
+      {FLAG_LIST.map(({ key, title, desc, icon: Icon, gradient }) => {
+        const isEnabled = flags[key];
+        return (
+          <div key={key}
+            className="flex flex-col sm:flex-row sm:items-center gap-4 rounded-2xl border border-border bg-card p-5 shadow-sm transition-all duration-200 hover:border-ring/40">
+            {/* Icon + text */}
+            <div className="flex items-center gap-4 flex-1 min-w-0">
+              <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${gradient} text-white shadow-md shadow-black/10`}>
+                <Icon size={18} strokeWidth={2.2} />
               </div>
-
-              <button
-                type="button"
-                onClick={() => toggleFlag(item.key)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                  isEnabled
-                    ? "bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700"
-                }`}
-              >
-                {isEnabled ? <ToggleRight size={18} className="text-emerald-600" /> : <ToggleLeft size={18} />}
-                <span>{isEnabled ? "ENABLED" : "DISABLED"}</span>
-              </button>
+              <div className="min-w-0">
+                <p className="text-[13px] font-black text-card-foreground">{title}</p>
+                <p className="text-[11px] text-muted-foreground font-medium mt-0.5 leading-snug">{desc}</p>
+              </div>
             </div>
-          );
-        })}
-      </div>
 
-      <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-end">
-        <button
-          type="button"
-          onClick={handleSave}
-          disabled={isLoading}
-          className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white font-semibold rounded-xl text-sm hover:bg-blue-700 shadow-sm transition-colors disabled:opacity-50"
-        >
-          {isLoading ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-          <span>Save Feature Flags</span>
+            {/* Toggle button */}
+            <button
+              type="button"
+              onClick={() => setFlags((p) => ({ ...p, [key]: !p[key] }))}
+              className={[
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black",
+                "border transition-all duration-200 hover:scale-[1.02] shrink-0",
+                isEnabled
+                  ? "bg-success/10 text-success border-success/25 dark:bg-success/15 dark:border-success/30"
+                  : "bg-muted text-muted-foreground border-border",
+              ].join(" ")}
+            >
+              {isEnabled
+                ? <ToggleRight size={17} className="text-success" />
+                : <ToggleLeft  size={17} />}
+              {isEnabled ? "ENABLED" : "DISABLED"}
+            </button>
+          </div>
+        );
+      })}
+
+      {/* ── Save button ─────────────────────────────────────────────────── */}
+      <div className="flex justify-end pt-1">
+        <button type="button" onClick={handleSave} disabled={isLoading}
+          className="flex items-center gap-2 h-10 px-6 rounded-xl text-xs font-black text-white bg-gradient-to-br from-primary to-indigo-700 hover:opacity-90 transition-all hover:scale-[1.02] shadow-md disabled:opacity-50">
+          {isLoading ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+          Save Feature Flags
         </button>
       </div>
     </div>
