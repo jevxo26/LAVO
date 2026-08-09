@@ -63,7 +63,7 @@ export async function GET(req: NextRequest) {
         },
         branch: true,
       },
-      orderBy: { createdAt: "asc" },
+      orderBy: { createdAt: "desc" },
     });
 
     const formatted = orders.map((order: any) => {

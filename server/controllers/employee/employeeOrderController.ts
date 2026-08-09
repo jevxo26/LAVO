@@ -49,7 +49,7 @@ export const getPickupOrders = catchServiceAsync(async (req: any, res: Response)
       },
       branch: true
     },
-    orderBy: { createdAt: 'asc' }
+    orderBy: { createdAt: 'desc' }
   });
 
   const formatted = orders.map((order: any) => {
