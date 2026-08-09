@@ -315,6 +315,8 @@ const DeliveryTable = ({ search }: { search: string }) => {
   const [selected, setSelected]       = useState<AvailableDelivery | null>(null);
   const [startOpen, setStartOpen]     = useState(false);
   const [declineOpen, setDeclineOpen] = useState(false);
+  // Track declined IDs so they don't reappear after the list refreshes
+  const [declinedIds, setDeclinedIds] = useState<Set<string>>(new Set());
 
   const fetchDeliveries = async () => {
     try {
@@ -335,9 +337,10 @@ const DeliveryTable = ({ search }: { search: string }) => {
 
   const filtered = useMemo(() =>
     data.filter((item) =>
-      item.orderId.toString().includes(search) ||
-      item.customerName?.toLowerCase().includes(search.toLowerCase())
-    ), [data, search]);
+      !declinedIds.has(item.id) &&
+      (item.orderId.toString().includes(search) ||
+        item.customerName?.toLowerCase().includes(search.toLowerCase()))
+    ), [data, search, declinedIds]);
 
   const handleStart   = (d: AvailableDelivery) => { setSelected(d); setStartOpen(true);   };
   const handleDecline = (d: AvailableDelivery) => { setSelected(d); setDeclineOpen(true); };
@@ -369,6 +372,8 @@ const DeliveryTable = ({ search }: { search: string }) => {
       await axios.patch(`/api/delivery-agent/decline-delivery/${selected.id}`, {}, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      // Hide immediately — add to declined set before refreshing
+      setDeclinedIds((prev) => new Set(prev).add(selected.id));
       toast.success("Delivery declined — returned to queue");
       setDeclineOpen(false);
       setSelected(null);

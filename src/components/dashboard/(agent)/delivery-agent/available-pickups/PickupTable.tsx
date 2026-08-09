@@ -291,6 +291,8 @@ const PickupTable = ({ search }: { search: string }) => {
   const [selected, setSelected]       = useState<AvailablePickup | null>(null);
   const [acceptOpen, setAcceptOpen]   = useState(false);
   const [declineOpen, setDeclineOpen] = useState(false);
+  // Track declined IDs so they don't reappear after the list refreshes
+  const [declinedIds, setDeclinedIds] = useState<Set<string>>(new Set());
 
   const fetchPickups = async () => {
     try {
@@ -311,9 +313,10 @@ const PickupTable = ({ search }: { search: string }) => {
 
   const filtered = useMemo(() =>
     data.filter((item) =>
-      item.orderId.toString().includes(search) ||
-      item.customerName?.toLowerCase().includes(search.toLowerCase())
-    ), [data, search]);
+      !declinedIds.has(item.id) &&
+      (item.orderId.toString().includes(search) ||
+        item.customerName?.toLowerCase().includes(search.toLowerCase()))
+    ), [data, search, declinedIds]);
 
   const handleAccept  = (p: AvailablePickup) => { setSelected(p); setAcceptOpen(true);  };
   const handleDecline = (p: AvailablePickup) => { setSelected(p); setDeclineOpen(true); };
@@ -345,6 +348,8 @@ const PickupTable = ({ search }: { search: string }) => {
       await axios.patch(`/api/delivery-agent/decline-pickup/${selected.id}`, {}, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      // Hide immediately — add to declined set before refreshing
+      setDeclinedIds((prev) => new Set(prev).add(selected.id));
       toast.success("Pickup declined — returned to queue");
       setDeclineOpen(false);
       setSelected(null);
