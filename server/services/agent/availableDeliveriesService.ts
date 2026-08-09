@@ -299,3 +299,27 @@ export const acceptDelivery = async (
   );
   return updatedDelivery;
 };
+
+export const declineDelivery = async (
+  userId: string,
+  deliveryId: string
+) => {
+  const agent = await prisma.deliveryAgent.findUnique({ where: { userId } });
+  if (!agent) throw new Error("Delivery agent not found");
+
+  const delivery = await prisma.delivery.findUnique({ where: { id: deliveryId } });
+  if (!delivery) throw new Error("Delivery not found");
+
+  if (delivery.assignedAgentId && delivery.assignedAgentId !== agent.id) {
+    throw new Error("This delivery is assigned to another agent.");
+  }
+
+  // Reset to unassigned PENDING so it reappears for other agents
+  return prisma.delivery.update({
+    where: { id: deliveryId },
+    data: {
+      assignedAgentId: null,
+      deliveryStatus: "PENDING",
+    },
+  });
+};

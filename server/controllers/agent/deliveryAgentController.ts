@@ -70,3 +70,23 @@ export const acceptPickup = catchAsync(
    });
  }
 );
+
+export const declinePickup = catchAsync(
+  async (req: AuthRequest, res: Response) => {
+    const userId     = req.user?.userId;
+    const { deliveryId } = req.params;
+
+    if (!deliveryId || Array.isArray(deliveryId)) {
+      throw new Error("Invalid delivery id");
+    }
+
+    const result = await availablePickupsService.declinePickup(userId!, deliveryId);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success:    true,
+      message:    "Pickup declined successfully",
+      data:       result,
+    });
+  }
+);

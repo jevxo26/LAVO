@@ -6,6 +6,7 @@ import {
   Truck, User, Phone, MapPin, Ruler,
   Shirt, Store, Building2, CreditCard,
   Weight, Package, CheckCircle2, Inbox, Loader2,
+  XCircle, AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -54,7 +55,7 @@ function StatusPill({ status }: { status: string }) {
   );
 }
 
-// ─── Start confirm dialog ─────────────────────────────────────────────────────
+// ─── Accept (Start) confirm dialog ────────────────────────────────────────────
 
 function StartConfirmDialog({ delivery, open, onClose, onConfirm, loading }: {
   delivery: AvailableDelivery | null;
@@ -119,11 +120,69 @@ function StartConfirmDialog({ delivery, open, onClose, onConfirm, loading }: {
   );
 }
 
+// ─── Decline confirm dialog ───────────────────────────────────────────────────
+
+function DeclineConfirmDialog({ delivery, open, onClose, onConfirm, loading }: {
+  delivery: AvailableDelivery | null;
+  open: boolean; onClose: () => void;
+  onConfirm: () => Promise<void>; loading: boolean;
+}) {
+  return (
+    <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
+      <DialogContent className="sm:max-w-sm rounded-2xl">
+        <DialogHeader>
+          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50">
+            <AlertTriangle size={22} className="text-rose-500" />
+          </div>
+          <DialogTitle className="text-center text-base font-extrabold text-slate-900">
+            Decline Delivery
+          </DialogTitle>
+          <DialogDescription className="text-center text-xs text-slate-400">
+            This delivery will be returned to the queue for another agent to accept.
+          </DialogDescription>
+        </DialogHeader>
+
+        {delivery && (
+          <div className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 space-y-2 text-xs">
+            <div className="flex items-center justify-between">
+              <span className="text-slate-400 font-medium">Order ID</span>
+              <span className="font-bold text-slate-900 font-mono">#{delivery.orderId}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-slate-400 font-medium">Customer</span>
+              <span className="font-semibold text-slate-700">{delivery.customerName}</span>
+            </div>
+            {delivery.codAmount > 0 && (
+              <div className="flex items-center justify-between">
+                <span className="text-slate-400 font-medium">COD Amount</span>
+                <span className="font-bold text-emerald-600">৳{delivery.codAmount}</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        <DialogFooter className="gap-2 sm:gap-2">
+          <Button variant="outline" onClick={onClose} disabled={loading} className="flex-1 rounded-xl font-bold">
+            Go Back
+          </Button>
+          <Button onClick={onConfirm} disabled={loading}
+            className="flex-1 rounded-xl font-bold gap-1.5 bg-rose-500 hover:bg-rose-600 text-white shadow-sm shadow-rose-200">
+            {loading
+              ? <><Loader2 size={14} className="animate-spin" /> Declining…</>
+              : <><XCircle size={14} /> Decline Delivery</>}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // ─── DeliveryCard ─────────────────────────────────────────────────────────────
 
-function DeliveryCard({ delivery, onStart }: {
+function DeliveryCard({ delivery, onStart, onDecline }: {
   delivery: AvailableDelivery;
-  onStart: (d: AvailableDelivery) => void;
+  onStart:   (d: AvailableDelivery) => void;
+  onDecline: (d: AvailableDelivery) => void;
 }) {
   const isStarted = delivery.status === "IN_PROGRESS" || delivery.status === "ACCEPTED";
   const src       = delivery.pickupSource;
@@ -216,17 +275,30 @@ function DeliveryCard({ delivery, onStart }: {
         </div>
       </div>
 
-      {/* Right: action */}
+      {/* Right: actions */}
       <div className="shrink-0 self-start sm:self-center">
         {isStarted ? (
           <div className="flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-[11px] font-bold text-indigo-700">
             <CheckCircle2 size={13} /> In Progress
           </div>
         ) : (
-          <Button size="sm" onClick={() => onStart(delivery)}
-            className="h-9 rounded-xl text-xs font-bold gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm shadow-indigo-200 px-4">
-            <Truck size={13} /> Start
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => onDecline(delivery)}
+              className="h-9 rounded-xl text-xs font-bold gap-1.5 border-rose-200 text-rose-600 hover:bg-rose-50 hover:border-rose-300 px-3"
+            >
+              <XCircle size={13} /> Decline
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => onStart(delivery)}
+              className="h-9 rounded-xl text-xs font-bold gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm shadow-indigo-200 px-4"
+            >
+              <Truck size={13} /> Start
+            </Button>
+          </div>
         )}
       </div>
     </div>
@@ -236,11 +308,13 @@ function DeliveryCard({ delivery, onStart }: {
 // ─── DeliveryTable ────────────────────────────────────────────────────────────
 
 const DeliveryTable = ({ search }: { search: string }) => {
-  const [data, setData]           = useState<AvailableDelivery[]>([]);
-  const [loading, setLoading]     = useState(true);
-  const [starting, setStarting]   = useState(false);
-  const [selected, setSelected]   = useState<AvailableDelivery | null>(null);
-  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [data, setData]               = useState<AvailableDelivery[]>([]);
+  const [loading, setLoading]         = useState(true);
+  const [starting, setStarting]       = useState(false);
+  const [declining, setDeclining]     = useState(false);
+  const [selected, setSelected]       = useState<AvailableDelivery | null>(null);
+  const [startOpen, setStartOpen]     = useState(false);
+  const [declineOpen, setDeclineOpen] = useState(false);
 
   const fetchDeliveries = async () => {
     try {
@@ -265,8 +339,10 @@ const DeliveryTable = ({ search }: { search: string }) => {
       item.customerName?.toLowerCase().includes(search.toLowerCase())
     ), [data, search]);
 
-  const handleStart   = (d: AvailableDelivery) => { setSelected(d); setConfirmOpen(true); };
-  const handleConfirm = async () => {
+  const handleStart   = (d: AvailableDelivery) => { setSelected(d); setStartOpen(true);   };
+  const handleDecline = (d: AvailableDelivery) => { setSelected(d); setDeclineOpen(true); };
+
+  const handleConfirmStart = async () => {
     if (!selected) return;
     setStarting(true);
     try {
@@ -275,13 +351,32 @@ const DeliveryTable = ({ search }: { search: string }) => {
         headers: { Authorization: `Bearer ${token}` },
       });
       toast.success("Delivery started successfully");
-      setConfirmOpen(false);
+      setStartOpen(false);
       setSelected(null);
       await fetchDeliveries();
-    } catch (error) {
+    } catch {
       toast.error("Failed to start delivery");
     } finally {
       setStarting(false);
+    }
+  };
+
+  const handleConfirmDecline = async () => {
+    if (!selected) return;
+    setDeclining(true);
+    try {
+      const token = localStorage.getItem("laundrix_token");
+      await axios.patch(`/api/delivery-agent/decline-delivery/${selected.id}`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      toast.success("Delivery declined — returned to queue");
+      setDeclineOpen(false);
+      setSelected(null);
+      await fetchDeliveries();
+    } catch {
+      toast.error("Failed to decline delivery");
+    } finally {
+      setDeclining(false);
     }
   };
 
@@ -309,16 +404,29 @@ const DeliveryTable = ({ search }: { search: string }) => {
     <>
       <div className="space-y-3">
         {filtered.map((delivery) => (
-          <DeliveryCard key={delivery.id} delivery={delivery} onStart={handleStart} />
+          <DeliveryCard
+            key={delivery.id}
+            delivery={delivery}
+            onStart={handleStart}
+            onDecline={handleDecline}
+          />
         ))}
       </div>
 
       <StartConfirmDialog
         delivery={selected}
-        open={confirmOpen}
-        onClose={() => { setConfirmOpen(false); setSelected(null); }}
-        onConfirm={handleConfirm}
+        open={startOpen}
+        onClose={() => { setStartOpen(false); setSelected(null); }}
+        onConfirm={handleConfirmStart}
         loading={starting}
+      />
+
+      <DeclineConfirmDialog
+        delivery={selected}
+        open={declineOpen}
+        onClose={() => { setDeclineOpen(false); setSelected(null); }}
+        onConfirm={handleConfirmDecline}
+        loading={declining}
       />
     </>
   );

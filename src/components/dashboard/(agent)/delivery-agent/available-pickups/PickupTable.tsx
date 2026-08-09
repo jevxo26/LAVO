@@ -4,8 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import {
   PackageCheck, User, Phone, MapPin, Ruler,
-  Store, Building2, Shirt, Zap, CheckCircle2,
-  Clock, Inbox, Loader2,
+  Store, Building2, Shirt, CheckCircle2,
+  Clock, Inbox, Loader2, XCircle, AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -57,11 +57,7 @@ function StatusPill({ status }: { status: string }) {
 // ─── Accept confirm dialog ────────────────────────────────────────────────────
 
 function AcceptConfirmDialog({
-  pickup,
-  open,
-  onClose,
-  onConfirm,
-  loading,
+  pickup, open, onClose, onConfirm, loading,
 }: {
   pickup: AvailablePickup | null;
   open: boolean;
@@ -121,14 +117,71 @@ function AcceptConfirmDialog({
   );
 }
 
+// ─── Decline confirm dialog ───────────────────────────────────────────────────
+
+function DeclineConfirmDialog({
+  pickup, open, onClose, onConfirm, loading,
+}: {
+  pickup: AvailablePickup | null;
+  open: boolean;
+  onClose: () => void;
+  onConfirm: () => Promise<void>;
+  loading: boolean;
+}) {
+  return (
+    <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
+      <DialogContent className="sm:max-w-sm rounded-2xl">
+        <DialogHeader>
+          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50">
+            <AlertTriangle size={22} className="text-rose-500" />
+          </div>
+          <DialogTitle className="text-center text-base font-extrabold text-slate-900">
+            Decline Pickup
+          </DialogTitle>
+          <DialogDescription className="text-center text-xs text-slate-400">
+            This pickup will be returned to the queue for another agent to accept.
+          </DialogDescription>
+        </DialogHeader>
+
+        {pickup && (
+          <div className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 space-y-2 text-xs">
+            <div className="flex items-center justify-between">
+              <span className="text-slate-400 font-medium">Order ID</span>
+              <span className="font-bold text-slate-900 font-mono">#{pickup.orderId}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-slate-400 font-medium">Customer</span>
+              <span className="font-semibold text-slate-700">{pickup.customerName}</span>
+            </div>
+          </div>
+        )}
+
+        <DialogFooter className="gap-2 sm:gap-2">
+          <Button variant="outline" onClick={onClose} disabled={loading} className="flex-1 rounded-xl font-bold">
+            Go Back
+          </Button>
+          <Button onClick={onConfirm} disabled={loading}
+            className="flex-1 rounded-xl font-bold gap-1.5 bg-rose-500 hover:bg-rose-600 text-white shadow-sm shadow-rose-200">
+            {loading
+              ? <><Loader2 size={14} className="animate-spin" /> Declining…</>
+              : <><XCircle size={14} /> Decline Pickup</>}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // ─── PickupCard ───────────────────────────────────────────────────────────────
 
 function PickupCard({
   pickup,
   onAccept,
+  onDecline,
 }: {
   pickup: AvailablePickup;
-  onAccept: (p: AvailablePickup) => void;
+  onAccept:  (p: AvailablePickup) => void;
+  onDecline: (p: AvailablePickup) => void;
 }) {
   const isAccepted = pickup.status === "IN_PROGRESS" || pickup.status === "ACCEPTED";
   const dest       = pickup.dropoffDestination;
@@ -198,17 +251,30 @@ function PickupCard({
         </div>
       </div>
 
-      {/* Right: action */}
+      {/* Right: actions */}
       <div className="shrink-0 self-start sm:self-center">
         {isAccepted ? (
           <div className="flex items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-[11px] font-bold text-emerald-700">
             <CheckCircle2 size={13} /> Accepted
           </div>
         ) : (
-          <Button size="sm" onClick={() => onAccept(pickup)}
-            className="h-9 rounded-xl text-xs font-bold gap-1.5 bg-amber-500 hover:bg-amber-600 text-white shadow-sm shadow-amber-200 px-4">
-            <PackageCheck size={13} /> Accept
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => onDecline(pickup)}
+              className="h-9 rounded-xl text-xs font-bold gap-1.5 border-rose-200 text-rose-600 hover:bg-rose-50 hover:border-rose-300 px-3"
+            >
+              <XCircle size={13} /> Decline
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => onAccept(pickup)}
+              className="h-9 rounded-xl text-xs font-bold gap-1.5 bg-amber-500 hover:bg-amber-600 text-white shadow-sm shadow-amber-200 px-4"
+            >
+              <PackageCheck size={13} /> Accept
+            </Button>
+          </div>
         )}
       </div>
     </div>
@@ -218,11 +284,13 @@ function PickupCard({
 // ─── PickupTable ──────────────────────────────────────────────────────────────
 
 const PickupTable = ({ search }: { search: string }) => {
-  const [data, setData]           = useState<AvailablePickup[]>([]);
-  const [loading, setLoading]     = useState(true);
-  const [accepting, setAccepting] = useState(false);
-  const [selected, setSelected]   = useState<AvailablePickup | null>(null);
-  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [data, setData]               = useState<AvailablePickup[]>([]);
+  const [loading, setLoading]         = useState(true);
+  const [accepting, setAccepting]     = useState(false);
+  const [declining, setDeclining]     = useState(false);
+  const [selected, setSelected]       = useState<AvailablePickup | null>(null);
+  const [acceptOpen, setAcceptOpen]   = useState(false);
+  const [declineOpen, setDeclineOpen] = useState(false);
 
   const fetchPickups = async () => {
     try {
@@ -247,9 +315,10 @@ const PickupTable = ({ search }: { search: string }) => {
       item.customerName?.toLowerCase().includes(search.toLowerCase())
     ), [data, search]);
 
-  const handleAccept = (pickup: AvailablePickup) => { setSelected(pickup); setConfirmOpen(true); };
+  const handleAccept  = (p: AvailablePickup) => { setSelected(p); setAcceptOpen(true);  };
+  const handleDecline = (p: AvailablePickup) => { setSelected(p); setDeclineOpen(true); };
 
-  const handleConfirm = async () => {
+  const handleConfirmAccept = async () => {
     if (!selected) return;
     setAccepting(true);
     try {
@@ -258,13 +327,32 @@ const PickupTable = ({ search }: { search: string }) => {
         headers: { Authorization: `Bearer ${token}` },
       });
       toast.success("Pickup accepted successfully");
-      setConfirmOpen(false);
+      setAcceptOpen(false);
       setSelected(null);
       await fetchPickups();
-    } catch (error) {
+    } catch {
       toast.error("Failed to accept pickup");
     } finally {
       setAccepting(false);
+    }
+  };
+
+  const handleConfirmDecline = async () => {
+    if (!selected) return;
+    setDeclining(true);
+    try {
+      const token = localStorage.getItem("laundrix_token");
+      await axios.patch(`/api/delivery-agent/decline-pickup/${selected.id}`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      toast.success("Pickup declined — returned to queue");
+      setDeclineOpen(false);
+      setSelected(null);
+      await fetchPickups();
+    } catch {
+      toast.error("Failed to decline pickup");
+    } finally {
+      setDeclining(false);
     }
   };
 
@@ -290,16 +378,29 @@ const PickupTable = ({ search }: { search: string }) => {
     <>
       <div className="space-y-3">
         {filtered.map((pickup) => (
-          <PickupCard key={pickup.id} pickup={pickup} onAccept={handleAccept} />
+          <PickupCard
+            key={pickup.id}
+            pickup={pickup}
+            onAccept={handleAccept}
+            onDecline={handleDecline}
+          />
         ))}
       </div>
 
       <AcceptConfirmDialog
         pickup={selected}
-        open={confirmOpen}
-        onClose={() => { setConfirmOpen(false); setSelected(null); }}
-        onConfirm={handleConfirm}
+        open={acceptOpen}
+        onClose={() => { setAcceptOpen(false); setSelected(null); }}
+        onConfirm={handleConfirmAccept}
         loading={accepting}
+      />
+
+      <DeclineConfirmDialog
+        pickup={selected}
+        open={declineOpen}
+        onClose={() => { setDeclineOpen(false); setSelected(null); }}
+        onConfirm={handleConfirmDecline}
+        loading={declining}
       />
     </>
   );
