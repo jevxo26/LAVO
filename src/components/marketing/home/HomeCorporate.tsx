@@ -34,7 +34,7 @@ export function HomeCorporate({ data }: { data?: any }) {
         <div className="absolute -left-40 top-0 h-[28rem] w-[28rem] rounded-full bg-primary/15 blur-[140px]" />
         <div className="absolute right-0 bottom-0 h-[30rem] w-[30rem] rounded-full bg-secondary/15 blur-[150px]" />
       </div>
-      <div className="max-w-7xl mx-auto px-4 md:px-6">
+      <div className="max-w-[1380px] mx-auto px-4 md:px-6">
         <div className="flex flex-col lg:flex-row gap-16">
           <motion.div
             initial={{ opacity: 0, x: -30 }}

@@ -32,8 +32,8 @@ export function ServiceDetailsHero({
         <div className="absolute left-0 top-0 h-72 w-72 rounded-full bg-primary/5 blur-3xl" />
         <div className="absolute right-0 bottom-0 h-96 w-96 rounded-full bg-primary/5 blur-3xl" />
     </div>
-    <div className="relative mx-auto max-w-7xl px-4 md:px-6">
-        <div className="grid items-center gap-14 lg:grid-cols-[1fr_520px]">
+    <div className="relative mx-auto max-w-[1380px] px-4 md:px-6">
+        <div className="grid items-center gap-14 lg:grid-cols-2">
           {/* Left Side: Content */}
           <motion.div 
             initial={{ opacity: 0, x: -20 }}

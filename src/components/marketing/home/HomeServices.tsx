@@ -51,8 +51,8 @@ export function HomeServices({ data }: { data?: any }) {
   };
 
   return (
-    <section className="bg-background py-12 md:py-16 lg:py-20">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="bg-background  py-12 md:py-16 lg:py-20">
+      <div className="container max-w-[1380px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="relative mb-14">
           {/* Center Content */}
           <div className="mx-auto max-w-3xl text-center">
@@ -104,10 +104,11 @@ export function HomeServices({ data }: { data?: any }) {
           grid-cols-1
           gap-6
           sm:grid-cols-2
-          lg:grid-cols-3
+          lg:grid-cols-4
+          xl:grid-cols-4
         "
         >
-          {services.slice(0, 6).map((service) => (
+          {services.slice(0, 4).map((service) => (
             <motion.div
               key={service.id}
               variants={item}

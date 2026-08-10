@@ -21,7 +21,7 @@ export function PageHero({
   const displayDesc = data?.content || description || "";
 
   return (
-    <section className="relative overflow-hidden border-b border-border bg-background pt-32 pb-16 md:pb-20">
+    <section className="relative overflow-hidden border-b border-border bg-background pt-25 md:pt-25 lg:pt-25 pb-16 md:pb-20">
       {/* Background Glow */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-44 -right-44 h-[520px] w-[520px] rounded-full bg-primary/10 blur-[140px]" />

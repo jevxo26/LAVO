@@ -91,7 +91,7 @@ export function SignInForm() {
         {isLoading ? "Signing in..." : "Sign In"}
       </Button>
 
-      <div className="mt-6">
+      {/* <div className="mt-6">
         <div className="relative mb-6 flex items-center">
           <div className="flex-1 border-t"></div>
 
@@ -103,7 +103,7 @@ export function SignInForm() {
         </div>
 
 
-      </div>
+      </div> */}
 
       <SocialLogin />
 

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAppSelector } from "@/store/store";
+import { motion } from "framer-motion";
 import { toast } from "sonner";
 
 const PartnerApplicationForm = () => {
@@ -87,9 +88,16 @@ const PartnerApplicationForm = () => {
   return (
     <div>
       {/* partner application */}
-      <section className="py-16 md:py-20 bg-surface-light">
+      <section className="pt-16 pb-8 md:pb-10 lg:pb-12 md:py-20 bg-surface-light">
         <div className="max-w-3xl mx-auto px-4">
-          <div className="bg-white rounded-[2rem] border border-slate-200 shadow-sm p-6 md:p-10">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{
+              duration: 0.8,
+              ease: [0.22, 1, 0.36, 1],
+            }} className="bg-white rounded-[2rem] border border-slate-200 shadow-sm p-6 md:p-10">
 
             {/* Heading */}
             <div className="mb-8">
@@ -101,10 +109,8 @@ const PartnerApplicationForm = () => {
                 Our partnership team will contact you within 48 hours.
               </p>
             </div>
-
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-6">
-
               {/* Row 1 */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
@@ -137,7 +143,6 @@ const PartnerApplicationForm = () => {
                   />
                 </div>
               </div>
-
               {/* Row 2 */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
@@ -169,7 +174,6 @@ const PartnerApplicationForm = () => {
                   />
                 </div>
               </div>
-
               {/* Experience */}
               <div>
                 <label className="block text-sm font-semibold mb-2">
@@ -185,7 +189,6 @@ const PartnerApplicationForm = () => {
                   className="w-full rounded-xl border border-slate-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
-
               {/* Why */}
               <div>
                 <label className="block text-sm font-semibold mb-2">
@@ -201,7 +204,6 @@ const PartnerApplicationForm = () => {
                   className="w-full rounded-xl border border-slate-200 px-4 py-3 resize-none focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
-
               {/* Button */}
               <button
                 type="submit"
@@ -210,13 +212,11 @@ const PartnerApplicationForm = () => {
                 Submit Application
                 <ArrowRight size={18} />
               </button>
-
             </form>
-
-          </div>
+          </motion.div>
         </div>
-      </section>
-    </div>
+      </section >
+    </div >
   )
 }
 

@@ -151,13 +151,78 @@ export async function runCmsSeeder() {
           content: "",
           order: 2,
           items: [
-            { title: "Wash & Fold", subtitle: "৳45 | kg | 12-24 hrs", content: "Professional washing with precision folding for everyday garments.", image: "/images/home/service/servie1.png" },
-            { title: "Dry Cleaning", subtitle: "৳150 | pc | 12-24 hrs", content: "Expert solvent cleaning for delicate, formal, and specialty garments.", image: "/images/home/service/servie2.png" },
-            { title: "Ironing & Press", subtitle: "৳30 | pc | 12-24 hrs", content: "Crisp, wrinkle-free garments finished to a professional standard.", image: "/images/home/service/servie3.png" },
-            { title: "Wash & Iron", subtitle: "৳80 | kg | 24-48 hrs", content: "Bulk laundry solutions tailored for hotels, hospitals, and businesses.", image: "/images/home/service/servie4.png" },
-            { title: "Stain Removal", subtitle: "৳100 | pc | 24-48 hrs", content: "Advanced treatment for stubborn stains without damaging the fabric.", image: "/images/home/service/servie5.png" },
-            { title: "Express Laundry", subtitle: "৳80 | kg | 6-12 hrs", content: "Fast-tracked washing and folding services for your urgent requirements.", image: "/images/home/service/servie6.jpg" },
-          ]
+            {
+              title: "Wash Only",
+              subtitle: "Free | service | 24 hrs",
+              content:
+                "A simple and reliable washing service for everyday garments. Clothes are carefully sorted, washed with quality detergents, and prepared for collection or further care.",
+              image: "/images/home/service/service-1.png",
+              displayOrder: 1,
+            },
+
+            {
+              title: "Wash & Fold",
+              subtitle: "৳80 | kg | 24 hrs",
+              content:
+                "Everyday laundry washed, dried, and neatly folded. Perfect for daily wear, towels, bedsheets, and other washable garments.",
+              image: "/images/home/service/service-2.png",
+              displayOrder: 2,
+            },
+
+            {
+              title: "Wash & Iron",
+              subtitle: "৳105 | kg | 24-48 hrs",
+              content:
+                "A complete everyday garment care service combining professional washing with crisp ironing for clean, fresh, and ready-to-wear clothes.",
+              image: "/images/home/service/service-3.png",
+              displayOrder: 3,
+            },
+
+            {
+              title: "Dry Cleaning",
+              subtitle: "৳100 | item | 48 hrs",
+              content:
+                "Professional solvent-based cleaning for delicate, formal, and specialty garments. Designed to remove difficult dirt and stains while protecting fabric quality and appearance.",
+              image: "/images/home/service/service-4.jpg",
+              displayOrder: 4,
+            },
+
+            {
+              title: "Steam Iron",
+              subtitle: "৳30 | item | 24 hrs",
+              content:
+                "Professional steam ironing that removes wrinkles and gives your garments a smooth, crisp, and polished appearance without washing them.",
+              image: "/images/home/service/service-5.png",
+              displayOrder: 5,
+            },
+
+            {
+              title: "Premium Care",
+              subtitle: "৳80 | item | 48 hrs",
+              content:
+                "Enhanced garment care for valuable, premium, and special-occasion clothing. Every item receives additional attention from inspection through final finishing.",
+              image: "/images/home/service/service-6.png",
+              displayOrder: 6,
+            },
+
+            {
+              title: "Stain Removal",
+              subtitle: "৳50 | item | 24-48 hrs",
+              content:
+                "Specialized spot treatment for stubborn stains such as oil, ink, food, wine, grease, and dirt while carefully protecting the garment's fabric.",
+              image: "/images/home/service/service-7.png",
+              displayOrder: 7,
+            },
+
+            {
+              title: "Delicate Care",
+              subtitle: "৳60 | item | 48 hrs",
+              content:
+                "Gentle, specialized care for delicate fabrics and garments that require extra attention. Each item is handled carefully to preserve its shape, texture, color, and finish.",
+              image: "/images/home/service/service-8.png",
+              displayOrder: 8,
+            },
+          ],
         },
         {
           key: "promise",
@@ -193,53 +258,53 @@ export async function runCmsSeeder() {
           order: 2,
           items: [
             // --- Garments (subtitle: "garment", content: basePrice) ---
-            { title: "Shirts",       subtitle: "garment", content: "40",  displayOrder: 1 },
-            { title: "T-Shirts",     subtitle: "garment", content: "30",  displayOrder: 2 },
-            { title: "Pants",        subtitle: "garment", content: "45",  displayOrder: 3 },
-            { title: "Jeans",        subtitle: "garment", content: "50",  displayOrder: 4 },
-            { title: "Suits",        subtitle: "garment", content: "200", displayOrder: 5 },
-            { title: "Blazers",      subtitle: "garment", content: "150", displayOrder: 6 },
-            { title: "Sarees",       subtitle: "garment", content: "120", displayOrder: 7 },
-            { title: "Punjabis",     subtitle: "garment", content: "80",  displayOrder: 8 },
-            { title: "Jackets",      subtitle: "garment", content: "180", displayOrder: 9 },
-            { title: "Sweaters",     subtitle: "garment", content: "100", displayOrder: 10 },
-            { title: "Blankets",     subtitle: "garment", content: "250", displayOrder: 11 },
-            { title: "Bedsheets",    subtitle: "garment", content: "80",  displayOrder: 12 },
-            { title: "Curtains",     subtitle: "garment", content: "150", displayOrder: 13 },
-            { title: "Carpets",      subtitle: "garment", content: "500", displayOrder: 14 },
-            { title: "Sofa Covers",  subtitle: "garment", content: "300", displayOrder: 15 },
-            { title: "Pillows",      subtitle: "garment", content: "60",  displayOrder: 16 },
-            { title: "Shoes",        subtitle: "garment", content: "350", displayOrder: 17 },
+            { title: "Shirts", subtitle: "garment", content: "40", displayOrder: 1 },
+            { title: "T-Shirts", subtitle: "garment", content: "30", displayOrder: 2 },
+            { title: "Pants", subtitle: "garment", content: "45", displayOrder: 3 },
+            { title: "Jeans", subtitle: "garment", content: "50", displayOrder: 4 },
+            { title: "Suits", subtitle: "garment", content: "200", displayOrder: 5 },
+            { title: "Blazers", subtitle: "garment", content: "150", displayOrder: 6 },
+            { title: "Sarees", subtitle: "garment", content: "120", displayOrder: 7 },
+            { title: "Punjabis", subtitle: "garment", content: "80", displayOrder: 8 },
+            { title: "Jackets", subtitle: "garment", content: "180", displayOrder: 9 },
+            { title: "Sweaters", subtitle: "garment", content: "100", displayOrder: 10 },
+            { title: "Blankets", subtitle: "garment", content: "250", displayOrder: 11 },
+            { title: "Bedsheets", subtitle: "garment", content: "80", displayOrder: 12 },
+            { title: "Curtains", subtitle: "garment", content: "150", displayOrder: 13 },
+            { title: "Carpets", subtitle: "garment", content: "500", displayOrder: 14 },
+            { title: "Sofa Covers", subtitle: "garment", content: "300", displayOrder: 15 },
+            { title: "Pillows", subtitle: "garment", content: "60", displayOrder: 16 },
+            { title: "Shoes", subtitle: "garment", content: "350", displayOrder: 17 },
             // --- Services (subtitle: "service", content: addOn price) ---
-            { title: "Wash Only",      subtitle: "service", content: "0",   displayOrder: 1 },
-            { title: "Wash & Fold",    subtitle: "service", content: "10",  displayOrder: 2 },
-            { title: "Wash & Iron",    subtitle: "service", content: "25",  displayOrder: 3 },
-            { title: "Dry Cleaning",   subtitle: "service", content: "100", displayOrder: 4 },
-            { title: "Steam Iron",     subtitle: "service", content: "30",  displayOrder: 5 },
-            { title: "Premium Care",   subtitle: "service", content: "80",  displayOrder: 6 },
-            { title: "Stain Removal",  subtitle: "service", content: "50",  displayOrder: 7 },
-            { title: "Delicate Care",  subtitle: "service", content: "60",  displayOrder: 8 },
+            { title: "Wash Only", subtitle: "service", content: "0", displayOrder: 1 },
+            { title: "Wash & Fold", subtitle: "service", content: "10", displayOrder: 2 },
+            { title: "Wash & Iron", subtitle: "service", content: "25", displayOrder: 3 },
+            { title: "Dry Cleaning", subtitle: "service", content: "100", displayOrder: 4 },
+            { title: "Steam Iron", subtitle: "service", content: "30", displayOrder: 5 },
+            { title: "Premium Care", subtitle: "service", content: "80", displayOrder: 6 },
+            { title: "Stain Removal", subtitle: "service", content: "50", displayOrder: 7 },
+            { title: "Delicate Care", subtitle: "service", content: "60", displayOrder: 8 },
             // --- Turnarounds (subtitle: "turnaround", content: multiplier) ---
-            { title: "Standard (48 hrs)", subtitle: "turnaround", content: "1",   displayOrder: 1 },
-            { title: "Express (24 hrs)",  subtitle: "turnaround", content: "1.5", displayOrder: 2 },
-            { title: "Same Day (12 hrs)", subtitle: "turnaround", content: "2",   displayOrder: 3 },
+            { title: "Standard (48 hrs)", subtitle: "turnaround", content: "1", displayOrder: 1 },
+            { title: "Express (24 hrs)", subtitle: "turnaround", content: "1.5", displayOrder: 2 },
+            { title: "Same Day (12 hrs)", subtitle: "turnaround", content: "2", displayOrder: 3 },
             // --- Add-ons (subtitle: "addon", content: price) ---
-            { title: "Shirt",                    subtitle: "addon", content: "45",  displayOrder: 1 },
-            { title: "Trousers",                 subtitle: "addon", content: "40",  displayOrder: 2 },
-            { title: "Suit (2-piece)",           subtitle: "addon", content: "80",  displayOrder: 3 },
-            { title: "Dress",                    subtitle: "addon", content: "40",  displayOrder: 4 },
-            { title: "Coat",                     subtitle: "addon", content: "100", displayOrder: 5 },
-            { title: "King Bedsheet",            subtitle: "addon", content: "100", displayOrder: 6 },
-            { title: "Duvet Cover",              subtitle: "addon", content: "70",  displayOrder: 7 },
-            { title: "Towel",                    subtitle: "addon", content: "60",  displayOrder: 8 },
-            { title: "Stain Removal",            subtitle: "addon", content: "45",  displayOrder: 9 },
-            { title: "Express Pressing",         subtitle: "addon", content: "40",  displayOrder: 10 },
-            { title: "Fabric Softener Upgrade",  subtitle: "addon", content: "80",  displayOrder: 11 },
-            { title: "Hanger Return",            subtitle: "addon", content: "40",  displayOrder: 12 },
-            { title: "Premium Packaging",        subtitle: "addon", content: "100", displayOrder: 13 },
-            { title: "Scent Selection",          subtitle: "addon", content: "100", displayOrder: 14 },
-            { title: "Hypoallergenic Detergent", subtitle: "addon", content: "70",  displayOrder: 15 },
-            { title: "Re-Fold Service",          subtitle: "addon", content: "60",  displayOrder: 16 },
+            { title: "Shirt", subtitle: "addon", content: "45", displayOrder: 1 },
+            { title: "Trousers", subtitle: "addon", content: "40", displayOrder: 2 },
+            { title: "Suit (2-piece)", subtitle: "addon", content: "80", displayOrder: 3 },
+            { title: "Dress", subtitle: "addon", content: "40", displayOrder: 4 },
+            { title: "Coat", subtitle: "addon", content: "100", displayOrder: 5 },
+            { title: "King Bedsheet", subtitle: "addon", content: "100", displayOrder: 6 },
+            { title: "Duvet Cover", subtitle: "addon", content: "70", displayOrder: 7 },
+            { title: "Towel", subtitle: "addon", content: "60", displayOrder: 8 },
+            { title: "Stain Removal", subtitle: "addon", content: "45", displayOrder: 9 },
+            { title: "Express Pressing", subtitle: "addon", content: "40", displayOrder: 10 },
+            { title: "Fabric Softener Upgrade", subtitle: "addon", content: "80", displayOrder: 11 },
+            { title: "Hanger Return", subtitle: "addon", content: "40", displayOrder: 12 },
+            { title: "Premium Packaging", subtitle: "addon", content: "100", displayOrder: 13 },
+            { title: "Scent Selection", subtitle: "addon", content: "100", displayOrder: 14 },
+            { title: "Hypoallergenic Detergent", subtitle: "addon", content: "70", displayOrder: 15 },
+            { title: "Re-Fold Service", subtitle: "addon", content: "60", displayOrder: 16 },
           ]
         }
       ]

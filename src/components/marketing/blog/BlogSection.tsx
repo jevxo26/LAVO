@@ -1,5 +1,9 @@
+'use client'
+
 import Image from "next/image";
 import { Search } from "lucide-react";
+import { motion } from "framer-motion";
+import { useState } from "react";
 
 const blogs = [
   {
@@ -40,9 +44,32 @@ const blogs = [
 const filters = ["All", "Care Tips", "Technology", "Industry"];
 
 export default function BlogSection() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeCategory, setActiveCategory] = useState("All");
+
+  const categories = [
+    "All",
+    ...Array.from(new Set(blogs.map((blog) => blog.category))),
+  ];
+
+  const filteredBlogs = blogs.filter((blog) => {
+    const matchesCategory =
+      activeCategory === "All" || blog.category === activeCategory;
+
+    const search = searchTerm.toLowerCase();
+
+    const matchesSearch =
+      blog.title.toLowerCase().includes(search) ||
+      blog.description.toLowerCase().includes(search) ||
+      blog.category.toLowerCase().includes(search) ||
+      blog.author.toLowerCase().includes(search);
+
+    return matchesCategory && matchesSearch;
+  });
+
   return (
     <section className="py-20 bg-slate-50">
-      <div className="max-w-7xl mx-auto px-4 md:px-6">
+      <div className="max-w-[1380px] mx-auto px-4 md:px-6">
 
         {/* Search + Filter */}
         <div className="flex flex-col lg:flex-row gap-5 justify-between mb-10">
@@ -52,75 +79,111 @@ export default function BlogSection() {
               size={18}
               className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400"
             />
-
             <input
               type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search articles..."
               className="w-full h-12 rounded-2xl border border-slate-200 bg-white pl-12 pr-5 text-sm outline-none focus:border-primary"
             />
           </div>
 
           <div className="flex gap-3 flex-wrap">
-            {filters.map((item, index) => (
+            {categories.map((category) => (
               <button
-                key={item}
-                className={`px-5 h-12 rounded-2xl border transition ${
-                  index === 0
-                    ? "bg-primary text-white border-primary"
-                    : "bg-white border-slate-200 text-slate-600 hover:border-primary hover:text-primary"
-                }`}
+                key={category}
+                onClick={() => setActiveCategory(category)}
+                className={`px-5 h-12 rounded-2xl border transition ${activeCategory === category
+                  ? "bg-primary text-white border-primary"
+                  : "bg-white border-slate-200 text-slate-600 hover:border-primary hover:text-primary"
+                  }`}
               >
-                {item}
+                {category}
               </button>
             ))}
           </div>
         </div>
-
         {/* Cards */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-7">
-          {blogs.map((blog) => (
-            <article
-              key={blog.title}
-              className="bg-white rounded-2xl overflow-hidden border border-slate-200 hover:shadow-lg transition"
+          {filteredBlogs.length > 0 ? (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-7">
+              {filteredBlogs.map((blog, index) => (
+                <motion.article
+                  key={blog.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.15 }}
+                  transition={{
+                    duration: 0.9,
+                    delay: index * 0.12,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
+                  className="bg-white rounded-2xl overflow-hidden border border-slate-200 hover:shadow-lg transition"
+                >
+                  <div className="relative h-60">
+                    <Image
+                      src={blog.image}
+                      alt={blog.title}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+
+                  <div className="p-5">
+                    <div className="flex items-center gap-3 text-xs mb-4">
+                      <span className="px-3 py-1 rounded-full bg-blue-50 text-primary font-medium">
+                        {blog.category}
+                      </span>
+
+                      <span className="text-slate-400">
+                        {blog.readTime}
+                      </span>
+                    </div>
+
+                    <h3 className="text-xl font-bold text-slate-900 leading-snug mb-3">
+                      {blog.title}
+                    </h3>
+
+                    <p className="text-slate-500 leading-relaxed mb-6">
+                      {blog.description}
+                    </p>
+
+                    <div className="flex justify-between items-center text-sm text-slate-400">
+                      <span>{blog.author}</span>
+                      <span>{blog.date}</span>
+                    </div>
+                  </div>
+                </motion.article>
+              ))}
+            </div>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="py-20 text-center"
             >
-              <div className="relative h-60">
-                <Image
-                  src={blog.image}
-                  alt={blog.title}
-                  fill
-                  className="object-cover"
-                />
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-blue-50">
+                <Search className="h-7 w-7 text-primary" />
               </div>
 
-              <div className="p-5">
+              <h3 className="mt-5 text-xl font-semibold text-slate-900">
+                No articles found
+              </h3>
 
-                <div className="flex items-center gap-3 text-xs mb-4">
-                  <span className="px-3 py-1 rounded-full bg-blue-50 text-primary font-medium">
-                    {blog.category}
-                  </span>
+              <p className="mt-2 text-sm text-slate-500">
+                We couldn't find any articles matching your search.
+              </p>
 
-                  <span className="text-slate-400">
-                    {blog.readTime}
-                  </span>
-                </div>
-
-                <h3 className="text-xl font-bold text-slate-900 leading-snug mb-3">
-                  {blog.title}
-                </h3>
-
-                <p className="text-slate-500 leading-relaxed mb-6">
-                  {blog.description}
-                </p>
-
-                <div className="flex justify-between items-center text-sm text-slate-400">
-                  <span>{blog.author}</span>
-                  <span>{blog.date}</span>
-                </div>
-
-              </div>
-            </article>
-          ))}
-        </div>
+              <button
+                onClick={() => {
+                  setSearchTerm("");
+                  setActiveCategory("All");
+                }}
+                className="mt-5 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90"
+              >
+                Clear Filters
+              </button>
+            </motion.div>
+          )}
       </div>
     </section>
   );

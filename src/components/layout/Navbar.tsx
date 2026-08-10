@@ -12,11 +12,11 @@ const navLinks = [
   { name: "Pricing", href: "/pricing" },
   { name: "Coverage", href: "/coverage" },
   { name: "Branches", href: "/branches" },
-  { name: "Corporate", href: "/corporate" },
   { name: "Partner", href: "/partner" },
 ];
 
 const moreLinks = [
+  { name: "Corporate", href: "/corporate" },
   { name: "Our Story", href: "/story" },
   { name: "Insights & Resources", href: "/insights" },
   { name: "Get in Touch", href: "/contact" },
@@ -52,13 +52,14 @@ export function Navbar() {
     setMounted(true);
   }, []);
 
-  const links = mounted && isAuthenticated
-    ? [...navLinks, { name: "Dashboard", href: "/dashboard" }]
-    : navLinks;
+  // const links = mounted && isAuthenticated
+  //   ? [...navLinks, { name: "Dashboard", href: "/dashboard" }]
+  //   : navLinks;
+  const links = navLinks;
 
   return (
     <nav className="fixed top-0 left-0 w-full z-50 bg-white border-b border-slate-100 shadow-sm transition-all duration-300">
-      <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
+      <div className="max-w-[1380px] mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
           <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary text-white">
@@ -91,12 +92,13 @@ export function Navbar() {
               </Link>
             );
           })}
+          {/* more */}
           <div className="relative" ref={moreRef}>
             <button
               onClick={() => setMoreOpen((prev) => !prev)}
               className={`flex items-center gap-1 py-2 text-sm font-medium transition-colors ${moreLinks.some((item) => pathname === item.href)
-                  ? "text-primary"
-                  : "text-slate-500 hover:text-slate-900"
+                ? "text-primary"
+                : "text-slate-500 hover:text-slate-900"
                 }`}
             >
               More
@@ -116,8 +118,8 @@ export function Navbar() {
                     href={item.href}
                     onClick={() => setMoreOpen(false)}
                     className={`block px-5 py-3 text-sm transition-colors ${pathname === item.href
-                        ? "bg-primary/5 text-primary"
-                        : "text-slate-700 hover:bg-slate-50"
+                      ? "bg-primary/5 text-primary"
+                      : "text-slate-700 hover:bg-slate-50"
                       }`}
                   >
                     {item.name}
@@ -126,6 +128,24 @@ export function Navbar() {
               </div>
             )}
           </div>
+
+          {/* dashboard */}
+          {/* Dashboard - Only for authenticated users */}
+          {mounted && isAuthenticated && (
+            <Link
+              href="/dashboard"
+              className={`relative py-2 text-sm font-medium transition-colors ${pathname === "/dashboard" || pathname.startsWith("/dashboard/")
+                ? "text-primary"
+                : "text-slate-500 hover:text-slate-900"
+                }`}
+            >
+              Dashboard
+
+              {(pathname === "/dashboard" || pathname.startsWith("/dashboard/")) && (
+                <span className="absolute bottom-0 left-0 w-full h-[3px] bg-primary rounded-t-full" />
+              )}
+            </Link>
+          )}
         </div>
 
         {/* Action Buttons */}
@@ -177,7 +197,8 @@ export function Navbar() {
 
       {/* Mobile Navigation Dropdown */}
       {isOpen && (
-        <div className="lg:hidden absolute top-20 left-0 w-full bg-white border-b shadow-lg p-4 flex flex-col space-y-4">
+        // <div className="lg:hidden absolute top-18 left-0 w-full bg-white border-b shadow-lg p-4 flex flex-col space-y-4">
+        <div className="lg:hidden absolute top-16 left-0 w-full max-h-[calc(100vh-4.5rem)] overflow-y-auto bg-white border-b shadow-lg p-4 flex flex-col space-y-4">
           <div className="flex flex-col space-y-2">
             {links.map((item) => (
               <Link
@@ -193,9 +214,9 @@ export function Navbar() {
               </Link>
             ))}
             <div className="border-t pt-2">
-              <p className="px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
+              {/* <p className="px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
                 More
-              </p>
+              </p> */}
 
               {moreLinks.map((item) => (
                 <Link
@@ -211,6 +232,18 @@ export function Navbar() {
                 </Link>
               ))}
             </div>
+            {mounted && isAuthenticated && (
+              <Link
+                href="/dashboard"
+                onClick={() => setIsOpen(false)}
+                className={`text-sm font-medium px-4 py-2 rounded-md ${pathname === "/dashboard" || pathname.startsWith("/dashboard/")
+                  ? "bg-primary/5 text-primary"
+                  : "text-slate-600 hover:bg-surface-light"
+                  }`}
+              >
+                Dashboard
+              </Link>
+            )}
           </div>
           <div className="flex flex-col gap-2 pt-4 border-t">
             <Link
@@ -220,13 +253,26 @@ export function Navbar() {
             >
               <QrCode size={16} /> Track Order
             </Link>
-            <Link
-              href="/login"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-full border text-slate-700 text-sm font-medium"
-            >
-              <LogIn size={16} /> Login
-            </Link>
+            {mounted && isAuthenticated ? (
+              <button
+                onClick={() => {
+                  logout();
+                  setIsOpen(false);
+                }}
+                className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-full border border-slate-200 text-slate-700 text-sm font-medium hover:bg-surface-light transition-colors"
+              >
+                Logout
+              </button>
+            ) : (
+              <Link
+                href="/login"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-full border border-slate-200 text-slate-700 text-sm font-medium hover:bg-surface-light transition-colors"
+              >
+                <LogIn size={16} />
+                Login
+              </Link>
+            )}
             <Link
               href="/services"
               onClick={() => setIsOpen(false)}

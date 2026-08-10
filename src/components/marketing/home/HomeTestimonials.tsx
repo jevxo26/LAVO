@@ -245,7 +245,7 @@ export function HomeTestimonials({ data, reviews }: HomeTestimonialsProps) {
            style={{ backgroundImage: "radial-gradient(circle, #6366f1 1px, transparent 1px)", backgroundSize: "28px 28px" }} />
 
       {/* ── Content ───────────────────────────────────────────────────────── */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-6">
+      <div className="relative z-10 max-w-[1380px] mx-auto px-4 md:px-6">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}

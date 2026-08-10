@@ -57,7 +57,7 @@ const HomeHero = ({ data }: { data?: any }) => {
         subtitle: "12k+ Reviews",
         position: "bottom-right",
       }
-      
+
     },
 
 
@@ -155,7 +155,7 @@ const HomeHero = ({ data }: { data?: any }) => {
   ];
   return (
     <>
-      <section className="relative overflow-hidden bg-background">
+      <section className="relative max-h-[70%] overflow-hidden bg-background">
         {/* Background */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-44 -right-44 h-[700px] w-[700px] rounded-full bg-primary/10 blur-[180px]" />
@@ -181,12 +181,11 @@ const HomeHero = ({ data }: { data?: any }) => {
             const FloatingIcon = slide.floatingCard.icon;
             return (
               <SwiperSlide key={slide.id}>
-                <div className="container relative mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-16">
-
+                {/* <div className="container relative max-w-[1380px] relative mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-16"> */}
+                <div className="container relative mx-auto max-w-[1380px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
                   <div
                     className="
                       grid
-                      py-10
                       items-center
 
                       gap-10
@@ -205,7 +204,7 @@ const HomeHero = ({ data }: { data?: any }) => {
                       initial={{ opacity: 0, x: -50 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.7 }}
-                      className="w-full max-w-xl xl:max-w-2xl"
+                      className="w-full space-y-3 max-w-xl xl:max-w-2xl"
                     >
                       {/* Badge */}
                       <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-card px-5 py-2 shadow-sm">
@@ -216,7 +215,7 @@ const HomeHero = ({ data }: { data?: any }) => {
                       </div>
 
                       {/* Heading */}
-                      <h1 className="mt-6 text-4xl
+                      <h1 className=" text-4xl
                       sm:text-5xl
                       md:text-5xl
                       lg:text-6xl
@@ -231,17 +230,17 @@ const HomeHero = ({ data }: { data?: any }) => {
                       </h1>
 
                       {/* Description */}
-                      <p className="mt-7 w-full max-w-lg text-base md:text-lg leading-8 text-muted-foreground">
+                      <p className=" w-full max-w-lg text-base md:text-lg leading-8 text-muted-foreground">
                         {slide.description}
                       </p>
 
                       {/* Buttons */}
-                      <div className="mt-10 flex flex-col
+                      <div className="flex flex-col
                       sm:flex-row
                       gap-4">
                         <Link
                           href={slide.primaryBtn.href}
-                          className="group inline-flex items-center gap-2 rounded-xl bg-primary px-7 py-4 font-semibold text-primary-foreground shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+                          className="group inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-1 font-semibold text-primary-foreground shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
                         >
                           {slide.primaryBtn.label}
 
@@ -253,7 +252,7 @@ const HomeHero = ({ data }: { data?: any }) => {
 
                         <Link
                           href={slide.secondaryBtn.href}
-                          className="inline-flex items-center rounded-xl border border-border bg-card px-7 py-4 font-semibold text-foreground transition-all duration-300 hover:border-primary hover:bg-muted"
+                          className="inline-flex items-center rounded-xl border border-border bg-card px-5 py-3 font-semibold text-foreground transition-all duration-300 hover:border-primary hover:bg-muted"
                         >
                           {slide.secondaryBtn.label}
                         </Link>
@@ -272,7 +271,7 @@ const HomeHero = ({ data }: { data?: any }) => {
                           md:flex
                           items-center
                           justify-center
-                          pt-6"
+                          pt-4"
                     >
                       {/* Background Glow */}
                       <div className="absolute h-[650px] w-[650px] rounded-full bg-primary/10 blur-[120px]" />
@@ -280,10 +279,10 @@ const HomeHero = ({ data }: { data?: any }) => {
                       {/* Main Image */}
                       <div className="relative z-10 w-full
                       max-w-md
-                      lg:max-w-xl
-                      xl:max-w-[820px]">
+                      lg:max-w-lg
+                      xl:max-w-[680px]">
                         <div className="relative overflow-hidden rounded-[28px] shadow-2xl">
-                          <div className="relative aspect-[4/3] w-full">
+                          <div className="relative aspect-[14/8] w-full">
                             <Image
                               src={slide.image}
                               alt={slide.title}
@@ -303,7 +302,7 @@ const HomeHero = ({ data }: { data?: any }) => {
                               : ""
                             }
                                 ${slide.floatingCard.position === "top-right"
-                              ? "top-10 lg:-right-6 xl:-right-10"
+                              ? "top-10 lg:-right-4 xl:-right-6"
                               : ""
                             }
                                 ${slide.floatingCard.position === "bottom-left"
@@ -311,10 +310,10 @@ const HomeHero = ({ data }: { data?: any }) => {
                               : ""
                             }
                                 ${slide.floatingCard.position === "bottom-right"
-                              ? "bottom-10 lg:-right-6 xl:-right-10"
+                              ? "bottom-10 lg:-right-4 xl:-right-6"
                               : ""
                             }
-  `}
+                          `}
                         >
                           <div className="flex items-center gap-3">
                             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10">
@@ -425,26 +424,52 @@ const HomeHero = ({ data }: { data?: any }) => {
                     </motion.div>
                   </div>
                   {/* Features */}
-                  <div className="mt-10 grid md:grid-cols-2 lg:grid-cols-4 gap-4 w-full">                      {slide.features.map((feature) => {
-                    const Icon = feature.icon;
+                  <div className="mt-4 grid md:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
+                    {slide.features.map((feature, index) => {
+                      const Icon = feature.icon;
 
-                    return (
-                      <div
-                        key={feature.title}
-                        className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg"
-                      >
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                          <Icon className="h-5 w-5 text-primary" />
-                        </div>
+                      return (
+                        <motion.div
+                          key={feature.title}
+                          initial={{
+                            opacity: 0,
+                            y: 25,
+                          }}
+                          animate={{
+                            opacity: 1,
+                            y: 0,
+                          }}
+                          transition={{
+                            duration: 0.5,
+                            delay: 0.3 + index * 0.1,
+                            ease: [0.22, 1, 0.36, 1],
+                          }}
+                          whileHover={{
+                            y: -5,
+                          }}
+                          className="
+                            flex items-center gap-3
+                            rounded-xl
+                            border border-border
+                            bg-card
+                            p-2.5
+                            transition-all duration-300
+                            hover:border-primary/30
+                            hover:shadow-lg
+                          "
+                        >
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                            <Icon className="h-5 w-5 text-primary" />
+                          </div>
 
-                        <div>
-                          <h4 className="font-semibold text-foreground">
-                            {feature.title}
-                          </h4>
-                        </div>
-                      </div>
-                    );
-                  })}
+                          <div>
+                            <h4 className="font-semibold text-foreground">
+                              {feature.title}
+                            </h4>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
                   </div>
                 </div>
               </SwiperSlide>
