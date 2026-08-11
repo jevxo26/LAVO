@@ -21,57 +21,69 @@ function getInvoiceBodyHtml(order: OrderRecord, customerName?: string, customerP
 
   return `
     <div style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif; color: #0f172a; background-color: #ffffff; padding: 24px; line-height: 1.5; box-sizing: border-box; width: 750px; margin: 0 auto;">
-      <div style="border: 1px solid #e2e8f0; border-radius: 20px; padding: 32px; background: #ffffff; box-shadow: 0 4px 20px rgba(0,0,0,0.02);">
+      <div style="border: 1px solid #e2e8f0; border-radius: 24px; padding: 36px; background: #ffffff; box-shadow: 0 4px 24px rgba(0,0,0,0.03);">
         
         <!-- Header -->
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px dashed #e2e8f0; padding-bottom: 20px; margin-bottom: 24px;">
-          <div style="display: flex; align-items: center; gap: 12px;">
-            <div style="width: 44px; height: 44px; background: linear-gradient(135deg, #2563eb, #1d4ed8); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 900; font-size: 20px;">
-              L
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px dashed #e2e8f0; padding-bottom: 24px; margin-bottom: 28px;">
+          
+          <!-- Logo & Brand -->
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #0284c7, #2563eb); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 6px 16px rgba(37, 99, 235, 0.25);">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.47a1 1 0 00.99.84H6v10a2 2 0 002 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.47a2 2 0 00-1.34-2.23z"/>
+              </svg>
             </div>
             <div>
-              <div style="font-size: 24px; font-weight: 800; color: #0f172a; letter-spacing: -0.5px;">Laundrix</div>
-              <div style="font-size: 10px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Premium Laundry & Dry Cleaning</div>
+              <div style="font-size: 24px; font-weight: 900; color: #0f172a; letter-spacing: -0.5px; line-height: 1.1;">Laundrix</div>
+              <div style="font-size: 10px; color: #0284c7; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-top: 3px;">Premium Garment Care</div>
             </div>
           </div>
+
+          <!-- Invoice Title & Status Badge -->
           <div style="text-align: right;">
-            <div style="font-size: 20px; font-weight: 800; color: #2563eb; letter-spacing: -0.3px;">INVOICE</div>
-            <div style="font-size: 12px; font-weight: 700; color: #475569; margin-top: 2px;">#${order.orderNumber}</div>
-            <div style="margin-top: 6px;">
-              <span style="display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 10px; font-weight: 800; text-transform: uppercase; ${isPaid ? 'background: #dcfce7; color: #15803d;' : 'background: #ffe4e6; color: #be123c;'}">
-                ${isPaid ? 'PAID' : 'UNPAID'}
+            <div style="font-size: 22px; font-weight: 900; color: #1e293b; letter-spacing: 0.5px;">INVOICE</div>
+            <div style="font-size: 13px; font-weight: 700; color: #64748b; margin-top: 2px;">#${order.orderNumber}</div>
+            <div style="margin-top: 8px; display: flex; justify-content: flex-end;">
+              <span style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 14px; border-radius: 20px; font-size: 11px; font-weight: 800; letter-spacing: 0.5px; ${
+                isPaid
+                  ? 'background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0;'
+                  : 'background: #fff1f2; color: #be123c; border: 1px solid #fecdd3;'
+              }">
+                <span style="width: 7px; height: 7px; border-radius: 50%; ${isPaid ? 'background: #10b981;' : 'background: #f43f5e;'}"></span>
+                ${isPaid ? 'PAYMENT PAID' : 'PAYMENT UNPAID'}
               </span>
             </div>
           </div>
+
         </div>
 
         <!-- Details Grid -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
-          <div style="background: #f8fafc; border: 1px solid #f1f5f9; border-radius: 14px; padding: 16px;">
-            <h4 style="font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: #64748b; margin-bottom: 8px;">Billed To</h4>
-            <p style="font-size: 12px; color: #334155; margin-bottom: 4px;"><strong>Name:</strong> ${customerName || 'Customer'}</p>
-            ${customerPhone ? `<p style="font-size: 12px; color: #334155; margin-bottom: 4px;"><strong>Phone:</strong> ${customerPhone}</p>` : ''}
-            ${customerEmail ? `<p style="font-size: 12px; color: #334155; margin-bottom: 4px;"><strong>Email:</strong> ${customerEmail}</p>` : ''}
-            <p style="font-size: 12px; color: #334155; margin-top: 4px;"><strong>Delivery Address:</strong> Linked to profile</p>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 28px;">
+          <div style="background: #f8fafc; border: 1px solid #f1f5f9; border-radius: 16px; padding: 18px;">
+            <h4 style="font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: #64748b; margin-bottom: 10px;">Billed To</h4>
+            <p style="font-size: 13px; color: #334155; margin-bottom: 4px;"><strong>Name:</strong> ${customerName || 'Customer'}</p>
+            ${customerPhone ? `<p style="font-size: 13px; color: #334155; margin-bottom: 4px;"><strong>Phone:</strong> ${customerPhone}</p>` : ''}
+            ${customerEmail ? `<p style="font-size: 13px; color: #334155; margin-bottom: 4px;"><strong>Email:</strong> ${customerEmail}</p>` : ''}
+            <p style="font-size: 13px; color: #334155; margin-top: 4px;"><strong>Delivery Address:</strong> Linked to profile</p>
           </div>
-          <div style="background: #f8fafc; border: 1px solid #f1f5f9; border-radius: 14px; padding: 16px;">
-            <h4 style="font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: #64748b; margin-bottom: 8px;">Order Details</h4>
-            <p style="font-size: 12px; color: #334155; margin-bottom: 4px;"><strong>Order Date:</strong> ${dateStr}</p>
-            <p style="font-size: 12px; color: #334155; margin-bottom: 4px;"><strong>Est. Pickup:</strong> ${pickupStr}</p>
-            <p style="font-size: 12px; color: #334155; margin-bottom: 4px;"><strong>Total Garments:</strong> ${order.totalGarments} items</p>
-            <p style="font-size: 12px; color: #334155;"><strong>Order Status:</strong> ${order.orderStatus.replace('_', ' ')}</p>
+          <div style="background: #f8fafc; border: 1px solid #f1f5f9; border-radius: 16px; padding: 18px;">
+            <h4 style="font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: #64748b; margin-bottom: 10px;">Order Details</h4>
+            <p style="font-size: 13px; color: #334155; margin-bottom: 4px;"><strong>Order Date:</strong> ${dateStr}</p>
+            <p style="font-size: 13px; color: #334155; margin-bottom: 4px;"><strong>Est. Pickup:</strong> ${pickupStr}</p>
+            <p style="font-size: 13px; color: #334155; margin-bottom: 4px;"><strong>Total Garments:</strong> ${order.totalGarments} items</p>
+            <p style="font-size: 13px; color: #334155;"><strong>Order Status:</strong> ${order.orderStatus.replace('_', ' ')}</p>
           </div>
         </div>
 
         <!-- Items Table -->
-        <div style="border: 1px solid #e2e8f0; border-radius: 14px; overflow: hidden; margin-bottom: 24px;">
-          <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+        <div style="border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; margin-bottom: 28px;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
             <thead>
               <tr style="background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
-                <th style="padding: 10px 14px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 9px; color: #475569;">Service Description</th>
-                <th style="padding: 10px 14px; text-align: center; font-weight: 700; text-transform: uppercase; font-size: 9px; color: #475569;">Qty</th>
-                <th style="padding: 10px 14px; text-align: right; font-weight: 700; text-transform: uppercase; font-size: 9px; color: #475569;">Unit Price</th>
-                <th style="padding: 10px 14px; text-align: right; font-weight: 700; text-transform: uppercase; font-size: 9px; color: #475569;">Total</th>
+                <th style="padding: 12px 16px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 10px; color: #475569;">Service Description</th>
+                <th style="padding: 12px 16px; text-align: center; font-weight: 700; text-transform: uppercase; font-size: 10px; color: #475569;">Qty</th>
+                <th style="padding: 12px 16px; text-align: right; font-weight: 700; text-transform: uppercase; font-size: 10px; color: #475569;">Unit Price</th>
+                <th style="padding: 12px 16px; text-align: right; font-weight: 700; text-transform: uppercase; font-size: 10px; color: #475569;">Total</th>
               </tr>
             </thead>
             <tbody>
@@ -81,29 +93,29 @@ function getInvoiceBodyHtml(order: OrderRecord, customerName?: string, customerP
         </div>
 
         <!-- Summary Box -->
-        <div style="display: flex; justify-content: flex-end; margin-bottom: 28px;">
-          <div style="width: 300px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 16px;">
-            <div style="display: flex; justify-content: space-between; font-size: 12px; color: #475569; margin-bottom: 8px;">
+        <div style="display: flex; justify-content: flex-end; margin-bottom: 32px;">
+          <div style="width: 320px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px;">
+            <div style="display: flex; justify-content: space-between; font-size: 13px; color: #475569; margin-bottom: 10px;">
               <span>Subtotal</span>
               <span>৳${order.subtotal.toFixed(2)}</span>
             </div>
             ${
               order.discount > 0
-                ? `<div style="display: flex; justify-content: space-between; font-size: 12px; color: #16a34a; margin-bottom: 8px;">
+                ? `<div style="display: flex; justify-content: space-between; font-size: 13px; color: #16a34a; margin-bottom: 10px;">
                     <span>Discount</span>
                     <span>-৳${order.discount.toFixed(2)}</span>
                   </div>`
                 : ''
             }
-            <div style="display: flex; justify-content: space-between; font-size: 12px; color: #475569; margin-bottom: 8px;">
+            <div style="display: flex; justify-content: space-between; font-size: 13px; color: #475569; margin-bottom: 10px;">
               <span>Delivery Fee</span>
               <span>${order.deliveryCharge === 0 ? 'FREE' : `৳${order.deliveryCharge.toFixed(2)}`}</span>
             </div>
-            <div style="display: flex; justify-content: space-between; font-size: 12px; color: #475569; margin-bottom: 8px;">
+            <div style="display: flex; justify-content: space-between; font-size: 13px; color: #475569; margin-bottom: 10px;">
               <span>VAT / Service Tax (5%)</span>
               <span>৳${order.tax.toFixed(2)}</span>
             </div>
-            <div style="display: flex; justify-content: space-between; border-top: 2px solid #e2e8f0; padding-top: 10px; font-size: 15px; font-weight: 800; color: #0f172a;">
+            <div style="display: flex; justify-content: space-between; border-top: 2px solid #e2e8f0; padding-top: 12px; font-size: 16px; font-weight: 900; color: #0f172a;">
               <span>Grand Total</span>
               <span style="color: #2563eb;">৳${order.grandTotal.toFixed(2)}</span>
             </div>
@@ -111,8 +123,8 @@ function getInvoiceBodyHtml(order: OrderRecord, customerName?: string, customerP
         </div>
 
         <!-- Footer -->
-        <div style="text-align: center; border-top: 1px solid #e2e8f0; padding-top: 16px; color: #64748b; font-size: 11px;">
-          <p style="margin-bottom: 2px;"><strong>Thank you for choosing Laundrix Services!</strong></p>
+        <div style="text-align: center; border-top: 1px solid #e2e8f0; padding-top: 20px; color: #64748b; font-size: 12px;">
+          <p style="margin-bottom: 4px;"><strong>Thank you for choosing Laundrix Services!</strong></p>
           <p>For support or queries, contact support@laundrix.app or call 09600-000000</p>
         </div>
 
