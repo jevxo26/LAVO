@@ -6,8 +6,8 @@ import {
   Wallet, Sparkles, ShoppingBag, Heart,
   ArrowRight, Calendar, Clock, Shirt,
   CreditCard, TicketCheck, Radio,
-  Package, CheckCircle2, AlertCircle, TrendingUp, ShieldCheck,
-  Zap, Award, ChevronRight, PlusCircle, RefreshCw
+  Package, CheckCircle2, AlertCircle,
+  Zap, Award, ChevronRight, RefreshCw
 } from "lucide-react";
 import { authFetch } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
@@ -58,22 +58,22 @@ function getStageIndex(status: string): number {
 
 function orderStatusStyle(status: string): { cls: string; dot: string } {
   switch (status.toUpperCase()) {
-    case "PENDING":    return { cls: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300", dot: "bg-amber-500 animate-pulse" };
-    case "CONFIRMED":  return { cls: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300",       dot: "bg-blue-500" };
+    case "PENDING":    return { cls: "bg-warning/10 text-warning border-warning/25",   dot: "bg-warning animate-pulse"  };
+    case "CONFIRMED":  return { cls: "bg-primary/10 text-primary border-primary/25",   dot: "bg-primary"                };
     case "PROCESSING":
     case "WASHING":
-    case "PICKUP":     return { cls: "bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300", dot: "bg-indigo-500 animate-pulse" };
-    case "DELIVERY":   return { cls: "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300", dot: "bg-purple-500 animate-pulse" };
-    case "COMPLETED":  return { cls: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300", dot: "bg-emerald-500" };
-    case "CANCELLED":  return { cls: "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300",       dot: "bg-rose-500" };
-    default:           return { cls: "bg-slate-50 text-slate-700 border-slate-200", dot: "bg-slate-400" };
+    case "PICKUP":     return { cls: "bg-primary/10 text-primary border-primary/25",   dot: "bg-primary animate-pulse"  };
+    case "DELIVERY":   return { cls: "bg-secondary/10 text-secondary border-secondary/25", dot: "bg-secondary animate-pulse" };
+    case "COMPLETED":  return { cls: "bg-success/10 text-success border-success/25",   dot: "bg-success"                };
+    case "CANCELLED":  return { cls: "bg-error/10 text-error border-error/25",         dot: "bg-error"                  };
+    default:           return { cls: "bg-muted text-muted-foreground border-border",   dot: "bg-muted-foreground/50"    };
   }
 }
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 
 function Sk({ className }: { className?: string }) {
-  return <div className={`animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800 ${className ?? ""}`} />;
+  return <div className={`animate-pulse rounded-2xl bg-muted ${className ?? ""}`} />;
 }
 
 function DashboardSkeleton() {
@@ -142,15 +142,16 @@ export function CustomerOverview() {
   if (loading) return <DashboardSkeleton />;
 
   if (error) return (
-    <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white py-24 text-center shadow-sm dark:bg-slate-900 dark:border-slate-800">
-      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-rose-50 dark:bg-rose-950/40">
-        <AlertCircle size={28} className="text-rose-400" />
+    <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-border bg-card py-24 text-center shadow-sm">
+      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-error/10">
+        <AlertCircle size={28} className="text-error" />
       </div>
-      <p className="text-sm font-bold text-slate-800 dark:text-white">Could not load your dashboard</p>
-      <p className="mt-1 text-xs text-slate-400">Check your connection and try again.</p>
+      <p className="text-sm font-bold text-card-foreground">Could not load your dashboard</p>
+      <p className="mt-1 text-xs text-muted-foreground">Check your connection and try again.</p>
       <button
         onClick={fetchCustomerData}
-        className="mt-5 inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-xs font-bold text-white hover:bg-indigo-700 transition-colors"
+        className="mt-5 inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-xs font-bold text-white transition-all hover:scale-[1.02]"
+        style={{ background: "linear-gradient(135deg, var(--primary), var(--ring))" }}
       >
         <RefreshCw size={13} /> Retry
       </button>
@@ -308,28 +309,30 @@ export function CustomerOverview() {
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="rounded-3xl border border-indigo-200/80 bg-gradient-to-r from-indigo-50/70 via-white to-purple-50/70 p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800"
+          className="rounded-3xl border border-border bg-card p-6 shadow-sm"
         >
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-indigo-100 pb-4 dark:border-slate-800">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-md shadow-indigo-500/20">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl text-white shadow-md"
+                style={{ background: "linear-gradient(135deg, var(--primary), var(--ring))" }}>
                 <Radio size={20} className="animate-pulse" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="font-black text-slate-900 dark:text-white text-base">Active Order Status</h3>
-                  <span className="text-xs font-mono font-extrabold text-indigo-600 dark:text-indigo-400">
+                  <h3 className="font-black text-card-foreground text-base">Active Order Status</h3>
+                  <span className="text-xs font-mono font-extrabold" style={{ color: "var(--primary)" }}>
                     #{activeOrder.orderNumber}
                   </span>
                 </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                <p className="text-xs text-muted-foreground font-medium">
                   {activeOrder.totalGarments} Garments · ৳{activeOrder.grandTotal.toFixed(2)}
                 </p>
               </div>
             </div>
 
             <Link href={`/dashboard/track-orders?orderId=${activeOrder.id}`}>
-              <Button className="h-9 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-extrabold gap-1.5 shadow-sm transition-all hover:scale-[1.02]">
+              <Button className="h-9 px-4 rounded-xl text-white text-xs font-extrabold gap-1.5 shadow-sm transition-all hover:scale-[1.02]"
+                style={{ background: "var(--foreground)" }}>
                 View Full Live Map <ChevronRight size={14} />
               </Button>
             </Link>
@@ -338,11 +341,13 @@ export function CustomerOverview() {
           {/* Stepper Pipeline */}
           <div className="pt-6 pb-2 px-2">
             <div className="relative flex items-center justify-between">
-              {/* Pipeline connecting bar */}
-              <div className="absolute left-6 right-6 top-5 h-1 bg-slate-200 dark:bg-slate-800 -z-0">
+              <div className="absolute left-6 right-6 top-5 h-1 bg-border -z-0">
                 <div
-                  className="h-full bg-gradient-to-r from-indigo-600 to-emerald-500 transition-all duration-700"
-                  style={{ width: `${(activeStageIdx / (PIPELINE_STAGES.length - 1)) * 100}%` }}
+                  className="h-full transition-all duration-700"
+                  style={{
+                    width: `${(activeStageIdx / (PIPELINE_STAGES.length - 1)) * 100}%`,
+                    background: "linear-gradient(90deg, var(--primary), var(--success))",
+                  }}
                 />
               </div>
 
@@ -354,25 +359,22 @@ export function CustomerOverview() {
                 return (
                   <div key={stage.id} className="relative z-10 flex flex-col items-center group">
                     <div
-                      className={`flex h-10 w-10 items-center justify-center rounded-2xl border-2 transition-all duration-300
-                        ${
-                          isCurrent
-                            ? "border-indigo-600 bg-indigo-600 text-white shadow-lg shadow-indigo-500/30 scale-110"
-                            : isPassed
-                            ? "border-emerald-500 bg-emerald-500 text-white"
-                            : "border-slate-300 bg-white text-slate-400 dark:bg-slate-900 dark:border-slate-700"
-                        }`}
+                      className="flex h-10 w-10 items-center justify-center rounded-2xl border-2 transition-all duration-300"
+                      style={{
+                        borderColor: isCurrent ? "var(--primary)" : isPassed ? "var(--success)" : "var(--border)",
+                        background:  isCurrent ? "var(--primary)" : isPassed ? "var(--success)" : "var(--card)",
+                        color:       isCurrent || isPassed ? "white" : "var(--muted-foreground)",
+                        boxShadow:   isCurrent ? "0 4px 16px color-mix(in srgb, var(--primary) 35%, transparent)" : "none",
+                        transform:   isCurrent ? "scale(1.1)" : "scale(1)",
+                      }}
                     >
                       <StageIcon size={18} className={isCurrent ? "animate-spin" : ""} />
                     </div>
                     <span
-                      className={`mt-2 text-[11px] font-extrabold ${
-                        isCurrent
-                          ? "text-indigo-600 dark:text-indigo-400"
-                          : isPassed
-                          ? "text-slate-900 dark:text-white"
-                          : "text-slate-400"
-                      }`}
+                      className="mt-2 text-[11px] font-extrabold"
+                      style={{
+                        color: isCurrent ? "var(--primary)" : isPassed ? "var(--card-foreground)" : "var(--muted-foreground)",
+                      }}
                     >
                       {stage.label}
                     </span>
@@ -387,10 +389,11 @@ export function CustomerOverview() {
       {/* ── 3. Quick Garment Category Launcher Cards ─────────────────────────── */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-black text-slate-900 dark:text-white tracking-tight">
+          <h2 className="text-base font-black text-card-foreground tracking-tight">
             Book Laundry by Category
           </h2>
-          <Link href="/dashboard/book-services" className="text-xs font-extrabold text-indigo-600 hover:underline flex items-center gap-1">
+          <Link href="/dashboard/book-services" className="text-xs font-extrabold hover:underline flex items-center gap-1"
+            style={{ color: "var(--primary)" }}>
             See All Services <ArrowRight size={12} />
           </Link>
         </div>
@@ -402,15 +405,15 @@ export function CustomerOverview() {
               <Link key={cat.name} href="/dashboard/book-services">
                 <motion.div
                   whileHover={{ y: -4 }}
-                  className="group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm hover:shadow-lg hover:border-indigo-200 transition-all dark:bg-slate-900 dark:border-slate-800"
+                  className="group relative overflow-hidden rounded-2xl border border-border bg-card p-4 shadow-sm hover:shadow-lg hover:border-ring/40 transition-all"
                 >
                   <div className={`flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br ${cat.bg} text-white shadow-md mb-3 group-hover:scale-110 transition-transform`}>
                     <Icon size={20} />
                   </div>
-                  <p className="text-xs font-black text-slate-900 dark:text-white group-hover:text-indigo-600 transition-colors">
+                  <p className="text-xs font-black text-card-foreground group-hover:text-primary transition-colors">
                     {cat.name}
                   </p>
-                  <p className="text-[11px] font-bold text-slate-400 mt-0.5">
+                  <p className="text-[11px] font-bold text-muted-foreground mt-0.5">
                     {cat.price}
                   </p>
                 </motion.div>
@@ -424,19 +427,20 @@ export function CustomerOverview() {
       <div className="grid gap-6 md:grid-cols-6 items-start">
 
         {/* Recent Orders Table / Cards */}
-        <div className="md:col-span-4 rounded-3xl border border-slate-200/80 bg-white shadow-sm overflow-hidden dark:bg-slate-900 dark:border-slate-800">
-          <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5 dark:border-slate-800">
+        <div className="md:col-span-4 rounded-3xl border border-border bg-card shadow-sm overflow-hidden">
+          <div className="flex items-center justify-between border-b border-border px-6 py-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10" style={{ color: "var(--primary)" }}>
                 <ShoppingBag size={18} />
               </div>
               <div>
-                <h3 className="text-sm font-black text-slate-900 dark:text-white">Recent Laundry Orders</h3>
-                <p className="text-[11px] text-slate-400 font-medium">Order history &amp; instant tracking</p>
+                <h3 className="text-sm font-black text-card-foreground">Recent Laundry Orders</h3>
+                <p className="text-[11px] text-muted-foreground font-medium">Order history &amp; instant tracking</p>
               </div>
             </div>
             <Link href="/dashboard/my-orders">
-              <Button variant="ghost" size="sm" className="h-8 rounded-xl text-xs font-extrabold text-indigo-600 hover:bg-indigo-50 gap-1">
+              <Button variant="ghost" size="sm" className="h-8 rounded-xl text-xs font-extrabold gap-1 hover:bg-primary/10"
+                style={{ color: "var(--primary)" }}>
                 View All <ArrowRight size={13} />
               </Button>
             </Link>
@@ -445,15 +449,16 @@ export function CustomerOverview() {
           <div className="p-5">
             {recentOrders.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center">
-                <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-indigo-50 text-indigo-500">
-                  <ShoppingBag size={28} />
+                <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-primary/10">
+                  <ShoppingBag size={28} style={{ color: "var(--primary)" }} />
                 </div>
-                <p className="text-base font-extrabold text-slate-800 dark:text-white">No orders yet</p>
-                <p className="mt-1 text-xs text-slate-400 max-w-xs">
+                <p className="text-base font-extrabold text-card-foreground">No orders yet</p>
+                <p className="mt-1 text-xs text-muted-foreground max-w-xs">
                   Schedule your first laundry pickup today and let our experts take care of your clothes.
                 </p>
                 <Link href="/dashboard/book-services">
-                  <Button className="mt-4 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black gap-2 shadow-lg shadow-indigo-600/20 px-6 py-2.5">
+                  <Button className="mt-4 rounded-2xl text-white text-xs font-black gap-2 shadow-lg px-6 py-2.5"
+                    style={{ background: "linear-gradient(135deg, var(--primary), var(--ring))" }}>
                     <Shirt size={15} /> Book First Service
                   </Button>
                 </Link>
@@ -466,23 +471,23 @@ export function CustomerOverview() {
                   return (
                     <div
                       key={order.id}
-                      className="flex flex-col sm:flex-row sm:items-center justify-between rounded-2xl border border-slate-100 p-4 hover:border-indigo-200 hover:bg-indigo-50/20 transition-all gap-3 dark:border-slate-800 dark:hover:bg-slate-800/40"
+                      className="flex flex-col sm:flex-row sm:items-center justify-between rounded-2xl border border-border p-4 hover:border-ring/40 hover:bg-muted/30 transition-all gap-3"
                     >
                       {/* Left */}
                       <div className="space-y-1.5 min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-xs font-black text-slate-900 dark:text-white font-mono">#{order.orderNumber}</span>
+                          <span className="text-xs font-black text-card-foreground font-mono">#{order.orderNumber}</span>
                           <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-extrabold ${cls}`}>
                             <span className={`h-1.5 w-1.5 rounded-full ${dot}`} />
                             {order.orderStatus}
                           </span>
                           <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-extrabold
-                            ${paid ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300" : "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300"}`}>
-                            <span className={`h-1.5 w-1.5 rounded-full ${paid ? "bg-emerald-500" : "bg-rose-400"}`} />
+                            ${paid ? "bg-success/10 text-success border-success/25" : "bg-error/10 text-error border-error/25"}`}>
+                            <span className={`h-1.5 w-1.5 rounded-full ${paid ? "bg-success" : "bg-error"}`} />
                             {order.paymentStatus}
                           </span>
                         </div>
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-slate-400 font-medium">
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-muted-foreground font-medium">
                           <span className="flex items-center gap-1">
                             <Calendar size={12} />
                             {new Date(order.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
@@ -495,12 +500,13 @@ export function CustomerOverview() {
 
                       {/* Right */}
                       <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0">
-                        <p className="text-lg font-black text-slate-900 dark:text-white">৳{order.grandTotal.toFixed(2)}</p>
+                        <p className="text-lg font-black text-card-foreground">৳{order.grandTotal.toFixed(2)}</p>
                         <Link href={`/dashboard/track-orders?orderId=${order.id}`}>
                           <Button
                             variant="outline"
                             size="sm"
-                            className="h-9 rounded-xl border-indigo-200 text-indigo-600 text-xs font-extrabold hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all gap-1.5 shadow-sm"
+                            className="h-9 rounded-xl text-xs font-extrabold border-primary/25 hover:bg-primary hover:text-white hover:border-primary transition-all gap-1.5 shadow-sm"
+                            style={{ color: "var(--primary)" }}
                           >
                             <Radio size={13} /> Live Track
                           </Button>
@@ -518,10 +524,17 @@ export function CustomerOverview() {
         <div className="md:col-span-2 space-y-5">
 
           {/* Quick Wallet Top Up Card */}
-          <div className="rounded-3xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-800 p-6 text-white shadow-xl relative overflow-hidden">
+          <div className="rounded-3xl p-6 text-white shadow-xl relative overflow-hidden"
+            style={{
+              background: [
+                "radial-gradient(ellipse 80% 80% at 10% 50%, color-mix(in srgb, var(--primary) 55%, transparent) 0%, transparent 60%)",
+                "linear-gradient(135deg, color-mix(in srgb, var(--primary) 85%, black 15%) 0%, color-mix(in srgb, var(--primary) 60%, var(--secondary) 40%) 50%, color-mix(in srgb, var(--secondary) 70%, black 30%) 100%)",
+              ].join(", "),
+              boxShadow: "0 20px 40px -10px color-mix(in srgb, var(--primary) 45%, transparent)",
+            }}>
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-indigo-200">LAVO Pay Wallet</p>
+                <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: "color-mix(in srgb, var(--primary-foreground) 60%, var(--secondary))" }}>LAVO Pay Wallet</p>
                 <p className="mt-1 text-3xl font-black leading-none">৳{stats?.walletBalance?.toFixed(2) ?? "0.00"}</p>
               </div>
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-md">
@@ -529,7 +542,7 @@ export function CustomerOverview() {
               </div>
             </div>
 
-            <p className="mt-3 text-xs text-indigo-100 font-medium leading-relaxed">
+            <p className="mt-3 text-xs text-white/70 font-medium leading-relaxed">
               Instant 1-tap checkout &amp; automatic cashback rewards.
             </p>
 
@@ -547,49 +560,40 @@ export function CustomerOverview() {
           </div>
 
           {/* Customer Shortcuts */}
-          <div className="rounded-3xl border border-slate-200/80 bg-white p-5 shadow-sm dark:bg-slate-900 dark:border-slate-800 space-y-3">
-            <h3 className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
+          <div className="rounded-3xl border border-border bg-card p-5 shadow-sm space-y-3">
+            <h3 className="text-xs font-black uppercase tracking-wider text-muted-foreground">
               Customer Operations
             </h3>
-
             <div className="space-y-2">
-              <Link
-                href="/dashboard/wallet"
-                className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 hover:bg-indigo-50/50 hover:text-indigo-600 transition-all dark:bg-slate-800/50"
-              >
+              <Link href="/dashboard/wallet"
+                className="flex items-center justify-between p-3 rounded-2xl bg-muted/50 hover:bg-primary/8 hover:text-primary transition-all">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-success/10" style={{ color: "var(--success)" }}>
                     <CreditCard size={16} />
                   </div>
-                  <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200">Wallet Transactions</span>
+                  <span className="text-xs font-extrabold text-card-foreground">Wallet Transactions</span>
                 </div>
-                <ChevronRight size={15} className="text-slate-400" />
+                <ChevronRight size={15} className="text-muted-foreground" />
               </Link>
-
-              <Link
-                href="/dashboard/help-desk"
-                className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 hover:bg-indigo-50/50 hover:text-indigo-600 transition-all dark:bg-slate-800/50"
-              >
+              <Link href="/dashboard/help-desk"
+                className="flex items-center justify-between p-3 rounded-2xl bg-muted/50 hover:bg-primary/8 hover:text-primary transition-all">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-100 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-warning/10" style={{ color: "var(--warning)" }}>
                     <TicketCheck size={16} />
                   </div>
-                  <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200">Support &amp; Help Desk</span>
+                  <span className="text-xs font-extrabold text-card-foreground">Support &amp; Help Desk</span>
                 </div>
-                <ChevronRight size={15} className="text-slate-400" />
+                <ChevronRight size={15} className="text-muted-foreground" />
               </Link>
-
-              <Link
-                href="/dashboard/wishlist"
-                className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 hover:bg-indigo-50/50 hover:text-indigo-600 transition-all dark:bg-slate-800/50"
-              >
+              <Link href="/dashboard/wishlist"
+                className="flex items-center justify-between p-3 rounded-2xl bg-muted/50 hover:bg-primary/8 hover:text-primary transition-all">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-rose-100 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-error/10" style={{ color: "var(--error)" }}>
                     <Heart size={16} />
                   </div>
-                  <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200">Saved Wishlist ({stats?.wishlistCount ?? 0})</span>
+                  <span className="text-xs font-extrabold text-card-foreground">Saved Wishlist ({stats?.wishlistCount ?? 0})</span>
                 </div>
-                <ChevronRight size={15} className="text-slate-400" />
+                <ChevronRight size={15} className="text-muted-foreground" />
               </Link>
             </div>
           </div>
