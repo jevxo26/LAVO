@@ -78,7 +78,7 @@ export function InvoiceSummary({ order }: InvoiceSummaryProps) {
             onClick={() => downloadInvoice(order, user?.fullName, user?.phone, user?.email)}
             className="w-full h-9 rounded-xl border-blue-200 bg-blue-50/60 hover:bg-blue-100 text-blue-700 text-xs font-bold gap-2 shadow-xs transition-all"
           >
-            <Download size={14} /> Download Tax Invoice (PDF)
+            <Download size={14} /> Download Invoice (PDF)
           </Button>
         </div>
       </div>

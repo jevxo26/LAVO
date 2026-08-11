@@ -270,7 +270,7 @@ export function generateInvoiceHtml(order: OrderRecord, customerName?: string, c
             </div>
           </div>
           <div class="invoice-badge">
-            <div class="invoice-title">TAX INVOICE</div>
+            <div class="invoice-title">INVOICE</div>
             <div class="invoice-number">#${order.orderNumber}</div>
             <div style="margin-top: 8px;">
               <span class="status-pill ${isPaid ? 'status-paid' : 'status-unpaid'}">
