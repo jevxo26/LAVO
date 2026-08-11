@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useState, Suspense, useRef, useEffect } from "react";
-import { Loader2, Sparkles, Shirt, ShoppingBag, Search, RotateCcw, CheckCircle2, ArrowRight } from "lucide-react";
+import { Loader2, Shirt, Search, RotateCcw, CheckCircle2, ArrowRight } from "lucide-react";
 import { useBooking } from "./_hooks/useBooking";
 import { ServiceCard } from "./_components/ServiceCard";
 import { CartSummary } from "./_components/CartSummary";
 import { PickupForm } from "./_components/PickupForm";
 import { ServiceDetailDrawer } from "./_components/ServiceDetailDrawer";
 import { Button } from "@/components/ui/button";
+import { DashboardPageHero } from "@/components/shared/DashboardPageHero";
 import { motion } from "framer-motion";
 import type { Service } from "./_types";
 
@@ -128,43 +129,16 @@ function BookLaundryContent() {
       transition={{ duration: 0.35 }}
       className="space-y-7"
     >
-      {/* ── 1. Executive Hero Header ───────────────────────────────────────── */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 p-7 md:p-9 text-white shadow-2xl border border-blue-800/40">
-        <div className="pointer-events-none absolute inset-0 opacity-20">
-          <div className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-blue-500 blur-3xl" />
-          <div className="absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-cyan-500 blur-3xl" />
-        </div>
-
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
-          <div className="space-y-2 max-w-xl">
-            <div className="flex items-center gap-2">
-              <Sparkles size={14} className="text-cyan-300" />
-              <span className="text-cyan-200 text-xs font-black uppercase tracking-widest">
-                Express Laundry &amp; Dry Cleaning Booking
-              </span>
-            </div>
-            <h1 className="text-3xl md:text-4xl font-black tracking-tight text-white leading-tight">
-              Book Laundry Service
-            </h1>
-            <p className="text-blue-100 text-xs md:text-sm leading-relaxed font-medium">
-              Select your garments, choose specialized care treatments, and schedule doorstep collection.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3 shrink-0">
-            <div className="rounded-2xl bg-white/10 border border-white/15 backdrop-blur-xl px-5 py-3 text-center min-w-[110px] shadow-inner">
-              <p className="text-cyan-200 text-[10px] font-black uppercase tracking-wider">Wallet Credit</p>
-              <p className="text-white font-black text-xl leading-tight mt-0.5">৳{walletBalance.toFixed(2)}</p>
-            </div>
-            {cart.length > 0 && (
-              <div className="rounded-2xl bg-white/10 border border-white/15 backdrop-blur-xl px-4 py-3 text-center min-w-[90px] shadow-inner">
-                <p className="text-cyan-200 text-[10px] font-black uppercase tracking-wider">Cart Items</p>
-                <p className="text-white font-black text-xl leading-tight mt-0.5">{cart.length}</p>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+      {/* ── 1. Hero Banner ────────────────────────────────────────────────── */}
+      <DashboardPageHero
+        badge="Express Laundry & Dry Cleaning Booking"
+        title="Book Laundry Service"
+        description="Select your garments, choose specialized care treatments, and schedule doorstep collection."
+        chips={[
+          { label: "Wallet Credit", value: `৳${walletBalance.toFixed(2)}` },
+          ...(cart.length > 0 ? [{ label: "Cart Items", value: cart.length }] : []),
+        ]}
+      />
 
       {/* ── Pre-Selected Service Banner (visible when redirected from homepage) ── */}
       {autoSelectedService && (

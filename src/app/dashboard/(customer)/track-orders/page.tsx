@@ -16,7 +16,7 @@ import { OrderDetailsPanel } from "@/components/marketing/track-orders/OrderDeta
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 
 function Sk({ className }: { className?: string }) {
-  return <div className={`animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800 ${className ?? ""}`} />;
+  return <div className={`animate-pulse rounded-2xl bg-muted ${className ?? ""}`} />;
 }
 
 function TrackOrdersSkeleton() {
@@ -27,7 +27,7 @@ function TrackOrdersSkeleton() {
 
       <div className="grid gap-6 lg:grid-cols-12 items-start">
         {/* Timeline skeleton */}
-        <div className="lg:col-span-8 rounded-3xl border border-slate-100 bg-white shadow-sm p-6 space-y-6 dark:bg-slate-900 dark:border-slate-800">
+        <div className="lg:col-span-8 rounded-3xl border border-border bg-card shadow-sm p-6 space-y-6">
           {/* Order header */}
           <div className="flex items-center justify-between">
             <div className="space-y-2">
@@ -62,7 +62,7 @@ function TrackOrdersSkeleton() {
         </div>
 
         {/* Order details panel skeleton */}
-        <div className="lg:col-span-4 rounded-3xl border border-slate-100 bg-white shadow-sm p-5 space-y-4 dark:bg-slate-900 dark:border-slate-800">
+        <div className="lg:col-span-4 rounded-3xl border border-border bg-card shadow-sm p-5 space-y-4">
           <Sk className="h-4 w-28" />
           <div className="space-y-3">
             {[0,1,2,3].map((i) => (
@@ -241,12 +241,12 @@ function TrackerContent() {
         </div>
 
       ) : (
-        <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white py-24 text-center shadow-sm dark:bg-slate-900 dark:border-slate-800">
-          <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-indigo-50 text-indigo-500 dark:bg-indigo-950/50">
-            <Package size={36} className="text-indigo-400" />
+        <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-border bg-card py-24 text-center shadow-sm">
+          <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-primary/10">
+            <Package size={36} style={{ color: "var(--primary)" }} />
           </div>
-          <p className="text-base font-bold text-slate-800 dark:text-white">No order selected</p>
-          <p className="mt-2 max-w-xs text-sm text-slate-400 font-medium">
+          <p className="text-base font-bold text-card-foreground">No order selected</p>
+          <p className="mt-2 max-w-xs text-sm text-muted-foreground font-medium">
             Enter an order number above or pick one from the quick-select dropdown to see live tracking.
           </p>
         </div>
@@ -262,7 +262,7 @@ export default function TrackOrdersPage() {
     <Suspense
       fallback={
         <div className="flex h-[40vh] items-center justify-center">
-          <Loader2 size={30} className="text-indigo-600 animate-spin" />
+          <Loader2 size={30} className="animate-spin" style={{ color: "var(--primary)" }} />
         </div>
       }
     >

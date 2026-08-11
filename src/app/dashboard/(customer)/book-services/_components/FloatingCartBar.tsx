@@ -32,9 +32,19 @@ export function FloatingCartBar({
         transition={{ type: "spring", stiffness: 300, damping: 25 }}
         className="fixed bottom-6 left-4 right-4 sm:left-auto sm:right-8 sm:w-[450px] z-[90]"
       >
-        <div className="rounded-3xl bg-gradient-to-r from-slate-950 via-indigo-950 to-slate-900 border border-indigo-500/40 p-4 text-white shadow-2xl backdrop-blur-xl flex items-center justify-between gap-4">
+        <div
+          className="rounded-3xl p-4 text-white shadow-2xl backdrop-blur-xl flex items-center justify-between gap-4"
+          style={{
+            background: [
+              "radial-gradient(ellipse 80% 80% at 10% 50%, color-mix(in srgb, var(--primary) 55%, transparent) 0%, transparent 60%)",
+              "linear-gradient(135deg, color-mix(in srgb, var(--primary) 85%, black 15%) 0%, color-mix(in srgb, var(--primary) 60%, var(--secondary) 40%) 50%, color-mix(in srgb, var(--secondary) 70%, black 30%) 100%)",
+            ].join(", "),
+            border: "1px solid color-mix(in srgb, var(--primary) 40%, transparent)",
+          }}
+        >
           <div className="flex items-center gap-3.5 min-w-0">
-            <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-md">
+            <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-white shadow-md"
+              style={{ background: "color-mix(in srgb, var(--primary) 70%, black)" }}>
               <ShoppingBag size={22} />
               <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-black text-white shadow-xs">
                 {totalItems}
@@ -42,7 +52,8 @@ export function FloatingCartBar({
             </div>
 
             <div className="min-w-0">
-              <p className="text-[10px] font-black uppercase tracking-wider text-indigo-300">
+              <p className="text-[10px] font-black uppercase tracking-wider"
+                style={{ color: "color-mix(in srgb, var(--secondary) 80%, white)" }}>
                 {isFreeDelivery ? "🎉 FREE Express Delivery" : `Add ৳${(freeDeliveryThreshold - subtotal).toFixed(2)} for FREE Delivery`}
               </p>
               <p className="text-xl font-black text-white leading-tight">
@@ -54,7 +65,11 @@ export function FloatingCartBar({
           <Button
             type="button"
             onClick={onOpenCheckout}
-            className="h-11 px-5 rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-black text-xs shadow-lg shadow-indigo-600/40 gap-2 shrink-0 transition-all hover:scale-[1.03]"
+            className="h-11 px-5 rounded-2xl text-white font-black text-xs shadow-lg gap-2 shrink-0 transition-all hover:scale-[1.03]"
+            style={{
+              background: "linear-gradient(135deg, var(--primary), var(--ring))",
+              boxShadow: "0 4px 16px color-mix(in srgb, var(--primary) 40%, transparent)",
+            }}
           >
             Checkout <ArrowRight size={16} />
           </Button>

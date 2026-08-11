@@ -70,11 +70,21 @@ export function CartSummary({
   return (
     <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xl overflow-hidden dark:bg-slate-900 dark:border-slate-800 space-y-0">
       {/* ── 1. Header ────────────────────────────────────────────────────────── */}
-      <div className="px-7 py-6 bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 flex items-center justify-between text-white border-b border-blue-800/40">
+      <div
+        className="px-7 py-6 flex items-center justify-between text-white border-b"
+        style={{
+          background: [
+            "radial-gradient(ellipse 80% 80% at 10% 50%, color-mix(in srgb, var(--primary) 55%, transparent) 0%, transparent 60%)",
+            "linear-gradient(135deg, color-mix(in srgb, var(--primary) 85%, black 15%) 0%, color-mix(in srgb, var(--primary) 60%, var(--secondary) 40%) 50%, color-mix(in srgb, var(--secondary) 70%, black 30%) 100%)",
+          ].join(", "),
+          borderColor: "color-mix(in srgb, var(--primary) 40%, transparent)",
+        }}
+      >
         <div>
           <div className="flex items-center gap-2">
-            <Sparkles size={14} className="text-cyan-300" />
-            <span className="text-[10px] font-black uppercase tracking-widest text-cyan-300">
+            <Sparkles size={14} style={{ color: "color-mix(in srgb, var(--secondary) 80%, white)" }} />
+            <span className="text-[10px] font-black uppercase tracking-widest"
+              style={{ color: "color-mix(in srgb, var(--secondary) 80%, white)" }}>
               Checkout &amp; Booking Studio
             </span>
           </div>
@@ -82,7 +92,7 @@ export function CartSummary({
         </div>
 
         <div className="bg-white/10 backdrop-blur-md rounded-2xl px-4 py-2 flex items-center gap-2 border border-white/15">
-          <ShoppingBag size={15} className="text-cyan-200" />
+          <ShoppingBag size={15} className="text-white/70" />
           <span className="text-white text-xs font-black">
             {cart.length} item{cart.length !== 1 ? "s" : ""}
           </span>

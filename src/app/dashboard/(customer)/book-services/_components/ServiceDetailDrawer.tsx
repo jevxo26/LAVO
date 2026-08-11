@@ -98,17 +98,34 @@ export function ServiceDetailDrawer({
             className="fixed right-0 top-0 z-50 h-full w-full max-w-md overflow-y-auto bg-white shadow-2xl dark:bg-slate-900 flex flex-col"
           >
             {/* ── Header ── */}
-            <div className="relative bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 px-6 py-8 text-white flex-shrink-0">
+            <div
+              className="relative px-6 py-8 text-white flex-shrink-0"
+              style={{
+                background: [
+                  "radial-gradient(ellipse 80% 80% at 10% 50%, color-mix(in srgb, var(--primary) 55%, transparent) 0%, transparent 60%)",
+                  "linear-gradient(135deg, color-mix(in srgb, var(--primary) 85%, black 15%) 0%, color-mix(in srgb, var(--primary) 60%, var(--secondary) 40%) 50%, color-mix(in srgb, var(--secondary) 70%, black 30%) 100%)",
+                ].join(", "),
+              }}
+            >
               <div className="pointer-events-none absolute inset-0 overflow-hidden">
-                <div className="absolute -top-16 -right-16 h-48 w-48 rounded-full bg-blue-500 opacity-20 blur-3xl" />
-                <div className="absolute -bottom-10 -left-10 h-36 w-36 rounded-full bg-cyan-500 opacity-15 blur-3xl" />
+                <div className="absolute -top-16 -right-16 h-48 w-48 rounded-full opacity-20 blur-3xl"
+                  style={{ background: "color-mix(in srgb, var(--primary) 70%, white)" }} />
+                <div className="absolute -bottom-10 -left-10 h-36 w-36 rounded-full opacity-15 blur-3xl"
+                  style={{ background: "color-mix(in srgb, var(--secondary) 70%, white)" }} />
               </div>
               <button onClick={onClose} className="absolute right-4 top-4 rounded-xl p-2 text-white/60 hover:bg-white/10 hover:text-white transition-all">
                 <X size={18} />
               </button>
               <div className="relative z-10 space-y-3">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-600/50 border border-blue-400/30 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-cyan-200">
+                  <span
+                    className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-widest"
+                    style={{
+                      background: "color-mix(in srgb, var(--primary) 40%, transparent)",
+                      border: "1px solid color-mix(in srgb, var(--primary) 50%, transparent)",
+                      color: "color-mix(in srgb, var(--primary-foreground) 80%, var(--secondary))",
+                    }}
+                  >
                     <Shirt size={10} /> {service.category}
                   </span>
                   {inCart && (
@@ -119,12 +136,18 @@ export function ServiceDetailDrawer({
                 </div>
                 <h2 className="text-2xl font-black text-white leading-tight">{service.serviceName}</h2>
                 <div className="flex items-center gap-4 text-sm">
-                  <span className="flex items-center gap-1.5 text-cyan-200 font-extrabold"><Clock size={13} />{service.estimatedTime}</span>
-                  <span className="flex items-center gap-1.5 text-cyan-200 font-extrabold"><Tag size={13} />{service.garmentType}</span>
+                  <span className="flex items-center gap-1.5 font-extrabold"
+                    style={{ color: "color-mix(in srgb, var(--secondary) 80%, white)" }}>
+                    <Clock size={13} />{service.estimatedTime}
+                  </span>
+                  <span className="flex items-center gap-1.5 font-extrabold"
+                    style={{ color: "color-mix(in srgb, var(--secondary) 80%, white)" }}>
+                    <Tag size={13} />{service.garmentType}
+                  </span>
                 </div>
                 <div className="inline-flex items-baseline gap-1 rounded-2xl bg-white/10 border border-white/15 px-4 py-2">
                   <span className="text-2xl font-black text-white">৳{service.basePrice.toFixed(2)}</span>
-                  <span className="text-xs text-blue-200 font-bold">/ piece</span>
+                  <span className="text-xs text-white/60 font-bold">/ piece</span>
                 </div>
               </div>
             </div>

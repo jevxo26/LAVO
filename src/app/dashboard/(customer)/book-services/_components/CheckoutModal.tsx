@@ -54,11 +54,21 @@ export function CheckoutModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl rounded-3xl p-0 overflow-hidden border border-slate-200 dark:border-slate-800 dark:bg-slate-900">
         {/* Modal Header */}
-        <div className="px-7 py-6 bg-gradient-to-br from-indigo-950 via-indigo-900 to-slate-900 text-white flex items-center justify-between border-b border-indigo-800/40">
+        <div
+          className="px-7 py-6 text-white flex items-center justify-between border-b"
+          style={{
+            background: [
+              "radial-gradient(ellipse 80% 80% at 10% 50%, color-mix(in srgb, var(--primary) 55%, transparent) 0%, transparent 60%)",
+              "linear-gradient(135deg, color-mix(in srgb, var(--primary) 85%, black 15%) 0%, color-mix(in srgb, var(--primary) 60%, var(--secondary) 40%) 50%, color-mix(in srgb, var(--secondary) 70%, black 30%) 100%)",
+            ].join(", "),
+            borderColor: "color-mix(in srgb, var(--primary) 40%, transparent)",
+          }}
+        >
           <div>
             <div className="flex items-center gap-2">
-              <Sparkles size={14} className="text-indigo-300" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-indigo-300">
+              <Sparkles size={14} style={{ color: "color-mix(in srgb, var(--secondary) 80%, white)" }} />
+              <span className="text-[10px] font-black uppercase tracking-widest"
+                style={{ color: "color-mix(in srgb, var(--secondary) 80%, white)" }}>
                 Express Checkout
               </span>
             </div>
