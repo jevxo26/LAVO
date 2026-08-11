@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import {
   Wallet, Sparkles, ShoppingBag, Heart,
@@ -22,6 +22,7 @@ interface ProfileStats {
   activeOrdersCount: number;
   wishlistCount: number;
   customerCode: string;
+  fullName: string;
 }
 
 interface OrderRecord {
@@ -46,12 +47,13 @@ const PIPELINE_STAGES = [
 
 function getStageIndex(status: string): number {
   const s = status.toUpperCase();
+  if (s === "CANCELLED") return -1;
   if (s === "PENDING") return 0;
   if (s === "CONFIRMED" || s === "PICKUP") return 1;
   if (s === "PROCESSING" || s === "WASHING") return 2;
   if (s === "READY" || s === "READY_FOR_DELIVERY" || s === "DELIVERY") return 3;
   if (s === "COMPLETED" || s === "DELIVERED") return 4;
-  return 1;
+  return 0;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -63,6 +65,9 @@ function orderStatusStyle(status: string): { cls: string; dot: string } {
     case "PROCESSING":
     case "WASHING":
     case "PICKUP":     return { cls: "bg-primary/10 text-primary border-primary/25",   dot: "bg-primary animate-pulse"  };
+    case "READY":
+    case "READY_FOR_DELIVERY":
+                       return { cls: "bg-secondary/10 text-secondary border-secondary/25", dot: "bg-secondary animate-pulse" };
     case "DELIVERY":   return { cls: "bg-secondary/10 text-secondary border-secondary/25", dot: "bg-secondary animate-pulse" };
     case "COMPLETED":  return { cls: "bg-success/10 text-success border-success/25",   dot: "bg-success"                };
     case "CANCELLED":  return { cls: "bg-error/10 text-error border-error/25",         dot: "bg-error"                  };
@@ -107,10 +112,12 @@ export function CustomerOverview() {
   const [stats, setStats]               = useState<ProfileStats | null>(null);
   const [recentOrders, setRecentOrders] = useState<OrderRecord[]>([]);
   const [loading, setLoading]           = useState(true);
-  const [error, setError]               = useState(false);
+  const [statsError, setStatsError]     = useState(false);
+  const [ordersError, setOrdersError]   = useState(false);
 
-  const fetchCustomerData = async () => {
-    setError(false);
+  const fetchCustomerData = useCallback(async () => {
+    setStatsError(false);
+    setOrdersError(false);
     setLoading(true);
     try {
       const [statsRes, ordersRes] = await Promise.all([
@@ -121,27 +128,35 @@ export function CustomerOverview() {
       if (statsRes.ok) {
         const statsData = await statsRes.json().catch(() => null);
         if (statsData?.success) setStats(statsData.data);
+        else setStatsError(true);
+      } else {
+        setStatsError(true);
       }
 
       if (ordersRes.ok) {
         const ordersData = await ordersRes.json().catch(() => null);
-        if (ordersData?.success) setRecentOrders((ordersData.data ?? []).slice(0, 5));
+        if (ordersData?.success) setRecentOrders(ordersData.data ?? []);
+        else setOrdersError(true);
+      } else {
+        setOrdersError(true);
       }
     } catch (err) {
       console.error("Error fetching customer overview data:", err);
-      setError(true);
+      setStatsError(true);
+      setOrdersError(true);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchCustomerData();
-  }, []);
+  }, [fetchCustomerData]);
 
   if (loading) return <DashboardSkeleton />;
 
-  if (error) return (
+  // Both endpoints failed — show full error screen
+  if (statsError && ordersError) return (
     <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-border bg-card py-24 text-center shadow-sm">
       <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-error/10">
         <AlertCircle size={28} className="text-error" />
@@ -158,10 +173,12 @@ export function CustomerOverview() {
     </div>
   );
 
-  const customerName = user?.fullName?.split(" ")[0] || "Valued Customer";
-  const activeOrder  = recentOrders.find(
+  const customerName = stats?.fullName?.split(" ")[0] || user?.fullName?.split(" ")[0] || "Valued Customer";
+
+  // Only show pipeline for genuinely in-progress orders (not COMPLETED / CANCELLED / DELIVERED)
+  const activeOrder = recentOrders.find(
     (o) => !["COMPLETED", "CANCELLED", "DELIVERED"].includes(o.orderStatus.toUpperCase())
-  ) || recentOrders[0];
+  );
 
   const activeStageIdx = activeOrder ? getStageIndex(activeOrder.orderStatus) : 0;
 
@@ -239,7 +256,7 @@ export function CustomerOverview() {
                 VIP Gold Member
               </span>
               <span className="text-white/50 text-xs font-mono">
-                #{stats?.customerCode || "LV-CUST-8492"}
+                {stats?.customerCode ? `#${stats.customerCode}` : ""}
               </span>
             </div>
 
@@ -303,6 +320,30 @@ export function CustomerOverview() {
           </div>
         </div>
       </div>
+
+      {/* ── Partial failure banners ──────────────────────────────────────────── */}
+      {statsError && !ordersError && (
+        <div className="flex items-center gap-3 rounded-2xl border border-warning/30 bg-warning/8 px-4 py-3">
+          <AlertCircle size={16} className="shrink-0 text-warning" />
+          <p className="text-xs font-bold text-warning">
+            Profile data could not be loaded. Wallet &amp; points may be unavailable.
+          </p>
+          <button onClick={fetchCustomerData} className="ml-auto shrink-0 text-xs font-extrabold text-warning underline">
+            Retry
+          </button>
+        </div>
+      )}
+      {ordersError && !statsError && (
+        <div className="flex items-center gap-3 rounded-2xl border border-warning/30 bg-warning/8 px-4 py-3">
+          <AlertCircle size={16} className="shrink-0 text-warning" />
+          <p className="text-xs font-bold text-warning">
+            Orders could not be loaded.
+          </p>
+          <button onClick={fetchCustomerData} className="ml-auto shrink-0 text-xs font-extrabold text-warning underline">
+            Retry
+          </button>
+        </div>
+      )}
 
       {/* ── 2. Live Active Order Pipeline Stepper Widget ────────────────────── */}
       {activeOrder && (

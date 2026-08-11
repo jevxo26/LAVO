@@ -755,18 +755,33 @@ export class CustomerService {
     }
   );
 
-  // Fetch customer orders list
+  // Fetch customer orders list (recent 5, with totalGarments computed)
   static getOrders = catchServiceAsync(async (userId: string) => {
     const customer = await this.getOrCreateCustomer(userId);
-    return prisma.order.findMany({
+    const orders = await prisma.order.findMany({
       where: { customerId: customer.id },
       orderBy: { createdAt: 'desc' },
-      include: {
-        items: {
-          include: { service: true },
-        },
+      take: 5,
+      select: {
+        id: true,
+        orderNumber: true,
+        grandTotal: true,
+        orderStatus: true,
+        paymentStatus: true,
+        createdAt: true,
+        _count: { select: { items: true } },
       },
     });
+
+    return orders.map((o) => ({
+      id:            o.id,
+      orderNumber:   o.orderNumber,
+      grandTotal:    o.grandTotal,
+      orderStatus:   o.orderStatus,
+      paymentStatus: o.paymentStatus,
+      createdAt:     o.createdAt,
+      totalGarments: o._count.items,
+    }));
   });
 
   // Get single order details with timelines
