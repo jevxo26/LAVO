@@ -19,50 +19,155 @@ exports.RegisterService = void 0;
 const client_1 = require("@prisma/client");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const catchServiceAsync_1 = require("../../utils/catchServiceAsync");
+const smsService_1 = require("../shared/smsService");
 const prisma = new client_1.PrismaClient();
+const OTP_TTL_SECONDS = 60; // 1 minute validity
+function generateOTP() {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+}
 class RegisterService {
 }
 exports.RegisterService = RegisterService;
 _a = RegisterService;
+/**
+ * Step 1 — Validate form data, create user (isVerified=false),
+ * generate a 6-digit SMS OTP and store it with a 60-second TTL.
+ */
 RegisterService.registerUser = (0, catchServiceAsync_1.catchServiceAsync)(async (data) => {
-    var _b, _c, _d;
-    const existingUser = await prisma.user.findUnique({
-        where: { email: data.email },
-    });
-    if (existingUser) {
-        throw new Error('User already exists with this email');
-    }
-    if (!data.email || !data.password) {
-        throw new Error('Email and password are required');
-    }
-    console.log('📝 Registration - password type:', typeof data.password, '| length:', (_b = data.password) === null || _b === void 0 ? void 0 : _b.length, '| value repr:', JSON.stringify(data.password));
-    const hashedPassword = await bcrypt_1.default.hash(data.password, 10);
-    console.log('📝 Registration - hashed password (first 20 chars):', hashedPassword.substring(0, 20), '| hash length:', hashedPassword.length);
-    // Verify immediately: can we compare back?
-    const verifyCheck = await bcrypt_1.default.compare(data.password, hashedPassword);
-    console.log('📝 Registration - immediate verify check:', verifyCheck);
-    // Accept either "name" (from signup form) or "fullName" (direct API calls)
-    const fullName = data.fullName || data.name;
-    if (!fullName)
-        throw new Error('Full name is required');
+    const { fullName, name, email, password, phoneNumber } = data;
+    const resolvedName = fullName || name;
+    if (!resolvedName)
+        throw new Error("Full name is required");
+    if (!email || !password)
+        throw new Error("Email and password are required");
+    if (!phoneNumber)
+        throw new Error("Phone number is required");
+    const existingEmail = await prisma.user.findUnique({ where: { email } });
+    if (existingEmail)
+        throw new Error("User already exists with this email");
+    const existingPhone = await prisma.user.findFirst({ where: { phone: phoneNumber } });
+    if (existingPhone)
+        throw new Error("This phone number is already registered to another account");
+    const hashedPassword = await bcrypt_1.default.hash(password, 10);
+    // Create user with isVerified=false — they cannot log in until phone is verified
     const user = await prisma.user.create({
         data: {
-            fullName,
-            email: data.email,
-            phone: (_c = data.phone) !== null && _c !== void 0 ? _c : null,
+            fullName: resolvedName,
+            email,
+            phone: phoneNumber,
             password: hashedPassword,
-            // Public registration is always CUSTOMER.
-            // Admins, Branch Managers, and Delivery Agents
-            // are created by an Admin via the /api/users endpoint.
-            userType: 'CUSTOMER',
+            userType: "CUSTOMER",
+            isVerified: false,
+            status: "PENDING",
         },
     });
-    // After creation, read it back and verify
-    const readBack = await prisma.user.findUnique({ where: { id: user.id } });
-    console.log('📝 Registration - readback password matches stored?', (readBack === null || readBack === void 0 ? void 0 : readBack.password) === hashedPassword);
-    console.log('📝 Registration - readback password (first 20 chars):', (_d = readBack === null || readBack === void 0 ? void 0 : readBack.password) === null || _d === void 0 ? void 0 : _d.substring(0, 20));
-    const { password } = user, userWithoutPassword = __rest(user, ["password"]);
-    return userWithoutPassword;
+    // Generate OTP and store with 60-second expiry
+    const otpCode = generateOTP();
+    const expiresAt = new Date(Date.now() + OTP_TTL_SECONDS * 1000);
+    // Invalidate any previous pending OTPs for this user
+    await prisma.userOTP.updateMany({
+        where: { userId: user.id, purpose: "REGISTRATION", status: "PENDING" },
+        data: { status: "EXPIRED" },
+    });
+    await prisma.userOTP.create({
+        data: {
+            userId: user.id,
+            phone: phoneNumber,
+            otpCode,
+            purpose: "REGISTRATION",
+            expiresAt,
+            status: "PENDING",
+        },
+    });
+    // Send OTP via SMS
+    const message = `Your LAUNDRIX registration code is: ${otpCode}. Valid for 1 minute. Do not share it with anyone.`;
+    smsService_1.SMSService.sendSMS(phoneNumber, message).catch((err) => console.error("[RegisterService] SMS send failed:", err));
+    console.log(`[RegisterService] OTP ${otpCode} sent to ${phoneNumber} (userId: ${user.id})`);
+    const { password: _ } = user, safeUser = __rest(user, ["password"]);
+    return Object.assign({ userId: user.id }, safeUser);
+});
+/**
+ * Step 2 — Verify the OTP submitted by the user.
+ * Activates account if code is correct and not expired.
+ */
+RegisterService.verifyRegistrationOtp = (0, catchServiceAsync_1.catchServiceAsync)(async (data) => {
+    const { phone, otp } = data;
+    if (!phone || !otp)
+        throw new Error("Phone number and OTP are required");
+    // Find the user by phone
+    const user = await prisma.user.findFirst({ where: { phone } });
+    if (!user)
+        throw new Error("No pending registration found for this phone number");
+    if (user.isVerified)
+        throw new Error("This account is already verified. Please sign in.");
+    // Find latest pending OTP
+    const otpRecord = await prisma.userOTP.findFirst({
+        where: {
+            userId: user.id,
+            purpose: "REGISTRATION",
+            status: "PENDING",
+        },
+        orderBy: { createdAt: "desc" },
+    });
+    if (!otpRecord)
+        throw new Error("No verification code found. Please request a new one.");
+    if (new Date() > otpRecord.expiresAt) {
+        await prisma.userOTP.update({
+            where: { id: otpRecord.id },
+            data: { status: "EXPIRED" },
+        });
+        throw new Error("Verification code has expired. Please request a new one.");
+    }
+    if (otpRecord.otpCode !== otp.trim()) {
+        throw new Error("Invalid verification code. Please try again.");
+    }
+    // Mark OTP as verified
+    await prisma.userOTP.update({
+        where: { id: otpRecord.id },
+        data: { status: "VERIFIED", verifiedAt: new Date() },
+    });
+    // Activate user account
+    const verifiedUser = await prisma.user.update({
+        where: { id: user.id },
+        data: { isVerified: true, status: "ACTIVE" },
+    });
+    const { password: _ } = verifiedUser, safeUser = __rest(verifiedUser, ["password"]);
+    return safeUser;
+});
+/**
+ * Step 3 (optional) — Resend OTP for a pending registration.
+ * Invalidates old OTPs and sends a fresh code.
+ */
+RegisterService.resendRegistrationOtp = (0, catchServiceAsync_1.catchServiceAsync)(async (data) => {
+    const { phone } = data;
+    if (!phone)
+        throw new Error("Phone number is required");
+    const user = await prisma.user.findFirst({ where: { phone } });
+    if (!user)
+        throw new Error("No pending registration found for this phone number");
+    if (user.isVerified)
+        throw new Error("This account is already verified. Please sign in.");
+    // Invalidate previous OTPs
+    await prisma.userOTP.updateMany({
+        where: { userId: user.id, purpose: "REGISTRATION", status: "PENDING" },
+        data: { status: "EXPIRED" },
+    });
+    const otpCode = generateOTP();
+    const expiresAt = new Date(Date.now() + OTP_TTL_SECONDS * 1000);
+    await prisma.userOTP.create({
+        data: {
+            userId: user.id,
+            phone,
+            otpCode,
+            purpose: "REGISTRATION",
+            expiresAt,
+            status: "PENDING",
+        },
+    });
+    const message = `Your new LAUNDRIX registration code is: ${otpCode}. Valid for 1 minute. Do not share it with anyone.`;
+    smsService_1.SMSService.sendSMS(phone, message).catch((err) => console.error("[RegisterService] Resend SMS failed:", err));
+    console.log(`[RegisterService] Resent OTP ${otpCode} to ${phone}`);
+    return { phone };
 });
 RegisterService.getMe = (0, catchServiceAsync_1.catchServiceAsync)(async (userId) => {
     const user = await prisma.user.findUnique({
@@ -76,8 +181,8 @@ RegisterService.getMe = (0, catchServiceAsync_1.catchServiceAsync)(async (userId
             status: true,
             isVerified: true,
             createdAt: true,
-            updatedAt: true
-        }
+            updatedAt: true,
+        },
     });
     return user;
 });

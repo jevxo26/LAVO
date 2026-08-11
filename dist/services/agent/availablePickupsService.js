@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getPickupQRCodes = exports.acceptPickup = exports.getAvailablePickups = void 0;
+exports.getPickupQRCodes = exports.declinePickup = exports.acceptPickup = exports.getAvailablePickups = void 0;
 const client_1 = require("@prisma/client");
 const smsService_1 = require("../shared/smsService");
 const socketInstance_1 = require("../../config/socketInstance");
@@ -216,6 +216,27 @@ const acceptPickup = async (userId, deliveryId) => {
     return updatedDelivery;
 };
 exports.acceptPickup = acceptPickup;
+const declinePickup = async (userId, deliveryId) => {
+    const agent = await prisma.deliveryAgent.findUnique({ where: { userId } });
+    if (!agent)
+        throw new Error("Delivery agent not found");
+    const delivery = await prisma.delivery.findUnique({ where: { id: deliveryId } });
+    if (!delivery)
+        throw new Error("Delivery not found");
+    // Only allow the agent to decline if it's unassigned or assigned to themselves
+    if (delivery.assignedAgentId && delivery.assignedAgentId !== agent.id) {
+        throw new Error("This pickup is assigned to another agent.");
+    }
+    // Reset to unassigned PENDING so it reappears for others
+    return prisma.delivery.update({
+        where: { id: deliveryId },
+        data: {
+            assignedAgentId: null,
+            deliveryStatus: "PENDING",
+        },
+    });
+};
+exports.declinePickup = declinePickup;
 const getPickupQRCodes = async (userId, deliveryId) => {
     const agent = await prisma.deliveryAgent.findUnique({
         where: { userId },

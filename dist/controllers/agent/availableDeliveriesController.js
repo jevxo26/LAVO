@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.acceptDelivery = exports.getAvailableDeliveries = void 0;
+exports.declineDelivery = exports.acceptDelivery = exports.getAvailableDeliveries = void 0;
 const catchAsync_1 = require("../../utils/catchAsync");
 const sendResponse_1 = require("../../utils/sendResponse");
 const availableDeliveriesService = __importStar(require("../../services/agent/availableDeliveriesService"));
@@ -56,6 +56,17 @@ exports.acceptDelivery = (0, catchAsync_1.catchAsync)(async (req, res) => {
         statusCode: 200,
         success: true,
         message: "Delivery accepted successfully",
+        data: result,
+    });
+});
+exports.declineDelivery = (0, catchAsync_1.catchAsync)(async (req, res) => {
+    const userId = req.user.userId;
+    const deliveryId = req.params.deliveryId;
+    const result = await availableDeliveriesService.declineDelivery(userId, deliveryId);
+    (0, sendResponse_1.sendResponse)(res, {
+        statusCode: 200,
+        success: true,
+        message: "Delivery declined successfully",
         data: result,
     });
 });

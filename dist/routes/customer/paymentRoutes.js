@@ -8,11 +8,12 @@ const paymentController_1 = require("../../controllers/customer/paymentControlle
 const paymentCallbackController_1 = require("../../controllers/customer/paymentCallbackController");
 const authMiddleware_1 = require("../../middlewares/authMiddleware");
 const router = express_1.default.Router();
-// Public callback hooks from SSLCommerz & simulated gateway (supports POST and GET)
+// SSLCommerz public callback endpoints (POST and GET supported)
 router.all("/sslcommerz/success", paymentCallbackController_1.PaymentCallbackController.handleSuccess);
 router.all("/sslcommerz/fail", paymentCallbackController_1.PaymentCallbackController.handleFail);
 router.all("/sslcommerz/cancel", paymentCallbackController_1.PaymentCallbackController.handleCancel);
-// Protected endpoints for client initiation & verification
+router.all("/sslcommerz/ipn", paymentController_1.PaymentController.handleIPN);
+// Protected endpoints for client initiation
 router.post("/sslcommerz/initiate", authMiddleware_1.requireAuth, paymentController_1.PaymentController.initiateOrderPayment);
 router.post("/verify-order-payment", authMiddleware_1.requireAuth, paymentController_1.PaymentController.verifyOrderPayment);
 exports.default = router;

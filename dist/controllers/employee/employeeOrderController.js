@@ -43,7 +43,7 @@ exports.getPickupOrders = (0, catchServiceAsync_1.catchServiceAsync)(async (req,
             },
             branch: true
         },
-        orderBy: { createdAt: 'asc' }
+        orderBy: { createdAt: 'desc' }
     });
     const formatted = orders.map((order) => {
         var _a, _b, _c, _d, _e, _f, _g, _h, _j;
@@ -76,7 +76,7 @@ exports.getOrderQrCodes = (0, catchServiceAsync_1.catchServiceAsync)(async (req,
         where: { orderItem: { orderId } },
         include: {
             qrCodeRecord: true,
-            orderItem: { include: { garmentType: true } }
+            orderItem: { include: { garmentType: true, service: true } }
         }
     });
     // Auto-create garment item records if they don't exist yet
@@ -103,7 +103,7 @@ exports.getOrderQrCodes = (0, catchServiceAsync_1.catchServiceAsync)(async (req,
                 where: { orderItem: { orderId } },
                 include: {
                     qrCodeRecord: true,
-                    orderItem: { include: { garmentType: true } }
+                    orderItem: { include: { garmentType: true, service: true } }
                 }
             });
         }

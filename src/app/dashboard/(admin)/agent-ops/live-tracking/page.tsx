@@ -197,7 +197,7 @@ export default function AgentLiveTrackingPage() {
       }
     });
 
-  const hasFilters = search.trim() || activeTab !== "ALL";
+  const hasFilters = Boolean(search.trim()) || activeTab !== "ALL";
 
   return (
     <div className="space-y-5">
