@@ -28,29 +28,29 @@ function getInvoiceBodyHtml(order: OrderRecord, customerName?: string, customerP
           
           <!-- Logo & Brand -->
           <div style="display: flex; align-items: center; gap: 14px;">
-            <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #0284c7, #2563eb); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 6px 16px rgba(37, 99, 235, 0.25);">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <div style="width: 44px; height: 44px; background: linear-gradient(135deg, #0284c7, #2563eb); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.47a1 1 0 00.99.84H6v10a2 2 0 002 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.47a2 2 0 00-1.34-2.23z"/>
               </svg>
             </div>
             <div>
               <div style="font-size: 24px; font-weight: 900; color: #0f172a; letter-spacing: -0.5px; line-height: 1.1;">Laundrix</div>
-              <div style="font-size: 10px; color: #0284c7; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-top: 3px;">Premium Garment Care</div>
+              <div style="font-size: 10px; color: #0284c7; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-top: 3px;">Premium Laundry & Dry Cleaning</div>
             </div>
           </div>
 
-          <!-- Invoice Title & Status Badge -->
+          <!-- Invoice Title & Clean Payment Badge -->
           <div style="text-align: right;">
             <div style="font-size: 22px; font-weight: 900; color: #1e293b; letter-spacing: 0.5px;">INVOICE</div>
             <div style="font-size: 13px; font-weight: 700; color: #64748b; margin-top: 2px;">#${order.orderNumber}</div>
             <div style="margin-top: 8px; display: flex; justify-content: flex-end;">
-              <span style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 14px; border-radius: 20px; font-size: 11px; font-weight: 800; letter-spacing: 0.5px; ${
+              <span style="display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; ${
                 isPaid
                   ? 'background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0;'
                   : 'background: #fff1f2; color: #be123c; border: 1px solid #fecdd3;'
               }">
-                <span style="width: 7px; height: 7px; border-radius: 50%; ${isPaid ? 'background: #10b981;' : 'background: #f43f5e;'}"></span>
-                ${isPaid ? 'PAYMENT PAID' : 'PAYMENT UNPAID'}
+                <span style="width: 6px; height: 6px; border-radius: 50%; ${isPaid ? 'background: #10b981;' : 'background: #f43f5e;'}"></span>
+                ${isPaid ? 'Paid' : 'Unpaid'}
               </span>
             </div>
           </div>
