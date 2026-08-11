@@ -1,6 +1,9 @@
-import { Receipt } from "lucide-react";
+import { Receipt, Download } from "lucide-react";
 import { OrderRecord } from "./types";
 import { OrderPaymentBadge } from "./Badges";
+import { downloadInvoice } from "@/lib/generateInvoiceHtml";
+import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
 
 interface InvoiceSummaryProps {
   order: OrderRecord;
@@ -24,18 +27,22 @@ function Line({ label, value, bold, accent, faint }: LineProps) {
 }
 
 export function InvoiceSummary({ order }: InvoiceSummaryProps) {
+  const { user } = useAuth();
+
   return (
     <div className="space-y-3">
       {/* Header */}
-      <div className="flex items-center gap-2">
-        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50">
-          <Receipt size={14} className="text-indigo-500" />
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50">
+            <Receipt size={14} className="text-indigo-500" />
+          </div>
+          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">Payment Invoice</h4>
         </div>
-        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">Payment Invoice</h4>
       </div>
 
       {/* Invoice box */}
-      <div className="rounded-xl border border-slate-100 bg-white p-4 text-xs space-y-2.5">
+      <div className="rounded-xl border border-slate-100 bg-white p-4 text-xs space-y-2.5 shadow-sm">
         <Line label="Subtotal"           value={`৳${order.subtotal.toFixed(2)}`} />
 
         {order.discount > 0 && (
@@ -61,6 +68,18 @@ export function InvoiceSummary({ order }: InvoiceSummaryProps) {
         <div className="flex items-center justify-between border-t border-slate-100 pt-2.5">
           <span className="font-semibold text-slate-600">Payment Status</span>
           <OrderPaymentBadge status={order.paymentStatus} />
+        </div>
+
+        {/* Download Invoice Button */}
+        <div className="border-t border-slate-100 pt-3">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => downloadInvoice(order, user?.fullName, user?.phone, user?.email)}
+            className="w-full h-9 rounded-xl border-blue-200 bg-blue-50/60 hover:bg-blue-100 text-blue-700 text-xs font-bold gap-2 shadow-xs transition-all"
+          >
+            <Download size={14} /> Download Tax Invoice (PDF)
+          </Button>
         </div>
       </div>
     </div>
