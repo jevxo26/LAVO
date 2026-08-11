@@ -20,31 +20,31 @@ function getInvoiceBodyHtml(order: OrderRecord, customerName?: string, customerP
   const isPaid = order.paymentStatus.toUpperCase() === "PAID";
 
   return `
-    <div style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif; color: #0f172a; background-color: #ffffff; padding: 24px; line-height: 1.5; box-sizing: border-box; width: 750px; margin: 0 auto;">
-      <div style="border: 1px solid #e2e8f0; border-radius: 24px; padding: 36px; background: #ffffff; box-shadow: 0 4px 24px rgba(0,0,0,0.03);">
+    <div style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif; color: #0f172a; background-color: #ffffff; padding: 16px; line-height: 1.4; box-sizing: border-box; width: 750px; margin: 0 auto;">
+      <div style="border: 1px solid #e2e8f0; border-radius: 20px; padding: 22px 28px; background: #ffffff; box-shadow: 0 4px 20px rgba(0,0,0,0.02);">
         
         <!-- Header -->
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px dashed #e2e8f0; padding-bottom: 24px; margin-bottom: 28px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px dashed #e2e8f0; padding-bottom: 16px; margin-bottom: 20px;">
           
           <!-- Logo & Brand -->
-          <div style="display: flex; align-items: center; gap: 14px;">
-            <div style="width: 44px; height: 44px; background: linear-gradient(135deg, #0284c7, #2563eb); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #0284c7, #2563eb); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.47a1 1 0 00.99.84H6v10a2 2 0 002 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.47a2 2 0 00-1.34-2.23z"/>
               </svg>
             </div>
             <div>
-              <div style="font-size: 24px; font-weight: 900; color: #0f172a; letter-spacing: -0.5px; line-height: 1.1;">Laundrix</div>
-              <div style="font-size: 10px; color: #0284c7; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-top: 3px;">Premium Laundry & Dry Cleaning</div>
+              <div style="font-size: 22px; font-weight: 900; color: #0f172a; letter-spacing: -0.5px; line-height: 1.1;">Laundrix</div>
+              <div style="font-size: 9.5px; color: #0284c7; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; margin-top: 2px;">Premium Laundry & Dry Cleaning</div>
             </div>
           </div>
 
           <!-- Invoice Title & Clean Payment Badge -->
           <div style="text-align: right;">
-            <div style="font-size: 22px; font-weight: 900; color: #1e293b; letter-spacing: 0.5px;">INVOICE</div>
-            <div style="font-size: 13px; font-weight: 700; color: #64748b; margin-top: 2px;">#${order.orderNumber}</div>
-            <div style="margin-top: 6px; text-align: right;">
-              <span style="display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; ${
+            <div style="font-size: 20px; font-weight: 900; color: #1e293b; letter-spacing: 0.5px; line-height: 1.1;">INVOICE</div>
+            <div style="font-size: 12px; font-weight: 700; color: #64748b; margin-top: 1px;">#${order.orderNumber}</div>
+            <div style="margin-top: 4px; text-align: right;">
+              <span style="display: inline-block; padding: 2px 10px; border-radius: 16px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; ${
                 isPaid
                   ? 'background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0;'
                   : 'background: #ffe4e6; color: #be123c; border: 1px solid #fecdd3;'
