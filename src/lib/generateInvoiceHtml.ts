@@ -43,14 +43,13 @@ function getInvoiceBodyHtml(order: OrderRecord, customerName?: string, customerP
           <div style="text-align: right;">
             <div style="font-size: 22px; font-weight: 900; color: #1e293b; letter-spacing: 0.5px;">INVOICE</div>
             <div style="font-size: 13px; font-weight: 700; color: #64748b; margin-top: 2px;">#${order.orderNumber}</div>
-            <div style="margin-top: 8px; text-align: right;">
-              <span style="display: inline-block; padding: 5px 14px; border-radius: 20px; font-size: 11px; font-weight: 700; line-height: 1.2; text-align: center; ${
+            <div style="margin-top: 6px; text-align: right;">
+              <span style="display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; ${
                 isPaid
-                  ? 'background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0;'
-                  : 'background: #fff1f2; color: #be123c; border: 1px solid #fecdd3;'
+                  ? 'background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0;'
+                  : 'background: #ffe4e6; color: #be123c; border: 1px solid #fecdd3;'
               }">
-                <span style="color: ${isPaid ? '#10b981' : '#f43f5e'}; font-size: 12px; margin-right: 5px; vertical-align: middle;">&#9679;</span>
-                <span style="vertical-align: middle;">${isPaid ? 'Paid' : 'Unpaid'}</span>
+                ${isPaid ? 'PAID' : 'UNPAID'}
               </span>
             </div>
           </div>
