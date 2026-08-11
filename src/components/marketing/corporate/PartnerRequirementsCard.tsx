@@ -1,3 +1,6 @@
+"use client";
+
+import { motion } from "framer-motion";
 import { CheckCircle2 } from "lucide-react";
 
 const PartnerRequirementsCard = () => {
@@ -16,7 +19,16 @@ const PartnerRequirementsCard = () => {
         <div>
             {/* partner requirement */}
             <section className="py-16">
-                <div className="max-w-7xl mx-auto px-4">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.2 }}
+                    transition={{
+                        duration: 0.8,
+                        ease: [0.22, 1, 0.36, 1],
+                    }}
+                    className="rounded-3xl bg-white border p-8"
+                >
                     <div className="rounded-3xl bg-white border p-8">
                         <h2 className="text-3xl font-bold">
                             Partner Requirements
@@ -41,7 +53,7 @@ const PartnerRequirementsCard = () => {
                             </div>
                         </div>
                     </div>
-                </div>
+                </motion.div>
             </section>
         </div>
     )

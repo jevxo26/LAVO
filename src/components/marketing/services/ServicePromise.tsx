@@ -47,8 +47,8 @@ export function ServicePromise({ data }: { data?: any }) {
     : defaultPromises.map((p, i) => ({ ...p, id: i }));
 
   return (
-    <section className="w-full py-12 md:py-16 lg:py-20 bg-background border-t border-border">
-      <div className="max-w-7xl mx-auto px-4 md:px-6">
+    <section className="w-full pt-12 md:pt-16 lg:pt-20 pb-8 md:pb-10 lg:pb-12 bg-background border-t border-border">
+      <div className="max-w-[1380px] mx-auto px-4 md:px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}

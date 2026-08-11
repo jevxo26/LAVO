@@ -67,7 +67,7 @@ export function HomeMobileApp({ data }: { data?: any }) {
         <div className="absolute -left-40 top-0 h-96 w-96 rounded-full bg-primary/10 blur-[130px]" />
         <div className="absolute right-0 bottom-0 h-[30rem] w-[30rem] rounded-full bg-secondary/10 blur-[150px]" />
       </div>
-      <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-6">
+      <div className="relative z-10 max-w-[1380px] mx-auto px-4 md:px-6">
         <div className="flex flex-col lg:flex-row items-center justify-between gap-16">
           <motion.div
             initial={{ opacity: 0, x: -30 }}

@@ -1,6 +1,5 @@
 "use client";
 
-import { RefreshCw, Shield, Shirt, Sparkles, Zap, ZapIcon } from "lucide-react";
 import { ServiceCard } from "./ServiceCard";
 import { motion } from "framer-motion";
 import { serviceDetails } from "@/data/servicesDetails";
@@ -33,50 +32,42 @@ export function ServicesGrid({ data }: { data?: any }) {
       time: service.turnaround,
     };
   });
-
   const displayServices =
     (data?.items?.length ?? 0) > 0
       ? data.items.map((item: any) => {
-        // console.log(data.items);
         const slug =
           item.link?.replace(/^\/services\//, "") ||
           item.title?.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 
         const service = services.find((s) => s.id === slug);
 
-        // console.log(slug, service, "-> grid");
-        // console.log(Object.keys(serviceDetails));
         return {
           ...service,
+
+          // CMS data
           id: slug,
           title: item.title || service?.title,
-          description:
-            item.content || service?.description,
-          imageUrl:
-            service?.imageUrl ||
-            item.image,
-          price:
-            service?.price || "",
+          imageUrl: item.image || service?.imageUrl,
 
-          unit:
-            service?.unit || "",
-
-          time:
-            service?.time || "",
+          // Frontend service details
+          description: service?.description || item.content,
+          price: service?.price || "",
+          unit: service?.unit || "",
+          time: service?.time || "",
         };
       })
       : services;
-  // console.log(displayServices);
+  console.log(displayServices);
 
   return (
     <section className="w-full py-12 md:py-16 lg:py-20 bg-surface-light">
-      <div className="max-w-7xl mx-auto px-4 md:px-6">
+      <div className="max-w-[1380px] mx-auto px-4 md:px-6">
         <motion.div
           variants={container}
           initial="hidden"
           whileInView="show"
           viewport={{ once: true, margin: "-100px" }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-8"
         >
           {displayServices.map((service: any) => (
             <motion.div key={service.id} variants={itemAnim}>

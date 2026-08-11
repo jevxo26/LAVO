@@ -5,6 +5,7 @@ import MapWrapper from "@/components/marketing/coverage/MapWrapper";
 import { MapPin } from "lucide-react";
 import { PageHero } from "@/components/shared/PageHero";
 import prisma from "@/lib/prisma";
+import AnimatedCityGrid from "@/components/marketing/coverage/AnimatedCityGrid";
 
 export const revalidate = 0;
 
@@ -94,8 +95,8 @@ export default async function CoveragePage() {
         </div>
 
         {/* Cities Grid Section */}
-        <section className="w-full py-16 bg-transparent">
-          <div className="max-w-7xl mx-auto px-4 md:px-6">
+        <section className="w-full pt-16 pb-8 md:pb-10 lg:pb-12 bg-transparent">
+          <div className="max-w-[1380px] mx-auto px-4 md:px-6">
             
             <div className="text-center mb-10">
               <h2 className="text-xl md:text-2xl font-bold text-slate-900 mb-2">{citiesSection?.title || "Coverage by Area"}</h2>
@@ -104,13 +105,14 @@ export default async function CoveragePage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {/* <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {displayCities.map((item, idx) => (
                 <div key={idx} className="animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-both" style={{ animationDelay: `${idx * 50}ms` }}>
                   <CityCard city={item.city} isAvailable={item.isAvailable} />
                 </div>
               ))}
-            </div>
+            </div> */}
+            <AnimatedCityGrid cities={displayCities} />
           </div>
         </section>
       </div>

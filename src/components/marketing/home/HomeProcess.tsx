@@ -49,7 +49,7 @@ export function HomeProcess({ data }: { data?: any }) {
 
   return (
     <section className="bg-card py-12 md:py-16 lg:py-20 border-t border-border">
-      <div className="max-w-7xl mx-auto px-4 md:px-6">
+      <div className="max-w-[1380px] mx-auto px-4 md:px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}

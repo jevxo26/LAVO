@@ -16,7 +16,7 @@ export function HomeCTA({ data }: { data?: any }) {
         <div className="absolute right-0 bottom-0 h-[30rem] w-[30rem] rounded-full bg-secondary/15 blur-[150px]" />
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-6 text-center">
+      <div className="relative z-10 max-w-[1380px] mx-auto px-4 md:px-6 text-center">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}

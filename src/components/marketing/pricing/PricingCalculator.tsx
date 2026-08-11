@@ -326,10 +326,10 @@ export function PricingCalculator({ data }: { data?: any }) {
   };
 
   return (
-    <section className="w-full pb-16 bg-transparent">
-      <div className="max-w-7xl mx-auto px-4 md:px-6">
+    <section className="w-full bg-transparent max-w-[1380px] mx-auto px-4 md:px-6">
+      <div>
         {/* Calculator Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mb-20">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mb-10">
           {/* Left Side: Form */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -693,15 +693,16 @@ export function PricingCalculator({ data }: { data?: any }) {
             </button>
           </motion.div>
         </div>
-
+      </div>
         {/* Add-ons Section */}
+      <div className="pb-8 md:pb-10 lg:pb-12">
         <div className="mt-16 border-t border-slate-100 pt-16">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.5 }}
-            className="flex flex-col items-center text-center mb-10"
+            className="flex flex-col items-center text-center pb-8 md:pb-10 lg:pb-12"
           >
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-card px-4 py-2 shadow-sm">
               <Calculator className="h-4 w-4 text-primary" />

@@ -40,7 +40,7 @@ export function HomeWhyLaundrix({ data }: { data?: any }) {
 
   return (
     <section className="bg-background py-12 md:py-16 lg:py-20">
-      <div className="max-w-7xl mx-auto px-4 md:px-6">
+      <div className="max-w-[1380px] mx-auto px-4 md:px-6">
         <div className="flex flex-col items-center gap-12 lg:flex-row lg:gap-20">
 
           {/* Left Content */}

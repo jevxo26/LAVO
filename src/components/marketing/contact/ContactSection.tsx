@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import dynamic from "next/dynamic";
+import { motion } from "framer-motion";
+
 import {
     Phone,
     Mail,
@@ -11,15 +13,15 @@ import {
 } from "lucide-react";
 
 const ContactMap = dynamic(
-  () => import("@/components/marketing/contact/ContactMap"),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="w-full h-full bg-slate-100 animate-pulse flex items-center justify-center">
-        Loading map...
-      </div>
-    ),
-  }
+    () => import("@/components/marketing/contact/ContactMap"),
+    {
+        ssr: false,
+        loading: () => (
+            <div className="w-full h-full bg-slate-100 animate-pulse flex items-center justify-center">
+                Loading map...
+            </div>
+        ),
+    }
 );
 
 const contacts = [
@@ -53,13 +55,21 @@ export default function ContactSection() {
     const [showMap, setShowMap] = useState(false);
 
     return (
-        <section className="py-20 bg-slate-50">
-            <div className="max-w-7xl mx-auto px-4 md:px-6">
+        <section className="pt-20 pb-8 md:pb-10 lg:pb-12 bg-slate-50">
+            <div className="max-w-[1380px] mx-auto px-4 md:px-6">
 
                 <div className="grid lg:grid-cols-2 gap-10 items-start">
-
                     {/* Left */}
-                    <div className="bg-white rounded-3xl border border-slate-200 p-8">
+                    <motion.div
+                        initial={{ opacity: 0, x: -60 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true, amount: 0.2 }}
+                        transition={{
+                            duration: 0.8,
+                            ease: [0.22, 1, 0.36, 1],
+                        }}
+                        className="bg-white rounded-3xl border border-slate-200 p-8"
+                    >
 
                         <h2 className="text-4xl font-bold text-slate-900 mb-8">
                             Send a Message
@@ -124,10 +134,19 @@ export default function ContactSection() {
                             </button>
 
                         </form>
-                    </div>
+                    </motion.div>
 
                     {/* Right */}
-                    <div className="space-y-5">
+                    <motion.div
+                        initial={{ opacity: 0, x: 60 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true, amount: 0.2 }}
+                        transition={{
+                            duration: 0.8,
+                            ease: [0.22, 1, 0.36, 1],
+                        }}
+                        className="space-y-5"
+                    >
 
                         {contacts.map((item) => {
                             const Icon = item.icon;
@@ -187,9 +206,7 @@ export default function ContactSection() {
                             )}
 
                         </div>
-
-                    </div>
-
+                    </motion.div>
                 </div>
 
             </div>

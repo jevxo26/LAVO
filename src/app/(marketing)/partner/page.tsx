@@ -5,6 +5,7 @@ import { LocationCard } from "@/components/marketing/corporate/LocationCard";
 import prisma from "@/lib/prisma";
 import PartnerRequirementsCard from "@/components/marketing/corporate/PartnerRequirementsCard";
 import PartnerApplicationForm from "@/components/marketing/corporate/PartnerApplicationForm";
+import PartnerVendors from "@/components/marketing/corporate/PartnerVendors";
 
 
 export const revalidate = 0;
@@ -103,25 +104,7 @@ export default async function PartnerPage() {
       <div className="flex-1 flex flex-col">
         <PageHero data={heroSection} />
 
-        {/* Vendors Grid Section */}
-        <section className="w-full py-12 md:py-16 lg:py-20 bg-surface-light">
-          <div className="max-w-7xl mx-auto px-4 md:px-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {displayVendors.map((vendor, idx) => (
-                <div key={idx} className="animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-both" style={{ animationDelay: `${idx * 100}ms` }}>
-                  <LocationCard
-                    name={vendor.name}
-                    city={vendor.city}
-                    address={vendor.address || ""}
-                    phone={vendor.phone}
-                    hours={vendor.hours}
-                    isVendor={true}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
+         <PartnerVendors vendors={displayVendors} />
       </div>
 
       <PartnerRequirementsCard />

@@ -138,6 +138,7 @@ export function SignUpForm() {
             {...register("confirmPassword")}
             aria-invalid={!!errors.confirmPassword}
           />
+
           <button
             type="button"
             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
@@ -155,6 +156,23 @@ export function SignUpForm() {
         )}
       </div>
 
+      {/* Terms & Conditions */}
+      <div className="flex items-center gap-2 text-left">
+        <input
+          id="terms"
+          type="checkbox"
+          required
+          className="h-4 w-4 cursor-pointer rounded border-slate-300 accent-primary"
+        />
+
+        <label
+          htmlFor="terms"
+          className="cursor-pointer text-sm text-slate-500"
+        >
+          I agree to the <span className="text-primary">Terms</span> & <span className="text-primary">Conditions</span> 
+        </label>
+      </div>
+
       <Button type="submit" className="w-full" disabled={isSubmitting}>
         {isSubmitting ? (
           "Sending verification code..."
@@ -165,14 +183,14 @@ export function SignUpForm() {
         )}
       </Button>
 
-      <div className="relative mb-2">
+      {/* <div className="relative mb-2">
         <div className="absolute inset-0 flex items-center">
           <span className="w-full border-t border-slate-200" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
           <span className="bg-white/80 px-2 text-slate-500 rounded-full">Or continue with</span>
         </div>
-      </div>
+      </div> */}
 
       <SocialLogin />
     </form>
