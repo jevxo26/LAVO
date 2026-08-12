@@ -155,23 +155,14 @@ export default function VendorEmployeesPage() {
         ] : []}
       />
 
-      {/* ── 2. Stat Cards + Add Button ───────────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row sm:items-end gap-4">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 flex-1">
-          <OverviewStatCard label="Total Members" sub="All team members"   value={employees.length} icon={Users} gradient="from-indigo-500 to-violet-600"  />
-          <OverviewStatCard label="Active"        sub="Currently working"  value={active}           icon={Users} gradient="from-emerald-500 to-teal-600"    />
-          <OverviewStatCard label="Inactive"      sub="On leave or paused" value={inactive}         icon={Users} gradient="from-slate-400 to-slate-600"     />
-        </div>
-        <Button
-          onClick={openCreate}
-          className="h-11 px-5 rounded-2xl text-white font-black text-xs gap-2 shadow-sm shrink-0 transition-all hover:scale-[1.02]"
-          style={{ background: "linear-gradient(135deg, var(--primary), var(--ring))" }}
-        >
-          <Plus size={15} /> Add Employee
-        </Button>
+      {/* ── 2. Stat Cards ────────────────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <OverviewStatCard label="Total Members" sub="All team members"   value={employees.length} icon={Users} gradient="from-indigo-500 to-violet-600"  />
+        <OverviewStatCard label="Active"        sub="Currently working"  value={active}           icon={Users} gradient="from-emerald-500 to-teal-600"    />
+        <OverviewStatCard label="Inactive"      sub="On leave or paused" value={inactive}         icon={Users} gradient="from-slate-400 to-slate-600"     />
       </div>
 
-      {/* ── 3. Search ────────────────────────────────────────────────────────── */}
+      {/* ── 3. Search + Add ──────────────────────────────────────────────────── */}
       <div className="flex items-center gap-3 rounded-3xl border border-border bg-card px-5 py-4 shadow-sm">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3.5 top-3 text-muted-foreground" size={14} />
@@ -193,6 +184,13 @@ export default function VendorEmployeesPage() {
             <RotateCcw size={12} /> Clear
           </Button>
         )}
+        <Button
+          onClick={openCreate}
+          className="h-10 px-5 rounded-2xl text-white font-black text-xs gap-1.5 shadow-sm shrink-0 transition-all hover:scale-[1.02] ml-auto"
+          style={{ background: "linear-gradient(135deg, var(--primary), var(--ring))" }}
+        >
+          <Plus size={14} /> Add Employee
+        </Button>
       </div>
 
       {/* ── 4. Content ───────────────────────────────────────────────────────── */}
