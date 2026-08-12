@@ -12,7 +12,7 @@ import { AgentQuickActions }  from "./AgentQuickActions";
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 
 function Sk({ className }: { className?: string }) {
-  return <div className={`animate-pulse rounded-2xl bg-slate-100 ${className ?? ""}`} />;
+  return <div className={`animate-pulse rounded-2xl bg-muted ${className ?? ""}`} />;
 }
 
 function PageSkeleton() {
@@ -85,12 +85,13 @@ export function AgentOverview() {
             assignedRoutes={0}
             totalDeliveries={0}
           />
-          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white py-24 text-center shadow-sm">
-            <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-indigo-50">
-              <Truck size={38} className="text-indigo-300" />
+          <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-border bg-card py-24 text-center">
+            <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-primary/10"
+              style={{ color: "var(--primary)" }}>
+              <Truck size={38} />
             </div>
-            <p className="text-base font-bold text-slate-800">No tasks assigned yet</p>
-            <p className="mt-2 max-w-xs text-sm text-slate-400">
+            <p className="text-base font-black text-card-foreground">No tasks assigned yet</p>
+            <p className="mt-2 max-w-xs text-sm text-muted-foreground font-medium">
               Once an administrator assigns pickups or deliveries, your dashboard will update automatically.
             </p>
           </div>
