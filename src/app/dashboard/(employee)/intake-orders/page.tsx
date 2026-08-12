@@ -1,121 +1,15 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import {
-  Package, QrCode, Printer, CheckCircle2,
-  Loader2, RefreshCw, Sparkles, Search,
-  RotateCcw, Shirt, Inbox, Tag, ClipboardList,
-  Filter,
-} from "lucide-react";
+import { QrCode, Search, RotateCcw, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-
-type FilterTab = "pending" | "in_progress" | "all";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-interface Order {
-  id: string; orderNumber: string; orderStatus: string;
-  customerName: string; customerPhone: string; branch: string;
-  totalGarments: number; qrGenerated: number; allQrDone: boolean;
-  createdAt: string;
-}
-
-interface GarmentItem {
-  id: string; garmentName: string; garmentCode: string; status: string;
-  qrCodeRecord: { qrCode: string } | null;
-  orderItem: {
-    garmentType?: { name: string } | null;
-    service?: { serviceName: string; category?: string } | null;
-  } | null;
-}
-
-// ─── Status pill ──────────────────────────────────────────────────────────────
-
-const STATUS_META: Record<string, { cls: string; dot: string }> = {
-  PICKUP:     { cls: "bg-blue-50    text-blue-700    border-blue-200",    dot: "bg-blue-500"    },
-  CONFIRMED:  { cls: "bg-sky-50     text-sky-700     border-sky-200",     dot: "bg-sky-500"     },
-  PROCESSING: { cls: "bg-amber-50   text-amber-700   border-amber-200",   dot: "bg-amber-400"   },
-  WASHING:    { cls: "bg-cyan-50    text-cyan-700    border-cyan-200",    dot: "bg-cyan-500"    },
-  DRYING:     { cls: "bg-orange-50  text-orange-700  border-orange-200",  dot: "bg-orange-400"  },
-  IRONING:    { cls: "bg-violet-50  text-violet-700  border-violet-200",  dot: "bg-violet-500"  },
-  FOLDING:    { cls: "bg-pink-50    text-pink-700    border-pink-200",    dot: "bg-pink-400"    },
-};
-
-function StatusPill({ status }: { status: string }) {
-  const s = STATUS_META[status?.toUpperCase()] ?? { cls: "bg-slate-50 text-slate-600 border-slate-200", dot: "bg-slate-400" };
-  return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-bold ${s.cls}`}>
-      <span className={`h-1.5 w-1.5 rounded-full ${s.dot}`} />
-      {status.replace(/_/g, " ")}
-    </span>
-  );
-}
-
-// ─── Skeleton ─────────────────────────────────────────────────────────────────
-
-function Sk({ className }: { className?: string }) {
-  return <div className={`animate-pulse rounded-xl bg-slate-100 ${className ?? ""}`} />;
-}
-
-function OrderCardSkeleton() {
-  return (
-    <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm space-y-3">
-      <div className="flex items-start justify-between gap-3">
-        <div className="space-y-2 flex-1">
-          <div className="flex items-center gap-2">
-            <Sk className="h-4 w-24" />
-            <Sk className="h-4 w-16" />
-          </div>
-          <Sk className="h-3 w-40" />
-        </div>
-        <div className="text-right space-y-1">
-          <Sk className="h-3 w-16" />
-          <Sk className="h-4 w-10" />
-        </div>
-      </div>
-      <Sk className="h-1.5 w-full" />
-      <div className="flex gap-4">
-        <Sk className="h-3 w-20" />
-        <Sk className="h-3 w-16" />
-      </div>
-    </div>
-  );
-}
-
-function GarmentPanelSkeleton() {
-  return (
-    <div className="rounded-2xl border border-slate-100 bg-white shadow-sm overflow-hidden">
-      {/* Header skeleton */}
-      <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-2">
-            <Sk className="h-4 w-28" />
-            <Sk className="h-4 w-16" />
-          </div>
-          <Sk className="h-3 w-40" />
-        </div>
-        <div className="flex gap-2">
-          <Sk className="h-8 w-24 rounded-xl" />
-          <Sk className="h-8 w-20 rounded-xl" />
-        </div>
-      </div>
-      {/* Garment rows skeleton */}
-      <div className="divide-y divide-slate-50">
-        {[0, 1, 2, 3].map((i) => (
-          <div key={i} className="flex items-center gap-3 px-5 py-3.5">
-            <Sk className="h-9 w-9 rounded-xl shrink-0" />
-            <div className="flex-1 space-y-1.5">
-              <Sk className="h-3.5 w-32" />
-              <Sk className="h-2.5 w-20" />
-            </div>
-            <Sk className="h-7 w-20 rounded-lg shrink-0" />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+import { motion } from "framer-motion";
+import { DashboardPageHero } from "@/components/shared/DashboardPageHero";
+import { OrderList }   from "./_components/OrderList";
+import { GarmentPanel } from "./_components/GarmentPanel";
+import type { Order, FilterTab } from "./_components/OrderList";
+import type { GarmentItem }      from "./_components/GarmentPanel";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -124,14 +18,16 @@ function getToken() { return localStorage.getItem("laundrix_token") ?? ""; }
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function EmployeeOrdersPage() {
-  const [orders, setOrders]               = useState<Order[]>([]);
-  const [loading, setLoading]             = useState(true);
-  const [search, setSearch]               = useState("");
-  const [activeTab, setActiveTab]         = useState<FilterTab>("pending");
+  const [orders, setOrders]             = useState<Order[]>([]);
+  const [loading, setLoading]           = useState(true);
+  const [search, setSearch]             = useState("");
+  const [activeTab, setActiveTab]       = useState<FilterTab>("pending");
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [garments, setGarments]           = useState<GarmentItem[]>([]);
+  const [garments, setGarments]         = useState<GarmentItem[]>([]);
   const [garmentLoading, setGarmentLoading] = useState(false);
   const [generatingAll, setGeneratingAll] = useState(false);
+
+  // ── Data ──────────────────────────────────────────────────────────────────
 
   const fetchGarments = useCallback(async (orderId: string) => {
     setGarmentLoading(true);
@@ -155,30 +51,23 @@ export default function EmployeeOrdersPage() {
       if (res.ok) {
         const data: Order[] = json.data ?? [];
         setOrders(data);
-        // Auto-select the first order so the right panel is never empty
-        if (data.length > 0) {
-          setSelectedOrder(data[0]);
-          fetchGarments(data[0].id);
-        } else {
-          setSelectedOrder(null);
-          setGarments([]);
-        }
-      } else {
-        toast.error(json.message || "Failed to load orders");
-      }
+        if (data.length > 0) { setSelectedOrder(data[0]); fetchGarments(data[0].id); }
+        else { setSelectedOrder(null); setGarments([]); }
+      } else { toast.error(json.message || "Failed to load orders"); }
     } catch { toast.error("Network error"); }
     finally { setLoading(false); }
   }, [fetchGarments]);
 
   useEffect(() => { fetchOrders(); }, [fetchOrders]);
 
-  const openOrder = (order: Order) => {
-    setSelectedOrder(order);
-    setGarments([]);
+  // ── Actions ───────────────────────────────────────────────────────────────
+
+  const handleSelectOrder = (order: Order) => {
+    setSelectedOrder(order); setGarments([]);
     fetchGarments(order.id);
   };
 
-  const generateSingle = async (garmentItemId: string) => {
+  const handleGenerateSingle = async (garmentItemId: string) => {
     const res = await fetch(`/api/employee/garment-items/${garmentItemId}/generate-qr`, {
       method: "POST", headers: { Authorization: `Bearer ${getToken()}` },
     });
@@ -186,7 +75,7 @@ export default function EmployeeOrdersPage() {
     else toast.error("Failed to generate QR");
   };
 
-  const generateAll = async () => {
+  const handleGenerateAll = async () => {
     if (!selectedOrder) return;
     setGeneratingAll(true);
     try {
@@ -199,7 +88,7 @@ export default function EmployeeOrdersPage() {
     } finally { setGeneratingAll(false); }
   };
 
-  const printQr = (qrCode: string, label: string) => {
+  const handlePrintQr = (qrCode: string, label: string) => {
     const url = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrCode)}`;
     const w = window.open("", "_blank");
     if (!w) return;
@@ -212,7 +101,7 @@ export default function EmployeeOrdersPage() {
     w.document.close();
   };
 
-  const printAll = () => {
+  const handlePrintAll = () => {
     const ready = garments.filter((g) => g.qrCodeRecord);
     if (ready.length === 0) { toast.error("No QR codes generated yet"); return; }
     const items = ready.map((g) =>
@@ -231,305 +120,97 @@ export default function EmployeeOrdersPage() {
     w.document.close();
   };
 
-  const tabFiltered = orders.filter((o) => {
-    if (activeTab === "pending")     return !o.allQrDone;
-    if (activeTab === "in_progress") return o.allQrDone;
-    return true;
-  });
+  // ── Derived ───────────────────────────────────────────────────────────────
 
+  const pendingCount    = orders.filter((o) => !o.allQrDone).length;
+  const inProgressCount = orders.filter((o) => o.allQrDone).length;
+
+  const tabFiltered = orders.filter((o) =>
+    activeTab === "pending"     ? !o.allQrDone :
+    activeTab === "in_progress" ?  o.allQrDone : true
+  );
   const filtered = tabFiltered.filter((o) =>
     o.orderNumber.toLowerCase().includes(search.toLowerCase()) ||
     o.customerName.toLowerCase().includes(search.toLowerCase())
   );
 
-  const pendingCount     = orders.filter((o) => !o.allQrDone).length;
-  const inProgressCount  = orders.filter((o) => o.allQrDone).length;
+  // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="space-y-7">
+    <motion.div
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35 }}
+      className="space-y-7"
+    >
+      {/* ── 1. Hero ──────────────────────────────────────────────────────────── */}
+      <DashboardPageHero
+        badge="Employee Workstation"
+        title="Garment Intake & QR Tagging"
+        description="Manage picked-up orders — generate and print QR labels for each garment."
+        icon={QrCode}
+        chips={!loading ? [
+          { label: "Total Orders",  value: orders.length   },
+          { label: "Needs Tagging", value: pendingCount    },
+          { label: "Fully Tagged",  value: inProgressCount },
+        ] : []}
+      />
 
-      {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-700 px-7 py-8">
-        <div className="pointer-events-none absolute inset-0 opacity-10">
-          <div className="absolute -top-12 -right-12 h-56 w-56 rounded-full bg-white" />
-          <div className="absolute -bottom-10 -left-8 h-40 w-40 rounded-full bg-white" />
-        </div>
-        <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div className="flex items-center gap-2 mb-1.5">
-              <Sparkles size={13} className="text-indigo-200" />
-              <span className="text-indigo-200 text-[11px] font-semibold uppercase tracking-widest">Employee Workstation</span>
-            </div>
-            <h1 className="text-2xl font-extrabold tracking-tight text-white">Garment Intake & QR Tagging</h1>
-            <p className="mt-1 text-sm text-indigo-200">Manage picked-up orders — generate and print QR labels for each garment.</p>
-          </div>
-          <div className="flex items-center gap-3 shrink-0">
-            {loading ? (
-              <div className="rounded-xl bg-white/10 border border-white/20 backdrop-blur-sm px-4 py-3 text-center">
-                <Loader2 size={18} className="animate-spin text-white mx-auto" />
-              </div>
-            ) : (
-              <div className="rounded-xl bg-white/10 border border-white/20 backdrop-blur-sm px-4 py-3 text-center">
-                <p className="text-indigo-200 text-[10px] font-semibold uppercase tracking-wider">Orders</p>
-                <p className="text-white font-extrabold text-xl leading-tight">{orders.length}</p>
-              </div>
-            )}
-            <Button
-              onClick={fetchOrders}
-              disabled={loading}
-              className="h-10 rounded-xl bg-white text-indigo-700 hover:bg-indigo-50 font-bold text-sm px-4 shadow-sm gap-1.5 disabled:opacity-60"
-            >
-              {loading ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
-              Refresh
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Search toolbar ────────────────────────────────────────────────── */}
-      <div className="rounded-2xl border border-slate-100 bg-white px-5 py-4 shadow-sm">
+      {/* ── 2. Search toolbar ────────────────────────────────────────────────── */}
+      <div className="rounded-3xl border border-border bg-card px-5 py-4 shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={13} />
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3.5 top-3 text-muted-foreground" size={14} />
             <input
-              type="text"
-              value={search}
+              type="text" value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by order # or customer…"
-              className="w-full h-9 pl-9 pr-3 rounded-xl border border-slate-200 bg-slate-50 text-xs font-medium text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:bg-white transition"
+              className="w-full h-10 pl-10 pr-4 rounded-2xl border border-border bg-muted/50 text-xs font-bold text-card-foreground placeholder:text-muted-foreground focus:border-ring focus:bg-card focus:outline-none transition-all"
             />
           </div>
           {search && (
             <Button size="sm" variant="ghost" onClick={() => setSearch("")}
-              className="h-9 rounded-xl text-xs font-bold text-slate-500 hover:text-rose-600 hover:bg-rose-50 px-3 gap-1.5">
+              className="h-9 rounded-xl text-xs font-bold text-muted-foreground hover:text-error gap-1.5">
               <RotateCcw size={12} /> Clear
             </Button>
           )}
-          <p className="ml-auto text-[11px] text-slate-400">
-            {loading ? (
-              <span className="inline-flex items-center gap-1"><Loader2 size={11} className="animate-spin" /> Loading…</span>
-            ) : (
-              <><span className="font-semibold text-slate-600">{filtered.length}</span> orders</>
-            )}
+          <p className="ml-auto text-[11px] text-muted-foreground">
+            {loading
+              ? <span className="inline-flex items-center gap-1"><Loader2 size={11} className="animate-spin" /> Loading…</span>
+              : <><span className="font-black text-card-foreground">{filtered.length}</span> orders</>}
           </p>
         </div>
       </div>
 
-      {/* ── Main grid ─────────────────────────────────────────────────────── */}
+      {/* ── 3. Main Grid ─────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        <OrderList
+          orders={orders}
+          filtered={filtered}
+          loading={loading}
+          search={search}
+          activeTab={activeTab}
+          selectedOrderId={selectedOrder?.id ?? null}
+          pendingCount={pendingCount}
+          inProgressCount={inProgressCount}
+          onTabChange={setActiveTab}
+          onSelectOrder={handleSelectOrder}
+        />
 
-        {/* ── Order list ──────────────────────────────────────────────────── */}
-        <div className="space-y-3">
-          {/* Header */}
-          <div className="flex items-center gap-3 px-1">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50">
-              <Package size={13} className="text-indigo-500" />
-            </div>
-            <h2 className="text-sm font-extrabold text-slate-900">Orders Awaiting Processing</h2>
-            <span className="ml-auto rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-bold text-slate-600">
-              {loading ? "—" : filtered.length}
-            </span>
-          </div>
-
-          {/* Filter tabs */}
-          {!loading && (
-            <div className="flex items-center gap-1.5 rounded-xl bg-slate-100 p-1">
-              {([
-                { key: "pending",     label: "Needs Tagging",  count: pendingCount    },
-                { key: "in_progress", label: "All Tagged",     count: inProgressCount },
-                { key: "all",         label: "All Orders",     count: orders.length   },
-              ] as { key: FilterTab; label: string; count: number }[]).map((tab) => (
-                <button
-                  key={tab.key}
-                  onClick={() => setActiveTab(tab.key)}
-                  className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-bold transition-all duration-150
-                    ${ activeTab === tab.key
-                      ? "bg-white text-indigo-700 shadow-sm"
-                      : "text-slate-500 hover:text-slate-700"}`}
-                >
-                  {tab.label}
-                  <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-black ${
-                    activeTab === tab.key ? "bg-indigo-100 text-indigo-600" : "bg-slate-200 text-slate-500"
-                  }`}>{tab.count}</span>
-                </button>
-              ))}
-            </div>
-          )}
-
-          {loading ? (
-            <div className="space-y-3">
-              {[0, 1, 2, 3].map((i) => <OrderCardSkeleton key={i} />)}
-            </div>
-          ) : filtered.length === 0 ? (
-            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white py-16 text-center shadow-sm">
-              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-indigo-50">
-                <Inbox size={32} className="text-indigo-300" />
-              </div>
-              <p className="text-sm font-bold text-slate-800">
-                {activeTab === "pending"     ? "All orders tagged" :
-                 activeTab === "in_progress" ? "No fully tagged orders" :
-                 "No orders found"}
-              </p>
-              <p className="mt-1 text-xs text-slate-400">
-                {search
-                  ? "Try a different search term."
-                  : activeTab === "pending"
-                  ? "All garments in current orders have been QR tagged."
-                  : "No pickup-stage orders at the moment."}
-              </p>
-            </div>
-          ) : (
-            filtered.map((order) => (
-              <button key={order.id} onClick={() => openOrder(order)}
-                className={`w-full text-left rounded-2xl border p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md
-                  ${selectedOrder?.id === order.id
-                    ? "border-indigo-300 bg-indigo-50/60 shadow-md ring-1 ring-indigo-200"
-                    : "border-slate-100 bg-white shadow-sm hover:border-indigo-200"}`}>
-                <div className="flex items-start justify-between gap-3">
-                  <div className="space-y-1 min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-[13px] font-bold text-slate-900 font-mono">#{order.orderNumber}</span>
-                      <StatusPill status={order.orderStatus} />
-                      {order.allQrDone && (
-                        <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
-                          <CheckCircle2 size={10} /> All Tagged
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-xs text-slate-500">{order.customerName} · {order.customerPhone}</p>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <p className="text-[11px] text-slate-400">QR Progress</p>
-                    <p className="text-sm font-bold text-slate-900">{order.qrGenerated}/{order.totalGarments}</p>
-                  </div>
-                </div>
-                {/* Progress bar */}
-                <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
-                  <div
-                    className={`h-full rounded-full transition-all duration-500 ${order.allQrDone ? "bg-emerald-500" : "bg-indigo-500"}`}
-                    style={{ width: order.totalGarments > 0 ? `${(order.qrGenerated / order.totalGarments) * 100}%` : "0%" }}
-                  />
-                </div>
-                <div className="mt-2 flex items-center gap-4 text-[11px] text-slate-400">
-                  <span className="flex items-center gap-1"><Shirt size={11} /> {order.totalGarments} garments</span>
-                  <span className="flex items-center gap-1"><Tag size={11} /> {order.qrGenerated} tagged</span>
-                  <span className="flex items-center gap-1"><Package size={11} /> {typeof order.branch === "string" ? order.branch : ((order.branch as any)?.branchName || (order.branch as any)?.name || "")}</span>
-                </div>
-              </button>
-            ))
-          )}
-        </div>
-
-        {/* ── Garment panel ───────────────────────────────────────────────── */}
         <div className="sticky top-6">
-          {/* Show skeleton while initial page load */}
-          {loading ? (
-            <GarmentPanelSkeleton />
-          ) : !selectedOrder ? (
-            /* No orders exist at all */
-            <div className="rounded-2xl border border-dashed border-slate-200 bg-white shadow-sm flex flex-col items-center justify-center py-24 text-center px-8">
-              <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-slate-50">
-                <ClipboardList size={38} className="text-slate-300" />
-              </div>
-              <p className="text-base font-bold text-slate-700">No orders to process</p>
-              <p className="mt-2 text-sm text-slate-400">
-                Orders will appear here once garments have been picked up from customers.
-              </p>
-            </div>
-          ) : (
-            <div className="rounded-2xl border border-slate-100 bg-white shadow-sm overflow-hidden">
-              {/* Panel header */}
-              <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[13px] font-bold text-slate-900 font-mono">#{selectedOrder.orderNumber}</span>
-                    <StatusPill status={selectedOrder.orderStatus} />
-                  </div>
-                  <p className="text-[11px] text-slate-400 mt-0.5">{selectedOrder.customerName} · {selectedOrder.totalGarments} garments</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  {!selectedOrder.allQrDone && (
-                    <Button size="sm" onClick={generateAll} disabled={generatingAll}
-                      className="h-8 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold gap-1.5 px-3">
-                      {generatingAll ? <Loader2 size={12} className="animate-spin" /> : <QrCode size={12} />}
-                      Generate All
-                    </Button>
-                  )}
-                  {selectedOrder.qrGenerated > 0 && (
-                    <Button size="sm" variant="outline" onClick={printAll}
-                      className="h-8 rounded-xl text-xs font-bold gap-1.5 px-3 border-slate-200 text-slate-700 hover:bg-slate-50">
-                      <Printer size={12} /> Print All
-                    </Button>
-                  )}
-                </div>
-              </div>
-
-              {/* Garment list */}
-              {garmentLoading ? (
-                <div className="divide-y divide-slate-50">
-                  {[0, 1, 2, 3].map((i) => (
-                    <div key={i} className="flex items-center gap-3 px-5 py-3.5">
-                      <Sk className="h-9 w-9 rounded-xl shrink-0" />
-                      <div className="flex-1 space-y-1.5">
-                        <Sk className="h-3.5 w-32" />
-                        <Sk className="h-2.5 w-20" />
-                      </div>
-                      <Sk className="h-7 w-20 rounded-lg shrink-0" />
-                    </div>
-                  ))}
-                </div>
-              ) : garments.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <Shirt size={28} className="text-slate-300 mb-2" />
-                  <p className="text-sm text-slate-400">No garment items found</p>
-                </div>
-              ) : (
-                <div className="divide-y divide-slate-50 max-h-[480px] overflow-y-auto">
-                  {garments.map((g) => (
-                    <div key={g.id} className="flex items-center gap-3 px-5 py-3.5 hover:bg-slate-50/50 transition-colors">
-                      <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${g.qrCodeRecord ? "bg-emerald-50" : "bg-slate-100"}`}>
-                        <Shirt size={16} className={g.qrCodeRecord ? "text-emerald-500" : "text-slate-400"} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex flex-wrap items-center gap-1.5">
-                          <p className="text-sm font-semibold text-slate-900 leading-tight">{g.garmentName}</p>
-                          {g.orderItem?.service?.serviceName && (
-                            <span className="inline-flex items-center gap-1 rounded-md bg-blue-50 border border-blue-200 px-2 py-0.5 text-[10px] font-extrabold text-blue-700">
-                              <Sparkles size={9} /> {g.orderItem.service.serviceName}
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-[10px] text-slate-400 font-mono mt-0.5">{g.garmentCode}</p>
-                        {g.qrCodeRecord && (
-                          <p className="text-[10px] text-indigo-600 font-mono mt-0.5 truncate">{g.qrCodeRecord.qrCode}</p>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        {g.qrCodeRecord ? (
-                          <>
-                            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600">
-                              <CheckCircle2 size={11} /> Tagged
-                            </span>
-                            <Button size="sm" variant="outline" onClick={() => printQr(g.qrCodeRecord!.qrCode, g.garmentName)}
-                              className="h-7 rounded-lg border-slate-200 text-xs font-bold gap-1 px-2.5 text-slate-600 hover:bg-slate-100">
-                              <Printer size={11} /> Print
-                            </Button>
-                          </>
-                        ) : (
-                          <Button size="sm" onClick={() => generateSingle(g.id)}
-                            className="h-7 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold gap-1 px-2.5">
-                            <QrCode size={11} /> Generate
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+          <GarmentPanel
+            loading={loading}
+            selectedOrder={selectedOrder}
+            garments={garments}
+            garmentLoading={garmentLoading}
+            generatingAll={generatingAll}
+            onGenerateAll={handleGenerateAll}
+            onGenerateSingle={handleGenerateSingle}
+            onPrintQr={handlePrintQr}
+            onPrintAll={handlePrintAll}
+          />
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

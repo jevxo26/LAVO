@@ -3,11 +3,12 @@
 import React, { useState, useEffect } from "react";
 import { Settings, ShieldCheck, CircleDollarSign, Landmark, Sliders, Bell } from "lucide-react";
 import { PersonalPreferences } from "@/components/settings/PersonalPreferences";
+import { DashboardPageHero } from "@/components/shared/DashboardPageHero";
 import Link from "next/link";
 
 export default function GenericSettingsPage() {
   const [activeTab, setActiveTab] = useState<"preferences" | "system">("preferences");
-  const [userRole, setUserRole] = useState<string>("CUSTOMER");
+  const [userRole, setUserRole]   = useState<string>("CUSTOMER");
 
   useEffect(() => {
     try {
@@ -20,111 +21,100 @@ export default function GenericSettingsPage() {
           setUserRole(rawRole.toUpperCase().replace(/\s+/g, "_"));
         }
       }
-    } catch {
-      setUserRole("CUSTOMER");
-    }
+    } catch { setUserRole("CUSTOMER"); }
   }, []);
 
   const isSuperAdmin = userRole === "SUPER_ADMIN";
 
   return (
     <div className="w-full space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 backdrop-blur-xl p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <Settings className="text-blue-600" /> Platform & Personal Settings
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Manage your personal alert preferences and view platform configuration.
-          </p>
-        </div>
-        <span className="self-start sm:self-auto text-xs font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 uppercase">
-          {userRole}
-        </span>
-      </div>
 
-      {/* Settings Navigation Tabs */}
-      <div className="flex border-b border-slate-200 dark:border-slate-800 gap-6">
+      {/* ── Hero ─────────────────────────────────────────────────────────────── */}
+      <DashboardPageHero
+        badge="Platform & Personal Settings"
+        title="Settings"
+        description="Manage your personal alert preferences and view platform configuration."
+        icon={Settings}
+        chips={[{ label: "Role", value: userRole }]}
+      />
+
+      {/* ── Tabs ─────────────────────────────────────────────────────────────── */}
+      <div className="flex border-b border-border gap-6">
         <button
           onClick={() => setActiveTab("preferences")}
-          className={`flex items-center gap-2 pb-3.5 text-sm font-bold border-b-2 transition-all ${
+          className={`flex items-center gap-2 pb-3.5 text-sm font-black border-b-2 transition-all ${
             activeTab === "preferences"
-              ? "border-blue-600 text-blue-600 dark:text-blue-400"
-              : "border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+              ? "text-card-foreground"
+              : "border-transparent text-muted-foreground hover:text-card-foreground"
           }`}
+          style={activeTab === "preferences" ? { borderColor: "var(--primary)", color: "var(--primary)" } : undefined}
         >
-          <Bell size={18} />
-          Personal Preferences
+          <Bell size={17} /> Personal Preferences
         </button>
 
         {isSuperAdmin && (
           <button
             onClick={() => setActiveTab("system")}
-            className={`flex items-center gap-2 pb-3.5 text-sm font-bold border-b-2 transition-all ${
+            className={`flex items-center gap-2 pb-3.5 text-sm font-black border-b-2 transition-all ${
               activeTab === "system"
-                ? "border-blue-600 text-blue-600 dark:text-blue-400"
-                : "border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                ? "text-card-foreground"
+                : "border-transparent text-muted-foreground hover:text-card-foreground"
             }`}
+            style={activeTab === "system" ? { borderColor: "var(--primary)", color: "var(--primary)" } : undefined}
           >
-            <ShieldCheck size={18} />
-            System Administration
+            <ShieldCheck size={17} /> System Administration
           </button>
         )}
       </div>
 
-      {/* Tab Panels */}
+      {/* ── Tab Panels ───────────────────────────────────────────────────────── */}
       <div>
         {activeTab === "preferences" && <PersonalPreferences />}
 
         {activeTab === "system" && isSuperAdmin && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Link
-              href="/dashboard/system-settings/pricing-tax"
-              className="p-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-md transition-all group"
-            >
-              <div className="p-3 bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 rounded-xl w-fit mb-4 group-hover:scale-110 transition-transform">
-                <CircleDollarSign size={24} />
-              </div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">Pricing & Tax Rules</h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                Configure delivery base fee, express multipliers, and global VAT tax rates.
-              </p>
-              <span className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 dark:text-blue-400 mt-4">
-                Configure Pricing &rarr;
-              </span>
-            </Link>
-
-            <Link
-              href="/dashboard/system-settings/financial-rules"
-              className="p-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-md transition-all group"
-            >
-              <div className="p-3 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 rounded-xl w-fit mb-4 group-hover:scale-110 transition-transform">
-                <Landmark size={24} />
-              </div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">Financial Rules</h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                Set vendor commission percentages and minimum payout thresholds.
-              </p>
-              <span className="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 dark:text-indigo-400 mt-4">
-                Configure Finance &rarr;
-              </span>
-            </Link>
-
-            <Link
-              href="/dashboard/system-settings/feature-flags"
-              className="p-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-md transition-all group"
-            >
-              <div className="p-3 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 rounded-xl w-fit mb-4 group-hover:scale-110 transition-transform">
-                <Sliders size={24} />
-              </div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">Feature Flags</h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                Toggle wallet cashback, promo codes, SMS gateway, and vendor marketplace modules.
-              </p>
-              <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400 mt-4">
-                Manage Feature Flags &rarr;
-              </span>
-            </Link>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {[
+              {
+                href:        "/dashboard/system-settings/pricing-tax",
+                icon:        CircleDollarSign,
+                title:       "Pricing & Tax Rules",
+                description: "Configure delivery base fee, express multipliers, and global VAT tax rates.",
+                cta:         "Configure Pricing",
+                gradient:    "from-blue-500 to-indigo-600",
+              },
+              {
+                href:        "/dashboard/system-settings/financial-rules",
+                icon:        Landmark,
+                title:       "Financial Rules",
+                description: "Set vendor commission percentages and minimum payout thresholds.",
+                cta:         "Configure Finance",
+                gradient:    "from-indigo-500 to-violet-600",
+              },
+              {
+                href:        "/dashboard/system-settings/feature-flags",
+                icon:        Sliders,
+                title:       "Feature Flags",
+                description: "Toggle wallet cashback, promo codes, SMS gateway, and vendor marketplace modules.",
+                cta:         "Manage Feature Flags",
+                gradient:    "from-emerald-500 to-teal-600",
+              },
+            ].map(({ href, icon: Icon, title, description, cta, gradient }) => (
+              <Link
+                key={href}
+                href={href}
+                className="group flex flex-col rounded-3xl border border-border bg-card p-6 shadow-sm hover:border-ring/40 hover:shadow-md transition-all"
+              >
+                <div className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${gradient} text-white shadow-md mb-4 group-hover:scale-110 transition-transform`}>
+                  <Icon size={22} />
+                </div>
+                <h3 className="text-base font-black text-card-foreground">{title}</h3>
+                <p className="text-xs text-muted-foreground mt-1 leading-relaxed flex-1">{description}</p>
+                <span className="inline-flex items-center gap-1 text-xs font-black mt-4"
+                  style={{ color: "var(--primary)" }}>
+                  {cta} &rarr;
+                </span>
+              </Link>
+            ))}
           </div>
         )}
       </div>
