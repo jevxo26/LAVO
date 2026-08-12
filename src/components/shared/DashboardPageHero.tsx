@@ -18,6 +18,7 @@ interface DashboardPageHeroProps {
   icon?:       LucideIcon;
   chips?:      HeroChip[];
   liveLabel?:  string; // e.g. "Live Data" | "Processing" | "Socket Active"
+  actions?:    React.ReactNode; // CTA buttons rendered below description
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -29,6 +30,7 @@ export function DashboardPageHero({
   icon: Icon,
   chips = [],
   liveLabel,
+  actions,
 }: DashboardPageHeroProps) {
   return (
     <div
@@ -118,6 +120,13 @@ export function DashboardPageHero({
           <p className="text-white/65 text-xs md:text-sm leading-relaxed font-medium max-w-xl">
             {description}
           </p>
+
+          {/* Actions */}
+          {actions && (
+            <div className="flex flex-wrap items-center gap-3 pt-1">
+              {actions}
+            </div>
+          )}
         </div>
 
         {/* Right — telemetry chips */}

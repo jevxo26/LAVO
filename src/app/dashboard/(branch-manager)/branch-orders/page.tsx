@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, ArrowRight, RefreshCw, Sparkles, Inbox, Package, Building2 } from "lucide-react";
+import { AlertTriangle, ArrowRight, RefreshCw, Inbox, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import io from "socket.io-client";
@@ -10,11 +10,22 @@ import { motion } from "framer-motion";
 import { OrderStatCards }           from "./OrderStatCards";
 import { OrderToolbar, OrderTab }   from "./OrderToolbar";
 import { OrderCard }                from "./OrderCard";
+import { DashboardPageHero }        from "@/components/shared/DashboardPageHero";
 
 const PROCESSING = ["CONFIRMED", "PROCESSING", "WASHING", "IRONING"];
 
-function Sk({ className }: { className?: string }) {
-  return <div className={`animate-pulse rounded-2xl bg-slate-200 dark:bg-slate-800 ${className ?? ""}`} />;
+function PageSkeleton() {
+  return (
+    <div className="space-y-7 animate-pulse">
+      <div className="h-44 rounded-3xl bg-muted" />
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {[0,1,2,3].map((i) => <div key={i} className="h-28 rounded-3xl bg-muted" />)}
+      </div>
+      <div className="space-y-4">
+        {[0,1,2].map((i) => <div key={i} className="h-28 rounded-3xl bg-muted" />)}
+      </div>
+    </div>
+  );
 }
 
 export default function BranchOrders() {
@@ -70,6 +81,8 @@ export default function BranchOrders() {
     return true;
   }), [orders, search, activeTab]);
 
+  if (loading) return <PageSkeleton />;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 15 }}
@@ -77,72 +90,55 @@ export default function BranchOrders() {
       transition={{ duration: 0.35 }}
       className="space-y-7"
     >
-      {/* ── 1. Hero Banner ─────────────────────────────────────────────────── */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 p-7 md:p-9 text-white shadow-2xl border border-blue-800/40">
-        <div className="pointer-events-none absolute inset-0 opacity-20">
-          <div className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-blue-500 blur-3xl" />
-          <div className="absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-cyan-500 blur-3xl" />
-        </div>
-
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Building2 size={14} className="text-cyan-300" />
-              <span className="text-cyan-200 text-xs font-black uppercase tracking-widest">
-                Branch Workstation &amp; Live Dispatch
-              </span>
-            </div>
-            <h1 className="text-3xl md:text-4xl font-black tracking-tight text-white leading-tight">
-              Facility Active Orders
-            </h1>
-            <p className="text-blue-100 text-xs md:text-sm leading-relaxed font-medium max-w-xl">
-              Monitor active garment intakes, machine load, employee workflow, and partner vendor delegations.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3 shrink-0">
-            {[
-              { label: "Total",   value: stats.total   },
-              { label: "Pending", value: stats.pending  },
-              { label: "Ready",   value: stats.ready    },
-            ].map(({ label, value }) => (
-              <div key={label} className="rounded-2xl bg-white/10 border border-white/15 backdrop-blur-xl px-4 py-3 text-center min-w-[85px] shadow-inner">
-                <p className="text-cyan-200 text-[10px] font-black uppercase tracking-wider">{label}</p>
-                <p className="text-white font-black text-xl leading-tight mt-0.5">{value}</p>
-              </div>
-            ))}
-            <Button
-              onClick={() => fetchOrders(true)}
-              className="h-11 px-5 rounded-2xl bg-white text-blue-700 hover:bg-blue-50 font-black text-xs shadow-lg gap-2 transition-all hover:scale-[1.02]"
-            >
-              <RefreshCw size={15} className={refreshing ? "animate-spin" : ""} /> Refresh
-            </Button>
-          </div>
-        </div>
-      </div>
+      {/* ── 1. Hero ──────────────────────────────────────────────────────────── */}
+      <DashboardPageHero
+        badge="Branch Workstation & Live Dispatch"
+        title="Facility Active Orders"
+        description="Monitor active garment intakes, machine load, employee workflow, and partner vendor delegations."
+        icon={Building2}
+        liveLabel="Live Dispatch"
+        chips={[
+          { label: "Total",   value: stats.total      },
+          { label: "Pending", value: stats.pending     },
+          { label: "Ready",   value: stats.ready       },
+        ]}
+        actions={
+          <Button
+            onClick={() => fetchOrders(true)}
+            variant="outline"
+            className="h-10 px-5 rounded-xl border-white/20 bg-white/10 text-white hover:bg-white/20 font-black text-xs gap-2 backdrop-blur-md transition-all"
+          >
+            <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} /> Refresh
+          </Button>
+        }
+      />
 
       {/* ── 2. Overflow Alert ───────────────────────────────────────────────── */}
       {orders.length > 5 && (
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-3xl border border-amber-300 bg-gradient-to-r from-amber-500/10 via-amber-400/5 to-amber-500/10 p-6 shadow-md"
+          className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-3xl border border-warning/30 bg-warning/8 p-6"
         >
           <div className="flex items-start gap-4">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-500 text-white shadow-md shadow-amber-500/20">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-white shadow-md"
+              style={{ background: "var(--warning)" }}>
               <AlertTriangle size={22} />
             </div>
             <div>
-              <p className="text-base font-black text-amber-900 dark:text-amber-300">
+              <p className="text-base font-black text-warning">
                 High Volume Capacity Warning — {orders.length} Active Orders
               </p>
-              <p className="text-xs font-medium text-amber-700 dark:text-amber-400 mt-0.5">
+              <p className="text-xs font-medium text-warning/80 mt-0.5">
                 Branch threshold exceeded. Immediately delegate overflow garments to verified partner vendors.
               </p>
             </div>
           </div>
           <Link href="/dashboard/partner-vendors">
-            <Button className="h-10 px-5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-black gap-2 shrink-0 shadow-md transition-all hover:scale-[1.02]">
+            <Button
+              className="h-10 px-5 rounded-xl text-white text-xs font-black gap-2 shrink-0 shadow-md transition-all hover:scale-[1.02]"
+              style={{ background: "var(--warning)" }}
+            >
               Delegate to Vendors <ArrowRight size={14} />
             </Button>
           </Link>
@@ -150,33 +146,30 @@ export default function BranchOrders() {
       )}
 
       {/* ── 3. Stat Cards ───────────────────────────────────────────────────── */}
-      {!loading && (
-        <OrderStatCards
-          total={stats.total} pending={stats.pending}
-          processing={stats.processing} ready={stats.ready}
-        />
-      )}
+      <OrderStatCards
+        total={stats.total} pending={stats.pending}
+        processing={stats.processing} ready={stats.ready}
+      />
 
       {/* ── 4. Toolbar ──────────────────────────────────────────────────────── */}
-      {!loading && (
-        <OrderToolbar
-          activeTab={activeTab} onTabChange={setActiveTab}
-          tabCounts={tabCounts} search={search}
-          onSearchChange={setSearch} totalFiltered={filtered.length}
-        />
-      )}
+      <OrderToolbar
+        activeTab={activeTab} onTabChange={setActiveTab}
+        tabCounts={tabCounts} search={search}
+        onSearchChange={setSearch} totalFiltered={filtered.length}
+      />
 
       {/* ── 5. Order List ────────────────────────────────────────────────────── */}
-      {loading ? (
-        <div className="space-y-4">{[0, 1, 2].map((i) => <Sk key={i} className="h-28" />)}</div>
-      ) : filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white py-24 text-center dark:bg-slate-900 dark:border-slate-800">
-          <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-blue-50 text-blue-500 dark:bg-blue-950/50">
+      {filtered.length === 0 ? (
+        <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-border bg-card py-24 text-center">
+          <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-primary/10"
+            style={{ color: "var(--primary)" }}>
             <Inbox size={38} />
           </div>
-          <p className="text-lg font-black text-slate-900 dark:text-white">No Orders Found</p>
-          <p className="mt-1.5 max-w-xs text-xs text-slate-400 font-medium">
-            {search ? "No active orders match your search query." : "No active laundry orders currently in the facility."}
+          <p className="text-lg font-black text-card-foreground">No Orders Found</p>
+          <p className="mt-1.5 max-w-xs text-xs text-muted-foreground font-medium">
+            {search
+              ? "No active orders match your search query."
+              : "No active laundry orders currently in the facility."}
           </p>
         </div>
       ) : (
