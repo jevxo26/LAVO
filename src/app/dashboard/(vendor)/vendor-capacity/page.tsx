@@ -5,8 +5,13 @@ import { authFetch } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Gauge, Package, TrendingUp, Layers, Sparkles, AlertCircle } from "lucide-react";
+import { Gauge, Package, TrendingUp, Layers, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
+import { DashboardPageHero } from "@/components/shared/DashboardPageHero";
+import { OverviewStatCard }  from "@/components/dashboard/shared/overview/OverviewStatCard";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface CapacityData {
   vendorId: string; dailyCapacity: number; usedCapacity: number;
@@ -14,30 +19,37 @@ interface CapacityData {
   utilizationPercent: number; status: string;
 }
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
 const STATUS_META: Record<string, { cls: string; dot: string }> = {
-  AVAILABLE: { cls: "bg-emerald-50 text-emerald-700 border-emerald-200", dot: "bg-emerald-500" },
-  NEAR_FULL: { cls: "bg-amber-50  text-amber-700  border-amber-200",    dot: "bg-amber-400"   },
-  FULL:      { cls: "bg-rose-50   text-rose-700   border-rose-200",     dot: "bg-rose-400"    },
-  NOT_SET:   { cls: "bg-slate-50  text-slate-600  border-slate-200",    dot: "bg-slate-400"   },
+  AVAILABLE: { cls: "bg-success/10 text-success border-success/25",   dot: "bg-success"   },
+  NEAR_FULL: { cls: "bg-warning/10 text-warning border-warning/25",   dot: "bg-warning"   },
+  FULL:      { cls: "bg-error/10 text-error border-error/25",         dot: "bg-error"     },
+  NOT_SET:   { cls: "bg-muted text-muted-foreground border-border",   dot: "bg-muted-foreground/50" },
 };
 
-function barColor(pct: number) {
-  return pct >= 100 ? "bg-rose-500" : pct >= 80 ? "bg-amber-500" : "bg-indigo-500";
+function barColor(pct: number): string {
+  if (pct >= 100) return "bg-error";
+  if (pct >= 80)  return "bg-warning";
+  return "bg-primary";
 }
 
-function Sk({ className }: { className?: string }) {
-  return <div className={`animate-pulse rounded-md bg-slate-100 ${className ?? ""}`} />;
-}
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
+
 function PageSkeleton() {
   return (
-    <div className="space-y-7">
-      <Sk className="h-36 w-full rounded-2xl" />
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">{[0,1,2,3].map((i) => <Sk key={i} className="h-28 rounded-2xl" />)}</div>
-      <Sk className="h-28 rounded-2xl" />
-      <Sk className="h-44 rounded-2xl" />
+    <div className="space-y-7 animate-pulse">
+      <div className="h-44 rounded-3xl bg-muted" />
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {[0,1,2,3].map((i) => <div key={i} className="h-28 rounded-3xl bg-muted" />)}
+      </div>
+      <div className="h-28 rounded-3xl bg-muted" />
+      <div className="h-44 rounded-3xl bg-muted" />
     </div>
   );
 }
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function VendorCapacityPage() {
   const [data, setData]       = useState<CapacityData | null>(null);
@@ -51,7 +63,11 @@ export default function VendorCapacityPage() {
     try {
       const res  = await authFetch("/vendor-dashboard/capacity");
       const json = await res.json();
-      if (json.success) { setData(json.data); setDaily(String(json.data.dailyCapacity)); setMaximum(String(json.data.maximumCapacity)); }
+      if (json.success) {
+        setData(json.data);
+        setDaily(String(json.data.dailyCapacity));
+        setMaximum(String(json.data.maximumCapacity));
+      }
     } finally { setLoading(false); }
   };
 
@@ -60,7 +76,13 @@ export default function VendorCapacityPage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const res  = await authFetch("/vendor-dashboard/capacity", { method: "PATCH", body: JSON.stringify({ dailyCapacity: parseInt(daily), maximumCapacity: parseInt(maximum) }) });
+      const res  = await authFetch("/vendor-dashboard/capacity", {
+        method: "PATCH",
+        body: JSON.stringify({
+          dailyCapacity:   parseInt(daily),
+          maximumCapacity: parseInt(maximum),
+        }),
+      });
       const json = await res.json();
       if (json.success) { toast.success("Capacity updated"); fetchCapacity(); }
       else toast.error(json.message ?? "Failed to update capacity");
@@ -74,113 +96,121 @@ export default function VendorCapacityPage() {
   const sm     = STATUS_META[status] ?? STATUS_META.NOT_SET;
 
   return (
-    <div className="space-y-7">
+    <motion.div
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35 }}
+      className="space-y-7"
+    >
+      {/* ── 1. Hero ──────────────────────────────────────────────────────────── */}
+      <DashboardPageHero
+        badge="Vendor Dashboard"
+        title="Capacity Management"
+        description="Set your daily processing capacity and monitor utilization in real time."
+        icon={Gauge}
+        chips={data ? [
+          { label: "Utilization", value: `${pct}%` },
+          { label: "Remaining",   value: data.remainingCapacity },
+        ] : []}
+      />
 
-      {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-500 via-orange-500 to-rose-500 px-7 py-8">
-        <div className="pointer-events-none absolute inset-0 opacity-10">
-          <div className="absolute -top-12 -right-12 h-56 w-56 rounded-full bg-white" />
-          <div className="absolute -bottom-10 -left-8 h-40 w-40 rounded-full bg-white" />
-        </div>
-        <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div className="flex items-center gap-2 mb-1.5">
-              <Sparkles size={13} className="text-amber-200" />
-              <span className="text-amber-200 text-[11px] font-semibold uppercase tracking-widest">Vendor Dashboard</span>
-            </div>
-            <h1 className="text-2xl font-extrabold tracking-tight text-white">Capacity Management</h1>
-            <p className="mt-1 text-sm text-amber-100">Set your daily processing capacity and monitor utilization.</p>
-          </div>
-          {data && (
-            <div className="flex items-center gap-3 shrink-0">
-              <div className="rounded-xl bg-white/10 border border-white/20 backdrop-blur-sm px-4 py-3 text-center">
-                <p className="text-amber-200 text-[10px] font-semibold uppercase tracking-wider">Utilization</p>
-                <p className="text-white font-extrabold text-xl leading-tight">{pct}%</p>
-              </div>
-              <div className={`rounded-xl border px-3 py-1.5 flex items-center gap-1.5 ${sm.cls}`}>
-                <span className={`h-2 w-2 rounded-full ${sm.dot}`} />
-                <span className="text-xs font-bold">{status.replace("_", " ")}</span>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* ── Stat cards ────────────────────────────────────────────────────── */}
+      {/* ── 2. Stat Cards ────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        {[
-          { label: "Daily Capacity",  sub: "Processing limit",   value: data?.dailyCapacity ?? 0,      Icon: Layers,    iconBg: "bg-indigo-50",  iconColor: "text-indigo-600",  ringColor: "ring-indigo-100",  vColor: "text-slate-900"       },
-          { label: "Used Today",      sub: "Orders processed",   value: data?.usedCapacity ?? 0,       Icon: Package,   iconBg: "bg-amber-50",   iconColor: "text-amber-600",   ringColor: "ring-amber-100",   vColor: "text-slate-900"       },
-          { label: "Remaining",       sub: "Slots available",    value: data?.remainingCapacity ?? 0,  Icon: TrendingUp, iconBg: "bg-emerald-50", iconColor: "text-emerald-600", ringColor: "ring-emerald-100", vColor: "text-emerald-600"     },
-          { label: "Max Capacity",    sub: "Hard upper limit",   value: data?.maximumCapacity ?? 0,    Icon: Gauge,     iconBg: "bg-violet-50",  iconColor: "text-violet-600",  ringColor: "ring-violet-100",  vColor: "text-slate-900"       },
-        ].map(({ label, sub, value, Icon, iconBg, iconColor, ringColor, vColor }) => (
-          <div key={label} className="flex items-center gap-4 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
-            <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ring-4 ${iconBg} ${iconColor} ${ringColor}`}>
-              <Icon size={22} />
-            </div>
-            <div className="min-w-0">
-              <p className={`text-2xl font-extrabold leading-none ${vColor}`}>{value}</p>
-              <p className="mt-0.5 text-[12px] font-semibold text-slate-700 leading-tight">{label}</p>
-              <p className="text-[11px] text-slate-400 leading-tight">{sub}</p>
-            </div>
-          </div>
-        ))}
+        <OverviewStatCard label="Daily Capacity" sub="Processing limit"  value={data?.dailyCapacity   ?? 0} icon={Layers}    gradient="from-indigo-500 to-violet-600" />
+        <OverviewStatCard label="Used Today"     sub="Orders processed"  value={data?.usedCapacity    ?? 0} icon={Package}   gradient="from-amber-400 to-orange-500"  />
+        <OverviewStatCard label="Remaining"      sub="Slots available"   value={data?.remainingCapacity ?? 0} icon={TrendingUp} gradient="from-emerald-500 to-teal-600" />
+        <OverviewStatCard label="Max Capacity"   sub="Hard upper limit"  value={data?.maximumCapacity ?? 0} icon={Gauge}     gradient="from-violet-500 to-purple-600" />
       </div>
 
-      {/* ── Utilization bar ───────────────────────────────────────────────── */}
+      {/* ── 3. Utilization Bar ───────────────────────────────────────────────── */}
       {data && (
-        <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-3">
+        <div className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-50">
-                <Gauge size={14} className="text-amber-500" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10"
+                style={{ color: "var(--primary)" }}>
+                <Gauge size={17} />
               </div>
               <div>
-                <h2 className="text-sm font-extrabold text-slate-900">Capacity Utilization</h2>
-                <p className="text-[11px] text-slate-400">{data.usedCapacity} of {data.dailyCapacity} slots used today</p>
+                <h2 className="text-sm font-black text-card-foreground">Capacity Utilization</h2>
+                <p className="text-[11px] text-muted-foreground font-medium">
+                  {data.usedCapacity} of {data.dailyCapacity} slots used today
+                </p>
               </div>
             </div>
-            <span className="text-2xl font-extrabold text-slate-900">{pct}%</span>
+            <div className="flex items-center gap-3">
+              <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-black ${sm.cls}`}>
+                <span className={`h-1.5 w-1.5 rounded-full ${sm.dot}`} />
+                {status.replace("_", " ")}
+              </span>
+              <span className="text-2xl font-black text-card-foreground">{pct}%</span>
+            </div>
           </div>
-          <div className="h-4 w-full overflow-hidden rounded-full bg-slate-100">
-            <div className={`h-full rounded-full transition-all duration-700 ${barColor(pct)}`} style={{ width: `${Math.min(pct, 100)}%` }} />
+
+          <div className="h-4 w-full overflow-hidden rounded-full bg-muted">
+            <motion.div
+              className={`h-full rounded-full ${barColor(pct)}`}
+              initial={{ width: 0 }}
+              animate={{ width: `${Math.min(pct, 100)}%` }}
+              transition={{ duration: 0.7, ease: "easeOut" }}
+            />
           </div>
+
           {pct >= 80 && (
-            <div className="mt-3 flex items-center gap-2 rounded-xl bg-amber-50 border border-amber-200 px-4 py-2.5">
-              <AlertCircle size={14} className="text-amber-600 shrink-0" />
-              <p className="text-xs font-semibold text-amber-700">Approaching capacity limit — consider updating your daily limit.</p>
+            <div className="mt-4 flex items-center gap-2.5 rounded-2xl bg-warning/10 border border-warning/25 px-4 py-3">
+              <AlertCircle size={15} className="text-warning shrink-0" />
+              <p className="text-xs font-bold text-warning">
+                Approaching capacity limit — consider updating your daily limit.
+              </p>
             </div>
           )}
         </div>
       )}
 
-      {/* ── Update form ───────────────────────────────────────────────────── */}
-      <div className="rounded-2xl border border-slate-100 bg-white shadow-sm overflow-hidden">
-        <div className="flex items-center gap-3 border-b border-slate-100 px-6 py-4">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50">
-            <Gauge size={14} className="text-indigo-500" />
+      {/* ── 4. Update Form ───────────────────────────────────────────────────── */}
+      <div className="rounded-3xl border border-border bg-card shadow-sm overflow-hidden">
+        <div className="flex items-center gap-3 border-b border-border px-6 py-5">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10"
+            style={{ color: "var(--primary)" }}>
+            <Gauge size={17} />
           </div>
           <div>
-            <h2 className="text-sm font-extrabold text-slate-900">Update Capacity Settings</h2>
-            <p className="text-[11px] text-slate-400">Adjust your daily and maximum processing limits</p>
+            <h2 className="text-sm font-black text-card-foreground">Update Capacity Settings</h2>
+            <p className="text-[11px] text-muted-foreground font-medium">Adjust your daily and maximum processing limits</p>
           </div>
         </div>
+
         <div className="p-6">
           <div className="grid gap-4 sm:grid-cols-2 max-w-sm">
             <div className="space-y-1.5">
-              <Label className="text-xs font-bold text-slate-700">Daily Capacity</Label>
-              <Input type="number" min={0} value={daily} onChange={(e) => setDaily(e.target.value)} className="rounded-xl h-11" />
+              <Label className="text-xs font-black text-card-foreground">Daily Capacity</Label>
+              <Input
+                type="number" min={0}
+                value={daily}
+                onChange={(e) => setDaily(e.target.value)}
+                className="rounded-2xl h-11 text-xs"
+              />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs font-bold text-slate-700">Maximum Capacity</Label>
-              <Input type="number" min={0} value={maximum} onChange={(e) => setMaximum(e.target.value)} className="rounded-xl h-11" />
+              <Label className="text-xs font-black text-card-foreground">Maximum Capacity</Label>
+              <Input
+                type="number" min={0}
+                value={maximum}
+                onChange={(e) => setMaximum(e.target.value)}
+                className="rounded-2xl h-11 text-xs"
+              />
             </div>
           </div>
-          <Button onClick={handleSave} disabled={saving} className="mt-5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 h-11">
+          <Button
+            onClick={handleSave}
+            disabled={saving}
+            className="mt-5 rounded-2xl text-white font-black px-6 h-11"
+            style={{ background: "linear-gradient(135deg, var(--primary), var(--ring))" }}
+          >
             {saving ? "Saving…" : "Save Changes"}
           </Button>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
