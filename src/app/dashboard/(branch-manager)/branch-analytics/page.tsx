@@ -7,39 +7,41 @@ import {
 } from "recharts";
 import {
   CircleDollarSign, TrendingUp, BarChart3,
-  Sparkles, RefreshCw, TrendingDown,
+  RefreshCw, TrendingDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { authFetch } from "@/lib/api";
 import io from "socket.io-client";
+import { motion } from "framer-motion";
+import { DashboardPageHero } from "@/components/shared/DashboardPageHero";
+import { OverviewStatCard }  from "@/components/dashboard/shared/overview/OverviewStatCard";
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 
-function Sk({ className }: { className?: string }) {
-  return <div className={`animate-pulse rounded-2xl bg-slate-100 ${className ?? ""}`} />;
-}
 function PageSkeleton() {
   return (
-    <div className="space-y-7">
-      <Sk className="h-36 w-full" />
-      <div className="grid grid-cols-3 gap-4">{[0,1,2].map((i) => <Sk key={i} className="h-28" />)}</div>
-      <Sk className="h-96" />
+    <div className="space-y-7 animate-pulse">
+      <div className="h-44 rounded-3xl bg-muted" />
+      <div className="grid grid-cols-3 gap-4">
+        {[0,1,2].map((i) => <div key={i} className="h-28 rounded-3xl bg-muted" />)}
+      </div>
+      <div className="h-96 rounded-3xl bg-muted" />
     </div>
   );
 }
 
-// ─── Custom tooltip ───────────────────────────────────────────────────────────
+// ─── Chart Tooltip ────────────────────────────────────────────────────────────
 
 function ChartTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-xl border border-slate-100 bg-white px-4 py-3 shadow-xl text-xs space-y-1.5">
-      <p className="font-bold text-slate-900 mb-1">{label}</p>
+    <div className="rounded-2xl border border-border bg-card px-4 py-3 shadow-xl text-xs space-y-1.5">
+      <p className="font-black text-card-foreground mb-1">{label}</p>
       {payload.map((p: any) => (
         <div key={p.dataKey} className="flex items-center gap-2">
           <span className="h-2 w-2 rounded-full" style={{ backgroundColor: p.stroke }} />
-          <span className="text-slate-400">{p.name}:</span>
-          <span className="font-bold text-slate-900">৳{p.value.toLocaleString()}</span>
+          <span className="text-muted-foreground">{p.name}:</span>
+          <span className="font-black text-card-foreground">৳{Number(p.value).toLocaleString()}</span>
         </div>
       ))}
     </div>
@@ -49,8 +51,8 @@ function ChartTooltip({ active, payload, label }: any) {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function BranchAnalytics() {
-  const [data, setData]           = useState<any>(null);
-  const [loading, setLoading]     = useState(true);
+  const [data, setData]             = useState<any>(null);
+  const [loading, setLoading]       = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchAnalytics = useCallback(async () => {
@@ -75,10 +77,13 @@ export default function BranchAnalytics() {
   }, [fetchAnalytics]);
 
   if (loading) return <PageSkeleton />;
+
   if (!data) return (
-    <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white py-24 text-center shadow-sm">
-      <BarChart3 size={38} className="text-slate-300 mb-4" />
-      <p className="text-sm font-bold text-slate-700">No analytics data yet</p>
+    <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-border bg-card py-24 text-center">
+      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
+        <BarChart3 size={28} />
+      </div>
+      <p className="text-sm font-black text-card-foreground">No analytics data yet</p>
     </div>
   );
 
@@ -91,92 +96,92 @@ export default function BranchAnalytics() {
 
   const chartData = (data.revenue || []).map((rev: any, i: number) => {
     const exp = data.expenses?.[i]?.total || 0;
-    return { name: rev.name, revenue: rev.total, expenses: exp, profit: parseFloat((rev.total - exp).toFixed(2)) };
+    return {
+      name:     rev.name,
+      revenue:  rev.total,
+      expenses: exp,
+      profit:   parseFloat((rev.total - exp).toFixed(2)),
+    };
   });
 
   return (
-    <div className="space-y-7">
+    <motion.div
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35 }}
+      className="space-y-7"
+    >
+      {/* ── 1. Hero ──────────────────────────────────────────────────────────── */}
+      <DashboardPageHero
+        badge="Branch Manager Portal"
+        title="Branch Analytics & Financials"
+        description="Real-time financial reports, revenue streams, and cost breakdown."
+        icon={BarChart3}
+        liveLabel="Live Data"
+        chips={[
+          { label: "Net Profit (7d)", value: `৳${totals.netProfit.toLocaleString()}` },
+        ]}
+        actions={
+          <Button
+            onClick={() => { setRefreshing(true); fetchAnalytics(); }}
+            variant="outline"
+            className="h-10 px-5 rounded-xl border-white/20 bg-white/10 text-white hover:bg-white/20 font-black text-xs gap-2 backdrop-blur-md transition-all"
+          >
+            <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} /> Refresh
+          </Button>
+        }
+      />
 
-      {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-700 px-7 py-8">
-        <div className="pointer-events-none absolute inset-0 opacity-10">
-          <div className="absolute -top-12 -right-12 h-56 w-56 rounded-full bg-white" />
-          <div className="absolute -bottom-10 -left-8 h-40 w-40 rounded-full bg-white" />
-        </div>
-        <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div className="flex items-center gap-2 mb-1.5">
-              <Sparkles size={13} className="text-emerald-200" />
-              <span className="text-emerald-200 text-[11px] font-semibold uppercase tracking-widest">Branch Manager Portal</span>
-            </div>
-            <h1 className="text-2xl font-extrabold tracking-tight text-white">Branch Analytics & Financials</h1>
-            <p className="mt-1 text-sm text-emerald-100">Real-time financial reports, revenue streams, and cost breakdown.</p>
-          </div>
-          <div className="flex items-center gap-3 shrink-0">
-            <div className="rounded-xl bg-white/10 border border-white/20 backdrop-blur-sm px-4 py-3 text-center">
-              <p className="text-emerald-200 text-[10px] font-semibold uppercase tracking-wider">Net Profit</p>
-              <p className="text-white font-extrabold text-xl leading-tight">৳{totals.netProfit.toLocaleString()}</p>
-            </div>
-            <Button onClick={() => { setRefreshing(true); fetchAnalytics(); }}
-              className="h-10 rounded-xl bg-white text-emerald-700 hover:bg-emerald-50 font-bold text-sm px-4 shadow-sm gap-1.5">
-              <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} /> Refresh
-            </Button>
-          </div>
-        </div>
+      {/* ── 2. KPI Cards ─────────────────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <OverviewStatCard label="Total Revenue (7d)"  sub="Customer payments & bookings" value={`৳${totals.totalRevenue.toLocaleString()}`}  icon={CircleDollarSign} gradient="from-indigo-500 to-violet-600" />
+        <OverviewStatCard label="Expenses (7d)"       sub="Operational costs & splits"   value={`৳${totals.totalExpenses.toLocaleString()}`} icon={TrendingDown}     gradient="from-rose-500 to-pink-600"     />
+        <OverviewStatCard label="Net Profit (7d)"     sub="Estimated branch margin"       value={`৳${totals.netProfit.toLocaleString()}`}    icon={TrendingUp}       gradient="from-emerald-500 to-teal-600"  />
       </div>
 
-      {/* ── KPI cards ─────────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-3 gap-4">
-        {[
-          { label: "Total Revenue (7d)",           sub: "Customer payments & bookings",  value: totals.totalRevenue,  Icon: CircleDollarSign, iconBg: "bg-indigo-50",  iconColor: "text-indigo-600",  ringColor: "ring-indigo-100",  valueColor: "text-slate-900"    },
-          { label: "Expenses & Commissions (7d)",  sub: "Operational costs & splits",    value: totals.totalExpenses, Icon: TrendingDown,     iconBg: "bg-rose-50",    iconColor: "text-rose-600",    ringColor: "ring-rose-100",    valueColor: "text-slate-900"    },
-          { label: "Net Profit (7d)",              sub: "Estimated branch margin",        value: totals.netProfit,     Icon: TrendingUp,       iconBg: "bg-emerald-50", iconColor: "text-emerald-600", ringColor: "ring-emerald-100", valueColor: "text-emerald-600"  },
-        ].map(({ label, sub, value, Icon, iconBg, iconColor, ringColor, valueColor }) => (
-          <div key={label} className="flex items-center gap-4 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-200">
-            <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ring-4 ${iconBg} ${iconColor} ${ringColor}`}>
-              <Icon size={22} />
-            </div>
-            <div className="min-w-0">
-              <p className={`text-2xl font-extrabold leading-none ${valueColor}`}>৳{value.toLocaleString()}</p>
-              <p className="mt-0.5 text-[12px] font-semibold text-slate-700 leading-tight">{label}</p>
-              <p className="text-[11px] text-slate-400 leading-tight">{sub}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* ── Chart ─────────────────────────────────────────────────────────── */}
-      <div className="rounded-2xl border border-slate-100 bg-white shadow-sm overflow-hidden">
-        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+      {/* ── 3. Line Chart ────────────────────────────────────────────────────── */}
+      <div className="rounded-3xl border border-border bg-card shadow-sm overflow-hidden">
+        <div className="flex items-center justify-between border-b border-border px-6 py-5">
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50">
-              <BarChart3 size={14} className="text-indigo-500" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10"
+              style={{ color: "var(--primary)" }}>
+              <BarChart3 size={17} />
             </div>
             <div>
-              <h2 className="text-sm font-extrabold text-slate-900">7-Day Financial Performance</h2>
-              <p className="text-[11px] text-slate-400">Revenue vs expenses vs net profit trend</p>
+              <h2 className="text-sm font-black text-card-foreground">7-Day Financial Performance</h2>
+              <p className="text-[11px] text-muted-foreground font-medium">Revenue vs expenses vs net profit trend</p>
             </div>
           </div>
-          <div className="flex items-center gap-4 text-[11px] font-semibold text-slate-400">
-            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-indigo-500" />Revenue</span>
-            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-rose-500" />Expenses</span>
-            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-emerald-500" />Profit</span>
+          <div className="flex items-center gap-4 text-[11px] font-bold text-muted-foreground">
+            <span className="flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full" style={{ background: "var(--primary)" }} /> Revenue
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-error" /> Expenses
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-success" /> Profit
+            </span>
           </div>
         </div>
         <div className="p-4 h-[360px]">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData} margin={{ top: 8, right: 16, left: -8, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-              <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
-              <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => `৳${(v/1000).toFixed(0)}k`} />
-              <RechartsTooltip content={<ChartTooltip />} />
-              <Line type="monotone" dataKey="revenue"  stroke="#6366f1" strokeWidth={2.5} dot={false} activeDot={{ r: 5, fill: "#6366f1", strokeWidth: 0 }} name="Revenue (৳)"   />
-              <Line type="monotone" dataKey="expenses" stroke="#ef4444" strokeWidth={2}   dot={false} activeDot={{ r: 4, fill: "#ef4444", strokeWidth: 0 }} name="Expenses (৳)"  />
-              <Line type="monotone" dataKey="profit"   stroke="#10b981" strokeWidth={2.5} dot={false} activeDot={{ r: 5, fill: "#10b981", strokeWidth: 0 }} name="Net Profit (৳)" />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis dataKey="name" fontSize={11} tickLine={false} axisLine={false}
+                style={{ fill: "var(--muted-foreground)" }} />
+              <YAxis fontSize={11} tickLine={false} axisLine={false}
+                style={{ fill: "var(--muted-foreground)" }}
+                tickFormatter={(v) => `৳${(v / 1000).toFixed(0)}k`}
+              />
+              <RechartsTooltip content={<ChartTooltip />} cursor={{ stroke: "var(--border)", strokeWidth: 1 }} />
+              <Line type="monotone" dataKey="revenue"  stroke="var(--primary)" strokeWidth={2.5} dot={false} activeDot={{ r: 5, strokeWidth: 0 }} name="Revenue (৳)"    />
+              <Line type="monotone" dataKey="expenses" stroke="var(--error)"   strokeWidth={2}   dot={false} activeDot={{ r: 4, strokeWidth: 0 }} name="Expenses (৳)"   />
+              <Line type="monotone" dataKey="profit"   stroke="var(--success)" strokeWidth={2.5} dot={false} activeDot={{ r: 5, strokeWidth: 0 }} name="Net Profit (৳)" />
             </LineChart>
           </ResponsiveContainer>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
