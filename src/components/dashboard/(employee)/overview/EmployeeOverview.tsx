@@ -4,8 +4,8 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   PackageCheck, QrCode, ClipboardList, Layers,
-  Store, Sparkles, CheckCircle2, ArrowRight,
-  Shirt, Zap, Building2, Users, ShieldCheck
+  Sparkles, ArrowRight,
+  Shirt, Zap, Building2,
 } from "lucide-react";
 import { authFetch } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
@@ -16,7 +16,7 @@ import { OverviewStatCard } from "@/components/dashboard/shared/overview/Overvie
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 
 function Sk({ className }: { className?: string }) {
-  return <div className={`animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800 ${className ?? ""}`} />;
+  return <div className={`animate-pulse rounded-2xl bg-muted ${className ?? ""}`} />;
 }
 
 function PageSkeleton() {
@@ -36,42 +36,46 @@ function PageSkeleton() {
 
 // ─── QuickAction ──────────────────────────────────────────────────────────────
 
-function QuickAction({ href, Icon, iconBg, iconColor, title, sub }: {
+function QuickAction({ href, Icon, title, sub }: {
   href: string; Icon: React.ElementType;
-  iconBg: string; iconColor: string;
   title: string; sub: string;
 }) {
   return (
     <Link href={href}
-      className="flex items-center gap-3.5 rounded-2xl border border-slate-100 bg-white p-4 hover:border-indigo-200 hover:bg-indigo-50/30 hover:shadow-md transition-all duration-200 group dark:bg-slate-900 dark:border-slate-800">
-      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${iconBg} ${iconColor} group-hover:scale-105 transition-transform`}>
+      className="flex items-center gap-3.5 rounded-2xl border border-border bg-card p-4 hover:border-ring/40 hover:bg-muted/30 hover:shadow-md transition-all duration-200 group">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 group-hover:scale-105 transition-transform"
+        style={{ color: "var(--primary)" }}>
         <Icon size={18} />
       </div>
       <div className="min-w-0 flex-1">
-        <p className="text-xs font-black text-slate-900 dark:text-white group-hover:text-indigo-600 transition-colors leading-tight">{title}</p>
-        <p className="text-[11px] font-medium text-slate-400 leading-tight mt-0.5">{sub}</p>
+        <p className="text-xs font-black text-card-foreground group-hover:text-primary transition-colors leading-tight">{title}</p>
+        <p className="text-[11px] font-medium text-muted-foreground leading-tight mt-0.5">{sub}</p>
       </div>
-      <ArrowRight size={14} className="shrink-0 text-slate-300 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" />
+      <ArrowRight size={14} className="shrink-0 text-muted-foreground/40 group-hover:text-primary group-hover:translate-x-1 transition-all" />
     </Link>
   );
 }
 
 // ─── ActivityRow ──────────────────────────────────────────────────────────────
 
-function ActivityRow({ Icon, iconBg, iconColor, title, sub, dotColor }: {
-  Icon: React.ElementType; iconBg: string; iconColor: string;
-  title: string; sub: string; dotColor: string;
+function ActivityRow({ Icon, title, sub, active }: {
+  Icon: React.ElementType;
+  title: string; sub: string; active: boolean;
 }) {
   return (
-    <div className="flex items-start gap-4 px-6 py-4.5">
-      <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${iconBg} ${iconColor} mt-0.5`}>
+    <div className="flex items-start gap-4 px-6 py-4">
+      <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl mt-0.5 ${
+        active ? "bg-primary/10" : "bg-muted"
+      }`} style={{ color: active ? "var(--primary)" : "var(--muted-foreground)" }}>
         <Icon size={16} />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-xs font-black text-slate-900 dark:text-white leading-tight">{title}</p>
-        <p className="text-[11px] text-slate-400 mt-0.5 font-medium">{sub}</p>
+        <p className="text-xs font-black text-card-foreground leading-tight">{title}</p>
+        <p className="text-[11px] text-muted-foreground mt-0.5 font-medium">{sub}</p>
       </div>
-      <span className={`h-2.5 w-2.5 rounded-full mt-1.5 shrink-0 ${dotColor}`} />
+      <span className={`h-2.5 w-2.5 rounded-full mt-1.5 shrink-0 ${
+        active ? "bg-primary animate-pulse" : "bg-muted-foreground/30"
+      }`} />
     </div>
   );
 }
@@ -245,39 +249,45 @@ export function EmployeeOverview() {
 
       {/* ── 3. Main Grid: Workstation Telemetry + Quick Tools ───────────────── */}
       <div className="grid gap-6 md:grid-cols-6 items-start">
-        <div className="md:col-span-4 rounded-3xl border border-slate-200/80 bg-white shadow-sm overflow-hidden dark:bg-slate-900 dark:border-slate-800">
-          <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5 dark:border-slate-800">
+        <div className="md:col-span-4 rounded-3xl border border-border bg-card shadow-sm overflow-hidden">
+          <div className="flex items-center justify-between border-b border-border px-6 py-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10"
+                style={{ color: "var(--primary)" }}>
                 <Zap size={18} />
               </div>
               <div>
-                <h3 className="text-sm font-black text-slate-900 dark:text-white">Workstation Processing Pipeline</h3>
-                <p className="text-[11px] text-slate-400 font-medium">Garment status telemetry &amp; live stage logs</p>
+                <h3 className="text-sm font-black text-card-foreground">Workstation Processing Pipeline</h3>
+                <p className="text-[11px] text-muted-foreground font-medium">Garment status telemetry &amp; live stage logs</p>
               </div>
             </div>
-            <span className="flex items-center gap-1.5 text-[10px] font-black text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 dark:text-emerald-300 px-3 py-1 rounded-full border border-emerald-200 dark:border-emerald-900">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> LIVE
+            <span className="flex items-center gap-1.5 text-[10px] font-black px-3 py-1 rounded-full border"
+              style={{
+                color: "var(--success)",
+                background: "color-mix(in srgb, var(--success) 10%, transparent)",
+                borderColor: "color-mix(in srgb, var(--success) 30%, transparent)",
+              }}>
+              <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ background: "var(--success)" }} /> LIVE
             </span>
           </div>
-          <div className="divide-y divide-slate-100 dark:divide-slate-800">
-            <ActivityRow Icon={PackageCheck}  iconBg="bg-indigo-50 dark:bg-indigo-950/50"  iconColor="text-indigo-600 dark:text-indigo-400"  title="Intake Garments Tagged" sub={`${data?.intakeGarments ?? 0} garments registered today`}  dotColor={data?.intakeGarments > 0  ? "bg-indigo-500" : "bg-slate-300"} />
-            <ActivityRow Icon={QrCode}        iconBg="bg-amber-50 dark:bg-amber-950/50"   iconColor="text-amber-600 dark:text-amber-400"   title="Pending Stage Scan"     sub={`${data?.pendingScan ?? 0} garments awaiting stage update`}           dotColor={data?.pendingScan > 0     ? "bg-amber-500"  : "bg-slate-300"} />
-            <ActivityRow Icon={Layers}        iconBg="bg-blue-50 dark:bg-blue-950/50"    iconColor="text-blue-600 dark:text-blue-400"    title="Washing Batches Active" sub={`${data?.washingBatches ?? 0} active batches in washers & dryers`}    dotColor={data?.washingBatches > 0  ? "bg-blue-500"   : "bg-slate-300"} />
-            <ActivityRow Icon={ClipboardList} iconBg="bg-emerald-50 dark:bg-emerald-950/50" iconColor="text-emerald-600 dark:text-emerald-400" title="Ready for Dispatch"     sub={`${data?.readyDispatch ?? 0} orders ironed & ready to go`}           dotColor={data?.readyDispatch > 0   ? "bg-emerald-500": "bg-slate-300"} />
+          <div className="divide-y divide-border">
+            <ActivityRow Icon={PackageCheck}  title="Intake Garments Tagged" sub={`${data?.intakeGarments ?? 0} garments registered today`}               active={data?.intakeGarments  > 0} />
+            <ActivityRow Icon={QrCode}        title="Pending Stage Scan"     sub={`${data?.pendingScan ?? 0} garments awaiting stage update`}              active={data?.pendingScan     > 0} />
+            <ActivityRow Icon={Layers}        title="Washing Batches Active" sub={`${data?.washingBatches ?? 0} active batches in washers & dryers`}        active={data?.washingBatches  > 0} />
+            <ActivityRow Icon={ClipboardList} title="Ready for Dispatch"     sub={`${data?.readyDispatch ?? 0} orders ironed & ready to go`}               active={data?.readyDispatch   > 0} />
           </div>
         </div>
 
         <div className="md:col-span-2 space-y-5">
-          <div className="rounded-3xl border border-slate-200/80 bg-white p-5 shadow-sm space-y-3 dark:bg-slate-900 dark:border-slate-800">
-            <h3 className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
+          <div className="rounded-3xl border border-border bg-card p-5 shadow-sm space-y-3">
+            <h3 className="text-xs font-black uppercase tracking-wider text-muted-foreground">
               Workstation Tools
             </h3>
             <div className="space-y-2">
-              <QuickAction href="/dashboard/scanner"                  Icon={QrCode}       iconBg="bg-indigo-50"  iconColor="text-indigo-600"  title="Open QR Scanner"    sub="Scan garment QR codes"        />
-              <QuickAction href="/dashboard/intake-orders"  Icon={PackageCheck} iconBg="bg-amber-50"   iconColor="text-amber-600"   title="Garment Intake"     sub="Tag & register garments"      />
-              <QuickAction href="/dashboard/intake-orders"  Icon={Shirt}        iconBg="bg-blue-50"    iconColor="text-blue-600"    title="Processing Orders"  sub="View washing & processing"    />
-              <QuickAction href="/dashboard/intake-orders"  Icon={Building2}    iconBg="bg-emerald-50" iconColor="text-emerald-600" title="Ready for Dispatch" sub="Ironed & ready orders"        />
+              <QuickAction href="/dashboard/scanner"       Icon={QrCode}       title="Open QR Scanner"    sub="Scan garment QR codes"     />
+              <QuickAction href="/dashboard/intake-orders" Icon={PackageCheck} title="Garment Intake"     sub="Tag & register garments"   />
+              <QuickAction href="/dashboard/intake-orders" Icon={Shirt}        title="Processing Orders"  sub="View washing & processing" />
+              <QuickAction href="/dashboard/intake-orders" Icon={Building2}    title="Ready for Dispatch" sub="Ironed & ready orders"     />
             </div>
           </div>
         </div>
