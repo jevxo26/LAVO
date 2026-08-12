@@ -121,15 +121,6 @@ export default function BranchAnalytics() {
         chips={[
           { label: "Net Profit (7d)", value: `৳${totals.netProfit.toLocaleString()}` },
         ]}
-        actions={
-          <Button
-            onClick={() => { setRefreshing(true); fetchAnalytics(); }}
-            variant="outline"
-            className="h-10 px-5 rounded-xl border-white/20 bg-white/10 text-white hover:bg-white/20 font-black text-xs gap-2 backdrop-blur-md transition-all"
-          >
-            <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} /> Refresh
-          </Button>
-        }
       />
 
       {/* ── 2. KPI Cards ─────────────────────────────────────────────────────── */}
@@ -162,6 +153,14 @@ export default function BranchAnalytics() {
             <span className="flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full bg-success" /> Profit
             </span>
+            <Button
+              onClick={() => { setRefreshing(true); fetchAnalytics(); }}
+              variant="outline"
+              size="sm"
+              className="h-8 px-3 rounded-xl text-xs font-black gap-1.5 border-border hover:bg-muted ml-2"
+            >
+              <RefreshCw size={13} className={refreshing ? "animate-spin" : ""} /> Refresh
+            </Button>
           </div>
         </div>
         <div className="p-4 h-[360px]">

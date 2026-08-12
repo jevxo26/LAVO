@@ -2,11 +2,13 @@
 
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
-import { ShieldCheck, Sparkles, RotateCcw, Search, AlertCircle } from "lucide-react";
+import { ShieldCheck, RotateCcw, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import VerificationTable from "./VerificationTable";
 import { VerificationType } from "../types";
 import { motion } from "framer-motion";
+import { DashboardPageHero } from "@/components/shared/DashboardPageHero";
+import { OverviewStatCard }  from "@/components/dashboard/shared/overview/OverviewStatCard";
 
 const Verification = () => {
   const [search, setSearch]   = useState("");
@@ -46,87 +48,55 @@ const Verification = () => {
       transition={{ duration: 0.35 }}
       className="space-y-7"
     >
-      {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 p-7 md:p-9 text-white shadow-2xl border border-blue-800/40">
-        <div className="pointer-events-none absolute inset-0 opacity-20">
-          <div className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-blue-500 blur-3xl" />
-          <div className="absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-cyan-500 blur-3xl" />
-        </div>
-        <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Sparkles size={14} className="text-cyan-300" />
-              <span className="text-cyan-200 text-xs font-black uppercase tracking-widest">Delivery Agent Security</span>
-            </div>
-            <h1 className="text-3xl md:text-4xl font-black tracking-tight text-white leading-tight">Delivery OTP Verification</h1>
-            <p className="text-blue-100 text-xs md:text-sm leading-relaxed font-medium max-w-xl">
-              Verify customer garment handovers safely using 6-digit OTP passcode verification.
-            </p>
-          </div>
-          {!loading && data.length > 0 && (
-            <div className="flex items-center gap-3 shrink-0">
-              <div className="rounded-2xl bg-white/10 border border-white/15 backdrop-blur-xl px-4 py-3 text-center min-w-[85px] shadow-inner">
-                <p className="text-cyan-200 text-[10px] font-black uppercase tracking-wider">Pending</p>
-                <p className="text-white font-black text-xl leading-tight mt-0.5">{pending}</p>
-              </div>
-              <div className="rounded-2xl bg-white/10 border border-white/15 backdrop-blur-xl px-4 py-3 text-center min-w-[85px] shadow-inner">
-                <p className="text-cyan-200 text-[10px] font-black uppercase tracking-wider">Verified</p>
-                <p className="text-white font-black text-xl leading-tight mt-0.5">{verified}</p>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+      {/* ── 1. Hero ──────────────────────────────────────────────────────────── */}
+      <DashboardPageHero
+        badge="Delivery Agent Security"
+        title="Delivery OTP Verification"
+        description="Verify customer garment handovers safely using 6-digit OTP passcode verification."
+        icon={ShieldCheck}
+        liveLabel="Live Dispatch"
+        chips={!loading && data.length > 0 ? [
+          { label: "Pending",  value: pending  },
+          { label: "Verified", value: verified },
+        ] : []}
+      />
 
-      {/* ── Stat cards ────────────────────────────────────────────────────── */}
+      {/* ── 2. Stat Cards ────────────────────────────────────────────────────── */}
       {!loading && data.length > 0 && (
-        <div className="grid grid-cols-3 gap-4">
-          {[
-            { label: "Total",    sub: "All verifications",   value: data.length, iconBg: "bg-blue-50 dark:bg-blue-950/50",  iconColor: "text-blue-600 dark:text-blue-400",  ringColor: "ring-blue-100 dark:ring-blue-900/40"  },
-            { label: "Pending",  sub: "Awaiting OTP",        value: pending,     iconBg: "bg-amber-50 dark:bg-amber-950/50",   iconColor: "text-amber-600 dark:text-amber-400",   ringColor: "ring-amber-100 dark:ring-amber-900/40"   },
-            { label: "Verified", sub: "Confirmed deliveries", value: verified,   iconBg: "bg-emerald-50 dark:bg-emerald-950/50", iconColor: "text-emerald-600 dark:text-emerald-400", ringColor: "ring-emerald-100 dark:ring-emerald-900/40" },
-          ].map(({ label, sub, value, iconBg, iconColor, ringColor }) => (
-            <div key={label} className="flex items-center gap-4 rounded-3xl border border-slate-200/80 bg-white p-5 shadow-sm dark:bg-slate-900 dark:border-slate-800">
-              <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ring-4 ${iconBg} ${iconColor} ${ringColor}`}>
-                <ShieldCheck size={22} />
-              </div>
-              <div className="min-w-0">
-                <p className="text-2xl font-black text-slate-900 dark:text-white leading-none">{value}</p>
-                <p className="mt-1 text-xs font-black text-slate-700 dark:text-slate-200 leading-tight">{label}</p>
-                <p className="text-[11px] font-medium text-slate-400 leading-tight">{sub}</p>
-              </div>
-            </div>
-          ))}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <OverviewStatCard label="Total"    sub="All verifications"    value={data.length} icon={ShieldCheck} gradient="from-blue-500 to-indigo-600"    />
+          <OverviewStatCard label="Pending"  sub="Awaiting OTP"         value={pending}     icon={ShieldCheck} gradient="from-amber-400 to-orange-500"   />
+          <OverviewStatCard label="Verified" sub="Confirmed deliveries" value={verified}    icon={ShieldCheck} gradient="from-emerald-500 to-teal-600"   />
         </div>
       )}
 
-      {/* ── Search toolbar ────────────────────────────────────────────────── */}
-      <div className="rounded-3xl border border-slate-200/80 bg-white p-5 shadow-sm space-y-4 dark:bg-slate-900 dark:border-slate-800">
+      {/* ── 3. Search toolbar ────────────────────────────────────────────────── */}
+      <div className="rounded-3xl border border-border bg-card p-5 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3.5 top-3 text-slate-400" size={15} />
+            <Search className="absolute left-3.5 top-3 text-muted-foreground" size={15} />
             <input
               type="text" value={search} onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by order ID or customer…"
-              className="w-full h-10 rounded-2xl border border-slate-200 bg-slate-50/80 pl-10 pr-4 text-xs font-bold text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+              className="w-full h-10 rounded-2xl border border-border bg-muted/50 pl-10 pr-4 text-xs font-bold text-card-foreground placeholder:text-muted-foreground focus:border-ring focus:bg-card focus:outline-none transition-all"
             />
           </div>
           {search && (
             <Button size="sm" variant="ghost" onClick={() => setSearch("")}
-              className="h-9 px-3 rounded-xl text-xs font-extrabold text-slate-500 hover:text-rose-600 gap-1.5">
+              className="h-9 px-3 rounded-xl text-xs font-extrabold text-muted-foreground hover:text-error gap-1.5">
               <RotateCcw size={13} /> Clear
             </Button>
           )}
           {data.length > 0 && (
-            <p className="text-xs text-slate-400 font-medium">
-              Showing <span className="font-black text-slate-800 dark:text-slate-200">{filteredData.length}</span> of{" "}
-              <span className="font-black text-slate-800 dark:text-slate-200">{data.length}</span>
+            <p className="text-xs text-muted-foreground font-medium">
+              Showing <span className="font-black text-card-foreground">{filteredData.length}</span> of{" "}
+              <span className="font-black text-card-foreground">{data.length}</span>
             </p>
           )}
         </div>
       </div>
 
-      {/* ── Table ─────────────────────────────────────────────────────────── */}
+      {/* ── 4. Table ─────────────────────────────────────────────────────────── */}
       <VerificationTable
         data={filteredData}
         search={search}
@@ -134,7 +104,6 @@ const Verification = () => {
         fetchVerification={fetchVerification}
         loading={loading}
       />
-
     </motion.div>
   );
 };
