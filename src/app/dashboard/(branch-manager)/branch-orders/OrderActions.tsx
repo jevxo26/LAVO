@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Truck, QrCode, Loader2, UserPlus, FileImage,
-  Store, ArrowUpRight, CheckCircle2, Package,
+  Store, ArrowUpRight, CheckCircle2,
 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader,
@@ -54,7 +54,8 @@ export function OrderActions({ order, onUpdate }: { order: any; onUpdate?: () =>
     });
     const json = await res.json();
     if (res.ok && json.success) {
-      toast.success(json.message || "Vendor assigned successfully"); setVendorOpen(false); onUpdate?.();
+      toast.success(json.message || "Vendor assigned successfully");
+      setVendorOpen(false); onUpdate?.();
     } else { toast.error(json.message || "Failed to assign vendor"); }
   };
 
@@ -106,61 +107,89 @@ export function OrderActions({ order, onUpdate }: { order: any; onUpdate?: () =>
     <>
       <div className="flex items-center gap-1.5 flex-wrap">
         {order.orderStatus === "PROCESSING" && (
-          <Button size="sm" onClick={markReadyForDelivery}
-            className="h-8 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold gap-1.5 px-3">
+          <Button
+            size="sm"
+            onClick={markReadyForDelivery}
+            className="h-8 rounded-xl text-white text-xs font-black gap-1.5 px-3"
+            style={{ background: "var(--success)" }}
+          >
             <CheckCircle2 size={12} /> Ready
           </Button>
         )}
         {!order.pickupAgentId && ["PENDING","CONFIRMED"].includes(order.orderStatus) && (
-          <Button variant="outline" size="sm" onClick={openAssignModal}
-            className="h-8 rounded-xl border-orange-200 text-orange-600 hover:bg-orange-50 text-xs font-bold px-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={openAssignModal}
+            className="h-8 rounded-xl border-warning/30 hover:bg-warning/10 text-xs font-black px-3"
+            style={{ color: "var(--warning)" }}
+          >
             <Truck size={12} />
           </Button>
         )}
-        <Button variant="outline" size="sm" onClick={openVendorModal}
-          className="h-8 rounded-xl border-indigo-200 text-indigo-600 hover:bg-indigo-50 text-xs font-bold px-3">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={openVendorModal}
+          className="h-8 rounded-xl border-primary/25 hover:bg-primary/10 text-xs font-black px-3"
+          style={{ color: "var(--primary)" }}
+        >
           <Store size={12} />
         </Button>
-        <Button variant="outline" size="sm" onClick={openQrModal}
-          className="h-8 rounded-xl border-slate-200 text-slate-600 hover:bg-slate-50 text-xs font-bold px-3">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={openQrModal}
+          className="h-8 rounded-xl border-border hover:bg-muted text-xs font-black px-3 text-muted-foreground"
+        >
           <QrCode size={12} />
         </Button>
       </div>
 
-      {/* ── Assign Vendor dialog ─────────────────────────────────────────── */}
+      {/* ── Assign Vendor Dialog ─────────────────────────────────────────── */}
       <Dialog open={vendorOpen} onOpenChange={setVendorOpen}>
-        <DialogContent className="rounded-2xl">
+        <DialogContent className="rounded-3xl border border-border bg-card">
           <DialogHeader>
-            <div className="mx-auto mb-2 flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-50">
-              <Store size={20} className="text-indigo-500" />
+            <div className="mx-auto mb-2 flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10"
+              style={{ color: "var(--primary)" }}>
+              <Store size={20} />
             </div>
-            <DialogTitle className="text-center text-base font-extrabold text-slate-900">
+            <DialogTitle className="text-center text-base font-black text-card-foreground">
               Assign to Vendor
             </DialogTitle>
-            <DialogDescription className="text-center text-xs text-slate-400">
+            <DialogDescription className="text-center text-xs text-muted-foreground">
               Order #{order.orderNumber} — select a partner vendor based on available capacity.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2.5 max-h-[60vh] overflow-y-auto pt-1">
             {loading ? (
-              <div className="flex justify-center py-8"><Loader2 className="animate-spin h-6 w-6 text-indigo-500" /></div>
+              <div className="flex justify-center py-8">
+                <Loader2 className="animate-spin h-6 w-6" style={{ color: "var(--primary)" }} />
+              </div>
             ) : vendors.length === 0 ? (
-              <p className="text-center text-sm text-slate-400 py-6">No vendors for this branch.</p>
+              <p className="text-center text-sm text-muted-foreground py-6">No vendors for this branch.</p>
             ) : (
               vendors.map((v) => (
-                <div key={v.id} className="flex items-center justify-between rounded-xl border border-slate-100 p-4 hover:bg-slate-50 transition-colors">
+                <div key={v.id} className="flex items-center justify-between rounded-2xl border border-border p-4 hover:bg-muted/40 transition-colors">
                   <div className="space-y-1">
-                    <p className="font-bold text-sm text-slate-900">{v.businessName}</p>
-                    <p className="text-xs text-slate-400">Code: {v.vendorCode} · {v.phone}</p>
-                    <Badge variant="outline"
-                      className={v.availableCapacity > 0
-                        ? "text-[10px] bg-emerald-50 text-emerald-700 border-emerald-200"
-                        : "text-[10px] bg-rose-50 text-rose-700 border-rose-200"}>
+                    <p className="font-black text-sm text-card-foreground">{v.businessName}</p>
+                    <p className="text-xs text-muted-foreground">Code: {v.vendorCode} · {v.phone}</p>
+                    <Badge
+                      variant="outline"
+                      className={`text-[10px] ${v.availableCapacity > 0
+                        ? "bg-success/10 text-success border-success/25"
+                        : "bg-error/10 text-error border-error/25"}`}
+                    >
                       {v.availableCapacity}/{v.dailyCapacity} slots available
                     </Badge>
                   </div>
-                  <Button size="sm" disabled={v.isFull} onClick={() => assignVendor(v.id)}
-                    className="h-8 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs gap-1.5">
+                  <Button
+                    size="sm"
+                    disabled={v.isFull}
+                    onClick={() => assignVendor(v.id)}
+                    className="h-8 rounded-xl text-white font-black text-xs gap-1.5"
+                    style={{ background: "linear-gradient(135deg, var(--primary), var(--ring))" }}
+                  >
                     Assign <ArrowUpRight size={12} />
                   </Button>
                 </div>
@@ -170,32 +199,41 @@ export function OrderActions({ order, onUpdate }: { order: any; onUpdate?: () =>
         </DialogContent>
       </Dialog>
 
-      {/* ── Assign Agent dialog ──────────────────────────────────────────── */}
+      {/* ── Assign Agent Dialog ──────────────────────────────────────────── */}
       <Dialog open={assignOpen} onOpenChange={setAssignOpen}>
-        <DialogContent className="rounded-2xl">
+        <DialogContent className="rounded-3xl border border-border bg-card">
           <DialogHeader>
-            <div className="mx-auto mb-2 flex h-11 w-11 items-center justify-center rounded-2xl bg-orange-50">
-              <Truck size={20} className="text-orange-500" />
+            <div className="mx-auto mb-2 flex h-11 w-11 items-center justify-center rounded-2xl bg-warning/10"
+              style={{ color: "var(--warning)" }}>
+              <Truck size={20} />
             </div>
-            <DialogTitle className="text-center text-base font-extrabold text-slate-900">Assign Delivery Agent</DialogTitle>
-            <DialogDescription className="text-center text-xs text-slate-400">
+            <DialogTitle className="text-center text-base font-black text-card-foreground">
+              Assign Delivery Agent
+            </DialogTitle>
+            <DialogDescription className="text-center text-xs text-muted-foreground">
               Select an available agent to handle this pickup.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2.5 max-h-[60vh] overflow-y-auto pt-1">
             {loading ? (
-              <div className="flex justify-center py-8"><Loader2 className="animate-spin h-6 w-6 text-orange-500" /></div>
+              <div className="flex justify-center py-8">
+                <Loader2 className="animate-spin h-6 w-6" style={{ color: "var(--warning)" }} />
+              </div>
             ) : agents.length === 0 ? (
-              <p className="text-center text-sm text-slate-400 py-6">No agents available.</p>
+              <p className="text-center text-sm text-muted-foreground py-6">No agents available.</p>
             ) : (
               agents.map((agent) => (
-                <div key={agent.id} className="flex items-center justify-between rounded-xl border border-slate-100 p-4 hover:bg-slate-50 transition-colors">
+                <div key={agent.id} className="flex items-center justify-between rounded-2xl border border-border p-4 hover:bg-muted/40 transition-colors">
                   <div>
-                    <p className="font-bold text-sm text-slate-900">{agent.user?.fullName || agent.employeeCode}</p>
-                    <p className="text-xs text-slate-400">{agent.phone}</p>
+                    <p className="font-black text-sm text-card-foreground">{agent.user?.fullName || agent.employeeCode}</p>
+                    <p className="text-xs text-muted-foreground">{agent.phone}</p>
                   </div>
-                  <Button size="sm" onClick={() => assignAgent(agent.id)}
-                    className="h-8 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs gap-1.5">
+                  <Button
+                    size="sm"
+                    onClick={() => assignAgent(agent.id)}
+                    className="h-8 rounded-xl text-white font-black text-xs gap-1.5"
+                    style={{ background: "var(--warning)" }}
+                  >
                     <UserPlus size={12} /> Assign
                   </Button>
                 </div>
@@ -205,47 +243,60 @@ export function OrderActions({ order, onUpdate }: { order: any; onUpdate?: () =>
         </DialogContent>
       </Dialog>
 
-      {/* ── QR Codes dialog ──────────────────────────────────────────────── */}
+      {/* ── QR Codes Dialog ──────────────────────────────────────────────── */}
       <Dialog open={qrOpen} onOpenChange={setQrOpen}>
-        <DialogContent className="rounded-2xl">
+        <DialogContent className="rounded-3xl border border-border bg-card">
           <DialogHeader>
-            <div className="mx-auto mb-2 flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100">
-              <QrCode size={20} className="text-slate-600" />
+            <div className="mx-auto mb-2 flex h-11 w-11 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
+              <QrCode size={20} />
             </div>
-            <DialogTitle className="text-center text-base font-extrabold text-slate-900">Garment QR Codes</DialogTitle>
-            <DialogDescription className="text-center text-xs text-slate-400">
+            <DialogTitle className="text-center text-base font-black text-card-foreground">
+              Garment QR Codes
+            </DialogTitle>
+            <DialogDescription className="text-center text-xs text-muted-foreground">
               Order #{order.orderNumber} — generate and view QR labels.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2.5 max-h-[60vh] overflow-y-auto pt-1">
             {loading ? (
-              <div className="flex justify-center py-8"><Loader2 className="animate-spin h-6 w-6 text-slate-500" /></div>
+              <div className="flex justify-center py-8">
+                <Loader2 className="animate-spin h-6 w-6 text-muted-foreground" />
+              </div>
             ) : items.length === 0 ? (
-              <p className="text-center text-sm text-slate-400 py-6">No garments found for this order.</p>
+              <p className="text-center text-sm text-muted-foreground py-6">No garments found for this order.</p>
             ) : (
               items.map((item) => (
-                <div key={item.id} className="flex items-center justify-between rounded-xl border border-slate-100 p-4 hover:bg-slate-50 transition-colors">
+                <div key={item.id} className="flex items-center justify-between rounded-2xl border border-border p-4 hover:bg-muted/40 transition-colors">
                   <div className="space-y-1 min-w-0">
-                    <p className="font-semibold text-sm text-slate-900 truncate">
+                    <p className="font-black text-sm text-card-foreground truncate">
                       {item.garmentName}
-                      <span className="ml-1.5 text-xs text-slate-400 font-mono">({item.garmentCode})</span>
+                      <span className="ml-1.5 text-xs text-muted-foreground font-mono">({item.garmentCode})</span>
                     </p>
                     {item.qrCodeRecord ? (
-                      <p className="text-[10px] font-mono text-indigo-600 truncate">{item.qrCodeRecord.qrCode}</p>
+                      <p className="text-[10px] font-mono truncate" style={{ color: "var(--primary)" }}>
+                        {item.qrCodeRecord.qrCode}
+                      </p>
                     ) : (
-                      <p className="text-[11px] text-amber-600 font-medium">No QR code yet</p>
+                      <p className="text-[11px] font-bold" style={{ color: "var(--warning)" }}>No QR code yet</p>
                     )}
                   </div>
                   <div className="shrink-0 ml-3">
                     {!item.qrCodeRecord ? (
-                      <Button size="sm" onClick={() => generateQrCode(item.id)}
-                        className="h-8 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold gap-1.5 px-3">
+                      <Button
+                        size="sm"
+                        onClick={() => generateQrCode(item.id)}
+                        className="h-8 rounded-xl text-white text-xs font-black gap-1.5 px-3"
+                        style={{ background: "linear-gradient(135deg, var(--primary), var(--ring))" }}
+                      >
                         <QrCode size={11} /> Generate
                       </Button>
                     ) : (
-                      <Button variant="outline" size="sm"
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => window.open(`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${item.qrCodeRecord.qrCode}`, "_blank")}
-                        className="h-8 rounded-xl border-slate-200 text-slate-600 text-xs font-bold gap-1.5 px-3">
+                        className="h-8 rounded-xl border-border text-muted-foreground text-xs font-black gap-1.5 px-3 hover:bg-muted"
+                      >
                         <FileImage size={11} /> View
                       </Button>
                     )}
