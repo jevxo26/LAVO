@@ -1,13 +1,13 @@
-import { Search, RotateCcw } from "lucide-react";
+import { Search, RotateCcw, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export type OrderTab = "ALL" | "PENDING" | "PROCESSING" | "READY" | "COMPLETED";
 
 const TAB_META: Record<OrderTab, { label: string; activeStyle: React.CSSProperties }> = {
-  ALL:        { label: "All Orders",  activeStyle: { background: "var(--primary)"  } },
-  PENDING:    { label: "Pending",     activeStyle: { background: "var(--warning)"  } },
-  PROCESSING: { label: "Processing",  activeStyle: { background: "var(--primary)"  } },
-  READY:      { label: "Ready",       activeStyle: { background: "var(--success)"  } },
+  ALL:        { label: "All Orders",  activeStyle: { background: "var(--primary)"   } },
+  PENDING:    { label: "Pending",     activeStyle: { background: "var(--warning)"   } },
+  PROCESSING: { label: "Processing",  activeStyle: { background: "var(--primary)"   } },
+  READY:      { label: "Ready",       activeStyle: { background: "var(--success)"   } },
   COMPLETED:  { label: "Completed",   activeStyle: { background: "var(--secondary)" } },
 };
 
@@ -18,36 +18,52 @@ interface Props {
   search: string;
   onSearchChange: (v: string) => void;
   totalFiltered: number;
+  onRefresh?: () => void;
+  refreshing?: boolean;
 }
 
 export function OrderToolbar({
   activeTab, onTabChange, tabCounts, search, onSearchChange, totalFiltered,
+  onRefresh, refreshing,
 }: Props) {
   return (
     <div className="rounded-3xl border border-border bg-card p-5 shadow-sm space-y-4">
-      {/* Tab pills */}
-      <div className="flex flex-wrap gap-2">
-        {(Object.keys(TAB_META) as OrderTab[]).map((tab) => {
-          const meta   = TAB_META[tab];
-          const active = activeTab === tab;
-          return (
-            <button
-              key={tab}
-              onClick={() => onTabChange(tab)}
-              className={`flex items-center gap-2 rounded-2xl px-4 py-2 text-xs font-black transition-all duration-200 ${
-                active ? "text-white shadow-md" : "bg-muted text-muted-foreground hover:bg-muted/80"
-              }`}
-              style={active ? meta.activeStyle : undefined}
-            >
-              {meta.label}
-              <span className={`rounded-full px-2 py-0.5 text-[10px] font-black ${
-                active ? "bg-white/25 text-white" : "bg-border text-muted-foreground"
-              }`}>
-                {tabCounts[tab]}
-              </span>
-            </button>
-          );
-        })}
+      {/* Tabs + Refresh */}
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap gap-2">
+          {(Object.keys(TAB_META) as OrderTab[]).map((tab) => {
+            const meta   = TAB_META[tab];
+            const active = activeTab === tab;
+            return (
+              <button
+                key={tab}
+                onClick={() => onTabChange(tab)}
+                className={`flex items-center gap-2 rounded-2xl px-4 py-2 text-xs font-black transition-all duration-200 ${
+                  active ? "text-white shadow-md" : "bg-muted text-muted-foreground hover:bg-muted/80"
+                }`}
+                style={active ? meta.activeStyle : undefined}
+              >
+                {meta.label}
+                <span className={`rounded-full px-2 py-0.5 text-[10px] font-black ${
+                  active ? "bg-white/25 text-white" : "bg-border text-muted-foreground"
+                }`}>
+                  {tabCounts[tab]}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {onRefresh && (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={onRefresh}
+            className="h-9 px-3 rounded-xl text-xs font-black gap-1.5 border-border hover:bg-muted shrink-0"
+          >
+            <RefreshCw size={13} className={refreshing ? "animate-spin" : ""} /> Refresh
+          </Button>
+        )}
       </div>
 
       {/* Search */}

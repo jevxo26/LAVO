@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, ArrowRight, RefreshCw, Inbox, Building2 } from "lucide-react";
+import { AlertTriangle, ArrowRight, Inbox, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import io from "socket.io-client";
@@ -102,15 +102,6 @@ export default function BranchOrders() {
           { label: "Pending", value: stats.pending     },
           { label: "Ready",   value: stats.ready       },
         ]}
-        actions={
-          <Button
-            onClick={() => fetchOrders(true)}
-            variant="outline"
-            className="h-10 px-5 rounded-xl border-white/20 bg-white/10 text-white hover:bg-white/20 font-black text-xs gap-2 backdrop-blur-md transition-all"
-          >
-            <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} /> Refresh
-          </Button>
-        }
       />
 
       {/* ── 2. Overflow Alert ───────────────────────────────────────────────── */}
@@ -156,6 +147,7 @@ export default function BranchOrders() {
         activeTab={activeTab} onTabChange={setActiveTab}
         tabCounts={tabCounts} search={search}
         onSearchChange={setSearch} totalFiltered={filtered.length}
+        onRefresh={() => fetchOrders(true)} refreshing={refreshing}
       />
 
       {/* ── 5. Order List ────────────────────────────────────────────────────── */}
