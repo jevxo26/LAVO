@@ -108,11 +108,11 @@ export function ScannerView({ user }: Props) {
                 background: "color-mix(in srgb, var(--error) 10%, transparent)",
                 borderColor: "color-mix(in srgb, var(--error) 30%, transparent)",
               }}>
-              <div className="rounded-full p-5 ring-4"
-                style={{
-                  background: "color-mix(in srgb, var(--error) 15%, transparent)",
-                  ringColor: "color-mix(in srgb, var(--error) 30%, transparent)",
-                }}>
+            <div className="rounded-full p-5"
+              style={{
+                background: "color-mix(in srgb, var(--error) 15%, transparent)",
+                boxShadow: "0 0 0 4px color-mix(in srgb, var(--error) 30%, transparent)",
+              }}>
                 <LockKeyhole size={56} style={{ color: "color-mix(in srgb, var(--error) 70%, white)" }} />
               </div>
               <div>
@@ -256,10 +256,10 @@ export function ScannerView({ user }: Props) {
         {/* ── SUCCESS ── */}
         {scanState === "success" && lastResult && (
           <div className="flex flex-col items-center gap-5 py-10 text-center">
-            <div className="rounded-full p-5 ring-4"
+            <div className="rounded-full p-5"
               style={{
                 background: "color-mix(in srgb, var(--success) 15%, transparent)",
-                ringColor: "color-mix(in srgb, var(--success) 30%, transparent)",
+                boxShadow: "0 0 0 4px color-mix(in srgb, var(--success) 30%, transparent)",
               }}>
               <CheckCircle2 size={64} style={{ color: "color-mix(in srgb, var(--success) 70%, white)" }} />
             </div>
@@ -309,10 +309,10 @@ export function ScannerView({ user }: Props) {
         {/* ── ERROR ── */}
         {scanState === "error" && (
           <div className="flex flex-col items-center gap-5 py-10 text-center">
-            <div className="rounded-full p-5 ring-4"
+            <div className="rounded-full p-5"
               style={{
                 background: "color-mix(in srgb, var(--error) 15%, transparent)",
-                ringColor: "color-mix(in srgb, var(--error) 30%, transparent)",
+                boxShadow: "0 0 0 4px color-mix(in srgb, var(--error) 30%, transparent)",
               }}>
               <XCircle size={64} style={{ color: "color-mix(in srgb, var(--error) 70%, white)" }} />
             </div>

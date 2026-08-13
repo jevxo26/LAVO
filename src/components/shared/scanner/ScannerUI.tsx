@@ -47,7 +47,11 @@ export function useScannerLogic(user: any) {
     isProcessingScanRef.current = true;
 
     const trimmedCode = decodedText.trim();
-    if (!trimmedCode) return;
+    if (!trimmedCode) {
+      // Reset ref so subsequent real scans are not blocked
+      isProcessingScanRef.current = false;
+      return;
+    }
 
     setPendingCode(trimmedCode);
     setCurrentGarmentStatus(null);
@@ -104,17 +108,19 @@ export function useScannerLogic(user: any) {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setLastResult({ ...payload, timestamp: new Date() });
+        setLastResult({ qrCode: payload.qrCode, status: payload.status, serviceName: payload.serviceName, orderNumber: payload.orderNumber, garmentName: payload.garmentName, timestamp: new Date() });
         setScanState("success");
         return;
       }
+      // Server returned a non-success response — show error
+      setErrorMessage(data.message || "Server rejected the scan. Please try again.");
+      setScanState("error");
     } catch (err: any) {
+      // Network or parse failure — show error, don't silently succeed
       console.warn("REST scan update:", err);
+      setErrorMessage("Could not save scan — check your connection and try again.");
+      setScanState("error");
     }
-
-    // Local fallback — never block the employee
-    setLastResult({ ...payload, timestamp: new Date() });
-    setScanState("success");
   }, [pendingCode, user, emitScan, scannedServiceName, scannedOrderNumber, scannedGarmentName]);
 
   const handleScanFailure = useCallback(() => {}, []);
