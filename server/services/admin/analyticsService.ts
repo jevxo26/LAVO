@@ -15,14 +15,15 @@ export class AnalyticsService {
       }),
       prisma.vendorCommission.aggregate({
         _sum: { commissionAmount: true },
-        where: { status: "PAID" },
       }),
     ]);
 
-    const grossRevenue = revenueAgg._sum.grandTotal || 0;
-    // Calculate net revenue from actual vendor commissions if present, or fallback to financial rules
-    const netRevenue = commissionAgg._sum.commissionAmount && commissionAgg._sum.commissionAmount > 0
-      ? commissionAgg._sum.commissionAmount
+    const grossRevenue = revenueAgg._sum?.grandTotal || 0;
+    const commissionTotal = commissionAgg._sum?.commissionAmount;
+
+    // Calculate net revenue from actual vendor commissions if present, or fallback to 15% calculation
+    const netRevenue = commissionTotal && commissionTotal > 0
+      ? commissionTotal
       : parseFloat((grossRevenue * 0.15).toFixed(2));
 
     const averageOrderValue = totalOrders > 0 ? parseFloat((grossRevenue / totalOrders).toFixed(2)) : 0;
