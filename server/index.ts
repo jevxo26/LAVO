@@ -42,18 +42,17 @@ import partnerApplicationRoutes from "./routes/super-admin/partnerApplicationRou
 import notificationRoutes from "./routes/shared/notificationRoutes";
 import agentOpsRoutes from "./routes/admin/agentOpsRoutes";
 import { initSocket } from "./sockets/socket";
+import { validateEnvironmentVariables } from "./config/envValidation";
 import prisma from "./config/prisma";
 import { authRateLimiter, paymentRateLimiter, apiRateLimiter } from "./middlewares/rateLimiter";
 
 const dev = process.env.NODE_ENV !== 'production';
 const app = next({ dev, dir: process.cwd() });
 const handle = app.getRequestHandler();
-
 const port = process.env.PORT || 3000;
 
-
-
 app.prepare().then(async () => {
+  validateEnvironmentVariables();
   const server = express();
 
   // Middleware

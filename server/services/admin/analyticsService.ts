@@ -1,6 +1,4 @@
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import prisma from "../../config/prisma";
 
 export class AnalyticsService {
   static async getOverviewStats() {
@@ -10,14 +8,23 @@ export class AnalyticsService {
       prisma.vendor.count({ where: { status: "ACTIVE" } }),
     ]);
 
-    const revenueAgg = await prisma.order.aggregate({
-      _sum: { grandTotal: true },
-      where: { paymentStatus: "PAID" },
-    });
+    const [revenueAgg, commissionAgg] = await Promise.all([
+      prisma.order.aggregate({
+        _sum: { grandTotal: true },
+        where: { paymentStatus: "PAID" },
+      }),
+      prisma.vendorCommission.aggregate({
+        _sum: { commissionAmount: true },
+        where: { status: "PAID" },
+      }),
+    ]);
 
     const grossRevenue = revenueAgg._sum.grandTotal || 0;
-    // Net Platform Revenue is simulated as 15% commission of gross revenue for simplicity
-    const netRevenue = parseFloat((grossRevenue * 0.15).toFixed(2));
+    // Calculate net revenue from actual vendor commissions if present, or fallback to financial rules
+    const netRevenue = commissionAgg._sum.commissionAmount && commissionAgg._sum.commissionAmount > 0
+      ? commissionAgg._sum.commissionAmount
+      : parseFloat((grossRevenue * 0.15).toFixed(2));
+
     const averageOrderValue = totalOrders > 0 ? parseFloat((grossRevenue / totalOrders).toFixed(2)) : 0;
 
     return {
@@ -64,12 +71,6 @@ export class AnalyticsService {
       }
     });
 
-    return Object.values(dailyData)
-      .sort((a, b) => a.date.localeCompare(b.date))
-      .map((d) => ({
-        ...d,
-        revenue: parseFloat(d.revenue.toFixed(2)),
-        netCommission: parseFloat((d.revenue * 0.15).toFixed(2)),
-      }));
+    return Object.values(dailyData).sort((a, b) => a.date.localeCompare(b.date));
   }
 }
