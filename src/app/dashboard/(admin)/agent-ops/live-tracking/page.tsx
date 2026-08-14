@@ -8,10 +8,16 @@ import {
   LayoutGrid, List, ArrowUpDown, Search, RotateCcw,
   Wifi, WifiOff, Package, MapPin,
 } from "lucide-react";
+import dynamic from "next/dynamic";
 import { Button }            from "@/components/ui/button";
 import { DashboardPageHero } from "@/components/shared/DashboardPageHero";
 import { OpsTable }          from "@/components/shared/OpsTable";
 import { motion }            from "framer-motion";
+
+const FleetMapView = dynamic(() => import("./_components/FleetMapView"), {
+  ssr: false,
+  loading: () => <div className="w-full h-[550px] rounded-3xl bg-muted animate-pulse" />,
+});
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -27,10 +33,12 @@ interface Agent {
   activePickups:    number;
   activeDeliveries: number;
   batteryLevel:     string;
+  vehicleNumber?:   string | null;
+  vehicleType?:     string;
 }
 
 type SortKey  = "name" | "pickups" | "deliveries" | "battery";
-type ViewMode = "grid" | "list";
+type ViewMode = "grid" | "list" | "map";
 
 const AUTO_REFRESH_SEC = 20;
 
@@ -268,11 +276,13 @@ export default function AgentLiveTrackingPage() {
           </div>
           {/* View toggle */}
           <div className="flex items-center gap-0.5 rounded-xl border border-border bg-muted p-1">
-            {(["grid","list"] as ViewMode[]).map((v) => (
+            {(["grid","list","map"] as ViewMode[]).map((v) => (
               <button key={v} onClick={() => setViewMode(v)}
-                className={`flex h-6 w-6 items-center justify-center rounded-lg transition-all ${
+                title={v === "map" ? "Map View" : v === "grid" ? "Grid View" : "List View"}
+                className={`flex h-6 px-2 items-center gap-1 justify-center rounded-lg text-xs font-bold transition-all ${
                   viewMode === v ? "bg-card text-card-foreground shadow-sm" : "text-muted-foreground hover:text-card-foreground"}`}>
-                {v === "grid" ? <LayoutGrid size={13} /> : <List size={13} />}
+                {v === "grid" ? <LayoutGrid size={13} /> : v === "list" ? <List size={13} /> : <MapPin size={13} />}
+                <span className="capitalize text-[11px] hidden sm:inline">{v}</span>
               </button>
             ))}
           </div>
@@ -303,6 +313,8 @@ export default function AgentLiveTrackingPage() {
               className="mt-3 rounded-xl text-xs font-bold gap-1"><RotateCcw size={12} /> Clear Filters</Button>
           )}
         </div>
+      ) : viewMode === "map" ? (
+        <FleetMapView agents={displayed} />
       ) : viewMode === "grid" ? (
 
         // ── Grid ──────────────────────────────────────────────────────────

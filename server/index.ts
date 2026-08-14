@@ -41,6 +41,7 @@ import { auditLogger } from "./middlewares/auditMiddleware";
 import partnerApplicationRoutes from "./routes/super-admin/partnerApplicationRoute";
 import notificationRoutes from "./routes/shared/notificationRoutes";
 import profileRoutes from "./routes/shared/profileRoutes";
+import agentOpsRoutes from "./routes/admin/agentOpsRoutes";
 import { initSocket } from "./sockets/socket";
 
 const prisma = new PrismaClient();
@@ -142,6 +143,7 @@ app.prepare().then(async () => {
   server.use('/api/partner-applications', partnerApplicationRoutes);
   server.use('/api/notifications', notificationRoutes);
   server.use('/api/profile', profileRoutes);
+  server.use('/api/agent-ops', agentOpsRoutes);
   // Serve uploaded files statically
   server.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));
 

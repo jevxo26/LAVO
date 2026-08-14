@@ -296,6 +296,51 @@ export const initSocket = (server: HttpServer) => {
       }
     });
 
+    // ── Live Agent GPS Location & Status Telemetry ─────────────────────────────
+    socket.on('updateAgentLocation', async (data: { agentId: string; lat: number; lng: number; batteryLevel?: number; speed?: number }) => {
+      try {
+        const { agentId, lat, lng, batteryLevel, speed } = data;
+        if (!agentId || lat === undefined || lng === undefined) return;
+
+        // Find agent
+        const agent = await prisma.deliveryAgent.findFirst({
+          where: { OR: [{ id: agentId }, { userId: agentId }, { employeeCode: agentId }] },
+        });
+
+        if (agent) {
+          // Update DeliveryAgent.currentLocation
+          await prisma.deliveryAgent.update({
+            where: { id: agent.id },
+            data: { currentLocation: JSON.stringify({ lat, lng }), updatedAt: new Date() },
+          });
+
+          // Save tracking ping if active delivery exists or for history
+          const activeDelivery = await prisma.delivery.findFirst({
+            where: { assignedAgentId: agent.id, deliveryStatus: { in: ['ASSIGNED', 'ACCEPTED', 'EN_ROUTE', 'IN_TRANSIT', 'OUT_FOR_DELIVERY'] } },
+          });
+
+          if (activeDelivery) {
+            await prisma.liveTracking.create({
+              data: {
+                deliveryId: activeDelivery.id,
+                agentId: agent.id,
+                latitude: lat,
+                longitude: lng,
+                batteryLevel: batteryLevel ?? 90,
+                speed: speed ?? 0,
+                lastUpdateAt: new Date(),
+              },
+            });
+          }
+        }
+
+        // Broadcast to all clients (including Admin Live Tracking dashboard)
+        io.emit('agentLocationUpdate', { agentId: agent?.id || agentId, lat, lng, batteryLevel, speed, timestamp: new Date() });
+      } catch (err) {
+        console.error('❌ Error updating agent location:', err);
+      }
+    });
+
     socket.on('disconnect', () => {
       console.log('A client disconnected:', socket.id);
     });

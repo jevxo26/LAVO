@@ -13,12 +13,14 @@ import {
   Loader2,
   Shirt,
   Hash,
+  Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { OrderRecord, fmtDate, fmtDateTime, gradientFor } from "./types";
 import { OrderStatusBadge, OrderPaymentBadge } from "./Badges";
 import { OrderTimeline } from "./OrderTimeline";
 import { InvoiceSummary } from "./InvoiceSummary";
+import { downloadInvoice } from "@/lib/generateInvoiceHtml";
 
 // ─── Thumbnail ────────────────────────────────────────────────────────────────
 
@@ -191,6 +193,15 @@ export function OrderCard({
             className="flex items-center gap-2"
             onClick={(e) => e.stopPropagation()}
           >
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => downloadInvoice(order)}
+              className="h-8 rounded-xl border-slate-200 text-slate-700 hover:bg-slate-100 text-xs font-bold px-2.5 gap-1.5 shadow-2xs"
+            >
+              <Download size={12} className="text-blue-600" /> Invoice
+            </Button>
+
             {canPay && (
               <Button
                 size="sm"
