@@ -54,13 +54,13 @@ export class AnalyticsService {
     });
 
     // Group by date
-    const dailyData: Record<string, { date: string; orders: number; revenue: number }> = {};
+    const dailyData: Record<string, { date: string; orders: number; revenue: number; netCommission: number }> = {};
 
     for (let i = 0; i < 30; i++) {
       const d = new Date();
       d.setDate(d.getDate() - i);
       const dateStr = d.toISOString().split("T")[0];
-      dailyData[dateStr] = { date: dateStr, orders: 0, revenue: 0 };
+      dailyData[dateStr] = { date: dateStr, orders: 0, revenue: 0, netCommission: 0 };
     }
 
     orders.forEach((o) => {
@@ -68,6 +68,7 @@ export class AnalyticsService {
       if (dailyData[dateStr]) {
         dailyData[dateStr].orders += 1;
         dailyData[dateStr].revenue += o.grandTotal;
+        dailyData[dateStr].netCommission += parseFloat((o.grandTotal * 0.15).toFixed(2));
       }
     });
 
