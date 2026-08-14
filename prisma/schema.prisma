@@ -436,6 +436,11 @@ model CustomerTransaction {
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
   wallet          CustomerWallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@index([walletId])
+  @@index([status])
+  @@index([referenceId])
+  @@index([createdAt])
 }
 
 model CustomerLoyaltyPoint {
@@ -639,6 +644,10 @@ model BranchEmployee {
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
   branch         Branch    @relation(fields: [branchId], references: [id], onDelete: Cascade)
+
+  @@unique([branchId, employeeId])
+  @@index([branchId])
+  @@index([employeeId])
 }
 
 model BranchManager {
@@ -913,6 +922,12 @@ model Delivery {
   timelines          DeliveryTimeline[]
   verifications      DeliveryVerification[]
   trackings          LiveTracking[]
+
+  @@index([orderId])
+  @@index([customerId])
+  @@index([branchId])
+  @@index([assignedAgentId])
+  @@index([deliveryStatus])
 }
 
 model DeliveryRequest {
@@ -1162,6 +1177,11 @@ model Payment {
   updatedAt       DateTime  @updatedAt
   customer        Customer  @relation(fields: [customerId], references: [id])
   order           Order     @relation(fields: [orderId], references: [id])
+
+  @@index([orderId])
+  @@index([customerId])
+  @@index([paymentStatus])
+  @@index([transactionId])
 }
 
 model PaymentMethod {
@@ -1315,6 +1335,14 @@ model Order {
   reviews               Review[]
   vendorAssignments     VendorAssignment[]
   vendorCommissions     VendorCommission[]
+
+  @@index([customerId])
+  @@index([branchId])
+  @@index([orderStatus])
+  @@index([paymentStatus])
+  @@index([createdAt])
+  @@index([pickupAgentId])
+  @@index([deliveryAgentId])
 }
 
 model OrderItem {
@@ -1357,6 +1385,9 @@ model GarmentItem {
   missingGarments    MissingGarment[]
   qrCodeTrackings    QRCodeTracking[]
   rewashRequests     RewashRequest[]
+
+  @@index([orderItemId])
+  @@index([status])
 }
 
 model GarmentQRCode {

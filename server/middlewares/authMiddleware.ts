@@ -8,14 +8,15 @@ export interface AuthRequest extends Request {
 
 export const verifyToken = (req: AuthRequest, res: Response, next: NextFunction): void => {
   const authHeader = req.headers.authorization;
-  if (!authHeader) {
-    res.status(401).json({ error: 'Access denied. No token provided.' });
-    return;
+  let token = authHeader ? authHeader.split(' ')[1] : null;
+
+  // Fallback to httpOnly cookies if header is missing
+  if (!token && req.cookies) {
+    token = req.cookies.token || req.cookies.laundrix_token || null;
   }
 
-  const token = authHeader.split(' ')[1]; // Expected format: "Bearer <token>"
   if (!token) {
-    res.status(401).json({ error: 'Access denied. Invalid token format.' });
+    res.status(401).json({ error: 'Access denied. No token provided.' });
     return;
   }
 

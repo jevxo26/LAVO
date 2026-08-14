@@ -116,15 +116,25 @@ export const fetchMeThunk = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     const token = getStoredToken();
     if (!token) return rejectWithValue("No token");
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+
     try {
       const res = await fetch(`${API_BASE}/auth/me`, {
         headers: { Authorization: `Bearer ${token}` },
         credentials: "include",
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
       const data = await res.json();
       if (!res.ok) return rejectWithValue("Session expired");
       return { user: data.data as AuthUser, token };
-    } catch {
+    } catch (err: any) {
+      clearTimeout(timeoutId);
+      if (err.name === "AbortError") {
+        return rejectWithValue("Request timed out");
+      }
       return rejectWithValue("Network error");
     }
   }

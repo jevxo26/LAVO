@@ -38,6 +38,10 @@ export const markOrderReadyForDelivery = catchServiceAsync(async (req: any, res:
 });
 
 export const getDevOTP = catchServiceAsync(async (req: any, res: Response) => {
+  if (process.env.NODE_ENV === 'production') {
+    sendResponse(res, { statusCode: 403, data: { message: "Dev OTP endpoint is disabled in production" } });
+    return;
+  }
   const { orderId } = req.params;
   const delivery = await prisma.delivery.findFirst({
     where: { orderId, deliveryType: 'DROP_OFF' },

@@ -1,11 +1,10 @@
 import { Server as HttpServer } from "http";
 import { Server, Socket } from "socket.io";
-import { PrismaClient } from "@prisma/client";
+import jwt from "jsonwebtoken";
 import { DeliveryAssignmentService } from "../services/agent/deliveryAssignmentService";
 import { setIO, getIO } from "../config/socketInstance";
+import prisma from "../config/prisma";
 export { getIO };
-
-const prisma = new PrismaClient();
 
 export const initSocket = (server: HttpServer) => {
   const io = new Server(server, {
@@ -21,8 +20,28 @@ export const initSocket = (server: HttpServer) => {
   });
   setIO(io);
 
+  // Optional Authentication Middleware for Socket Connection
+  io.use((socket: Socket, next) => {
+    const token =
+      socket.handshake.auth?.token ||
+      socket.handshake.headers?.authorization?.replace("Bearer ", "");
+
+    if (token) {
+      try {
+        const secret = process.env.JWT_SECRET;
+        if (secret) {
+          const decoded = jwt.verify(token, secret);
+          socket.data.user = decoded;
+        }
+      } catch (err) {
+        console.warn(`[Socket Auth Warning] Invalid token for socket ${socket.id}`);
+      }
+    }
+    next();
+  });
+
   io.on('connection', (socket: Socket) => {
-    console.log('A client connected:', socket.id);
+    console.log('A client connected:', socket.id, socket.data.user ? `(User: ${socket.data.user.id || socket.data.user.email})` : '(Guest)');
 
     socket.on('joinBranch', (branchId: string) => {
       socket.join(`branch_${branchId}`);
@@ -31,6 +50,11 @@ export const initSocket = (server: HttpServer) => {
 
     // Customer subscribes to their own order updates
     socket.on('joinCustomer', (customerId: string) => {
+      // Validate customer room access if user is authenticated
+      if (socket.data.user && socket.data.user.customerId && socket.data.user.customerId !== customerId && socket.data.user.role !== 'SUPER_ADMIN' && socket.data.user.role !== 'ADMIN') {
+        console.warn(`🔒 [Socket Auth Warning] Socket ${socket.id} unauthorized join request for customer_${customerId}`);
+        return;
+      }
       socket.join(`customer_${customerId}`);
       console.log(`Socket ${socket.id} joined customer room: customer_${customerId}`);
     });

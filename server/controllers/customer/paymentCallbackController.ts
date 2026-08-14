@@ -1,7 +1,5 @@
 import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import prisma from "../../config/prisma";
 
 const STORE_ID       = process.env.SSLCOMMERZ_STORE_ID       || '';
 const STORE_PASSWORD = process.env.SSLCOMMERZ_STORE_PASSWORD || '';
@@ -74,13 +72,19 @@ export class PaymentCallbackController {
             ...(orderId  ? [{ orderId }]                  : []),
           ],
         },
-      }).catch(() => null);
+      }).catch((err) => {
+        console.error("❌ Error fetching payment record:", err);
+        return null;
+      });
 
       const resolvedOrderId = orderId || payment?.orderId;
 
       // Find the order
       let order = resolvedOrderId
-        ? await prisma.order.findUnique({ where: { id: resolvedOrderId } }).catch(() => null)
+        ? await prisma.order.findUnique({ where: { id: resolvedOrderId } }).catch((err) => {
+            console.error("❌ Error fetching order record:", err);
+            return null;
+          })
         : null;
 
       if (!order) {
@@ -109,7 +113,7 @@ export class PaymentCallbackController {
             status:      "CONFIRMED",
             description: `Paid ৳${order!.grandTotal} via SSLCommerz.`,
           },
-        }).catch(() => {});
+        }).catch((err) => console.error("⚠️ Failed to create order timeline entry:", err));
 
         if (order!.customerId) {
           const points = Math.floor(order!.grandTotal / 100);
@@ -117,13 +121,13 @@ export class PaymentCallbackController {
             await tx.customer.update({
               where: { id: order!.customerId },
               data:  { loyaltyPoints: { increment: points } },
-            }).catch(() => {});
+            }).catch((err) => console.error("⚠️ Failed to update customer loyalty points:", err));
 
             await tx.customerLoyaltyPoint.upsert({
               where:  { customerId: order!.customerId },
               create: { customerId: order!.customerId, earnedPoints: points, availablePoints: points },
               update: { earnedPoints: { increment: points }, availablePoints: { increment: points } },
-            }).catch(() => {});
+            }).catch((err) => console.error("⚠️ Failed to upsert customer loyalty record:", err));
           }
         }
       });
@@ -147,7 +151,7 @@ export class PaymentCallbackController {
       await prisma.payment.updateMany({
         where: { transactionId: tran_id },
         data:  { paymentStatus: "FAILED" },
-      }).catch(() => {});
+      }).catch((err) => console.error("❌ Failed to update payment status to FAILED:", err));
     }
 
     res.redirect(`${frontendUrl}/dashboard/my-orders?status=fail`);
@@ -164,7 +168,7 @@ export class PaymentCallbackController {
       await prisma.payment.updateMany({
         where: { transactionId: tran_id },
         data:  { paymentStatus: "CANCELLED" },
-      }).catch(() => {});
+      }).catch((err) => console.error("❌ Failed to update payment status to CANCELLED:", err));
     }
 
     res.redirect(`${frontendUrl}/dashboard/my-orders?status=cancel`);

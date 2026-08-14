@@ -1,10 +1,8 @@
 import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import { CustomerService } from "../../services/customer/customerService";
-
-const prisma = new PrismaClient();
+import prisma from "../../config/prisma";
 
 const STORE_ID       = process.env.SSLCOMMERZ_STORE_ID       || '';
 const STORE_PASSWORD = process.env.SSLCOMMERZ_STORE_PASSWORD || '';
@@ -365,7 +363,103 @@ export class PaymentController {
   // ─── SSLCommerz IPN Webhook ───────────────────────────────────────────────
 
   static handleIPN = catchAsync(async (req: Request, res: Response) => {
-    console.log("📨 [SSLCommerz] IPN received:", req.body);
+    const tran_id = (req.body?.tran_id || req.query?.tran_id || '').toString();
+    const val_id  = (req.body?.val_id  || req.query?.val_id  || '').toString();
+
+    console.log("📨 [SSLCommerz] IPN received:", { tran_id, val_id, body: req.body });
+
+    if (!val_id || !tran_id) {
+      res.status(400).send("Invalid IPN Payload");
+      return;
+    }
+
+    const validated = await verifySSLCommerz(val_id);
+    if (!validated) {
+      console.warn("⚠️ [SSLCommerz IPN] Validation failed for val_id:", val_id);
+      res.status(400).send("IPN Validation Failed");
+      return;
+    }
+
+    // ── 1. Order payment IPN ──────────────────────────────────────────────────
+    if (tran_id.startsWith('TXN-')) {
+      let paymentRecord = await prisma.payment.findFirst({ where: { transactionId: tran_id } });
+      if (!paymentRecord) {
+        const orderIdPart = tran_id.split('-').pop();
+        if (orderIdPart) {
+          paymentRecord = await prisma.payment.findFirst({
+            where: {
+              OR: [
+                { orderId: orderIdPart },
+                { transactionId: { contains: tran_id } },
+              ],
+            },
+          });
+        }
+      }
+
+      if (paymentRecord && paymentRecord.paymentStatus !== "PAID") {
+        await prisma.$transaction(async (tx) => {
+          await tx.payment.update({
+            where: { id: paymentRecord!.id },
+            data:  { paymentStatus: "PAID", paidAt: new Date() },
+          });
+
+          await tx.order.update({
+            where: { id: paymentRecord!.orderId },
+            data:  { paymentStatus: "PAID", orderStatus: "CONFIRMED" },
+          });
+
+          await tx.orderTimeline.create({
+            data: {
+              orderId:     paymentRecord!.orderId,
+              status:      "CONFIRMED",
+              description: `Paid ৳${paymentRecord!.amount} via SSLCommerz (IPN).`,
+            },
+          });
+
+          const pointsEarned = Math.floor(paymentRecord!.amount / 100);
+          if (pointsEarned > 0) {
+            await tx.customer.update({
+              where: { id: paymentRecord!.customerId },
+              data:  { loyaltyPoints: { increment: pointsEarned } },
+            });
+            await tx.customerLoyaltyPoint.upsert({
+              where:  { customerId: paymentRecord!.customerId },
+              update: { earnedPoints: { increment: pointsEarned }, availablePoints: { increment: pointsEarned } },
+              create: { customerId: paymentRecord!.customerId, earnedPoints: pointsEarned, availablePoints: pointsEarned },
+            });
+          }
+        });
+        console.log("✅ [SSLCommerz IPN] Order payment verified & updated:", tran_id);
+      }
+      res.status(200).send("IPN Processed Successfully");
+      return;
+    }
+
+    // ── 2. Wallet top-up IPN ──────────────────────────────────────────────────
+    if (tran_id.startsWith('TOPUP-')) {
+      const transaction = await prisma.customerTransaction.findFirst({
+        where:   { referenceId: tran_id },
+        include: { wallet: true },
+      });
+
+      if (transaction && transaction.status === 'PENDING') {
+        await prisma.$transaction([
+          prisma.customerWallet.update({
+            where: { id: transaction.walletId },
+            data:  { balance: { increment: transaction.amount } },
+          }),
+          prisma.customerTransaction.update({
+            where: { id: transaction.id },
+            data:  { status: 'COMPLETED' },
+          }),
+        ]);
+        console.log("✅ [SSLCommerz IPN] Wallet top-up verified & completed:", tran_id);
+      }
+      res.status(200).send("IPN Processed Successfully");
+      return;
+    }
+
     res.status(200).send("IPN Received");
   });
 }
