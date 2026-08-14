@@ -7,45 +7,30 @@ import { BasicInfoForm, BasicInfoData }  from "@/components/profile/BasicInfoFor
 import { SecurityForm }                  from "@/components/profile/SecurityForm";
 import { PersonalPreferences, PreferenceSettings } from "@/components/settings/PersonalPreferences";
 import { DashboardPageHero }             from "@/components/shared/DashboardPageHero";
+import { authFetch }                     from "@/lib/api";
 import { toast } from "sonner";
-
-// ─── Helper ───────────────────────────────────────────────────────────────────
-
-function getToken(): string {
-  return typeof window !== "undefined"
-    ? (localStorage.getItem("laundrix_token") ?? "")
-    : "";
-}
-
-function authHeaders(extra: Record<string, string> = {}): Record<string, string> {
-  const token = getToken();
-  return {
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    ...extra,
-  };
-}
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function ProfilePage() {
-  const [activeTab,  setActiveTab]  = useState<"info" | "security" | "preferences">("info");
-  const [isLoading,  setIsLoading]  = useState(true);
-  const [isUploading, setIsUploading] = useState(false); // Fix #3 — avatar upload state
+  const [activeTab,   setActiveTab]   = useState<"info" | "security" | "preferences">("info");
+  const [isLoading,   setIsLoading]   = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
 
-  const [profileData, setProfileData] = useState<BasicInfoData>({
+  const [profileData,  setProfileData]  = useState<BasicInfoData>({
     fullName: "", email: "", phone: "",
     alternatePhone: "", role: "CUSTOMER",
     nidNumber: "", isNidLocked: false,
   });
-  const [avatarUrl,      setAvatarUrl]      = useState("");
-  const [prefSettings,   setPrefSettings]   = useState<Partial<PreferenceSettings>>({}); // Fix #3 — server prefs
+  const [avatarUrl,    setAvatarUrl]    = useState("");
+  const [prefSettings, setPrefSettings] = useState<Partial<PreferenceSettings>>({});
 
   // ── Fetch profile ────────────────────────────────────────────────────────
 
   const fetchProfile = async () => {
     setIsLoading(true);
     try {
-      const res  = await fetch("/api/profile/update", { headers: authHeaders() });
+      const res  = await authFetch("/profile");
       const json = await res.json();
       if (json.success && json.data) {
         setProfileData({
@@ -65,10 +50,9 @@ export default function ProfilePage() {
     finally { setIsLoading(false); }
   };
 
-  // Fix #3 — load persisted notification preferences from server
   const fetchPreferences = async () => {
     try {
-      const res  = await fetch("/api/profile/preferences", { headers: authHeaders() });
+      const res  = await authFetch("/profile/preferences");
       const json = await res.json();
       if (json.success && json.data) {
         setPrefSettings({
@@ -78,9 +62,7 @@ export default function ProfilePage() {
           marketingNotification: json.data.marketingNotification ?? false,
         });
       }
-    } catch {
-      // non-critical — component falls back to defaults
-    }
+    } catch { /* non-critical — component falls back to defaults */ }
   };
 
   useEffect(() => {
@@ -90,14 +72,13 @@ export default function ProfilePage() {
 
   // ── Actions ──────────────────────────────────────────────────────────────
 
-  // Fix #2 — accept explicit profileImage override to avoid stale avatarUrl state
   const handleSaveBasicInfo = async (
     updated: Partial<BasicInfoData>,
     overrideProfileImage?: string,
   ) => {
-    const res  = await fetch("/api/profile/update", {
+    const res  = await authFetch("/profile", {
       method:  "PUT",
-      headers: authHeaders({ "Content-Type": "application/json" }),
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         ...updated,
         profileImage: overrideProfileImage ?? avatarUrl,
@@ -109,24 +90,22 @@ export default function ProfilePage() {
   };
 
   const handleChangePassword = async (currentPassword: string, newPassword: string) => {
-    const res  = await fetch("/api/profile/password", {
+    const res  = await authFetch("/profile/password", {
       method:  "POST",
-      headers: authHeaders({ "Content-Type": "application/json" }),
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ currentPassword, newPassword }),
     });
     const json = await res.json();
     if (!res.ok) throw new Error(json.message || "Password change failed");
   };
 
-  // Fix #2 — pass newUrl directly, no stale closure
-  // Fix #3 — wire isUploading so avatar spinner shows
   const handleAvatarChange = async (newUrl: string) => {
-    setAvatarUrl(newUrl);      // update local display immediately
+    setAvatarUrl(newUrl);
     setIsUploading(true);
     try {
       await handleSaveBasicInfo(
         { fullName: profileData.fullName, alternatePhone: profileData.alternatePhone },
-        newUrl,                // explicit override — no stale state
+        newUrl,
       );
     } catch (err: any) {
       toast.error(err.message || "Failed to save avatar");
