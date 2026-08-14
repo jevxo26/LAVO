@@ -1,10 +1,8 @@
 import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import { CustomerService } from "../../services/customer/customerService";
-
-const prisma = new PrismaClient();
+import prisma from "../../config/prisma";
 
 const STORE_ID       = process.env.SSLCOMMERZ_STORE_ID       || '';
 const STORE_PASSWORD = process.env.SSLCOMMERZ_STORE_PASSWORD || '';

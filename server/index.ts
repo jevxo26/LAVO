@@ -42,8 +42,8 @@ import partnerApplicationRoutes from "./routes/super-admin/partnerApplicationRou
 import notificationRoutes from "./routes/shared/notificationRoutes";
 import agentOpsRoutes from "./routes/admin/agentOpsRoutes";
 import { initSocket } from "./sockets/socket";
-
-const prisma = new PrismaClient();
+import prisma from "./config/prisma";
+import { authRateLimiter, paymentRateLimiter, apiRateLimiter } from "./middlewares/rateLimiter";
 
 const dev = process.env.NODE_ENV !== 'production';
 const app = next({ dev, dir: process.cwd() });
@@ -66,17 +66,32 @@ app.prepare().then(async () => {
 
   server.use(cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin, 'null' origin (form POST redirects), SSLCommerz gateways, or configured allowed origins
+      // Allow requests with no origin (mobile/curl/server-to-server), 'null' origin (browser form POSTs), SSLCommerz, or listed origins
       if (!origin || origin === 'null' || allowedOrigins.includes(origin) || origin.includes('sslcommerz.com') || process.env.NODE_ENV !== 'production') {
         callback(null, true);
       } else {
-        callback(null, true);
+        callback(new Error(`CORS Error: Origin ${origin} is not allowed by CORS policy`), false);
       }
     },
     credentials: true,
   }));
 
-  server.use(helmet({ contentSecurityPolicy: false })); // Disable CSP in dev if needed, or configure properly
+  server.use(
+    helmet({
+      contentSecurityPolicy: process.env.NODE_ENV === "production" ? {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdnjs.cloudflare.com", "https://unpkg.com"],
+          styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://unpkg.com"],
+          imgSrc: ["'self'", "data:", "blob:", "https://*.tile.openstreetmap.org", "https://*.leafletjs.com"],
+          fontSrc: ["'self'", "https://fonts.gstatic.com"],
+          connectSrc: ["'self'", "ws:", "wss:", "https://sandbox.sslcommerz.com", "https://securepay.sslcommerz.com"],
+        },
+      } : false,
+      crossOriginEmbedderPolicy: false,
+      xFrameOptions: { action: "sameorigin" },
+    })
+  );
   server.use(morgan('[:date[iso]] :method :url :status :response-time ms - :res[content-length]', {
     skip: (req) => req.url.startsWith('/_next/') || req.url.includes('favicon.ico')
   }));
@@ -110,9 +125,10 @@ app.prepare().then(async () => {
     }
   });
 
+  server.use('/api', apiRateLimiter);
   server.use(auditLogger);
   server.use('/api/users', userRoutes);
-  server.use('/api/auth', authRoutes);
+  server.use('/api/auth', authRateLimiter, authRoutes);
   server.use('/api/upload', uploadRoutes);
   server.use('/api/branches', branchRoutes);
   server.use('/api/settings', settingRoutes);
@@ -125,7 +141,7 @@ app.prepare().then(async () => {
   server.use('/api/delivery-agent', deliveryAgentRoutes);
   server.use('/api/customer', customerRoutes);
   server.use('/api/employee', employeeRoutes);
-  server.use('/api/payments', paymentRoutes);
+  server.use('/api/payments', paymentRateLimiter, paymentRoutes);
   server.use('/api/chat', chatRoutes);
   server.use('/api/cms', cmsRoutes);
   server.use('/api/tickets', ticketRoutes);
