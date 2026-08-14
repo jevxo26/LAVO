@@ -2,29 +2,38 @@
 
 import React, { useState, useEffect } from "react";
 import { Settings, ShieldCheck, CircleDollarSign, Landmark, Sliders, Bell } from "lucide-react";
-import { PersonalPreferences } from "@/components/settings/PersonalPreferences";
+import { PersonalPreferences, PreferenceSettings } from "@/components/settings/PersonalPreferences";
 import { DashboardPageHero } from "@/components/shared/DashboardPageHero";
+import { useAuth }   from "@/hooks/useAuth";
+import { authFetch } from "@/lib/api";
 import Link from "next/link";
 
 export default function GenericSettingsPage() {
-  const [activeTab, setActiveTab] = useState<"preferences" | "system">("preferences");
-  const [userRole, setUserRole]   = useState<string>("CUSTOMER");
+  const { user } = useAuth();
+  const [activeTab,    setActiveTab]    = useState<"preferences" | "system">("preferences");
+  const [prefSettings, setPrefSettings] = useState<Partial<PreferenceSettings>>({});
 
+  // Normalise role using the same logic as dashboard/page.tsx
+  const rawRole    = (user as any)?.role || (user as any)?.userType || "";
+  const userRole   = rawRole.toUpperCase().trim().replace(/[\s-]+/g, "_") || "CUSTOMER";
+  const isSuperAdmin = ["SUPER_ADMIN", "SUPERADMIN"].includes(userRole);
+
+  // Load persisted notification preferences from Express
   useEffect(() => {
-    try {
-      const token = localStorage.getItem("laundrix_token");
-      if (token) {
-        const parts = token.split(".");
-        if (parts.length === 3) {
-          const payload = JSON.parse(atob(parts[1].replace(/-/g, "+").replace(/_/g, "/")));
-          const rawRole = payload?.role || payload?.userType || "CUSTOMER";
-          setUserRole(rawRole.toUpperCase().replace(/\s+/g, "_"));
+    authFetch("/profile/preferences")
+      .then((r) => r.json())
+      .then((json) => {
+        if (json.success && json.data) {
+          setPrefSettings({
+            emailNotification:    json.data.emailNotification    ?? true,
+            pushNotification:     json.data.pushNotification     ?? true,
+            smsNotification:      json.data.smsNotification      ?? true,
+            marketingNotification: json.data.marketingNotification ?? false,
+          });
         }
-      }
-    } catch { setUserRole("CUSTOMER"); }
+      })
+      .catch(() => { /* non-critical — component shows defaults */ });
   }, []);
-
-  const isSuperAdmin = userRole === "SUPER_ADMIN";
 
   return (
     <div className="w-full space-y-6">
@@ -44,7 +53,7 @@ export default function GenericSettingsPage() {
           onClick={() => setActiveTab("preferences")}
           className={`flex items-center gap-2 pb-3.5 text-sm font-black border-b-2 transition-all ${
             activeTab === "preferences"
-              ? "text-card-foreground"
+              ? ""
               : "border-transparent text-muted-foreground hover:text-card-foreground"
           }`}
           style={activeTab === "preferences" ? { borderColor: "var(--primary)", color: "var(--primary)" } : undefined}
@@ -57,7 +66,7 @@ export default function GenericSettingsPage() {
             onClick={() => setActiveTab("system")}
             className={`flex items-center gap-2 pb-3.5 text-sm font-black border-b-2 transition-all ${
               activeTab === "system"
-                ? "text-card-foreground"
+                ? ""
                 : "border-transparent text-muted-foreground hover:text-card-foreground"
             }`}
             style={activeTab === "system" ? { borderColor: "var(--primary)", color: "var(--primary)" } : undefined}
@@ -69,7 +78,9 @@ export default function GenericSettingsPage() {
 
       {/* ── Tab Panels ───────────────────────────────────────────────────────── */}
       <div>
-        {activeTab === "preferences" && <PersonalPreferences />}
+        {activeTab === "preferences" && (
+          <PersonalPreferences initialSettings={prefSettings} />
+        )}
 
         {activeTab === "system" && isSuperAdmin && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">

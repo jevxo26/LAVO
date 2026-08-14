@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Bell, Mail, Sun, Moon, Save, Loader2 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
+import { authFetch } from "@/lib/api";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -18,14 +19,6 @@ export interface PreferenceSettings {
 interface PersonalPreferencesProps {
   initialSettings?: Partial<PreferenceSettings>;
   onSavePreferences?: (settings: PreferenceSettings) => Promise<void>;
-}
-
-// ─── Helper ───────────────────────────────────────────────────────────────────
-
-function getToken(): string {
-  return typeof window !== "undefined"
-    ? (localStorage.getItem("laundrix_token") ?? "")
-    : "";
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -72,19 +65,14 @@ export const PersonalPreferences: React.FC<PersonalPreferencesProps> = ({
       if (onSavePreferences) {
         await onSavePreferences(prefs);
       } else {
-        // Fix #1 — include Authorization header
-        const token = getToken();
-        const res = await fetch("/api/profile/preferences", {
+        // Use authFetch — goes through Express with proper auth token
+        const res = await authFetch("/profile/preferences", {
           method:  "POST",
-          headers: {
-            "Content-Type":  "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          // Fix #5 — include all 4 notification fields so nothing is reset to default
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            emailNotification:   prefs.emailNotification,
-            pushNotification:    prefs.pushNotification,
-            smsNotification:     prefs.smsNotification,
+            emailNotification:    prefs.emailNotification,
+            pushNotification:     prefs.pushNotification,
+            smsNotification:      prefs.smsNotification,
             marketingNotification: prefs.marketingNotification,
           }),
         });
