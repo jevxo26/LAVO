@@ -75,7 +75,6 @@ export function HomePartnership({ data }: { data?: any }) {
       };
     })
     : defaultPartners;
-  console.log(partners);
 
   return (
     <section className="bg-surface-light py-12 md:py-16 lg:py-20">
