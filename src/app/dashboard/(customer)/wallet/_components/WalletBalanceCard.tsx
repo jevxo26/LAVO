@@ -40,7 +40,7 @@ export function WalletBalanceCard({ balance, onTopUp }: WalletBalanceCardProps) 
               LAVO Pay Wallet Balance
             </p>
             <p className="mt-2 text-4xl font-black tracking-tight leading-none text-white">
-              ৳{balance.toFixed(2)}
+              ৳{(balance ?? 0).toFixed(2)}
             </p>
           </div>
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-md">
