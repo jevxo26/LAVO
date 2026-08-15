@@ -141,6 +141,7 @@ app.prepare().then(async () => {
   server.use('/api/delivery-agent', deliveryAgentRoutes);
   server.use('/api/customer', customerRoutes);
   server.use('/api/employee', employeeRoutes);
+  server.use('/api/employee-dashboard', employeeRoutes);
   server.use('/api/payments', paymentRateLimiter, paymentRoutes);
   server.use('/api/chat', chatRoutes);
   server.use('/api/cms', cmsRoutes);

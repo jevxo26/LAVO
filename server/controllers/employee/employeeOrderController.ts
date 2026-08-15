@@ -1,9 +1,49 @@
 import { Response } from "express";
 import { catchServiceAsync } from "../../utils/catchServiceAsync";
 import { sendResponse } from "../../utils/sendResponse";
-import { PrismaClient } from "@prisma/client";
+import prisma from "../../config/prisma";
 
-const prisma = new PrismaClient();
+/**
+ * Get Employee Dashboard Overview Stats
+ */
+export const getOverview = catchServiceAsync(async (req: any, res: Response) => {
+  const userId = req.user?.userId;
+
+  const branchEmployee = await prisma.branchEmployee.findFirst({
+    where: { employeeId: userId },
+    select: { branchId: true }
+  });
+
+  const vendorRecord = await prisma.vendor.findFirst({
+    where: { OR: [{ email: req.user?.email }, { phone: req.user?.phone }] },
+    select: { id: true }
+  });
+
+  const branchId = branchEmployee?.branchId;
+  const vendorId = vendorRecord?.id;
+
+  const filter = vendorId ? { vendorId } : branchId ? { branchId } : {};
+
+  const [pendingTagCount, inProcessingCount, readyForDeliveryCount, totalCompleted] = await Promise.all([
+    prisma.order.count({ where: { ...filter, orderStatus: 'CONFIRMED' } }),
+    prisma.order.count({ where: { ...filter, orderStatus: { in: ['PROCESSING', 'WASHING', 'DRYING', 'IRONING', 'FOLDING'] } } }),
+    prisma.order.count({ where: { ...filter, orderStatus: 'READY_FOR_DELIVERY' } }),
+    prisma.order.count({ where: { ...filter, orderStatus: 'DELIVERED' } }),
+  ]);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Employee overview stats retrieved",
+    data: {
+      pendingTagCount,
+      inProcessingCount,
+      readyForDeliveryCount,
+      scannedTodayCount: totalCompleted,
+      isVendorEmployee: !!vendorId,
+    }
+  });
+});
 
 /**
  * Get all orders that have been picked up and need QR tagging / processing.
@@ -12,13 +52,11 @@ const prisma = new PrismaClient();
 export const getPickupOrders = catchServiceAsync(async (req: any, res: Response) => {
   const userId = req.user?.userId;
 
-  // Find the branch this employee belongs to via BranchEmployee table
   const branchEmployee = await prisma.branchEmployee.findFirst({
     where: { employeeId: userId },
     select: { branchId: true }
   });
 
-  // Find if user is linked to a Vendor
   const vendorRecord = await prisma.vendor.findFirst({
     where: { OR: [{ email: req.user?.email }, { phone: req.user?.phone }] },
     select: { id: true }
@@ -117,7 +155,7 @@ export const getOrderQrCodes = catchServiceAsync(async (req: any, res: Response)
     if (createPromises.length > 0) {
       await Promise.all(createPromises);
       items = await prisma.garmentItem.findMany({
-        where: { orderItem: { orderId } },
+        where: { orderId },
         include: {
           qrCodeRecord: true,
           orderItem: { include: { garmentType: true, service: true } }
@@ -183,7 +221,7 @@ export const generateAllQrCodes = catchServiceAsync(async (req: any, res: Respon
     if (createPromises.length > 0) {
       await Promise.all(createPromises);
       items = await prisma.garmentItem.findMany({
-        where: { orderItem: { orderId } },
+        where: { orderId },
         include: { qrCodeRecord: true }
       });
     }

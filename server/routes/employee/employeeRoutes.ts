@@ -8,6 +8,9 @@ const router = express.Router();
 router.use(verifyToken);
 router.use(restrictTo('EMPLOYEE', 'Employee', 'BRANCH_MANAGER', 'Branch Manager', 'ADMIN', 'Admin', 'SUPER_ADMIN'));
 
+// Get employee overview stats
+router.get('/overview', employeeOrderController.getOverview);
+
 // Get orders that have been picked up and are awaiting QR tagging / processing
 router.get('/orders', employeeOrderController.getPickupOrders);
 
