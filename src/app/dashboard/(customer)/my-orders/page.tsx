@@ -48,8 +48,8 @@ const TAB_META: Record<string, { label: string; activeClass: string; activeStyle
 function tabCount(orders: OrderRecord[], tab: string): number {
   if (tab === "ALL") return orders.length;
   if (tab === "PROCESSING")
-    return orders.filter((o) => PROCESSING_STATUSES.includes(o.orderStatus.toUpperCase())).length;
-  return orders.filter((o) => o.orderStatus.toUpperCase() === tab).length;
+    return orders.filter((o) => PROCESSING_STATUSES.includes((o.orderStatus ?? "").toUpperCase())).length;
+  return orders.filter((o) => (o.orderStatus ?? "").toUpperCase() === tab).length;
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -172,18 +172,18 @@ export default function MyOrdersPage() {
 
   const stats = useMemo(() => ({
     total:     orders.length,
-    active:    orders.filter((o) => PROCESSING_STATUSES.includes(o.orderStatus.toUpperCase())).length,
-    completed: orders.filter((o) => o.orderStatus.toUpperCase() === "COMPLETED").length,
-    cancelled: orders.filter((o) => o.orderStatus.toUpperCase() === "CANCELLED").length,
+    active:    orders.filter((o) => PROCESSING_STATUSES.includes((o.orderStatus ?? "").toUpperCase())).length,
+    completed: orders.filter((o) => (o.orderStatus ?? "").toUpperCase() === "COMPLETED").length,
+    cancelled: orders.filter((o) => (o.orderStatus ?? "").toUpperCase() === "CANCELLED").length,
   }), [orders]);
 
   const filtered = useMemo(() => {
     return orders.filter((o) => {
-      const matchesSearch = o.orderNumber.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch = (o.orderNumber ?? "").toLowerCase().includes(searchQuery.toLowerCase());
       if (!matchesSearch) return false;
       if (activeTab === "ALL")        return true;
-      if (activeTab === "PROCESSING") return PROCESSING_STATUSES.includes(o.orderStatus.toUpperCase());
-      return o.orderStatus.toUpperCase() === activeTab;
+      if (activeTab === "PROCESSING") return PROCESSING_STATUSES.includes((o.orderStatus ?? "").toUpperCase());
+      return (o.orderStatus ?? "").toUpperCase() === activeTab;
     });
   }, [orders, activeTab, searchQuery]);
 

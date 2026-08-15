@@ -74,12 +74,12 @@ function GarmentTable({ order }: { order: OrderRecord }) {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-50">
-            {order.items.map((item, idx) => (
+            {(order.items ?? []).map((item, idx) => (
               <tr key={item.id} className={idx % 2 === 0 ? "bg-white" : "bg-slate-50/30"}>
-                <td className="px-4 py-3 font-semibold text-slate-800">{item.service.serviceName}</td>
+                <td className="px-4 py-3 font-semibold text-slate-800">{item.service?.serviceName ?? "—"}</td>
                 <td className="px-4 py-3 text-center text-slate-600">{item.quantity}</td>
-                <td className="px-4 py-3 text-right text-slate-600">৳{item.unitPrice.toFixed(2)}</td>
-                <td className="px-4 py-3 text-right font-bold text-slate-900">৳{item.totalPrice.toFixed(2)}</td>
+                <td className="px-4 py-3 text-right text-slate-600">৳{(item.unitPrice ?? 0).toFixed(2)}</td>
+                <td className="px-4 py-3 text-right font-bold text-slate-900">৳{(item.totalPrice ?? 0).toFixed(2)}</td>
               </tr>
             ))}
           </tbody>
@@ -143,8 +143,8 @@ export function OrderCard({
   onCancel,
   cancellingId,
 }: OrderCardProps) {
-  const canCancel   = ["PENDING", "CONFIRMED"].includes(order.orderStatus.toUpperCase());
-  const canPay      = order.paymentStatus === "UNPAID" && order.orderStatus.toUpperCase() !== "CANCELLED";
+  const canCancel   = ["PENDING", "CONFIRMED"].includes((order.orderStatus ?? "").toUpperCase());
+  const canPay      = order.paymentStatus === "UNPAID" && (order.orderStatus ?? "").toUpperCase() !== "CANCELLED";
   const isCancelling = cancellingId === order.id;
 
   return (
@@ -186,7 +186,7 @@ export function OrderCard({
         <div className="flex items-center justify-between sm:justify-end gap-4 sm:shrink-0">
           <div className="text-right">
             <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Grand Total</p>
-            <p className="text-lg font-extrabold text-slate-900 leading-tight">৳{order.grandTotal.toFixed(2)}</p>
+            <p className="text-lg font-extrabold text-slate-900 leading-tight">৳{(order.grandTotal ?? 0).toFixed(2)}</p>
           </div>
 
           <div

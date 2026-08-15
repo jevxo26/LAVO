@@ -4,14 +4,14 @@ function getInvoiceBodyHtml(order: OrderRecord, customerName?: string, customerP
   const dateStr = fmtDate(order.createdAt);
   const pickupStr = fmtDateTime(order.estimatedPickupTime);
 
-  const itemsHtml = order.items
+  const itemsHtml = (order.items ?? [])
     .map(
       (item, idx) => `
       <tr style="border-bottom: 1px solid #f1f5f9; ${idx % 2 === 1 ? 'background-color: #f8fafc;' : ''}">
-        <td style="padding: 12px 16px; font-weight: 600; color: #1e293b;">${item.service.serviceName}</td>
+        <td style="padding: 12px 16px; font-weight: 600; color: #1e293b;">${item.service?.serviceName ?? "—"}</td>
         <td style="padding: 12px 16px; text-align: center; color: #475569;">${item.quantity}</td>
-        <td style="padding: 12px 16px; text-align: right; color: #475569;">৳${item.unitPrice.toFixed(2)}</td>
-        <td style="padding: 12px 16px; text-align: right; font-weight: 700; color: #0f172a;">৳${item.totalPrice.toFixed(2)}</td>
+        <td style="padding: 12px 16px; text-align: right; color: #475569;">৳${(item.unitPrice ?? 0).toFixed(2)}</td>
+        <td style="padding: 12px 16px; text-align: right; font-weight: 700; color: #0f172a;">৳${(item.totalPrice ?? 0).toFixed(2)}</td>
       </tr>
     `
     )
@@ -96,27 +96,27 @@ function getInvoiceBodyHtml(order: OrderRecord, customerName?: string, customerP
           <div style="width: 320px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px;">
             <div style="display: flex; justify-content: space-between; font-size: 13px; color: #475569; margin-bottom: 10px;">
               <span>Subtotal</span>
-              <span>৳${order.subtotal.toFixed(2)}</span>
+              <span>৳${(order.subtotal ?? 0).toFixed(2)}</span>
             </div>
             ${
-              order.discount > 0
+              (order.discount ?? 0) > 0
                 ? `<div style="display: flex; justify-content: space-between; font-size: 13px; color: #16a34a; margin-bottom: 10px;">
                     <span>Discount</span>
-                    <span>-৳${order.discount.toFixed(2)}</span>
+                    <span>-৳${(order.discount ?? 0).toFixed(2)}</span>
                   </div>`
                 : ''
             }
             <div style="display: flex; justify-content: space-between; font-size: 13px; color: #475569; margin-bottom: 10px;">
               <span>Delivery Fee</span>
-              <span>${order.deliveryCharge === 0 ? 'FREE' : `৳${order.deliveryCharge.toFixed(2)}`}</span>
+              <span>${(order.deliveryCharge ?? 0) === 0 ? 'FREE' : `৳${(order.deliveryCharge ?? 0).toFixed(2)}`}</span>
             </div>
             <div style="display: flex; justify-content: space-between; font-size: 13px; color: #475569; margin-bottom: 10px;">
               <span>VAT / Service Tax (5%)</span>
-              <span>৳${order.tax.toFixed(2)}</span>
+              <span>৳${(order.tax ?? 0).toFixed(2)}</span>
             </div>
             <div style="display: flex; justify-content: space-between; border-top: 2px solid #e2e8f0; padding-top: 12px; font-size: 16px; font-weight: 900; color: #0f172a;">
               <span>Grand Total</span>
-              <span style="color: #2563eb;">৳${order.grandTotal.toFixed(2)}</span>
+              <span style="color: #2563eb;">৳${(order.grandTotal ?? 0).toFixed(2)}</span>
             </div>
           </div>
         </div>
