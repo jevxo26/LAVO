@@ -18,7 +18,7 @@ const PartnerRequirementsCard = () => {
     return (
         <div>
             {/* partner requirement */}
-            <section className="py-16">
+            <section className="py-12 md:py-16 lg:py-20">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -27,9 +27,9 @@ const PartnerRequirementsCard = () => {
                         duration: 0.8,
                         ease: [0.22, 1, 0.36, 1],
                     }}
-                    className="rounded-3xl bg-white border p-8"
+                    className="max-w-[1380px] mx-auto px-4 md:px-6"
                 >
-                    <div className="rounded-3xl bg-white border p-8">
+                    <div className="rounded-3xl bg-white border p-8 ">
                         <h2 className="text-3xl font-bold">
                             Partner Requirements
                         </h2>
