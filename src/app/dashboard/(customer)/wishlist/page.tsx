@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import {
   Heart,
@@ -11,6 +11,10 @@ import {
   Tag,
   Shirt,
   AlertCircle,
+  Filter,
+  RotateCcw,
+  BadgeDollarSign,
+  X,
 } from "lucide-react";
 import { authFetch } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -54,7 +58,8 @@ interface WishlistCardProps {
 }
 
 function WishlistCard({ item, removing, onRemove }: WishlistCardProps) {
-  const gradient = gradientFor(item.serviceName);
+  const gradient = gradientFor(item.serviceName ?? "");
+  const price    = item.basePrice ?? 0;
 
   return (
     <motion.div
@@ -87,21 +92,21 @@ function WishlistCard({ item, removing, onRemove }: WishlistCardProps) {
             className="inline-flex items-center gap-1.5 rounded-xl px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider bg-primary/10"
             style={{ color: "var(--primary)" }}
           >
-            <Tag size={10} /> {item.category}
+            <Tag size={10} /> {item.category ?? "—"}
           </span>
           <span className="rounded-xl bg-muted text-muted-foreground px-2.5 py-0.5 text-[10px] font-extrabold">
-            {item.garmentType}
+            {item.garmentType ?? "—"}
           </span>
         </div>
 
         <h3 className="text-base font-black text-card-foreground leading-snug group-hover:text-primary transition-colors">
-          {item.serviceName}
+          {item.serviceName ?? "Unnamed Service"}
         </h3>
 
         <div className="mt-auto flex items-center justify-between border-t border-border pt-3.5">
           <div>
             <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">Base Cleaning Rate</p>
-            <p className="text-xl font-black text-card-foreground leading-tight">৳{item.basePrice.toFixed(2)}</p>
+            <p className="text-xl font-black text-card-foreground leading-tight">৳{price.toFixed(2)}</p>
           </div>
           <Link href="/dashboard/book-services">
             <Button
@@ -121,10 +126,13 @@ function WishlistCard({ item, removing, onRemove }: WishlistCardProps) {
 
 function WishlistSkeleton() {
   return (
-    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {[1, 2, 3].map((i) => (
-        <div key={i} className="h-64 rounded-3xl bg-muted animate-pulse" />
-      ))}
+    <div className="space-y-6">
+      <div className="h-16 rounded-2xl bg-muted animate-pulse" />
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="h-64 rounded-3xl bg-muted animate-pulse" />
+        ))}
+      </div>
     </div>
   );
 }
@@ -132,17 +140,19 @@ function WishlistSkeleton() {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function WishlistPage() {
-  const [wishlist, setWishlist]       = useState<WishlistItem[]>([]);
-  const [loading, setLoading]         = useState(true);
-  const [error, setError]             = useState(false);
-  const [removingId, setRemovingId]   = useState<string | null>(null);
+  const [wishlist, setWishlist]     = useState<WishlistItem[]>([]);
+  const [loading, setLoading]       = useState(true);
+  const [error, setError]           = useState(false);
+  const [removingId, setRemovingId] = useState<string | null>(null);
+  const [clearingAll, setClearingAll] = useState(false);
+  const [activeCategory, setActiveCategory] = useState<string>("ALL");
 
   const loadWishlist = async () => {
     setError(false);
     try {
       const res  = await authFetch("/customer/wishlist");
       const data = await res.json();
-      if (data.success) setWishlist(data.data);
+      if (data.success) setWishlist(data.data ?? []);
       else setError(true);
     } catch (err) {
       console.error("Error loading wishlist:", err);
@@ -173,6 +183,46 @@ export default function WishlistPage() {
     }
   };
 
+  const handleClearAll = async () => {
+    if (!window.confirm("Remove all items from your wishlist?")) return;
+    setClearingAll(true);
+    try {
+      const results = await Promise.allSettled(
+        wishlist.map((item) =>
+          authFetch(`/customer/wishlist/${item.id}`, { method: "DELETE" })
+        )
+      );
+      const failCount = results.filter((r) => r.status === "rejected").length;
+      setWishlist([]);
+      setActiveCategory("ALL");
+      if (failCount === 0) toast.success("Wishlist cleared");
+      else toast.error(`${failCount} items failed to remove`);
+    } catch {
+      toast.error("Failed to clear wishlist");
+    } finally {
+      setClearingAll(false);
+    }
+  };
+
+  // ── Derived data ────────────────────────────────────────────────────────────
+
+  const categories = useMemo(() => {
+    const cats = Array.from(new Set(wishlist.map((i) => i.category ?? "Other").filter(Boolean)));
+    return cats.sort();
+  }, [wishlist]);
+
+  const filtered = useMemo(() => {
+    if (activeCategory === "ALL") return wishlist;
+    return wishlist.filter((i) => (i.category ?? "Other") === activeCategory);
+  }, [wishlist, activeCategory]);
+
+  const totalEstimated = useMemo(
+    () => wishlist.reduce((s, i) => s + (i.basePrice ?? 0), 0),
+    [wishlist]
+  );
+
+  const hasItems = wishlist.length > 0;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 15 }}
@@ -186,8 +236,10 @@ export default function WishlistPage() {
         title="My Laundry Wishlist"
         description="Quick 1-tap access to your favorite dry cleaning, wash & iron, and suit care packages."
         icon={Heart}
-        chips={!loading && !error && wishlist.length > 0 ? [
-          { label: "Saved Items", value: wishlist.length },
+        chips={!loading && !error && hasItems ? [
+          { label: "Saved Items",       value: wishlist.length                   },
+          { label: "Est. Total",        value: `৳${totalEstimated.toFixed(2)}`  },
+          { label: "Categories",        value: categories.length                 },
         ] : []}
       />
 
@@ -205,7 +257,7 @@ export default function WishlistPage() {
             Retry
           </Button>
         </div>
-      ) : wishlist.length === 0 ? (
+      ) : !hasItems ? (
         <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-border bg-card py-24 text-center">
           <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-primary/10">
             <Heart size={38} style={{ color: "var(--primary)" }} />
@@ -224,16 +276,109 @@ export default function WishlistPage() {
           </Link>
         </div>
       ) : (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {wishlist.map((item) => (
-            <WishlistCard
-              key={item.id}
-              item={item}
-              removing={removingId === item.id}
-              onRemove={handleRemove}
-            />
-          ))}
-        </div>
+        <>
+          {/* ── Summary + filter bar ─────────────────────────────────────────── */}
+          <div className="rounded-2xl border border-border bg-card px-5 py-4 shadow-sm space-y-3">
+            {/* Summary row */}
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <div
+                  className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10"
+                  style={{ color: "var(--primary)" }}
+                >
+                  <BadgeDollarSign size={16} />
+                </div>
+                <div>
+                  <p className="text-xs font-black text-card-foreground">
+                    {wishlist.length} saved item{wishlist.length !== 1 ? "s" : ""}
+                    <span className="ml-2 text-muted-foreground font-medium">·</span>
+                    <span className="ml-2 text-muted-foreground font-medium text-[11px]">
+                      Combined estimate:{" "}
+                      <span className="font-black text-card-foreground">৳{totalEstimated.toFixed(2)}</span>
+                    </span>
+                  </p>
+                </div>
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleClearAll}
+                disabled={clearingAll}
+                className="h-8 rounded-xl border-rose-200 text-rose-600 hover:bg-rose-50 hover:border-rose-300 text-xs font-extrabold gap-1.5"
+              >
+                {clearingAll
+                  ? <Loader2 size={12} className="animate-spin" />
+                  : <X size={12} />}
+                Clear All
+              </Button>
+            </div>
+
+            {/* Category filter chips */}
+            {categories.length > 1 && (
+              <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-border">
+                <Filter size={12} className="text-muted-foreground shrink-0" />
+                {["ALL", ...categories].map((cat) => {
+                  const isActive = activeCategory === cat;
+                  const count    = cat === "ALL" ? wishlist.length : wishlist.filter((i) => (i.category ?? "Other") === cat).length;
+                  return (
+                    <button
+                      key={cat}
+                      onClick={() => setActiveCategory(cat)}
+                      className={`flex items-center gap-1.5 rounded-2xl px-3 py-1 text-[11px] font-black transition-all ${
+                        isActive ? "text-white shadow-sm" : "bg-muted text-muted-foreground hover:bg-muted/70"
+                      }`}
+                      style={isActive ? { background: "var(--primary)" } : undefined}
+                    >
+                      {cat === "ALL" ? "All" : cat}
+                      <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-black ${
+                        isActive ? "bg-white/25 text-white" : "bg-border text-muted-foreground"
+                      }`}>
+                        {count}
+                      </span>
+                    </button>
+                  );
+                })}
+
+                {activeCategory !== "ALL" && (
+                  <button
+                    onClick={() => setActiveCategory("ALL")}
+                    className="flex items-center gap-1 text-[11px] font-extrabold text-muted-foreground hover:text-error transition-colors ml-1"
+                  >
+                    <RotateCcw size={11} /> Reset
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* ── Cards grid ───────────────────────────────────────────────────── */}
+          {filtered.length === 0 ? (
+            <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-border bg-card py-16 text-center">
+              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
+                <Filter size={22} />
+              </div>
+              <p className="text-sm font-black text-card-foreground">No items in this category</p>
+              <button
+                onClick={() => setActiveCategory("ALL")}
+                className="mt-3 text-xs font-extrabold text-primary hover:underline"
+              >
+                Show all items
+              </button>
+            </div>
+          ) : (
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {filtered.map((item) => (
+                <WishlistCard
+                  key={item.id}
+                  item={item}
+                  removing={removingId === item.id}
+                  onRemove={handleRemove}
+                />
+              ))}
+            </div>
+          )}
+        </>
       )}
     </motion.div>
   );
