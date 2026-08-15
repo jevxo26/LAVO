@@ -51,8 +51,8 @@ export default function WalletPage() {
       const profileData = await profileRes.json();
       const txData      = await txRes.json();
       if (profileData.success) {
-        setWalletBalance(profileData.data.walletBalance);
-        setLoyaltyPoints(profileData.data.loyaltyPoints);
+        setWalletBalance(profileData.data.walletBalance ?? 0);
+        setLoyaltyPoints(profileData.data.loyaltyPoints ?? 0);
       }
       if (txData.success) setTransactions(txData.data);
     } catch (err) {
@@ -81,8 +81,8 @@ export default function WalletPage() {
     </div>
   );
 
-  const totalIn  = transactions.filter((t) => isCredit(t.transactionType) && t.status.toUpperCase() === "COMPLETED").reduce((s, t) => s + t.amount, 0);
-  const totalOut = transactions.filter((t) => !isCredit(t.transactionType) && t.status.toUpperCase() === "COMPLETED").reduce((s, t) => s + t.amount, 0);
+  const totalIn  = transactions.filter((t) => isCredit(t.transactionType) && (t.status ?? "").toUpperCase() === "COMPLETED").reduce((s, t) => s + (t.amount ?? 0), 0);
+  const totalOut = transactions.filter((t) => !isCredit(t.transactionType) && (t.status ?? "").toUpperCase() === "COMPLETED").reduce((s, t) => s + (t.amount ?? 0), 0);
 
   return (
     <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }} className="space-y-7">
@@ -94,9 +94,9 @@ export default function WalletPage() {
         description="1-tap instant laundry checkout, automatic cashbacks, and transparent transaction logs."
         icon={Wallet}
         chips={[
-          { label: "Balance",       value: `৳${walletBalance.toFixed(2)}` },
-          { label: "Reward Points", value: loyaltyPoints                  },
-          { label: "Transactions",  value: transactions.length            },
+          { label: "Balance",       value: `৳${(walletBalance ?? 0).toFixed(2)}` },
+          { label: "Reward Points", value: loyaltyPoints ?? 0                    },
+          { label: "Transactions",  value: transactions.length                   },
         ]}
       />
 
@@ -108,8 +108,8 @@ export default function WalletPage() {
 
       {/* ── 3. Summary Stats ─────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <OverviewStatCard label="Total Deposited" sub="Completed deposits"  value={`৳${totalIn.toFixed(2)}`}  icon={ArrowDownLeft}   gradient="from-emerald-500 to-teal-600"  />
-        <OverviewStatCard label="Total Spent"     sub="Order payments"      value={`৳${totalOut.toFixed(2)}`} icon={ArrowUpRight}    gradient="from-rose-500 to-pink-600"     />
+        <OverviewStatCard label="Total Deposited" sub="Completed deposits"  value={`৳${(totalIn ?? 0).toFixed(2)}`}  icon={ArrowDownLeft}   gradient="from-emerald-500 to-teal-600"  />
+        <OverviewStatCard label="Total Spent"     sub="Order payments"      value={`৳${(totalOut ?? 0).toFixed(2)}`} icon={ArrowUpRight}    gradient="from-rose-500 to-pink-600"     />
         <OverviewStatCard label="Transactions"    sub="All-time records"    value={transactions.length}        icon={BadgeDollarSign} gradient="from-blue-500 to-indigo-600"   />
       </div>
 
