@@ -34,7 +34,6 @@ export const markOrderReadyForDelivery = catchServiceAsync(async (req: any, res:
     data: {
       orderId,
       status: 'READY_FOR_DELIVERY',
-      title: 'Ready for Delivery',
       description: 'Your laundry is packed and ready for delivery agent dispatch.',
     }
   }).catch(() => {});
