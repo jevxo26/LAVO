@@ -157,6 +157,26 @@ export function QrScanner({
 
     async function initCameras() {
       try {
+        // Request native userMedia permission first to trigger browser permission prompt
+        if (typeof window !== "undefined" && navigator?.mediaDevices?.getUserMedia) {
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+            stream.getTracks().forEach((track) => track.stop());
+          } catch (permErr: any) {
+            if (permErr?.name === "NotAllowedError" || permErr?.name === "PermissionDeniedError") {
+              if (isMounted) {
+                setCameraError({
+                  title: "Camera Permission Blocked",
+                  message: "Camera access is blocked by your browser. Click the lock icon 🔒 next to the website URL in your address bar and change Camera to 'Allow', then click Retry.",
+                  canRetry: true,
+                  icon: "shield",
+                });
+              }
+              return;
+            }
+          }
+        }
+
         const devices = await Html5Qrcode.getCameras();
         if (!isMounted) return;
 
