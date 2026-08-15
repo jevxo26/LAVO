@@ -14,7 +14,7 @@ export default function CustomerTicketPage({ params }: PageProps) {
 
   return (
     <div className="container mx-auto py-6">
-      <TicketChat ticketId={id} backUrl="/dashboard/help-desk" />
+      <TicketChat ticketId={id} backUrl="/dashboard/help-desk" isReadOnly />
     </div>
   );
 }

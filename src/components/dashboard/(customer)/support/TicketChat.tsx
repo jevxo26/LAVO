@@ -47,9 +47,10 @@ interface TicketDetails {
 interface TicketChatProps {
   ticketId: string;
   backUrl: string;
+  isReadOnly?: boolean;
 }
 
-export function TicketChat({ ticketId, backUrl }: TicketChatProps) {
+export function TicketChat({ ticketId, backUrl, isReadOnly = false }: TicketChatProps) {
   const { user } = useAuth();
   const router = useRouter();
   const [ticket, setTicket] = useState<TicketDetails | null>(null);
@@ -279,7 +280,7 @@ export function TicketChat({ ticketId, backUrl }: TicketChatProps) {
 
         {/* Action Controls */}
         <div className="flex items-center gap-2">
-          {isPending && (
+          {!isReadOnly && isPending && (
             <Button
               onClick={() => handleStatusUpdate("enabled-live-chat")}
               disabled={actionLoading}
@@ -290,7 +291,7 @@ export function TicketChat({ ticketId, backUrl }: TicketChatProps) {
             </Button>
           )}
 
-          {isChatActive && (
+          {!isReadOnly && isChatActive && (
             <Button
               onClick={() => handleStatusUpdate("solved")}
               disabled={actionLoading}
@@ -400,8 +401,8 @@ export function TicketChat({ ticketId, backUrl }: TicketChatProps) {
                     {!isMe && (
                       <div className="w-6 h-6 shrink-0">
                         {showAvatar && (
-                          <div className="w-6 h-6 bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center text-[9px] font-bold" title={msg.senderName}>
-                            {msg.senderName.charAt(0)}
+                          <div className="w-6 h-6 bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center text-[9px] font-bold" title={msg.senderName ?? ""}>
+                            {(msg.senderName ?? "?").charAt(0)}
                           </div>
                         )}
                       </div>
@@ -409,7 +410,7 @@ export function TicketChat({ ticketId, backUrl }: TicketChatProps) {
 
                     <div className="flex flex-col gap-0.5 max-w-[70%]">
                       {!isMe && showAvatar && (
-                        <span className="text-[10px] text-slate-400 font-bold ml-1">{msg.senderName} ({msg.senderRole})</span>
+                        <span className="text-[10px] text-slate-400 font-bold ml-1">{msg.senderName ?? "Unknown"} ({msg.senderRole ?? ""})</span>
                       )}
                       <div
                         className={`px-4 py-2.5 text-[13px] leading-relaxed shadow-sm ${
