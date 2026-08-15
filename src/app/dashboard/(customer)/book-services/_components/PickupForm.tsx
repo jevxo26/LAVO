@@ -41,6 +41,9 @@ export function PickupForm({
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   const [locationConfirmed, setLocationConfirmed] = useState(false);
 
+  // Today's date in YYYY-MM-DD for min attribute (no past dates)
+  const todayStr = new Date().toISOString().split("T")[0];
+
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
@@ -167,6 +170,7 @@ export function PickupForm({
                 id="pickupDate"
                 type="date"
                 value={pickupDate}
+                min={todayStr}
                 onChange={(e) => onPickupDateChange(e.target.value)}
                 required
                 className="pl-9 h-9 text-xs rounded-xl border-slate-200 focus:border-indigo-300"

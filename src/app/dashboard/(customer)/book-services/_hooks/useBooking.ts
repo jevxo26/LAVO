@@ -119,10 +119,9 @@ export function useBooking() {
         const profileRes = await authFetch("/customer/profile");
         const profileData = await profileRes.json();
         if (profileData.success) {
-          setWalletBalance(profileData.data.walletBalance);
-          setReceiverName(profileData.data.fullName);
-          // Keep receiverPhone empty so testing number can be typed freely per order
-          setReceiverPhone("");
+          setWalletBalance(profileData.data.walletBalance ?? 0);
+          setReceiverName(profileData.data.fullName ?? "");
+          setReceiverPhone(profileData.data.phone ?? "");
         }
       } catch (err) {
         console.error("Error loading booking data:", err);
@@ -220,10 +219,10 @@ export function useBooking() {
   };
 
   const subtotal = cart.reduce((total, item) => {
-    const addonCost = item.service.addons
+    const addonCost = (item.service.addons ?? [])
       .filter((a) => item.selectedAddons.includes(a.id))
-      .reduce((s, a) => s + a.price, 0);
-    return total + (item.service.basePrice + addonCost) * item.quantity;
+      .reduce((s, a) => s + (a.price ?? 0), 0);
+    return total + ((item.service.basePrice ?? 0) + addonCost) * item.quantity;
   }, 0);
 
   const deliveryCharge = subtotal > 300 || subtotal === 0 ? 0 : 50;

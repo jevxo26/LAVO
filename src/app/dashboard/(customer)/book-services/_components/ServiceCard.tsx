@@ -58,8 +58,8 @@ export function ServiceCard({ service, inCart, onAdd, onToggleWishlist, onViewDe
           {/* Price row */}
           <div className="flex items-center justify-between">
             <div>
-              <span className="text-xl font-black text-slate-900 dark:text-white">৳{service.basePrice.toFixed(2)}</span>
-              {service.addons.length > 0 && (
+              <span className="text-xl font-black text-slate-900 dark:text-white">৳{(service.basePrice ?? 0).toFixed(2)}</span>
+              {(service.addons ?? []).length > 0 && (
                 <span className="text-[10px] font-bold text-slate-400 ml-1.5 inline-flex items-center gap-0.5">
                   <Tag size={10} />
                   {service.addons.length} treatments
