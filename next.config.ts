@@ -12,6 +12,8 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL ?? "/api",
   },
   images: {
+    formats: ["image/avif", "image/webp"],
+    minimumCacheTTL: 86400, // 24 hours
     remotePatterns: [
       {
         protocol: "https",
@@ -39,6 +41,15 @@ const nextConfig: NextConfig = {
           {
             key: "Permissions-Policy",
             value: "camera=(self), microphone=(), geolocation=(self)",
+          },
+        ],
+      },
+      {
+        source: "/_next/image(.*)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
           },
         ],
       },

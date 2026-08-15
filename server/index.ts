@@ -46,6 +46,7 @@ import { initSocket } from "./sockets/socket";
 import { validateEnvironmentVariables } from "./config/envValidation";
 import prisma from "./config/prisma";
 import { authRateLimiter, paymentRateLimiter, apiRateLimiter } from "./middlewares/rateLimiter";
+import compression from "compression";
 
 const dev = process.env.NODE_ENV !== 'production';
 const app = next({ dev, dir: process.cwd() });
@@ -55,6 +56,9 @@ const port = process.env.PORT || 3000;
 app.prepare().then(async () => {
   validateEnvironmentVariables();
   const server = express();
+
+  // Gzip/Brotli payload compression for maximum response speed
+  server.use(compression());
 
   // Middleware
   // Restrict CORS to known frontend origins only
@@ -115,6 +119,7 @@ app.prepare().then(async () => {
   // Public: published customer reviews used as homepage testimonials (no auth required)
   server.get('/api/public/reviews', async (req: Request, res: Response) => {
     try {
+      res.setHeader('Cache-Control', 'public, max-age=300, s-maxage=600, stale-while-revalidate=1200');
       const { getPublishedReviews } = await import('./services/customer/reviewService');
       const limit = Math.min(Number(req.query.limit) || 8, 20);
       const data  = await getPublishedReviews(limit);
