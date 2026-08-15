@@ -2,6 +2,7 @@ import { Response } from "express";
 import { catchServiceAsync } from "../../utils/catchServiceAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import prisma, { getBranchOrFail } from "../../services/branch-manager/branchDashboardService";
+import { DeliveryAssignmentService } from "../../services/agent/deliveryAssignmentService";
 
 export const getOrders = catchServiceAsync(async (req: any, res: Response) => {
   const branchId = await getBranchOrFail(req);
@@ -17,8 +18,6 @@ export const getOrders = catchServiceAsync(async (req: any, res: Response) => {
   sendResponse(res, { statusCode: 200, data: orders });
 });
 
-import { DeliveryAssignmentService } from "../../services/agent/deliveryAssignmentService";
-
 export const markOrderReadyForDelivery = catchServiceAsync(async (req: any, res: Response) => {
   const branchId = await getBranchOrFail(req);
   const { orderId } = req.params;
@@ -30,6 +29,27 @@ export const markOrderReadyForDelivery = catchServiceAsync(async (req: any, res:
     where: { id: orderId },
     data: { orderStatus: 'READY_FOR_DELIVERY' }
   });
+
+  await prisma.orderTimeline.create({
+    data: {
+      orderId,
+      status: 'READY_FOR_DELIVERY',
+      title: 'Ready for Delivery',
+      description: 'Your laundry is packed and ready for delivery agent dispatch.',
+    }
+  }).catch(() => {});
+
+  try {
+    const { getIO } = await import("../../sockets/socket");
+    const io = getIO();
+    if (io) {
+      io.to(`order_${orderId}`).emit("order_status_updated", {
+        orderId,
+        orderStatus: "READY_FOR_DELIVERY",
+        status: "READY_FOR_DELIVERY",
+      });
+    }
+  } catch (e) {}
 
   // Automatically trigger the drop-off delivery engine
   const delivery = await DeliveryAssignmentService.autoAssignDropoffDelivery(orderId);

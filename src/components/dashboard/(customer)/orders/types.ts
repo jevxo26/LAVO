@@ -35,16 +35,28 @@ export const STATUS_TABS = ["ALL", "PENDING", "PROCESSING", "COMPLETED", "CANCEL
 export type StatusTab = (typeof STATUS_TABS)[number];
 
 /** Statuses that are grouped under the PROCESSING tab */
-export const PROCESSING_STATUSES = ["CONFIRMED", "PROCESSING", "PICKUP", "WASHING", "DELIVERY"];
+export const PROCESSING_STATUSES = [
+  "CONFIRMED",
+  "PROCESSING",
+  "PICKUP",
+  "WASHING",
+  "DRYING",
+  "IRONING",
+  "FOLDING",
+  "READY_FOR_DELIVERY",
+  "OUT_FOR_DELIVERY",
+  "DELIVERY",
+];
 
 /** Ordered steps used for the order timeline */
 export const TIMELINE_STEPS = [
-  { key: "PENDING",    label: "Order Placed",   icon: "clipboard" },
-  { key: "CONFIRMED",  label: "Confirmed",       icon: "check"     },
-  { key: "PICKUP",     label: "Picked Up",       icon: "truck"     },
-  { key: "WASHING",    label: "In Process",      icon: "shirt"     },
-  { key: "DELIVERY",   label: "Out for Delivery",icon: "zap"       },
-  { key: "COMPLETED",  label: "Delivered",       icon: "star"      },
+  { key: "PENDING",            label: "Order Placed",      icon: "clipboard" },
+  { key: "CONFIRMED",          label: "Confirmed",         icon: "check"     },
+  { key: "PICKUP",             label: "Picked Up",         icon: "truck"     },
+  { key: "WASHING",            label: "In Process",        icon: "shirt"     },
+  { key: "READY_FOR_DELIVERY", label: "Ready for Delivery",icon: "package"   },
+  { key: "DELIVERY",           label: "Out for Delivery",  icon: "zap"       },
+  { key: "COMPLETED",          label: "Delivered",         icon: "star"      },
 ] as const;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -69,25 +81,34 @@ export function fmtDateTime(iso: string) {
 
 /** Returns the active step index (0-based) for the timeline */
 export function getTimelineStep(status: string): number {
-  const s = status.toUpperCase();
+  const s = (status ?? "").toUpperCase();
   const idx = TIMELINE_STEPS.findIndex((t) => t.key === s);
   if (idx !== -1) return idx;
-  // PROCESSING maps to WASHING visually
-  if (s === "PROCESSING") return 3;
+
+  if (s === "PROCESSING" || s === "DRYING" || s === "IRONING" || s === "FOLDING") return 3;
+  if (s === "READY" || s === "READY_FOR_DELIVERY") return 4;
+  if (s === "OUT_FOR_DELIVERY" || s === "DELIVERY" || s === "ON_DELIVERY") return 5;
+  if (s === "DELIVERED" || s === "COMPLETED") return 6;
   return 0;
 }
 
 /** Colour classes for order status badges */
 export function orderStatusStyle(status: string): { cls: string; dot: string; label: string } {
   const map: Record<string, { cls: string; dot: string; label: string }> = {
-    PENDING:    { cls: "bg-amber-50   text-amber-700   border-amber-200",   dot: "bg-amber-400",   label: "Pending"      },
-    CONFIRMED:  { cls: "bg-blue-50    text-blue-700    border-blue-200",    dot: "bg-blue-500",    label: "Confirmed"    },
-    PROCESSING: { cls: "bg-indigo-50  text-indigo-700  border-indigo-200",  dot: "bg-indigo-500",  label: "Processing"   },
-    WASHING:    { cls: "bg-indigo-50  text-indigo-700  border-indigo-200",  dot: "bg-indigo-500",  label: "Washing"      },
-    PICKUP:     { cls: "bg-violet-50  text-violet-700  border-violet-200",  dot: "bg-violet-500",  label: "Pickup"       },
-    DELIVERY:   { cls: "bg-purple-50  text-purple-700  border-purple-200",  dot: "bg-purple-500",  label: "Out for Delivery" },
-    COMPLETED:  { cls: "bg-emerald-50 text-emerald-700 border-emerald-200", dot: "bg-emerald-500", label: "Completed"    },
-    CANCELLED:  { cls: "bg-rose-50    text-rose-700    border-rose-200",    dot: "bg-rose-400",    label: "Cancelled"    },
+    PENDING:            { cls: "bg-amber-50   text-amber-700   border-amber-200",   dot: "bg-amber-400",   label: "Pending"            },
+    CONFIRMED:          { cls: "bg-blue-50    text-blue-700    border-blue-200",    dot: "bg-blue-500",    label: "Confirmed"          },
+    PROCESSING:         { cls: "bg-indigo-50  text-indigo-700  border-indigo-200",  dot: "bg-indigo-500",  label: "Processing"         },
+    WASHING:            { cls: "bg-indigo-50  text-indigo-700  border-indigo-200",  dot: "bg-indigo-500",  label: "Washing"            },
+    DRYING:             { cls: "bg-cyan-50    text-cyan-700    border-cyan-200",    dot: "bg-cyan-500",    label: "Drying"             },
+    IRONING:            { cls: "bg-sky-50     text-sky-700     border-sky-200",     dot: "bg-sky-500",     label: "Ironing"            },
+    FOLDING:            { cls: "bg-teal-50    text-teal-700    border-teal-200",    dot: "bg-teal-500",    label: "Folding"            },
+    PICKUP:             { cls: "bg-violet-50  text-violet-700  border-violet-200",  dot: "bg-violet-500",  label: "Pickup"             },
+    READY_FOR_DELIVERY: { cls: "bg-emerald-50 text-emerald-700 border-emerald-200", dot: "bg-emerald-500", label: "Ready for Delivery" },
+    DELIVERY:           { cls: "bg-purple-50  text-purple-700  border-purple-200",  dot: "bg-purple-500",  label: "Out for Delivery"   },
+    OUT_FOR_DELIVERY:   { cls: "bg-purple-50  text-purple-700  border-purple-200",  dot: "bg-purple-500",  label: "Out for Delivery"   },
+    COMPLETED:          { cls: "bg-emerald-50 text-emerald-700 border-emerald-200", dot: "bg-emerald-500", label: "Completed"          },
+    DELIVERED:          { cls: "bg-emerald-50 text-emerald-700 border-emerald-200", dot: "bg-emerald-500", label: "Delivered"          },
+    CANCELLED:          { cls: "bg-rose-50    text-rose-700    border-rose-200",    dot: "bg-rose-400",    label: "Cancelled"          },
   };
   return map[(status ?? "").toUpperCase()] ?? { cls: "bg-slate-50 text-slate-600 border-slate-200", dot: "bg-slate-400", label: status ?? "Unknown" };
 }
