@@ -68,7 +68,7 @@ export function Navbar() {
   }, [reduxUser]);
 
   return (
-    <header className="w-full bg-gradient-to-r from-blue-50/50 via-slate-50/80 to-indigo-50/40 backdrop-blur-xl border-b border-slate-200/50 px-4 sm:px-6 py-3 flex items-center justify-between gap-4 sticky top-0 z-30 shadow-2xs">
+    <header className="w-full bg-gradient-to-r from-blue-50/50 via-slate-50/80 to-indigo-50/40 backdrop-blur-xl border-b border-slate-200/50 px-4 sm:px-6 py-3 flex items-center justify-between gap-4 sticky top-0 z-40 shadow-2xs">
       {/* Dynamic Greeting */}
       <div className="shrink-0 max-w-[240px] sm:max-w-xs">
         <NavbarGreeting fullName={userInfo.fullName} userRole={userInfo.userRole} />
@@ -76,7 +76,7 @@ export function Navbar() {
 
       {/* Pill Search Bar */}
       <div className="flex-1 max-w-md hidden md:block">
-        <NavbarSearch />
+        <NavbarSearch userRole={userInfo.userRole} />
       </div>
 
       {/* Right Notifications & Profile Menu */}

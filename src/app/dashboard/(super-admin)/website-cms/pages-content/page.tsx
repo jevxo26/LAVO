@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Loader2, Edit, Globe } from "lucide-react";
 import { CmsSectionEditor } from "@/components/dashboard/shared/CmsSectionEditor";
 import { PricingSectionEditor } from "@/components/dashboard/shared/PricingSectionEditor";
+import { HeroSectionEditor } from "@/components/dashboard/shared/HeroSectionEditor";
 import { DashboardPageHero } from "@/components/shared/DashboardPageHero";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -203,7 +204,13 @@ export default function PagesContentCMSPage() {
       )}
 
       {/* ── Section editor dialogs ───────────────────────────────────── */}
-      {editingSection?.sectionKey === "calculator" ? (
+      {editingSection?.sectionKey === "hero" && activeSlug === "home" ? (
+        <HeroSectionEditor
+          section={editingSection}
+          onClose={() => setEditingSection(null)}
+          onSaved={() => { setEditingSection(null); fetchPageDetails(activeSlug); }}
+        />
+      ) : editingSection?.sectionKey === "calculator" ? (
         <PricingSectionEditor
           section={editingSection}
           onClose={() => setEditingSection(null)}
