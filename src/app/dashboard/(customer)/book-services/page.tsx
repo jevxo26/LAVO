@@ -135,7 +135,7 @@ function BookLaundryContent() {
         title="Book Laundry Service"
         description="Select your garments, choose specialized care treatments, and schedule doorstep collection."
         chips={[
-          { label: "Wallet Credit", value: `৳${walletBalance.toFixed(2)}` },
+          { label: "Wallet Credit", value: `৳${(walletBalance ?? 0).toFixed(2)}` },
           ...(cart.length > 0 ? [{ label: "Cart Items", value: cart.length }] : []),
         ]}
       />
@@ -155,7 +155,7 @@ function BookLaundryContent() {
               <h3 className="text-sm font-black text-slate-900 truncate">{autoSelectedService.serviceName}</h3>
               <p className="text-xs text-slate-500 font-medium mt-0.5">
                 {autoSelectedService.garmentType} · Category: {autoSelectedService.category} ·{" "}
-                <span className="font-extrabold text-emerald-700">৳{autoSelectedService.basePrice.toFixed(2)}/piece</span>
+                <span className="font-extrabold text-emerald-700">৳{(autoSelectedService.basePrice ?? 0).toFixed(2)}/piece</span>
               </p>
             </div>
           </div>
@@ -164,7 +164,7 @@ function BookLaundryContent() {
             <div className="rounded-xl bg-emerald-100 border border-emerald-200 px-4 py-2 text-center">
               <p className="text-[10px] font-black text-emerald-700 uppercase tracking-wide">Booking Total</p>
               <p className="text-lg font-black text-emerald-800">
-                ৳{(autoSelectedService.basePrice * (cart.find(i => i.service.id === autoSelectedService.id)?.quantity ?? 1)).toFixed(2)}
+                ৳{((autoSelectedService.basePrice ?? 0) * (cart.find(i => i.service.id === autoSelectedService.id)?.quantity ?? 1)).toFixed(2)}
               </p>
             </div>
             <button

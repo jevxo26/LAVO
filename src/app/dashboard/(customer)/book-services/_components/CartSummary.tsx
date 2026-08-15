@@ -166,7 +166,7 @@ export function CartSummary({
                           </div>
                           <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                             <p className="text-xs text-blue-600 dark:text-cyan-400 font-extrabold">
-                              ৳{item.service.basePrice.toFixed(2)} / piece
+                              ৳{(item.service.basePrice ?? 0).toFixed(2)} / piece
                             </p>
                             <button
                               type="button"
@@ -178,7 +178,7 @@ export function CartSummary({
                             </button>
                             {totalGarments > 0 && (
                               <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400">
-                                → {totalGarments} pcs · ৳{(item.service.basePrice * item.quantity).toFixed(2)}
+                                → {totalGarments} pcs · ৳{((item.service.basePrice ?? 0) * item.quantity).toFixed(2)}
                               </span>
                             )}
                           </div>
@@ -209,7 +209,7 @@ export function CartSummary({
                                   className={`text-[11px] px-3 py-1 rounded-xl border font-bold transition-all ${
                                     isChecked ? "bg-blue-600 border-blue-600 text-white" : "bg-white border-slate-200 text-slate-600 hover:border-blue-300 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300"
                                   }`}>
-                                  {addon.addonName} <span className="opacity-80 font-black">+৳{addon.price}</span>
+                                  {addon.addonName} <span className="opacity-80 font-black">+৳{(addon.price ?? 0).toFixed(2)}</span>
                                 </button>
                               );
                             })}
@@ -339,7 +339,7 @@ export function CartSummary({
                     ? "bg-cyan-600 text-white"
                     : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"
                 }`}>
-                  ৳{walletBalance.toFixed(2)}
+                  ৳{(walletBalance ?? 0).toFixed(2)}
                 </span>
               </div>
 

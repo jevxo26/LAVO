@@ -62,13 +62,13 @@ export function ServiceDetailDrawer({
 
   const addonSubtotal = cartItem
     ? cartItem.selectedAddons.reduce((sum, addonId) => {
-        const addon = service?.addons.find((a) => a.id === addonId);
-        return sum + (addon ? addon.price * cartItem.quantity : 0);
+        const addon = service?.addons?.find((a) => a.id === addonId);
+        return sum + (addon ? (addon.price ?? 0) * cartItem.quantity : 0);
       }, 0)
     : 0;
 
   const itemSubtotal = cartItem && service
-    ? service.basePrice * cartItem.quantity
+    ? (service.basePrice ?? 0) * cartItem.quantity
     : 0;
 
   const garmentQty = (type: string) =>
@@ -146,7 +146,7 @@ export function ServiceDetailDrawer({
                   </span>
                 </div>
                 <div className="inline-flex items-baseline gap-1 rounded-2xl bg-white/10 border border-white/15 px-4 py-2">
-                  <span className="text-2xl font-black text-white">৳{service.basePrice.toFixed(2)}</span>
+                  <span className="text-2xl font-black text-white">৳{(service.basePrice ?? 0).toFixed(2)}</span>
                   <span className="text-xs text-white/60 font-bold">/ piece</span>
                 </div>
               </div>
@@ -184,7 +184,7 @@ export function ServiceDetailDrawer({
                             </span>
                             <div className="flex items-center gap-2">
                               <span className="text-xs font-black text-blue-600 dark:text-cyan-400">
-                                ৳{(service.basePrice * g.qty).toFixed(2)}
+                                ৳{((service.basePrice ?? 0) * g.qty).toFixed(2)}
                               </span>
                               <div className="flex items-center gap-1 border-l pl-2 border-slate-200 dark:border-slate-700">
                                 <button
@@ -278,7 +278,7 @@ export function ServiceDetailDrawer({
                               )}
                             </div>
                           </div>
-                          <span className={`text-xs font-black ml-2 shrink-0 ${isSelected ? "text-white" : "text-blue-600 dark:text-cyan-400"}`}>+৳{addon.price}</span>
+                          <span className={`text-xs font-black ml-2 shrink-0 ${isSelected ? "text-white" : "text-blue-600 dark:text-cyan-400"}`}>+৳{(addon.price ?? 0).toFixed(2)}</span>
                         </button>
                       );
                     })}
