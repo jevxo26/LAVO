@@ -155,7 +155,7 @@ export const getOrderQrCodes = catchServiceAsync(async (req: any, res: Response)
     if (createPromises.length > 0) {
       await Promise.all(createPromises);
       items = await prisma.garmentItem.findMany({
-        where: { orderId },
+        where: { orderItem: { orderId } },
         include: {
           qrCodeRecord: true,
           orderItem: { include: { garmentType: true, service: true } }
@@ -221,7 +221,7 @@ export const generateAllQrCodes = catchServiceAsync(async (req: any, res: Respon
     if (createPromises.length > 0) {
       await Promise.all(createPromises);
       items = await prisma.garmentItem.findMany({
-        where: { orderId },
+        where: { orderItem: { orderId } },
         include: { qrCodeRecord: true }
       });
     }
