@@ -43,24 +43,24 @@ export function InvoiceSummary({ order }: InvoiceSummaryProps) {
 
       {/* Invoice box */}
       <div className="rounded-xl border border-slate-100 bg-white p-4 text-xs space-y-2.5 shadow-sm">
-        <Line label="Subtotal"           value={`৳${order.subtotal.toFixed(2)}`} />
+        <Line label="Subtotal"           value={`৳${(order.subtotal ?? 0).toFixed(2)}`} />
 
-        {order.discount > 0 && (
-          <Line label="Discount" value={`-৳${order.discount.toFixed(2)}`} />
+        {(order.discount ?? 0) > 0 && (
+          <Line label="Discount" value={`-৳${(order.discount ?? 0).toFixed(2)}`} />
         )}
 
         <Line
           label="Delivery Fee"
-          value={order.deliveryCharge === 0 ? "FREE" : `৳${order.deliveryCharge.toFixed(2)}`}
+          value={(order.deliveryCharge ?? 0) === 0 ? "FREE" : `৳${(order.deliveryCharge ?? 0).toFixed(2)}`}
         />
 
-        <Line label="VAT / Service Tax (5%)" value={`৳${order.tax.toFixed(2)}`} />
+        <Line label="VAT / Service Tax (5%)" value={`৳${(order.tax ?? 0).toFixed(2)}`} />
 
         {/* Divider */}
         <div className="border-t border-slate-100 pt-2.5">
           <div className="flex items-center justify-between">
             <span className="text-sm font-extrabold text-slate-900">Grand Total</span>
-            <span className="text-sm font-extrabold text-indigo-600">৳{order.grandTotal.toFixed(2)}</span>
+            <span className="text-sm font-extrabold text-indigo-600">৳{(order.grandTotal ?? 0).toFixed(2)}</span>
           </div>
         </div>
 

@@ -89,12 +89,12 @@ export function orderStatusStyle(status: string): { cls: string; dot: string; la
     COMPLETED:  { cls: "bg-emerald-50 text-emerald-700 border-emerald-200", dot: "bg-emerald-500", label: "Completed"    },
     CANCELLED:  { cls: "bg-rose-50    text-rose-700    border-rose-200",    dot: "bg-rose-400",    label: "Cancelled"    },
   };
-  return map[status.toUpperCase()] ?? { cls: "bg-slate-50 text-slate-600 border-slate-200", dot: "bg-slate-400", label: status };
+  return map[(status ?? "").toUpperCase()] ?? { cls: "bg-slate-50 text-slate-600 border-slate-200", dot: "bg-slate-400", label: status ?? "Unknown" };
 }
 
 /** Colour classes for payment status badges */
 export function paymentStatusStyle(status: string): { cls: string; dot: string; label: string } {
-  const s = status.toUpperCase();
+  const s = (status ?? "").toUpperCase();
   if (s === "PAID")
     return { cls: "bg-emerald-50 text-emerald-700 border-emerald-200", dot: "bg-emerald-500", label: "Paid" };
   return { cls: "bg-rose-50 text-rose-700 border-rose-200", dot: "bg-rose-400", label: "Unpaid" };
