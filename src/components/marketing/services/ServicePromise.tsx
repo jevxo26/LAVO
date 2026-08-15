@@ -124,7 +124,7 @@ export function ServicePromise({ data }: { data?: any }) {
                 <h3 className="text-xl font-bold text-slate-900 mb-3">
                   {promise.title}
                 </h3>
-                <p className="text-slate-500 max-w-xs mx-auto">
+                <p className="text-slate-500 max-w-xs">
                   {promise.content}
                 </p>
               </motion.div>

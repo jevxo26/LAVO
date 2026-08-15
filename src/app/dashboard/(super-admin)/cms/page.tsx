@@ -6,6 +6,7 @@ import { Layout, Search, Edit, Eye, ChevronDown, Plus, ExternalLink, Globe, Smar
 import Link from "next/link";
 import { CmsSectionEditor } from "@/components/dashboard/shared/CmsSectionEditor";
 import { PricingSectionEditor } from "@/components/dashboard/shared/PricingSectionEditor";
+import { HeroSectionEditor } from "@/components/dashboard/shared/HeroSectionEditor";
 import { DashboardPageHero } from "@/components/shared/DashboardPageHero";
 import { OverviewStatCard }  from "@/components/dashboard/shared/overview/OverviewStatCard";
 import { motion }            from "framer-motion";
@@ -324,7 +325,16 @@ export default function CMSDashboard() {
         )}
       </div>
 
-      {editingSection && editingSection.sectionKey === "calculator" ? (
+      {editingSection && editingSection.sectionKey === "hero" ? (
+        <HeroSectionEditor
+          section={editingSection}
+          onClose={() => setEditingSection(null)}
+          onSaved={() => {
+            setEditingSection(null);
+            fetchPages();
+          }}
+        />
+      ) : editingSection && editingSection.sectionKey === "calculator" ? (
         <PricingSectionEditor
           section={editingSection}
           onClose={() => setEditingSection(null)}
