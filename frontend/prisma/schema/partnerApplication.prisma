@@ -1,0 +1,30 @@
+enum PartnerApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model PartnerApplication {
+  id            String   @id @default(uuid())
+
+  // Customer who applied
+  userId        String
+  user          User     @relation("PartnerApplicationOwner", fields: [userId], references: [id], onDelete: Cascade)
+
+  phone         String
+  targetCity    String
+  experience    String?
+  reason        String
+
+  status        PartnerApplicationStatus @default(PENDING)
+
+  // Admin/Super Admin who reviewed
+  reviewedById  String?
+  reviewedBy    User?    @relation("PartnerApplicationReviewer", fields: [reviewedById], references: [id])
+
+  reviewedAt    DateTime?
+  remarks       String?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}

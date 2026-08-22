@@ -1,0 +1,24 @@
+// Ticket Management Models
+
+model Ticket {
+  id          String              @id @default(uuid())
+  title       String
+  description String
+  priority    String              @default("NORMAL") // LOW, NORMAL, HIGH, URGENT
+  assignedTo  String?             // User ID (Admin or Branch Manager)
+  status      String              @default("pendingReview") // pendingReview, enabled-live-chat, solved
+  customerId  String              // User ID (Customer)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  messages    TicketChatMessage[]
+}
+
+model TicketChatMessage {
+  id         String   @id @default(uuid())
+  ticketId   String
+  ticket     Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  senderId   String   // User ID
+  senderRole String   // CUSTOMER, ADMIN, BRANCH_MANAGER
+  content    String
+  createdAt  DateTime @default(now())
+}

@@ -1,0 +1,45 @@
+// Content Management System (CMS) Models
+
+model CmsPage {
+  id          String       @id @default(uuid())
+  slug        String       @unique // e.g., "home", "services", "pricing"
+  title       String
+  description String?
+  status      String       @default("PUBLISHED") // PUBLISHED, DRAFT
+  sections    CmsSection[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model CmsSection {
+  id          String           @id @default(uuid())
+  pageId      String
+  page        CmsPage          @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  sectionKey  String           // e.g., "hero", "process", "features"
+  title       String?
+  subtitle    String?
+  content     String?          @db.Text
+  image       String?
+  displayOrder Int             @default(0)
+  items       CmsContentItem[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@unique([pageId, sectionKey])
+}
+
+model CmsContentItem {
+  id          String     @id @default(uuid())
+  sectionId   String
+  section     CmsSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  title       String?
+  subtitle    String?
+  content     String?    @db.Text
+  icon        String?
+  image       String?
+  linkUrl     String?
+  linkText    String?
+  displayOrder Int       @default(0)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
