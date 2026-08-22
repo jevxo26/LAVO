@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "npx prisma@6.19.3 generate --schema=../backend/prisma/schema.prisma && mkdir -p node_modules/@prisma && cp -r ../backend/node_modules/@prisma/client node_modules/@prisma/ && cp -r ../backend/node_modules/.prisma node_modules/ && next build",
     "start": "next start",
     "lint": "next lint"
   },
