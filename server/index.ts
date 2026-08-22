@@ -193,8 +193,8 @@ app.prepare().then(async () => {
     });
   });
 
-  const httpServer = server.listen(port, () => {
-    console.log(`> Ready on http://localhost:${port}`);
+  const httpServer = server.listen(Number(port), '0.0.0.0', () => {
+    console.log(`> Ready on http://0.0.0.0:${port}`);
   });
 
   // Initialize Socket.io
