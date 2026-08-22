@@ -27,7 +27,7 @@ export default async function BranchesPage() {
   });
 
   const getSection = (key: string) => {
-    return page?.sections.find(s => s.sectionKey === key) || null;
+    return page?.sections.find((s: any) => s.sectionKey === key) || null;
   };
 
   const heroSection = getSection("hero");
@@ -80,7 +80,7 @@ export default async function BranchesPage() {
   type BranchItem = { name: string; region: string; address: string | null; hours: string; phone: string };
 
   const displayBranches: BranchItem[] = (heroSection?.items?.length ?? 0) > 0
-    ? heroSection!.items.map((item) => {
+    ? heroSection!.items.map((item: any) => {
         const parts = item.subtitle?.split('·') ?? [];
         return {
           name: item.title ?? "",

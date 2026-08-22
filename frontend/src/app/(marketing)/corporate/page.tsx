@@ -38,7 +38,7 @@ export default async function CorporatePage() {
   });
 
   const getSection = (key: string) => {
-    return page?.sections.find((s) => s.sectionKey === key) || null;
+    return page?.sections.find((s: any) => s.sectionKey === key) || null;
   };
 
   const heroSection = getSection("hero");

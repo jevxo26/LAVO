@@ -31,7 +31,7 @@ export default async function PartnerPage() {
   });
 
   const getSection = (key: string) => {
-    return page?.sections.find(s => s.sectionKey === key) || null;
+    return page?.sections.find((s: any) => s.sectionKey === key) || null;
   };
 
   const heroSection = getSection("hero");
@@ -85,7 +85,7 @@ export default async function PartnerPage() {
   type VendorItem = { name: string; city: string; address: string | null; hours: string; phone: string };
 
   const displayVendors: VendorItem[] = (vendorsSection?.items?.length ?? 0) > 0
-    ? vendorsSection!.items.map((item) => {
+    ? vendorsSection!.items.map((item: any) => {
       const parts = item.subtitle?.split('·') ?? [];
       return {
         name: item.title ?? "",

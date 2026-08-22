@@ -38,7 +38,7 @@ export default async function Home() {
   }
 
   const getSection = (key: string) =>
-    homePage?.sections.find(s => s.sectionKey === key) || null;
+    homePage?.sections.find((s: any) => s.sectionKey === key) || null;
 
   // ── Published customer reviews for testimonials ────────────────────────────
   let publishedReviews: any[] = [];

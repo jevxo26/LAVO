@@ -27,7 +27,7 @@ export default async function PricingPage() {
   });
 
   const getSection = (key: string) => {
-    return page?.sections.find(s => s.sectionKey === key) || null;
+    return page?.sections.find((s: any) => s.sectionKey === key) || null;
   };
 
   return (

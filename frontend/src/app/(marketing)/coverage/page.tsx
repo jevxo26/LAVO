@@ -29,7 +29,7 @@ export default async function CoveragePage() {
   });
 
   const getSection = (key: string) => {
-    return page?.sections.find(s => s.sectionKey === key) || null;
+    return page?.sections.find((s: any) => s.sectionKey === key) || null;
   };
 
   const heroSection = getSection("hero");
@@ -53,7 +53,7 @@ export default async function CoveragePage() {
   type CityItem = { city: string; isAvailable: boolean };
 
   const displayCities: CityItem[] = (citiesSection?.items?.length ?? 0) > 0
-    ? citiesSection!.items.map((item) => ({
+    ? citiesSection!.items.map((item: any) => ({
         city: item.title ?? "",
         isAvailable: item.subtitle?.toLowerCase() === "available"
       }))

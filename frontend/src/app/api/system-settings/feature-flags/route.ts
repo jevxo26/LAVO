@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
       enableSMSNotifications: true,
     };
 
-    flags.forEach((f) => {
+    flags.forEach((f: any) => {
       if (f.featureName in flagMap) {
         flagMap[f.featureName] = f.isEnabled;
       }
