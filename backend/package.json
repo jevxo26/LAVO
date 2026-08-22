@@ -30,7 +30,8 @@
     "pg": "^8.22.0",
     "socket.io": "^4.8.3",
     "swagger-ui-express": "^5.0.1",
-    "twilio": "^6.0.2"
+    "twilio": "^6.0.2",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",

@@ -58,9 +58,9 @@ const createBranchSchema = z.object({
   latitude: z.number().optional(),
   longitude: z.number().optional(),
   // Accept 'Active', 'Inactive', 'ACTIVE', 'INACTIVE' — normalised to uppercase in the service
-  status: z.string().optional().transform((val) => val?.toUpperCase()),
+  status: z.string().optional().transform((val: string | undefined) => val?.toUpperCase()),
 }).refine(
-  (data) => !data.status || ['ACTIVE', 'INACTIVE'].includes(data.status),
+  (data: any) => !data.status || ['ACTIVE', 'INACTIVE'].includes(data.status),
   { message: "Status must be 'Active' or 'Inactive'", path: ['status'] }
 );
 
