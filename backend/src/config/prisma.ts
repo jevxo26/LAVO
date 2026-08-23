@@ -1,3 +1,11 @@
+import path from "path";
+import dotenv from "dotenv";
+
+// Load .env reliably regardless of execution working directory
+dotenv.config({ path: path.resolve(__dirname, "../../.env") });
+dotenv.config({ path: path.resolve(process.cwd(), ".env") });
+dotenv.config({ path: path.resolve(process.cwd(), "backend/.env") });
+
 import { PrismaClient } from "@prisma/client";
 
 declare global {
@@ -5,7 +13,12 @@ declare global {
   var __prisma: PrismaClient | undefined;
 }
 
-const prisma = global.__prisma || new PrismaClient();
+const prisma =
+  global.__prisma ||
+  new PrismaClient({
+    datasourceUrl: process.env.DATABASE_URL,
+    log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
+  });
 
 if (process.env.NODE_ENV !== "production") {
   global.__prisma = prisma;
