@@ -104,8 +104,8 @@ function HeroSlideContent({ slide, sIdx }: { slide: HeroSlideData; sIdx: number 
           {/* Heading */}
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-4xl xl:text-5xl font-extrabold tracking-tight text-foreground leading-[1.15]">
             {slide.title}{" "}
-            {slide.highlightText && (
-              <span className="text-primary">{slide.highlightText}</span>
+            {(slide.highlight || (slide as any).highlightText) && (
+              <span className="text-primary">{slide.highlight || (slide as any).highlightText}</span>
             )}
           </h1>
 
