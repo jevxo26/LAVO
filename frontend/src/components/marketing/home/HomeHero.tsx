@@ -217,6 +217,7 @@ export function HomeHero({ data }: HomeHeroProps) {
                             src={slide.image || "/images/home/hero/hero-1.jpg"}
                             alt={slide.title || "Hero"}
                             fill
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 680px"
                             priority={sIdx === 0}
                             className="object-cover"
                           />

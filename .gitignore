@@ -2,6 +2,7 @@
 
 # dependencies
 node_modules/
+**/node_modules/
 /.pnp
 .pnp.*
 .yarn/*
@@ -15,6 +16,7 @@ node_modules/
 
 # next.js
 .next/
+**/.next/
 /out/
 
 # production
@@ -32,8 +34,11 @@ yarn-error.log*
 
 # env files — ignore real secrets but allow the example template
 .env
+**/.env
 .env.local
+**/.env.local
 .env.*.local
+**/.env.*.local
 
 # vercel
 .vercel
@@ -44,6 +49,7 @@ next-env.d.ts
 
 # compiled server output
 dist/
+**/dist/
 
 # temporary scratch/debug scripts
 scratch/
