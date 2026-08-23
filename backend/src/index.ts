@@ -11,7 +11,6 @@ import helmet from "helmet";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import { PrismaClient } from "@prisma/client";
-import path from "path";
 import authRoutes from "./routes/auth/authRoutes";
 import userRoutes from "./routes/shared/userRoutes";
 import uploadRoutes from "./routes/shared/uploadRoutes";
