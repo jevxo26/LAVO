@@ -51,11 +51,18 @@ export const loginThunk = createAsyncThunk(
         credentials: "include",
         body: JSON.stringify(creds),
       });
-      const data = await res.json();
-      if (!res.ok) return rejectWithValue(data.message ?? "Login failed");
+      let data: any = {};
+      try {
+        data = await res.json();
+      } catch (jsonErr) {
+        console.error("Failed to parse login response as JSON:", jsonErr);
+        return rejectWithValue(`Server returned status ${res.status}`);
+      }
+      if (!res.ok) return rejectWithValue(data.message || data.error || "Login failed");
       return data.data as { user: AuthUser; token: string };
-    } catch {
-      return rejectWithValue("Network error — check your connection");
+    } catch (err: any) {
+      console.error("Login network/fetch exception:", err);
+      return rejectWithValue(err?.message || "Network error — check your connection");
     }
   }
 );
@@ -85,12 +92,19 @@ export const socialLoginThunk = createAsyncThunk(
           body: JSON.stringify(body),
         }
       );
-      const data = await res.json();
+      let data: any = {};
+      try {
+        data = await res.json();
+      } catch (jsonErr) {
+        console.error("Failed to parse social login response as JSON:", jsonErr);
+        return rejectWithValue(`Server returned status ${res.status}`);
+      }
       if (!res.ok)
-        return rejectWithValue(data.error ?? `${payload.provider} login failed`);
+        return rejectWithValue(data.error || data.message || `${payload.provider} login failed`);
       return data.data as { user: AuthUser; token: string };
-    } catch {
-      return rejectWithValue("Network error — check your connection");
+    } catch (err: any) {
+      console.error("Social login network/fetch exception:", err);
+      return rejectWithValue(err?.message || "Network error — check your connection");
     }
   }
 );
