@@ -265,12 +265,6 @@ interface HomeHeroProps {
 }
 
 export function HomeHero({ data }: HomeHeroProps) {
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
   // Parse dynamic slides from CMS section.content or fallback to DEFAULT_HERO_SLIDES
   const heroSlides = useMemo<HeroSlideData[]>(() => {
     if (data?.content) {
@@ -297,32 +291,26 @@ export function HomeHero({ data }: HomeHeroProps) {
         <div className="absolute -bottom-44 -left-44 h-[700px] w-[700px] rounded-full bg-secondary/10 blur-[180px]" />
       </div>
 
-      {!isMounted ? (
-        <div className="hero-swiper">
-          <HeroSlideContent slide={heroSlides[0]} sIdx={0} />
-        </div>
-      ) : (
-        <Swiper
-          modules={[Autoplay, Pagination]}
-          slidesPerView={1}
-          loop
-          speed={900}
-          autoplay={{
-            delay: 5000,
-            disableOnInteraction: false,
-          }}
-          pagination={{
-            clickable: true,
-          }}
-          className="hero-swiper"
-        >
-          {heroSlides.map((slide, sIdx) => (
-            <SwiperSlide key={slide.id || sIdx}>
-              <HeroSlideContent slide={slide} sIdx={sIdx} />
-            </SwiperSlide>
-          ))}
-        </Swiper>
-      )}
+      <Swiper
+        modules={[Autoplay, Pagination]}
+        slidesPerView={1}
+        loop
+        speed={900}
+        autoplay={{
+          delay: 5000,
+          disableOnInteraction: false,
+        }}
+        pagination={{
+          clickable: true,
+        }}
+        className="hero-swiper"
+      >
+        {heroSlides.map((slide, sIdx) => (
+          <SwiperSlide key={slide.id || sIdx}>
+            <HeroSlideContent slide={slide} sIdx={sIdx} />
+          </SwiperSlide>
+        ))}
+      </Swiper>
     </section>
   );
 }
