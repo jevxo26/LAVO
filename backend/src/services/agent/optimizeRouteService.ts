@@ -1,7 +1,6 @@
+import prisma from "../../config/prisma";
 import { PrismaClient } from "@prisma/client";
 import { calculateDistance } from "../../utils/geoUtils";
-
-const prisma = new PrismaClient();
 
 export const getOptimizedRoutes = async (userId: string, startLat?: number, startLon?: number) => {
   const agent = await prisma.deliveryAgent.findUnique({

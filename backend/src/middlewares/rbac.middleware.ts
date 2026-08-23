@@ -1,8 +1,7 @@
+import prisma from "../config/prisma";
 import { Response, NextFunction } from "express";
 import { PrismaClient } from "@prisma/client";
 import { AuthRequest } from "./auth.middleware";
-
-const prisma = new PrismaClient();
 
 export type PermissionKey =
   | "canManageCustomerOps"

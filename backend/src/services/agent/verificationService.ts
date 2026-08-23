@@ -1,7 +1,6 @@
+import prisma from "../../config/prisma";
 import { PrismaClient } from "@prisma/client";
 import { getIO } from "../../config/socketInstance";
-
-const prisma = new PrismaClient();
 
 export const getVerificationList = async (userId: string) => {
   // console.log("USER ID:", userId);

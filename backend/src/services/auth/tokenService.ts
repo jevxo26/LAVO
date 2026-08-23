@@ -1,11 +1,10 @@
+import prisma from "../../config/prisma";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { catchServiceAsync } from "../../utils/catchServiceAsync";
 import { sendTemplateEmail } from "../shared/emailService";
-
-const prisma = new PrismaClient();
 
 export class TokenService {
   static forgotPassword = catchServiceAsync(async (email: string) => {

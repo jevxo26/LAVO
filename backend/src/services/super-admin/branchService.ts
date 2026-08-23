@@ -1,6 +1,5 @@
+import prisma from "../../config/prisma";
 import { PrismaClient, Prisma } from "@prisma/client";
-
-const prisma = new PrismaClient();
 
 export const getAllBranches = async (page: number = 1, limit: number = 10, search: string = '') => {
   const skip = (page - 1) * limit;

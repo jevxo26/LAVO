@@ -1,7 +1,7 @@
+import prisma from "../../config/prisma";
 import { PrismaClient, Prisma } from "@prisma/client";
 import bcrypt from "bcrypt";
 
-const prisma = new PrismaClient();
 const selectUser = { id: true, fullName: true, email: true, phone: true, userType: true, status: true, isVerified: true, profileImage: true, lastLogin: true, createdAt: true };
 
 export class UserService {

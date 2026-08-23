@@ -1,9 +1,8 @@
+import prisma from "../../config/prisma";
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
-
-const prisma = new PrismaClient();
 
 // Helper to format relative time
 function timeAgo(date: Date): string {

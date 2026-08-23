@@ -13,7 +13,7 @@ declare global {
   var __prisma: PrismaClient | undefined;
 }
 
-const prisma =
+export const prisma =
   global.__prisma ||
   new PrismaClient({
     datasourceUrl: process.env.DATABASE_URL,

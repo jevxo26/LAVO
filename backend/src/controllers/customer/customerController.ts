@@ -1,10 +1,9 @@
+import prisma from "../../config/prisma";
 import { Request, Response } from "express";
 import { CustomerService } from "../../services/customer/customerService";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import { PrismaClient } from "@prisma/client";
-const prisma = new PrismaClient();
-
 export class CustomerController {
   static getProfileSummary = catchAsync(async (req: any, res: Response) => {
     const userId = req.user?.userId;

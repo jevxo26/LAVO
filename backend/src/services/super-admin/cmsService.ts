@@ -1,7 +1,6 @@
+import prisma from "../../config/prisma";
 import { PrismaClient } from "@prisma/client";
 import { catchServiceAsync } from "../../utils/catchServiceAsync";
-
-const prisma = new PrismaClient();
 
 export const createOrUpdatePage = catchServiceAsync(async (data: { slug: string, title: string, description?: string, status?: string }) => {
   const page = await prisma.cmsPage.upsert({

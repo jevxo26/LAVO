@@ -1,3 +1,4 @@
+import prisma from "../config/prisma";
 /**
  * Seed Homepage Services
  * Run with: npx ts-node -r tsconfig-paths/register server/scripts/seed-homepage-services.ts
@@ -7,8 +8,6 @@
  */
 
 import { PrismaClient } from "@prisma/client";
-const prisma = new PrismaClient();
-
 // ── Mirrors the public homepage service catalogue ──────────────────────────────
 const HOMEPAGE_SERVICES = [
   // ── Clothing ──

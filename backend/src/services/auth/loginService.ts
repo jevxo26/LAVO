@@ -1,9 +1,8 @@
+import prisma from "../../config/prisma";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { catchServiceAsync } from "../../utils/catchServiceAsync";
-
-const prisma = new PrismaClient();
 
 export class LoginService {
   static loginUser = catchServiceAsync(async (email: string, passwordInput: string) => {

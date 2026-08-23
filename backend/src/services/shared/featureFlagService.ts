@@ -1,6 +1,5 @@
+import prisma from "../../config/prisma";
 import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
 
 export class FeatureFlagService {
   static async getAllFeatureFlags() {

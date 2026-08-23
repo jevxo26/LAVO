@@ -1,8 +1,7 @@
+import prisma from "../../config/prisma";
 import { PrismaClient } from "@prisma/client";
 import { getMessaging, isFirebaseInitialized } from "./firebaseAdmin";
 import { MulticastMessage } from "firebase-admin/messaging";
-
-const prisma = new PrismaClient();
 
 export class NotificationService {
   /**

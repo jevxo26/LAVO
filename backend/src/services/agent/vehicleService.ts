@@ -1,7 +1,6 @@
+import prisma from "../../config/prisma";
 import { PrismaClient } from "@prisma/client";
 import { createAgent } from "./agentService";
-
-const prisma = new PrismaClient();
 
 export const getAllVehicles = async (page: number = 1, limit: number = 10, search: string = '') => {
   const skip = (page - 1) * limit;

@@ -1,8 +1,7 @@
+import prisma from "../../config/prisma";
 import { PrismaClient } from "@prisma/client";
 import { SMSService } from "../shared/smsService";
 import { getIO } from "../../config/socketInstance";
-
-const prisma = new PrismaClient();
 
 import { calculateDistance } from "../../utils/geoUtils";
 

@@ -1,10 +1,9 @@
+import prisma from "../../config/prisma";
 import { Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import { getBranchOrFail } from "../../services/branch-manager/branchDashboardService";
-
-const prisma = new PrismaClient();
 
 export class BranchVendorController {
   /**

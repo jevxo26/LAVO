@@ -1,6 +1,5 @@
+import prisma from "../../config/prisma";
 import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
 
 export const getBranchId = async (req: any): Promise<string | null> => {
   const branchId = req.query.branchId as string;

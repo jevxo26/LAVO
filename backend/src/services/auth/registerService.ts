@@ -1,9 +1,8 @@
+import prisma from "../../config/prisma";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 import { catchServiceAsync } from "../../utils/catchServiceAsync";
 import { SMSService } from "../shared/smsService";
-
-const prisma = new PrismaClient();
 
 const OTP_TTL_SECONDS = 60; // 1 minute validity
 

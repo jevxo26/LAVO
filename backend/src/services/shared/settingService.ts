@@ -1,6 +1,5 @@
+import prisma from "../../config/prisma";
 import { PrismaClient, Prisma } from "@prisma/client";
-
-const prisma = new PrismaClient();
 
 export class SettingService {
   static async getAllSettings(page: number = 1, limit: number = 20, category: string = '') {

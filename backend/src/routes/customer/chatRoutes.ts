@@ -1,10 +1,9 @@
+import prisma from "../../config/prisma";
 import express from "express";
 import { PrismaClient } from "@prisma/client";
 import { verifyToken } from "../../middlewares/authMiddleware";
 
 const router = express.Router();
-const prisma = new PrismaClient();
-
 // Fetch all sessions for a user (Customer, Admin, or Branch Manager)
 router.get('/sessions', verifyToken, async (req: any, res) => {
   try {

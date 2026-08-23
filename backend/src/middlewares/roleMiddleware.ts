@@ -1,8 +1,7 @@
+import prisma from "../config/prisma";
 import { Response, NextFunction } from "express";
 import { AuthRequest } from "./authMiddleware";
 import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
 
 /**
  * Role Restriction Middleware
