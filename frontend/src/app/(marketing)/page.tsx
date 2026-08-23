@@ -15,11 +15,7 @@ import { HomeFAQ } from "@/components/marketing/home/HomeFAQ";
 import { HomeCTA } from "@/components/marketing/home/HomeCTA";
 import prisma from "@/lib/prisma";
 import HomePricing from "@/components/marketing/home/HomePricing";
-import dynamic from "next/dynamic";
-
-const HomeHero = dynamic(() => import("@/components/marketing/home/HomeHero"), {
-  ssr: false,
-});
+import HomeHero from "@/components/marketing/home/HomeHero";
 
 export const revalidate = 0; // Always fetch latest CMS + review data
 
