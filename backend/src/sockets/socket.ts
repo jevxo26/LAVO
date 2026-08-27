@@ -12,6 +12,7 @@ export const initSocket = (server: HttpServer) => {
       origin: [
         'http://localhost:3000',
         'https://lavo-psi.vercel.app',
+        'https://lundrix.jevxo.com',
         process.env.FRONTEND_URL || ''
       ].filter(Boolean),
       methods: ['GET', 'POST'],

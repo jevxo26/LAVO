@@ -61,6 +61,7 @@ async function bootstrap() {
   const allowedOrigins = [
     'http://localhost:3000',
     'https://lavo-psi.vercel.app',
+    'https://lundrix.jevxo.com',
     process.env.FRONTEND_URL,
   ].filter(Boolean) as string[];
 

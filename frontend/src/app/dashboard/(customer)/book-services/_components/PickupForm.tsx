@@ -46,7 +46,7 @@ export function PickupForm({
 
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
+    googleMapsApiKey: "AIzaSyCCLeLCRb3iuU8H6qwnqcx8XhHjc2cGJ7E",
     libraries: GOOGLE_LIBRARIES,
   });
 

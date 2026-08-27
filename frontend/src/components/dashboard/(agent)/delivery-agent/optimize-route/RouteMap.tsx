@@ -30,7 +30,7 @@ const defaultCenter = {
 const libraries: ("places" | "geometry" | "drawing" | "visualization")[] = ["places"];
 
 export default function RouteMap({ routes, agentLocation, onDirectionsCalculated }: RouteMapProps) {
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
+  const apiKey = "AIzaSyCCLeLCRb3iuU8H6qwnqcx8XhHjc2cGJ7E";
 
   const { isLoaded, loadError } = useJsApiLoader({
     id: "google-map-script",
