@@ -231,4 +231,4 @@ Built with ❤️ by the **Jevxo** team
 </div>
 
 
-We are Lavo team, developing this project - Laundrix
+We are Lavo team, developing this project - Laundrix# Laundrix
